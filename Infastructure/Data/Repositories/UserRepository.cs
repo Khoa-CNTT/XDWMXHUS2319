@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Infrastructure.Data.Repositories
+{
+    public class UserRepository : BaseRepository<User>, IUserRepository
+    {
+        public UserRepository(AppDbContext context) : base(context)
+        {
+        }
+
+        public override Task<bool> DeleteAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<bool> GetExsitsEmailAsync(string email)
+        {
+            return await _context.Users.AnyAsync(x => x.Email == email);
+        }
+
+       
+    }
+}
