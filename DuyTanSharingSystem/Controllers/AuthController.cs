@@ -1,5 +1,7 @@
 ﻿using Application.CQRS.Commands.EmailToken;
 using Application.CQRS.Commands.Users;
+using Application.DTOs.User;
+using Application.Interface;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,9 +12,11 @@ namespace DuyTanSharingSystem.Controllers
     public class AuthController : Controller
     {
        private readonly IMediator _mediator;
-        public AuthController(IMediator mediator)
+        private readonly IAuthService _authService;
+        public AuthController(IMediator mediator,IAuthService authService)
         {
             _mediator = mediator;
+            _authService = authService;
         }
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserCommand command)
@@ -38,6 +42,27 @@ namespace DuyTanSharingSystem.Controllers
             }
             return Ok(response);
         }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginDto user)
+        {
+            var response = await _authService.LoginAsync(user);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var response = await _authService.RefreshTokenAsync();
+            if(response== null)
+            {
+                return BadRequest(new { message = "Invalid token" });
+            }
+            return Ok(response); // ✅ Trả về Access Token mới
+        }
+
 
     }
 }

@@ -11,6 +11,9 @@ namespace Domain.Interface
         IUserRepository UserRepository { get; }
         IEmailTokenRepository EmailTokenRepository { get; }
         IPostRepository PostRepository { get; }
+        ILikeRepository LikeRepository { get; }
+        IRefreshtokenRepository RefreshtokenRepository { get; }
+
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync(); // ✅ Bắt đầu giao dịch
         Task CommitTransactionAsync(); // ✅ Hoàn tất giao dịch

@@ -18,7 +18,7 @@ namespace DuyTanSharingSystem.Controllers
         [HttpPost("like-post")]
         public async Task<IActionResult> LikePost([FromBody] LikePostCommand likePost)
         {
-            var userId = Guid.Parse("E0BBBF94-4E30-491E-86FD-2190C20C3B6F"); // Lấy từ token trong thực tế
+             //userId Lấy từ token trong thực tế
             var response = await _mediator.Send(likePost);
             return Ok(response);
         }

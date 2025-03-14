@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.User
 {
-    public class GetUsetByIdQuery : IRequest<ResponseModel<UserResponseDto>>
+    public class GetUsetByEmailQuery : IRequest<ResponseModel<UserResponseDto>>
     {
         public Guid Id { get; set; }
-        public GetUsetByIdQuery(Guid id)
+        public GetUsetByEmailQuery(Guid id)
         {
             Id = id;
         }

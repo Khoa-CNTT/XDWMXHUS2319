@@ -9,6 +9,7 @@ namespace Domain.Interface
      public interface IUserRepository : IBaseRepository<User>
     {
         Task<bool> GetExsitsEmailAsync(string email);
-        
+        Task<User?> GetUserByEmailAsync(string email);
+
     }
 }

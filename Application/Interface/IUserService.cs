@@ -15,5 +15,6 @@ namespace Application.Interface
         Task<string> HashPasswordAsync(string password);
         Task<string?> SendVerifiEmailAsync(Guid userId,string email);
         Task<string> GenerateTokenAsync(Guid userId);
+        Task<User?> GetByIdAsync(Guid userId);
     }
 }

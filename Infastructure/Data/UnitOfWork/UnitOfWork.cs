@@ -17,16 +17,23 @@ namespace Infrastructure.Data.UnitOfWork
         public UnitOfWork(AppDbContext context,
             IUserRepository userRepository,
             IPostRepository postRepository,
-            IEmailTokenRepository emailTokenRepository)
+            IEmailTokenRepository emailTokenRepository,
+            ILikeRepository likeRepository,
+            IRefreshtokenRepository refreshtokenRepository
+            )
         {
             _context = context;
             UserRepository = userRepository;
             PostRepository = postRepository;
             EmailTokenRepository = emailTokenRepository;
+            LikeRepository = likeRepository;
+            RefreshtokenRepository = refreshtokenRepository;
         }
         public IUserRepository UserRepository { get; }
         public IPostRepository PostRepository { get; }
         public IEmailTokenRepository EmailTokenRepository { get; }
+        public ILikeRepository LikeRepository { get; }
+        public IRefreshtokenRepository RefreshtokenRepository { get; }
 
         public async Task<int> SaveChangesAsync()
         => await _context.SaveChangesAsync();

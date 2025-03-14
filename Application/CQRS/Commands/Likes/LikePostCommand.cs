@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Commands.Likes
 {
-    public class LikePostCommand : IRequest<bool>
+    public class LikePostCommand : IRequest<ResponseModel<bool>>
     {
         public Guid UserId { get; set; }
         public Guid PostId { get; set; }

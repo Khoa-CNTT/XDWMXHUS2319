@@ -27,7 +27,7 @@ namespace Application.CQRS.Commands.EmailToken
                 if (emailToken == null || emailToken.IsUsed || emailToken.ExpiryDate < DateTime.UtcNow)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<bool>("Invalid or expired token");
+                    return ResponseFactory.Fail<bool>("Invalid token",400);
                 }
 
                 // 📌 Xác minh thành công -> Cập nhật trạng thái user
@@ -35,17 +35,17 @@ namespace Application.CQRS.Commands.EmailToken
                 if (user == null)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<bool>("User not found");
+                    return ResponseFactory.Fail<bool>("User not found",404);
                 }
                 if (user.IsVerifiedEmail)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<bool>("Email already verified");
+                    return ResponseFactory.Fail<bool>("Email already verified",400);
                 }
                 if (emailToken.Token != request.Token)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<bool>("Invalid token");
+                    return ResponseFactory.Fail<bool>("Invalid token",400);
                 }
 
                 user.VerifyEmail(); // 🛠 Cập nhật trạng thái đã xác minh
@@ -55,10 +55,10 @@ namespace Application.CQRS.Commands.EmailToken
                 await _unitOfWork.EmailTokenRepository.DeleteAsync(emailToken.Id);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-                return ResponseFactory.Success(true, "Email verified successfully");
+                return ResponseFactory.Success(true, "Email verified successfully",200);
             }
             catch (Exception ex) {
-                return ResponseFactory.Fail<bool>(ex.Message);
+                return ResponseFactory.Fail<bool>(ex.Message,400);
             }
         
         }

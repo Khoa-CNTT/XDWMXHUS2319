@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Token;
+﻿
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,8 @@ namespace Application.Interface
 {
     public interface ITokenService
     {
-        Task<EmailTokenDto> AddEmailVerificationToken(User user);
+        
+        Task<RefreshToken> AddRefreshTokenAsync(User user, string rerefreshToken, IHttpContextAccessor _httpContextAccessor);
+        Task<RefreshToken?> GetByTokenAsync(string token);
     }
 }

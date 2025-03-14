@@ -2,30 +2,24 @@
 using Application;
 using MediatR;
 using Application.Model;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Application.CQRS.Commands.Users;
 using Application.Interface.Hubs;
 using DuyTanSharingSystem.Service;
 using DuyTanSharingSystem.Hubs;
+using Domain.Common;
 
 var builder = WebApplication.CreateBuilder(args);
-
+// 🔹 Nạp User Secrets (nếu đang ở môi trường Development)
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
 // Add services to the container.
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddInfastructureServices(builder.Configuration);
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 
-// 🔹 Đăng ký Authentication & JWT
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var keyString = jwtSettings["Key"];
-if (string.IsNullOrWhiteSpace(keyString))
-{
-    throw new Exception("⚠️ Jwt:Key không được để trống! Kiểm tra user-secrets hoặc appsettings.json.");
-}
-var key = Encoding.UTF8.GetBytes(keyString);
+
 builder.Services.AddLogging();
 // C?u hình logging ?? xu?t log ra console
 builder.Logging.ClearProviders();
@@ -33,21 +27,7 @@ builder.Logging.AddConsole();
 //add signalR
 builder.Services.AddSignalR();
 
-//cấu hình JWT
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key)
-        };
-    });
+
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

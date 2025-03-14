@@ -5,9 +5,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Domain.Common.Enums;
 
 
-    namespace Domain.Entities
+namespace Domain.Entities
     {
         public class User
         {
@@ -20,6 +21,7 @@ using System.Threading.Tasks;
             public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
             public bool IsVerifiedEmail { get; private set; } = false;
             public int TrustScore { get; private set; } = 0;
+            public RoleEnum Role { get; private set; } = RoleEnum.User;
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
             public virtual ICollection<Comment> Comments { get; private set; } = new HashSet<Comment>();

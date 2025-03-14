@@ -40,7 +40,6 @@ namespace Application.BackgroundServices
                         await likeRepository.AddRangeAsync(likeEntities);
                         await unitOfWork.SaveChangesAsync();
                         await unitOfWork.CommitTransactionAsync(); // ✅ Commit transaction
-
                         await redisService.RemoveAsync("like_events");
                     }
                     catch (Exception)

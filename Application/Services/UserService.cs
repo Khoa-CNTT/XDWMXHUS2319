@@ -21,7 +21,6 @@ namespace Application.Services
         {
             return new UserResponseDto
             {
-                Id = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
                 CreatedAt = user.CreatedAt
@@ -29,6 +28,10 @@ namespace Application.Services
         }
         public async Task<bool> CheckEmailExistsAsync(string email)
         {
+            //if (!email.EndsWith("@.edu.dtu.vn",StringComparison.OrdinalIgnoreCase)
+            //    || !email.EndsWith("@.edu.dtu.vn", StringComparison.OrdinalIgnoreCase)) {
+            //    return false;
+            //}
             if(string.IsNullOrEmpty(email) || string.IsNullOrWhiteSpace(email))
             {
                 return false;
@@ -36,10 +39,9 @@ namespace Application.Services
             return await _unitOfWork.UserRepository.GetExsitsEmailAsync(email);
         }
 
-        public Task<string> HashPasswordAsync(string password)
+        public async Task<string> HashPasswordAsync(string password)
         {
-          
-            return Task.FromResult(password);
+            return await Task.Run(() => BCrypt.Net.BCrypt.HashPassword(password, 12));
         }
 
         public async Task<string?> SendVerifiEmailAsync(Guid userId,string email)
@@ -74,6 +76,11 @@ namespace Application.Services
         public async Task<string> GenerateTokenAsync(Guid userId)
         {
             return await TokenVerifyEmailProvider.GenerateToken(userId);
+        }
+
+        public async Task<User?> GetByIdAsync(Guid userId)
+        {
+            return await _unitOfWork.UserRepository.GetByIdAsync(userId);
         }
     }
 }

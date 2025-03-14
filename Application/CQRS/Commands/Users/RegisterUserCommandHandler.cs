@@ -25,14 +25,14 @@ namespace Application.CQRS.Commands.Users
                 if (request == null)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<UserResponseDto>("UserCreateDto is null");
+                    return ResponseFactory.Fail<UserResponseDto>("UserCreateDto is null", 404);
                 }
 
-                // 🔍 Kiểm tra email đã tồn tại chưa
+                // 🔍 Kiểm tra email đã tồn tại chưa hoặc @ phía sau
                 if (await _userService.CheckEmailExistsAsync(request.Email))
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<UserResponseDto>("This Email already exists");
+                    return ResponseFactory.Fail<UserResponseDto>("This Email already exists Or Email Don't accept", 404);
                 }
 
                 // 🛠️ Tạo user mới (chưa xác minh)
@@ -43,19 +43,19 @@ namespace Application.CQRS.Commands.Users
                 if (tokenSend == null)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<UserResponseDto>("Failed to send verification email");
+                    return ResponseFactory.Fail<UserResponseDto>("Failed to send verification email", 404);
                 }
                 // 💾 Lưu token vào DB
                 var saveToken = new EmailVerificationToken(user.Id, tokenSend, DateTime.UtcNow.AddHours(1));
                 await _unitOfWork.EmailTokenRepository.AddAsync(saveToken);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-                return ResponseFactory.Success(_userService.MapUserToUserResponseDto(user), "User registered successfully. Please check your email for verification.");
+                return ResponseFactory.Success(_userService.MapUserToUserResponseDto(user), "User registered successfully. Please check your email for verification.", 200);
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                return ResponseFactory.Error<UserResponseDto>("Failed to register user", ex);
+                return ResponseFactory.Error<UserResponseDto>("Failed to register user",400, ex);
             }
         }
 

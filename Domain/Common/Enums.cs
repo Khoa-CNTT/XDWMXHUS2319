@@ -45,5 +45,10 @@ namespace Domain.Common
             Reviewed,
             Rejected
         }
+        public enum RoleEnum
+        {
+            User,
+            Admin
+        }
     }
 }

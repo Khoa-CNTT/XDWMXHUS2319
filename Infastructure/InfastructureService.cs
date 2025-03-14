@@ -37,6 +37,7 @@ namespace Infrastructure
             services.AddScoped<IEmailTokenRepository, EmailTokenRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ILikeRepository, LikeRepository>();
+            services.AddScoped<IRefreshtokenRepository, RefreshtokenRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>(); // Đăng ký trước UserService
             services.AddScoped<IUserService, UserService>();
