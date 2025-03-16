@@ -15,6 +15,9 @@ namespace Domain.Entities
         public DateTime CreatedAt { get; private set; }
         public DateTime? UpdatedAt { get; private set; }
         public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
+        //CHUPS
+        public virtual User? User { get; private set; }
+        public virtual Post? Post { get; private set; }
 
         public Comment(Guid userId, Guid postId, string content)
         {
