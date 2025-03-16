@@ -21,6 +21,7 @@ namespace Application.CQRS.Queries.Posts
         public async Task<ResponseModel<List<PostDto>>> Handle(GetPostsByTypeQuery request, CancellationToken cancellationToken)
         {
             // Chuyển đổi request.PostType từ string -> PostTypeEnum
+
             if (!Enum.TryParse<PostTypeEnum>(request.PostType, true, out var postTypeEnum))
             {
                 return ResponseFactory.Fail<List<PostDto>>("Post type is invalid", 400);

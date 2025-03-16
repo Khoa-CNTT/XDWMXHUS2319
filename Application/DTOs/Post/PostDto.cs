@@ -12,7 +12,7 @@ namespace Application.DTOs.Posts
     public class PostDto
     {
         public Guid Id { get; set; }
-        public string? FullName { get; set; }  // Người đăng bài
+        public string FullName { get; set; } = string.Empty;
         public string? Content { get;  set; }
         public string? ImageUrl { get; set; }
         public string? VideoUrl { get; set; }
