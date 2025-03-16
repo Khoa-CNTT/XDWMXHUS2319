@@ -1,12 +1,9 @@
 ﻿using Application.Model;
 using Microsoft.Extensions.Options;
-using System.Net.Mail;
 using MimeKit;
 using MimeKit.Text;
 using Application.Interface;
 using MailKit.Security;
-using MailKit.Net.Smtp;
-using Application.Services;
 namespace Infrastructure.Email
 {
     public class EmailService : IEmailService

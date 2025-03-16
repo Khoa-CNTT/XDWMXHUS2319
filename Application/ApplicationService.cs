@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Domain.Common;
 
+
 namespace Application
 {
     public static class ApplicationService
@@ -21,13 +22,16 @@ namespace Application
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ILikeService, LikeService>();
-            services.AddHostedService<LikeEventProcessor>();
+            //services.AddScoped<IPostService, PostService>();
+            //services.AddHostedService<LikeEventProcessor>();
 
             // Đăng ký Auth Services
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtProvider, JwtProvider>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<MLService>();
+
 
             // ✅ Đăng ký JwtSettings vào DI container
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));

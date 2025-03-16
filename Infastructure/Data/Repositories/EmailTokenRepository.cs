@@ -24,6 +24,11 @@ namespace Infrastructure.Data.Repositories
             return true;
         }
 
+        public override Task<EmailVerificationToken?> GetByIdAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<EmailVerificationToken?> GetByTokenAsync(string token)
         {
             return await _context.emailVerificationTokens.FirstOrDefaultAsync(x => x.Token == token);

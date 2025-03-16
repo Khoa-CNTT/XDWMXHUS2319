@@ -17,6 +17,8 @@ namespace Infrastructure.Data.Repositories
             throw new NotImplementedException();
         }
 
+       
+
         public async Task<bool> GetExsitsEmailAsync(string email)
         {
             return await _context.Users.AnyAsync(x => x.Email == email);

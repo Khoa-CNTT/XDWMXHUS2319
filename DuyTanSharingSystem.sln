@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infastruc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{CF83D28A-A597-4D92-865C-91DDFE297826}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MLTraining", "MLTraining\MLTraining.csproj", "{5E4890E9-CDEF-4E2A-8D99-9CA41FC9CC71}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{CF83D28A-A597-4D92-865C-91DDFE297826}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF83D28A-A597-4D92-865C-91DDFE297826}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF83D28A-A597-4D92-865C-91DDFE297826}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E4890E9-CDEF-4E2A-8D99-9CA41FC9CC71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E4890E9-CDEF-4E2A-8D99-9CA41FC9CC71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E4890E9-CDEF-4E2A-8D99-9CA41FC9CC71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E4890E9-CDEF-4E2A-8D99-9CA41FC9CC71}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

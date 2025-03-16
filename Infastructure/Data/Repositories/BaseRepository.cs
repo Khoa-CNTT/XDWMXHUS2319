@@ -27,7 +27,7 @@ namespace Infrastructure.Data.Repositories
 
         public virtual IQueryable<T> GetAll()
         {
-            return _dbSet.AsQueryable();
+            return _dbSet;
         }
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
@@ -39,6 +39,7 @@ namespace Infrastructure.Data.Repositories
         {
             return await _dbSet.FindAsync(id);
         }
+       
 
         public virtual Task UpdateAsync(T entity)
         {

@@ -45,6 +45,7 @@ namespace Application.Helpers
                 Code = code
             };
         }
+     
         public static ResponseModel<T> FailWithData<T>(T data,string message, List<string>? errors = null)
         {
             return new ResponseModel<T>

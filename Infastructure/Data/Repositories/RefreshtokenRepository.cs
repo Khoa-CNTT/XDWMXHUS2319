@@ -17,6 +17,11 @@ namespace Infrastructure.Data.Repositories
             throw new NotImplementedException();
         }
 
+        public override Task<RefreshToken?> GetByIdAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<RefreshToken?> GetByTokenAsync(string token)
         {
             return await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token == token);

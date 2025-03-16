@@ -1,10 +1,13 @@
 ﻿using Application.Interface;
+using Application.Interface.ContextSerivce;
 using Application.Model;
 using Application.Services;
 using Infrastructure.Data.Repositories;
 using Infrastructure.Data.UnitOfWork;
 using Infrastructure.Email;
+using Infrastructure.Gemini;
 using Infrastructure.Redis;
+using Infrastructure.Service;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
@@ -29,6 +32,16 @@ namespace Infrastructure
             services.AddSingleton<IConnectionMultiplexer>(
                 ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis") ?? "")
             );
+            // Đăng ký User Secrets
+            services.Configure<GeminiModel>(configuration.GetSection("GoogleGeminiApi"));
+
+            var geminiModel = configuration.GetSection("GoogleGeminiApi").Get<GeminiModel>();
+            if (geminiModel == null || string.IsNullOrWhiteSpace(geminiModel.ApiKey))
+            {
+                throw new Exception("⚠️ Jwt:Key không được để trống! Kiểm tra user-secrets hoặc appsettings.json.");
+            }
+
+
 
             // Đăng ký Cache Service
             services.AddScoped<ICacheService, RedisCacheService>();
@@ -38,6 +51,12 @@ namespace Infrastructure
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ILikeRepository, LikeRepository>();
             services.AddScoped<IRefreshtokenRepository, RefreshtokenRepository>();
+            services.AddScoped<IUserContextService, UserContextService>();
+            // ✅ Đăng ký HttpClient
+            services.AddHttpClient();
+
+            // ✅ Đăng ký GeminiService
+            services.AddScoped<IGeminiService, GeminiService>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>(); // Đăng ký trước UserService
             services.AddScoped<IUserService, UserService>();

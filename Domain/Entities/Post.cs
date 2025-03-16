@@ -16,8 +16,8 @@ namespace Domain.Entities
         public string? VideoUrl { get; private set; }
         public PostTypeEnum PostType { get; private set; }
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; private set; }
-        public double Score { get; private set; } = 0;
+        public DateTime? UpdateAt { get; private set; }
+        public double? Score { get; private set; } = 0;
         public bool IsApproved { get; private set; } = false;
         public ApprovalStatusEnum ApprovalStatus { get; private set; } = ApprovalStatusEnum.Pending;
         public ScopeEnum Scope { get; private set; } = ScopeEnum.Public;
@@ -26,12 +26,13 @@ namespace Domain.Entities
         public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
 
 
-        public Post(Guid userId, string content, PostTypeEnum postType, string? imageUrl = null, string? videoUrl = null)
+        public Post(Guid userId, string content, PostTypeEnum postType, ScopeEnum scope, string? imageUrl = null, string? videoUrl = null)
         {
             Id = Guid.NewGuid();
             UserId = userId;
             Content = content;
             PostType = postType;
+            Scope = scope;
             ImageUrl = imageUrl;
             VideoUrl = videoUrl;
         }
@@ -50,21 +51,32 @@ namespace Domain.Entities
             if (newScope.HasValue)
                 Scope = newScope.Value;
 
-            UpdatedAt = DateTime.UtcNow;
+            UpdateAt = DateTime.UtcNow;
         }
 
         public void Approve()
         {
             IsApproved = true;
-            ApprovalStatus = ApprovalStatusEnum.Approved;
-            UpdatedAt = DateTime.UtcNow;
+            UpdateAt = DateTime.UtcNow;
         }
 
         public void Reject()
         {
             IsApproved = false;
+            UpdateAt = DateTime.UtcNow;
+        }
+        public void ApproveAI()
+        {
+            IsApproved = true;
+            ApprovalStatus = ApprovalStatusEnum.Approved;
+            UpdateAt = DateTime.UtcNow;
+        }
+
+        public void RejectAI()
+        {
+            IsApproved = false;
             ApprovalStatus = ApprovalStatusEnum.Rejected;
-            UpdatedAt = DateTime.UtcNow;
+            UpdateAt = DateTime.UtcNow;
         }
 
         public void IncreaseScore(double amount)

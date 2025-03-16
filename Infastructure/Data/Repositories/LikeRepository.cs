@@ -22,5 +22,10 @@ namespace Infrastructure.Data.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public override Task<Like?> GetByIdAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
