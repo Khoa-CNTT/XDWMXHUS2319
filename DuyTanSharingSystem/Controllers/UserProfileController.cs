@@ -24,22 +24,22 @@ namespace DuyTanSharingSystem.Controllers
             var result = await _mediator.Send(new GetUserProfileQuery());
             return Ok(result);
         }
-       /* [Authorize]
+        [Authorize]
         [HttpPut("upProfile")]
-        public  async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileCommand command)
+        public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileCommand command)
         {
-            var uesrid =  User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if(uesrid == null)
+            var uesrid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (uesrid == null)
             {
                 return Unauthorized("ban chua dang nhap");
             }
             command.UserId = Guid.Parse(uesrid);
             var result = await _mediator.Send(command);
-            if(result.Success)
+            if (result.Success)
             {
                 return Ok("cap nhat thanh cong");
             }
             return BadRequest("cap nhat that bai");
-        }*/
+        }
     }
 }
