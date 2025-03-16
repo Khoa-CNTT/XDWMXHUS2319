@@ -45,33 +45,34 @@ namespace Infrastructure
             modelBuilder.Entity<EmailVerificationToken>().HasKey(e => e.Id);
             modelBuilder.Entity<RefreshToken>().HasKey(r => r.Id);
 
+
             // Cấu hình quan hệ
             modelBuilder.Entity<Post>()
-                .HasOne<User>()
+                .HasOne(p => p.User)
                 .WithMany(u => u.Posts)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Like>()
-                .HasOne<User>()
+                .HasOne(l => l.User)
                 .WithMany(u => u.Likes)
                 .HasForeignKey(l => l.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Like>()
-                .HasOne<Post>()
+                .HasOne(l => l.Post)
                 .WithMany(p => p.Likes)
                 .HasForeignKey(l => l.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Comment>()
-                .HasOne<User>()
+                .HasOne(c => c.User)
                 .WithMany(u => u.Comments)
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Comment>()
-                .HasOne<Post>()
+                .HasOne(c => c.Post)
                 .WithMany(p => p.Comments)
                 .HasForeignKey(c => c.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -135,7 +136,45 @@ namespace Infrastructure
                 .WithMany()
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            //CHUPS
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Posts)  // Một User có nhiều Posts
+                .WithOne(p => p.User)   // Một Post chỉ thuộc về một User
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // Khi User bị xóa, xóa luôn Posts của họ
+                                                   // Cấu hình quan hệ Post - Likes
+            modelBuilder.Entity<Post>()
+                .HasMany(p => p.Likes)
+                .WithOne(l => l.Post)
+                .HasForeignKey(l => l.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // Cấu hình quan hệ Post - Comments
+            modelBuilder.Entity<Post>()
+                .HasMany(p => p.Comments)
+                .WithOne(c => c.Post)
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Cấu hình quan hệ Post - Shares
+            modelBuilder.Entity<Post>()
+                .HasMany(p => p.Shares)
+                .WithOne(s => s.Post)
+                .HasForeignKey(s => s.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // Quan hệ 1 User - N Share
+            modelBuilder.Entity<Share>()
+                .HasOne(s => s.User)
+                .WithMany(u => u.Shares)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Quan hệ 1 Post - N Share
+            modelBuilder.Entity<Share>()
+                .HasOne(s => s.Post)
+                .WithMany(p => p.Shares)
+                .HasForeignKey(s => s.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

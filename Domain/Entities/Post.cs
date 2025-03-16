@@ -21,9 +21,13 @@ namespace Domain.Entities
         public bool IsApproved { get; private set; } = false;
         public ApprovalStatusEnum ApprovalStatus { get; private set; } = ApprovalStatusEnum.Pending;
         public ScopeEnum Scope { get; private set; } = ScopeEnum.Public;
+
         public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
         public virtual ICollection<Comment> Comments { get; private set; } = new HashSet<Comment>();
+        public virtual ICollection<Share> Shares { get; private set; } = new List<Share>();
         public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
+        //CHUPS
+        public virtual User? User { get; private set; }
 
 
         public Post(Guid userId, string content, PostTypeEnum postType, ScopeEnum scope, string? imageUrl = null, string? videoUrl = null)

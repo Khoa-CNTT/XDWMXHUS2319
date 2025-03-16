@@ -13,7 +13,10 @@ namespace Domain.Entities
         public Guid PostId { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public bool IsLike { get; private set; } = true;
+        //CHUPS
+        public virtual User? User { get; private set; }
 
+        public virtual Post? Post { get; private set; }
         public Like(Guid userId, Guid postId)
         {
             if (userId == Guid.Empty) throw new ArgumentException("UserId cannot be empty.");
