@@ -155,7 +155,7 @@ namespace Infrastructure.Data.Repositories
         }
 
 
-       
+
         public async Task SoftDeletePostAsync(Guid postId)
         {
             var comments = _context.Comments.Where(c => c.PostId == postId);
@@ -163,11 +163,10 @@ namespace Infrastructure.Data.Repositories
             // Tìm tất cả bài viết chia sẻ bài gốc
             var sharedPosts = _context.Posts.Where(p => p.OriginalPostId == postId);
 
-            foreach (var comment in comments) comment.SoftDelete();
+            foreach (var comment in comments) comment.Delete();
             foreach (var like in likes) like.SoftDelete();
             foreach (var sharedPost in sharedPosts) sharedPost.SoftDelete();
-
-}
+        }
 
         public async Task<List<Post>> SearchPostsAsync(string keyword)
         {

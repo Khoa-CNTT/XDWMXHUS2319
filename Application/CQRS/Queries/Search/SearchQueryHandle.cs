@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.CQRS.Queries.User
+namespace Application.CQRS.Queries.Search
 {
     public class SearchQueryHandle : IRequestHandler<SearchQuery, ResponseModel<List<SearchResultDto>>>
     {
