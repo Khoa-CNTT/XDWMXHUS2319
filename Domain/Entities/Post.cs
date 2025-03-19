@@ -17,6 +17,7 @@ namespace Domain.Entities
         public PostTypeEnum PostType { get; private set; }
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
         public DateTime? UpdateAt { get; private set; }
+        public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
         public double? Score { get; private set; } = 0;
         public bool IsApproved { get; private set; } = false;
         public ApprovalStatusEnum ApprovalStatus { get; private set; } = ApprovalStatusEnum.Pending;
@@ -27,8 +28,10 @@ namespace Domain.Entities
         public virtual ICollection<Share> Shares { get; private set; } = new List<Share>();
         public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
         //CHUPS
+
         public virtual User? User { get; private set; }
         // Nếu là bài Share
+
         public bool IsSharedPost { get;private set; } = false;
         public Guid? OriginalPostId { get;private set; }
         public Post? OriginalPost { get;private set; }
@@ -90,6 +93,10 @@ namespace Domain.Entities
             IsApproved = false;
             ApprovalStatus = ApprovalStatusEnum.Rejected;
             UpdateAt = DateTime.UtcNow;
+        }
+        public void Delete()
+        {
+            IsDeleted = true;
         }
 
         public void IncreaseScore(double amount)

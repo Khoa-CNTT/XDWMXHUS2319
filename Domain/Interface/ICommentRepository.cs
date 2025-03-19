@@ -11,5 +11,7 @@ namespace Domain.Interface
     {
         Task<IEnumerable<Comment>> GetCommentByPostIdAsync(Guid postId);
         Task<int> CountPostCommentAsync(Expression<Func<Comment, bool>> predicate);
+        Task<Comment?> GetCommentByIdAsync(Guid commentId);
+        Task<List<Comment>> GetReplysCommentAllAsync(Guid parentCommentId);
     }
 }

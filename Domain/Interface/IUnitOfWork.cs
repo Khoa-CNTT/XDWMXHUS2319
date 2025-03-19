@@ -15,6 +15,7 @@ namespace Domain.Interface
         IRefreshtokenRepository RefreshtokenRepository { get; }
         IShareRepository ShareRepository { get; }
         ICommentRepository CommentRepository { get; }
+        ICommentLikeRepository CommentLikeRepository { get; }
 
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync(); // ✅ Bắt đầu giao dịch

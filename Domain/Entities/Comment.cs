@@ -18,7 +18,13 @@ namespace Domain.Entities
         //CHUPS
         public virtual User? User { get; private set; }
         public virtual Post? Post { get; private set; }
+        public Guid? ParentCommentId { get; set; }
+        public virtual Comment? ParentComment { get; set; }
 
+        // 🔥 Danh sách các bình luận con
+        public virtual ICollection<Comment> Replies { get; set; } = new List<Comment>();
+        // 🔥 Danh sách người like bình luận này
+        public virtual ICollection<CommentLike> CommentLikes { get; set; } = new List<CommentLike>();
         public Comment() { }
         public Comment(Guid userId, Guid postId, string? content)
         {
@@ -59,6 +65,19 @@ namespace Domain.Entities
         public void Restore()
         {
             IsDeleted = false;
+        }
+        public void Reply(Guid userId, string content, ICollection<Comment> replies)
+        {
+            if (userId == Guid.Empty) throw new ArgumentException("UserId cannot be empty.");
+            if (string.IsNullOrWhiteSpace(content)) throw new ArgumentException("Content cannot be empty.");
+
+            var replyComment = new Comment(userId, this.PostId, content)
+            {
+                ParentCommentId = this.Id, // Gán bình luận cha
+                ParentComment = this
+            };
+
+            replies.Add(replyComment);
         }
     }
 }

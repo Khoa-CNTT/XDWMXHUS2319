@@ -18,6 +18,7 @@ namespace Infrastructure
         public DbSet<Post> Posts { get; set; } 
         public DbSet<Like> Likes { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<CommentLike> CommentLikes { get; set; }
         public DbSet<Share> Shares { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<Domain.Entities.Group> Groups { get; set; }
@@ -174,6 +175,27 @@ namespace Infrastructure
                 .HasOne(s => s.Post)
                 .WithMany(p => p.Shares)
                 .HasForeignKey(s => s.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // 🔥 Thiết lập quan hệ comment cha - comment con
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.ParentComment)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(c => c.ParentCommentId)
+                .OnDelete(DeleteBehavior.Restrict); // Tránh lỗi vòng lặp
+                                                    // 🔥 Thiết lập quan hệ like comment
+            modelBuilder.Entity<CommentLike>()
+                .HasKey(cl => new { cl.UserId, cl.CommentId }); // Đảm bảo 1 user chỉ like 1 lần
+
+            modelBuilder.Entity<CommentLike>()
+                .HasOne(cl => cl.User)
+                .WithMany(u => u.CommentLikes)
+                .HasForeignKey(cl => cl.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CommentLike>()
+                .HasOne(cl => cl.Comment)
+                .WithMany(c => c.CommentLikes)
+                .HasForeignKey(cl => cl.CommentId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

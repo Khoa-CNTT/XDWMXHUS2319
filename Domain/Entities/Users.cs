@@ -31,8 +31,9 @@ namespace Domain.Entities
             public virtual ICollection<Message> MessageReceivers { get; private set; } = new List<Message>();
             public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
             public virtual ICollection<GroupMember> GroupMembers { get; private set; } = new HashSet<GroupMember>();
-            //CHUPS
-            public virtual ICollection<Share> Shares { get; private set; } = new HashSet<Share>();
+        //CHUPS
+        public virtual ICollection<CommentLike> CommentLikes { get; private set; } = new List<CommentLike>();
+        public virtual ICollection<Share> Shares { get; private set; } = new HashSet<Share>();
 
         public User()
         {

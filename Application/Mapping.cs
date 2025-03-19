@@ -62,6 +62,7 @@ namespace Application
                     ProfilePicture = c.User?.ProfilePicture,
                     Content = c.Content,
                     CreatedAt = c.CreatedAt
+
                 }).ToList() ?? new List<CommentDto>(),
 
                 // Đếm số lượt thích
@@ -95,6 +96,22 @@ namespace Application
         }
         public static PostDto MapToPostDto(Post p)
         {
+            if (p == null || p.IsDeleted)
+            {
+                return null; // 🔥 Nếu bài viết bị xóa, trả về null
+            }
+
+            // Lọc các comment chưa bị xóa mềm
+            var allComments = p.Comments?
+                .Where(c => !c.IsDeleted) // 🔥 Lọc comment hợp lệ
+                .Select(c => new CommentDto(c))
+                .ToList() ?? new List<CommentDto>();
+
+            // 🔥 Lọc các lượt thích hợp lệ (IsLike == true)
+            var validLikes = p.Likes?
+                .Where(l => l.IsLike) // Chỉ lấy những lượt thích hợp lệ
+                .ToList() ?? new List<Like>();
+
             return new PostDto
             {
                 Id = p.Id,
@@ -107,31 +124,47 @@ namespace Application
                 IsSharedPost = p.IsSharedPost,
                 OriginalPostId = p.OriginalPostId,
 
-                // Nếu là bài share, ánh xạ bài viết gốc đúng cách
+                // Nếu là bài share, ánh xạ bài viết gốc
                 OriginalPost = p.IsSharedPost && p.OriginalPost != null
-            ? MapToOriginalPostDto(p.OriginalPost)
-            : null, // Nếu không phải bài share, OriginalPost sẽ null
+                    ? MapToOriginalPostDto(p.OriginalPost)
+                    : null,
 
-                // Đếm số lượt bình luận
-                CommentCount = p.Comments?.Count ?? 0,
-                Comments = p.Comments?.Select(c => new CommentDto
-                {
-                    Id = c.Id,
-                    UserId = c.UserId,
-                    UserName = c.User?.FullName ?? "Unknown",
-                    ProfilePicture = c.User?.ProfilePicture,
-                    Content = c.Content,
-                    CreatedAt = c.CreatedAt
-                }).ToList() ?? new List<CommentDto>(),
+                // Đếm số lượt bình luận hợp lệ
+                CommentCount = allComments.Count,
 
-                // Đếm số lượt thích
-                LikeCount = p.Likes?.Count ?? 0,
-                LikedUsers = p.Likes?.Select(l => new LikeDto
-                {
-                    UserId = l.UserId,
-                    UserName = l.User?.FullName ?? "Unknown",
-                    ProfilePicture = l.User?.ProfilePicture,
-                }).ToList() ?? new List<LikeDto>(),
+                // 🔥 Chỉ lấy comment gốc (ParentCommentId == null) và chưa bị xóa
+                Comments = allComments
+                    .Where(c => c.ParentCommentId == null)
+                    .Select(c => new CommentDto
+                    {
+                        Id = c.Id,
+                        UserId = c.UserId,
+                        UserName = c.UserName,
+                        ProfilePicture = c.ProfilePicture,
+                        Content = c.Content,
+                        CreatedAt = c.CreatedAt,
+                        CommentLikes = c.CommentLikes,
+                        ParentCommentId = c.ParentCommentId,
+
+                        // 🔥 Lọc replies chưa bị xóa
+                        Replies = allComments
+                            .Where(r => r.ParentCommentId == c.Id)
+                            .ToList()
+                    })
+                    .ToList(),
+
+                // 🔥 Đếm số lượt thích hợp lệ
+                LikeCount = validLikes.Count,
+
+                // 🔥 Lọc danh sách người đã thích bài viết (chỉ lấy những ai có IsLike = true)
+                LikedUsers = validLikes
+                    .Select(l => new LikeDto
+                    {
+                        UserId = l.UserId,
+                        UserName = l.User?.FullName ?? "Unknown",
+                        ProfilePicture = l.User?.ProfilePicture,
+                    })
+                    .ToList(),
 
                 // Đếm số lượt chia sẻ
                 ShareCount = p.Shares?.Count ?? 0,
@@ -143,7 +176,6 @@ namespace Application
                     SharedAt = s.CreatedAt
                 }).ToList() ?? new List<ShareDto>()
             };
-
         }
     }
 }

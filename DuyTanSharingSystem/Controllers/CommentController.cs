@@ -36,5 +36,12 @@ namespace DuyTanSharingSystem.Controllers
             var response = await _mediator.Send(new SoftDeleteCommentCommand(id));
             return Ok(response);
         }
+        [Authorize]
+        [HttpPost("ReplyComment")]
+        public async Task<IActionResult> ReplyComment([FromBody] ReplyCommentCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
     }
 }

@@ -54,6 +54,7 @@ namespace Infrastructure
             services.AddScoped<IUserContextService, UserContextService>();
             services.AddScoped<IShareRepository, ShareRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
             // ✅ Đăng ký HttpClient
             services.AddHttpClient();
 

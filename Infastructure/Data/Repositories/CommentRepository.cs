@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Application.DTOs.Comments;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,11 +28,39 @@ namespace Infrastructure.Data.Repositories
         public async Task<IEnumerable<Comment>> GetCommentByPostIdAsync(Guid postId)
         {
             return await _context.Comments
-                .Include(x => x.User)
-                .Include(x => x.Post)
-                    .ThenInclude(p => p.User)
-                 .Where(x => x.PostId == postId)
-                .ToListAsync();
+         .Include(c => c.User)
+         .Include(c => c.Post)
+             .ThenInclude(p => p.User)
+         .Include(c => c.CommentLikes)
+             .ThenInclude(cl => cl.User) // Lấy danh sách người like bình luận
+         .Include(c => c.Replies)
+             .ThenInclude(r => r.User)
+         .Include(c => c.Replies)
+             .ThenInclude(r => r.CommentLikes) // Lấy lượt like của reply
+                 .ThenInclude(cl => cl.User)
+         .Where(c => c.PostId == postId && !c.IsDeleted)
+         .ToListAsync();
+        }
+        public async Task<Comment?> GetCommentByIdAsync(Guid commentId)
+        {
+            var comment = await _context.Comments
+         .Include(c => c.User)
+         .Include(c => c.CommentLikes)
+             .ThenInclude(cl => cl.User)
+         .Include(c => c.Replies)
+             .ThenInclude(r => r.User)
+         .Include(c => c.Replies) // Lấy danh sách comment con
+             .ThenInclude(r => r.CommentLikes) // Lấy danh sách like của comment con
+                 .ThenInclude(cl => cl.User) // Lấy thông tin user đã like comment con
+         .FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
+            return comment;
+        }
+
+        public async Task<List<Comment>> GetReplysCommentAllAsync(Guid parentCommentId)
+        {
+            return await _context.Comments
+           .Where(c => c.ParentCommentId == parentCommentId && !c.IsDeleted)
+           .ToListAsync();
         }
     }
 }
