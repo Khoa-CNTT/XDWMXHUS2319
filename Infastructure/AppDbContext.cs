@@ -54,7 +54,12 @@ namespace Infrastructure
             modelBuilder.Entity<Ride>().HasKey(r => r.Id);
             modelBuilder.Entity<LocationUpdate>().HasKey(lu => lu.Id);
 
-
+            //Dùng HasQueryFilter để tự động loại bỏ dữ liệu đã bị xóa mềm (IsDeleted = true) khi truy vấn.
+            //Nếu không sử dụng, cần phải thêm điều kiện IsDeleted = false trong mỗi truy vấn.
+            modelBuilder.Entity<Post>().HasQueryFilter(p => !p.IsDeleted);
+            modelBuilder.Entity<Comment>().HasQueryFilter(c => !c.IsDeleted);
+            modelBuilder.Entity<Like>().HasQueryFilter(l => !l.IsDeleted);
+            modelBuilder.Entity<Share>().HasQueryFilter(s => !s.IsDeleted);
             // Cấu hình quan hệ
             modelBuilder.Entity<Post>()
                 .HasOne(p => p.User)

@@ -12,9 +12,17 @@ namespace Application.CQRS.Commands.Posts
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGeminiService _geminiService;
 
+      /*  private readonly MLService _mLService;*/
+        public CreatePostCommandHandler(IUnitOfWork unitOfWork,/*MLService mLService*/ IUserContextService userContextService, IGeminiService geminiService)
+        {
+            _unitOfWork = unitOfWork;
+            /*_mLService = mLService;*/
+
+
         public CreatePostCommandHandler(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService)
         {
             _unitOfWork = unitOfWork;
+
             _userContextService = userContextService;
             _geminiService = geminiService;
         }

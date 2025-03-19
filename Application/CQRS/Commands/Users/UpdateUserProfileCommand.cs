@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Application.DTOs.User;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Commands.Users
 {
-    public class UpdateUserProfileCommand : IRequest<ResponseModel<bool>>
+    public class UpdateUserProfileCommand : IRequest<ResponseModel<UserProfileDto>>
     {
         public Guid UserId { get; set; }
         public string FullName { get; set; } = string.Empty;

@@ -30,12 +30,17 @@ namespace Domain.Entities
         //CHUPS
 
         public virtual User? User { get; private set; }
-        // Nếu là bài Share
+
+      
 
         public bool IsSharedPost { get;private set; } = false;
         public Guid? OriginalPostId { get;private set; }
         public Post? OriginalPost { get;private set; }
 
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+        }
         public Post(Guid userId, string content, PostTypeEnum postType, ScopeEnum scope, string? imageUrl = null, string? videoUrl = null)
         {
             Id = Guid.NewGuid();
