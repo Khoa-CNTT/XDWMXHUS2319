@@ -14,7 +14,10 @@ namespace Domain.Entities
         public DateTime CreatedAt { get; private set; }
         public string? Content { get; private set; } // Tin nhắn hoặc ghi chú khi chia sẻ
         public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
-
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+        }
 
         //CHUPS
         public virtual User User { get; private set; } = null!;

@@ -28,8 +28,16 @@ namespace Domain.Entities
         public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
         //CHUPS
         public virtual User? User { get; private set; }
+        //DANG
+        public Guid? OriginalPostId { get;private set; } // Trỏ đến bài viết gốc nếu là bài chia sẻ
+        public Post? OriginalPost { get;private set; } // Navigation property
+        public bool IsDeleted { get;private  set; }//xóa mềm
 
 
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+        }
         public Post(Guid userId, string content, PostTypeEnum postType, ScopeEnum scope, string? imageUrl = null, string? videoUrl = null)
         {
             Id = Guid.NewGuid();

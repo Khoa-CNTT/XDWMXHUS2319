@@ -14,11 +14,15 @@ namespace Domain.Entities
         public string Content { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime? UpdatedAt { get; private set; }
-        public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
+        
         //CHUPS
         public virtual User? User { get; private set; }
         public virtual Post? Post { get; private set; }
-
+        public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+        }
         public Comment(Guid userId, Guid postId, string content)
         {
             if (userId == Guid.Empty) throw new ArgumentException("UserId cannot be empty.");

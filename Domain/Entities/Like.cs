@@ -17,6 +17,12 @@ namespace Domain.Entities
         public virtual User? User { get; private set; }
 
         public virtual Post? Post { get; private set; }
+        //dang
+        public bool IsDeleted { get; private set; }//xóa mềm
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+        }
         public Like(Guid userId, Guid postId)
         {
             if (userId == Guid.Empty) throw new ArgumentException("UserId cannot be empty.");

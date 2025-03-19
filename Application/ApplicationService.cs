@@ -22,6 +22,7 @@ namespace Application
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ILikeService, LikeService>();
+            
             //services.AddScoped<IPostService, PostService>();
             //services.AddHostedService<LikeEventProcessor>();
 
@@ -30,7 +31,7 @@ namespace Application
             services.AddScoped<IJwtProvider, JwtProvider>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddScoped<MLService>();
+       /*     services.AddScoped<MLService>();*/
 
 
             // ✅ Đăng ký JwtSettings vào DI container

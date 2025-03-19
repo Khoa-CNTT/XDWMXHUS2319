@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,6 +28,13 @@ namespace Infrastructure.Data.Repositories
         public async Task<User?> GetUserByEmailAsync(string email)
         {
            return await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+        }
+
+        public async Task<List<User>> SearchUsersAsync(string keyword)
+        {
+            return await _context.Users
+            .Where(u => u.FullName.Contains(keyword) || u.Email.Contains(keyword))
+            .ToListAsync();
         }
     }
 }
