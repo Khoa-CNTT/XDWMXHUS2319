@@ -42,12 +42,24 @@ namespace DuyTanSharingSystem.Controllers
             var posts = await _mediator.Send(new GetPostsByTypeQuery(postType));
             return Ok(posts);
         }
+
+
+        [HttpDelete("{postId}")]
+        public async Task<IActionResult> DeletePost(Guid postId)
+        {
+            var result = await _mediator.Send(new DeletePostCommand(postId));
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return Ok(result.Message);
+
         [Authorize]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeletePost([FromRoute] Guid id)
         {
             var response = await _mediator.Send(new SoftDeletePostCommand(id));
             return Ok(response);
+
         }
     }
 }

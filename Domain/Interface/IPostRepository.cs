@@ -15,9 +15,17 @@ namespace Domain.Interface
 
         Task<List<Post>> GetAllPostsAsync(CancellationToken cancellationToken);
 
+        //xoa mem
+      
+        Task SoftDeletePostAsync(Guid postId);
+        // ✅ Thêm phương thức tìm kiếm bài viết(dangg)
+        Task<List<Post>> SearchPostsAsync(string keyword, DateTime? fromDate, DateTime? toDate,int? Year, int? Month,int? Day);
+
+
         Task<List<Post>> GetSharedPostAllAsync(Guid originalPostId);
 
         Task<Guid> GetPostOwnerIdAsync(Guid id);
+
 
     }
 }

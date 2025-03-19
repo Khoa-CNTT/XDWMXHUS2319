@@ -14,10 +14,12 @@ namespace Domain.Entities
         public string? Content { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime? UpdatedAt { get; private set; }
-        public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
+        
         //CHUPS
         public virtual User? User { get; private set; }
         public virtual Post? Post { get; private set; }
+
+
         public Guid? ParentCommentId { get; set; }
         public virtual Comment? ParentComment { get; set; }
 
@@ -27,6 +29,7 @@ namespace Domain.Entities
         public virtual ICollection<CommentLike> CommentLikes { get; set; } = new List<CommentLike>();
         public Comment() { }
         public Comment(Guid userId, Guid postId, string? content)
+
         {
             if (userId == Guid.Empty) throw new ArgumentException("UserId cannot be empty.");
             if (postId == Guid.Empty) throw new ArgumentException("PostId cannot be empty.");

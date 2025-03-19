@@ -47,6 +47,8 @@ namespace Infrastructure
             // Đăng ký Cache Service
             services.AddScoped<ICacheService, RedisCacheService>();
 
+
+            
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IEmailTokenRepository, EmailTokenRepository>();
             services.AddScoped<IPostRepository, PostRepository>();

@@ -23,10 +23,16 @@ namespace Application
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ILikeService, LikeService>();
+
+            
+            //services.AddScoped<IPostService, PostService>();
+            //services.AddHostedService<LikeEventProcessor>();
+
             services.AddScoped<MLService>();
             services.AddScoped<IRidePostService, RidePostService>();
             services.AddScoped<IRedisService, RedisService>();
             services.AddScoped<IPostService, PostService>();
+
 
             //background services
             //nếu ko làm việc liên quan đến like và LocationUpdate thì comment lại
@@ -40,6 +46,10 @@ namespace Application
             services.AddScoped<IJwtProvider, JwtProvider>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+       /*     services.AddScoped<MLService>();*/
+
+
 
 
 
