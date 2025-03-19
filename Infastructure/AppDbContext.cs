@@ -28,6 +28,10 @@ namespace Infrastructure
         public DbSet<StudyMaterial> StudyMaterials { get; set; }
         public DbSet<EmailVerificationToken> emailVerificationTokens { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        //huy
+        public DbSet<RidePost> RidePosts { get; set; }
+        public DbSet<Ride> Rides { get; set; }
+        public DbSet<LocationUpdate> LocationUpdates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,6 +49,10 @@ namespace Infrastructure
             modelBuilder.Entity<StudyMaterial>().HasKey(sm => sm.Id);
             modelBuilder.Entity<EmailVerificationToken>().HasKey(e => e.Id);
             modelBuilder.Entity<RefreshToken>().HasKey(r => r.Id);
+            //huy
+            modelBuilder.Entity<RidePost>().HasKey(rp => rp.Id);
+            modelBuilder.Entity<Ride>().HasKey(r => r.Id);
+            modelBuilder.Entity<LocationUpdate>().HasKey(lu => lu.Id);
 
 
             // Cấu hình quan hệ
@@ -176,6 +184,7 @@ namespace Infrastructure
                 .WithMany(p => p.Shares)
                 .HasForeignKey(s => s.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
+
             // 🔥 Thiết lập quan hệ comment cha - comment con
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.ParentComment)
@@ -196,6 +205,42 @@ namespace Infrastructure
                 .HasOne(cl => cl.Comment)
                 .WithMany(c => c.CommentLikes)
                 .HasForeignKey(cl => cl.CommentId)
+
+            //huy
+            // 1. Quan hệ 1 User - N RidePost
+            modelBuilder.Entity<RidePost>()
+                .HasOne(rp => rp.User)
+                .WithMany(u => u.RidePosts)
+                .HasForeignKey(rp => rp.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // Khi User bị xóa, RidePost cũng bị xóa
+
+            // 2. Quan hệ 1 RidePost - 1 Ride (1 bài đăng chỉ có thể tạo ra 1 chuyến đi)
+            modelBuilder.Entity<Ride>()
+                .HasOne(r => r.RidePost)
+                .WithOne(rp => rp.Ride)
+                .HasForeignKey<Ride>(r => r.Id)
+                .OnDelete(DeleteBehavior.Cascade); // Nếu RidePost bị xóa, Ride cũng bị xóa
+
+            // 3. Quan hệ 1 User - N Rides (tài xế có thể có nhiều chuyến đi)
+            modelBuilder.Entity<Ride>()
+                .HasOne(r => r.Driver)
+                .WithMany(u => u.DrivenRides)
+                .HasForeignKey(r => r.DriverId)
+                .OnDelete(DeleteBehavior.Restrict); // Không cho phép xóa tài xế nếu còn chuyến đi
+
+            // 4. Quan hệ 1 User - N Rides (hành khách có thể có nhiều chuyến đi)
+            modelBuilder.Entity<Ride>()
+                .HasOne(r => r.Passenger)
+                .WithMany(u => u.RidesAsPassenger)
+                .HasForeignKey(r => r.PassengerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 5. Quan hệ 1 User - N LocationUpdates (mỗi user có thể cập nhật nhiều vị trí)
+            modelBuilder.Entity<LocationUpdate>()
+                .HasOne(l => l.User)
+                .WithMany(u => u.LocationUpdates)
+                .HasForeignKey(l => l.RideId)
+
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

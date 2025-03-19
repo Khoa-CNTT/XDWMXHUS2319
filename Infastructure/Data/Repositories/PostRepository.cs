@@ -8,7 +8,7 @@ using static Domain.Common.Enums;
 
 namespace Infrastructure.Data.Repositories
 {
-    public class PostRepository :BaseRepository<Post> ,IPostRepository
+    public class PostRepository : BaseRepository<Post>, IPostRepository
     {
         public PostRepository(AppDbContext context) : base(context)
         {
@@ -18,6 +18,7 @@ namespace Infrastructure.Data.Repositories
         {
             throw new NotImplementedException();
         }
+
 
         public override async Task<Post?> GetByIdAsync(Guid id)
         {
@@ -37,6 +38,8 @@ namespace Infrastructure.Data.Repositories
                     .ThenInclude(s => s.User)
                     .FirstOrDefaultAsync(p => p.Id == id);
         }
+
+
 
         public async Task<IEnumerable<Post>> GetPostsByApprovalStatusAsync(ApprovalStatusEnum approvalStatusEnum)
         {
@@ -130,6 +133,14 @@ namespace Infrastructure.Data.Repositories
             return await _context.Posts
                    .Where(p => p.OriginalPostId == originalPostId && !p.IsDeleted)
                    .ToListAsync();
+        }
+
+        public async Task<Guid> GetPostOwnerIdAsync(Guid postId)
+        {
+            return await _context.Posts
+                .Where(p => p.Id == postId) // ✅ Lọc bài viết theo ID
+                .Select(p => p.UserId) // ✅ Lấy OwnerId (chủ sở hữu)
+                .FirstOrDefaultAsync(); // ✅ Lấy giá trị đầu tiên (hoặc null nếu không có)
         }
     }
 }

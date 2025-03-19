@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Domain.Common;
+using Application.Interface.Hubs;
 
 
 namespace Application
@@ -22,15 +23,24 @@ namespace Application
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ILikeService, LikeService>();
-            //services.AddScoped<IPostService, PostService>();
-            //services.AddHostedService<LikeEventProcessor>();
+            services.AddScoped<MLService>();
+            services.AddScoped<IRidePostService, RidePostService>();
+            services.AddScoped<IRedisService, RedisService>();
+            services.AddScoped<IPostService, PostService>();
 
+            //background services
+            //nếu ko làm việc liên quan đến like và LocationUpdate thì comment lại
+            services.AddHostedService<LikeEventProcessor>();
+            services.AddHostedService<UpdateLocationProcessor>();
+            services.AddHostedService<GpsMonitorService>();
+            //đăng kí hub
+            services.AddScoped<INotificationService, NotificationService>();
             // Đăng ký Auth Services
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtProvider, JwtProvider>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddScoped<MLService>();
+
 
 
             // ✅ Đăng ký JwtSettings vào DI container
@@ -57,6 +67,21 @@ namespace Application
                         ValidIssuer = jwtSettings.Issuer,
                         ValidAudience = jwtSettings.Audience,
                         IssuerSigningKey = new SymmetricSecurityKey(key)
+                    };
+                    // ✅ Cho phép nhận JWT từ Query String nếu dùng WebSocket
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
                     };
                 });
             // 🔹 Cấu hình Authorization

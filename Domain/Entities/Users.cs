@@ -31,9 +31,16 @@ namespace Domain.Entities
             public virtual ICollection<Message> MessageReceivers { get; private set; } = new List<Message>();
             public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
             public virtual ICollection<GroupMember> GroupMembers { get; private set; } = new HashSet<GroupMember>();
-        //CHUPS
+
         public virtual ICollection<CommentLike> CommentLikes { get; private set; } = new List<CommentLike>();
-        public virtual ICollection<Share> Shares { get; private set; } = new HashSet<Share>();
+
+            //CHUPS
+            public virtual ICollection<Share> Shares { get; private set; } = new HashSet<Share>();
+            //huy
+            public ICollection<RidePost> RidePosts { get; set; } = new List<RidePost>();
+             public ICollection<Ride> DrivenRides { get; set; } = new List<Ride>(); // Những chuyến đi do user làm tài xế
+             public ICollection<Ride> RidesAsPassenger { get; set; } = new List<Ride>(); // Những chuyến đi user là hành khách
+             public ICollection<LocationUpdate> LocationUpdates { get; set; } = new List<LocationUpdate>();
 
         public User()
         {

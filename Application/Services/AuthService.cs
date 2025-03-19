@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.User;
 using Application.Helpers;
+using Application.Interface;
 using Application.Model;
 using Domain.Entities;
 
@@ -10,10 +11,12 @@ namespace Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IJwtProvider _jwtProvider;
-        public AuthService(IUnitOfWork unitofWork, IJwtProvider jwtProvider)
+        private readonly ITokenService _tokenService;
+        public AuthService(IUnitOfWork unitofWork, IJwtProvider jwtProvider, ITokenService tokenService)
         {
             _unitOfWork = unitofWork;
             _jwtProvider = jwtProvider;
+            _tokenService = tokenService;
         }
         public Task<string> GetRoleNameByIdAsync(int roleId)
         {
@@ -37,8 +40,17 @@ namespace Application.Services
             {
                 return ResponseFactory.Fail<string>("Password is incorrect", 404);
             }
-            var token = await _jwtProvider.GenerateJwtToken(isExists);
-            return ResponseFactory.Success(token, "Đăng nhập thành công",200);
+            var (token,refreshToken) = _jwtProvider.GenerateJwtToken(isExists);
+            if (token == null || refreshToken == null)
+            {
+                return ResponseFactory.Fail<string>("Can't generate token", 404);
+            }
+            
+                //lưu refresh token vào db
+                await _tokenService.AddRefreshTokenAsync(isExists, refreshToken);
+                return ResponseFactory.Success(token, "Đăng nhập thành công", 200);
+            
+            
         }
 
         public async Task<ResponseModel<string>?> RefreshTokenAsync()

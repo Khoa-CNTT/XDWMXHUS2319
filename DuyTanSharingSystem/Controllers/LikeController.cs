@@ -1,11 +1,13 @@
 ﻿using Application.CQRS.Commands.Likes;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DuyTanSharingSystem.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class LikeController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -15,7 +17,7 @@ namespace DuyTanSharingSystem.Controllers
             _mediator = mediator;
         }
 
-        [HttpPost("like-post")]
+        [HttpPost("like")]
         public async Task<IActionResult> LikePost([FromBody] LikePostCommand likePost)
         {
              //userId Lấy từ token trong thực tế
