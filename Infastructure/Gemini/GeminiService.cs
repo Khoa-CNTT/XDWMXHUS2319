@@ -1,4 +1,4 @@
-﻿using Application.Interface;
+﻿using Application.Interface.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
@@ -23,7 +23,16 @@ namespace Infrastructure.Gemini
 
         public async Task<bool> ValidatePostContentAsync(string userContent)
         {
-            var prompt = $"Trả lời 'false' nếu nội dung sau đây có tính chất lừa đảo, spam, tục tĩu. Ngược lại, trả lời 'true'.\n\n{userContent}";
+            string prompt;
+            if (userContent.Contains("StartLocation"))
+            {
+                prompt = $"trả 'false' nếu điểm bắt đầu và điểm kết thúc không thuộc phạm vi trong thành phố Đà Nẵng - Việt Nam.Ngược lại trả lời 'true'.\n\n{userContent}";
+            }
+            else
+            {
+                prompt = $"Trả lời 'false' nếu nội dung sau đây có tính chất lừa đảo, spam, tục tĩu. Ngược lại, trả lời 'true'.\n\n{userContent}";
+            }
+
 
             var requestBody = new
             {

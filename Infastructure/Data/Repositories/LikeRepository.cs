@@ -23,9 +23,9 @@ namespace Infrastructure.Data.Repositories
             throw new NotImplementedException();
         }
 
-        public override Task<Like?> GetByIdAsync(Guid id)
+        public async Task<Like?> GetLikeByPostIdAsync(Guid postId,Guid userId)
         {
-            throw new NotImplementedException();
+            return await _context.Likes.FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == userId);
         }
     }
 }

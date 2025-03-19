@@ -32,9 +32,13 @@ namespace Infrastructure.Data.Repositories
 
         public async Task<List<User>> SearchUsersAsync(string keyword)
         {
+
             return await _context.Users
             .Where(u => u.FullName.Contains(keyword) || u.Email.Contains(keyword))
             .ToListAsync();
+
+            
+
         }
     }
 }

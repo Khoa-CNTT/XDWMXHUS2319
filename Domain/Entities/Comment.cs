@@ -11,19 +11,25 @@ namespace Domain.Entities
         public Guid Id { get; private set; }
         public Guid UserId { get; private set; }  // Không nên nullable (bình luận cần có người dùng)
         public Guid PostId { get; private set; }  // Không nên nullable (cần gắn với bài viết)
-        public string Content { get; private set; }
+        public string? Content { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime? UpdatedAt { get; private set; }
         
         //CHUPS
         public virtual User? User { get; private set; }
         public virtual Post? Post { get; private set; }
-        public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
-        public void SoftDelete()
-        {
-            IsDeleted = true;
-        }
-        public Comment(Guid userId, Guid postId, string content)
+
+
+        public Guid? ParentCommentId { get; set; }
+        public virtual Comment? ParentComment { get; set; }
+
+        // 🔥 Danh sách các bình luận con
+        public virtual ICollection<Comment> Replies { get; set; } = new List<Comment>();
+        // 🔥 Danh sách người like bình luận này
+        public virtual ICollection<CommentLike> CommentLikes { get; set; } = new List<CommentLike>();
+        public Comment() { }
+        public Comment(Guid userId, Guid postId, string? content)
+
         {
             if (userId == Guid.Empty) throw new ArgumentException("UserId cannot be empty.");
             if (postId == Guid.Empty) throw new ArgumentException("PostId cannot be empty.");
@@ -62,6 +68,19 @@ namespace Domain.Entities
         public void Restore()
         {
             IsDeleted = false;
+        }
+        public void Reply(Guid userId, string content, ICollection<Comment> replies)
+        {
+            if (userId == Guid.Empty) throw new ArgumentException("UserId cannot be empty.");
+            if (string.IsNullOrWhiteSpace(content)) throw new ArgumentException("Content cannot be empty.");
+
+            var replyComment = new Comment(userId, this.PostId, content)
+            {
+                ParentCommentId = this.Id, // Gán bình luận cha
+                ParentComment = this
+            };
+
+            replies.Add(replyComment);
         }
     }
 }

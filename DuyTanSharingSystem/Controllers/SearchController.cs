@@ -1,9 +1,11 @@
+
 ﻿using Application.CQRS.Queries.Search;
 using Application.Interface;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading;
+
 
 namespace DuyTanSharingSystem.Controllers
 {
@@ -17,6 +19,7 @@ namespace DuyTanSharingSystem.Controllers
             _mediator = mediator;
         }
         [HttpGet]
+
         public async Task<IActionResult> SearchAll([FromQuery] string keyword, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate, [FromQuery] bool? onlyUsers, [FromQuery] bool? onlyPosts, 
             [FromQuery] int? year,
     [FromQuery] int? month,
@@ -38,6 +41,11 @@ namespace DuyTanSharingSystem.Controllers
             };
 
             var result = await _mediator.Send(query);
+}
+        public async Task<IActionResult> Search([FromQuery] string keyword)
+        {
+            var result = await _mediator.Send(new SearchQuery(keyword));
+
             return Ok(result);
         }
     }

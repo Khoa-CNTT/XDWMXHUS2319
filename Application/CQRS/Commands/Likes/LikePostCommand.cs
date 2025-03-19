@@ -8,11 +8,9 @@ namespace Application.CQRS.Commands.Likes
 {
     public class LikePostCommand : IRequest<ResponseModel<bool>>
     {
-        public Guid UserId { get; set; }
         public Guid PostId { get; set; }
-        public LikePostCommand(Guid userId, Guid postId)
+        public LikePostCommand(Guid postId)
         {
-            UserId = userId;
             PostId = postId;
         }
     }

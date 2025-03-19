@@ -17,6 +17,7 @@ namespace Domain.Entities
         public PostTypeEnum PostType { get; private set; }
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
         public DateTime? UpdateAt { get; private set; }
+        public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
         public double? Score { get; private set; } = 0;
         public bool IsApproved { get; private set; } = false;
         public ApprovalStatusEnum ApprovalStatus { get; private set; } = ApprovalStatusEnum.Pending;
@@ -27,12 +28,14 @@ namespace Domain.Entities
         public virtual ICollection<Share> Shares { get; private set; } = new List<Share>();
         public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
         //CHUPS
-        public virtual User? User { get; private set; }
-        //DANG
-        public Guid? OriginalPostId { get;private set; } // Trỏ đến bài viết gốc nếu là bài chia sẻ
-        public Post? OriginalPost { get;private set; } // Navigation property
-        public bool IsDeleted { get;private  set; }//xóa mềm
 
+        public virtual User? User { get; private set; }
+
+      
+
+        public bool IsSharedPost { get;private set; } = false;
+        public Guid? OriginalPostId { get;private set; }
+        public Post? OriginalPost { get;private set; }
 
         public void SoftDelete()
         {
@@ -71,17 +74,23 @@ namespace Domain.Entities
             IsApproved = true;
             UpdateAt = DateTime.UtcNow;
         }
+        public void IsNotShare()
+        {
+            IsSharedPost = false;
+        }
+        public void IsShare()
+        {
+            IsSharedPost = true;
+        }
 
         public void Reject()
         {
             IsApproved = false;
-            UpdateAt = DateTime.UtcNow;
         }
         public void ApproveAI()
         {
             IsApproved = true;
             ApprovalStatus = ApprovalStatusEnum.Approved;
-            UpdateAt = DateTime.UtcNow;
         }
 
         public void RejectAI()
@@ -90,6 +99,10 @@ namespace Domain.Entities
             ApprovalStatus = ApprovalStatusEnum.Rejected;
             UpdateAt = DateTime.UtcNow;
         }
+        public void Delete()
+        {
+            IsDeleted = true;
+        }
 
         public void IncreaseScore(double amount)
         {
@@ -97,7 +110,17 @@ namespace Domain.Entities
                 throw new ArgumentException("Điểm tăng phải lớn hơn 0.");
             Score += amount;
         }
+        //CHUPS
+        // Tạo bài Share
+        public static Post CreateShare(Guid userId, Post originalPost, string content = "")
+        {
+            if (originalPost == null) throw new ArgumentNullException(nameof(originalPost));
 
+            return new Post(userId, content, originalPost.PostType, ScopeEnum.Public) // Scope mặc định là Public
+            {
+                OriginalPostId = originalPost.Id
+            };
+        }
     }
 }
 

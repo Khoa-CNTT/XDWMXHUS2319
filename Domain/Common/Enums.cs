@@ -10,7 +10,7 @@ namespace Domain.Common
     {
         public enum PostTypeEnum
         {
-            Moving, StudyMaterial, Exchange, StudyGroup, Discussion
+            Moving, StudyMaterial, Exchange, StudyGroup, Discussion, Share
         }
         public enum ApprovalStatusEnum
         {
@@ -49,6 +49,24 @@ namespace Domain.Common
         {
             User,
             Admin
+        }
+        public enum StatusRideEnum
+        {
+            Pending,
+            Accepted,
+            Rejected,
+            Completed
+        }
+        public enum PostRideTypeEnum
+        {
+            OfferRide,//tài xế đăng
+            RequestRide//hành khách đăng
+        }
+        public enum RidePostStatusEnum
+        {
+            open,//đang mở
+            Matched,//đã tìm được người đi chung
+            Canceled,//bị hủy
         }
     }
 }
