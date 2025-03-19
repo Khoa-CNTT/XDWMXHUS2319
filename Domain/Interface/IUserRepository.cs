@@ -8,6 +8,7 @@ namespace Domain.Interface
 {
      public interface IUserRepository : IBaseRepository<User>
     {
+        Task<List<User>> SearchUsersAsync(string keyword);
         Task<bool> GetExsitsEmailAsync(string email);
         Task<User?> GetUserByEmailAsync(string email);
 
