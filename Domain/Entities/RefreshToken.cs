@@ -21,12 +21,12 @@ namespace Domain.Entities
         public DateTime? UpdatedAt { get; private set; } // 🆕 Thêm thời gian cập nhật
 
 
-        public RefreshToken(Guid userId, string token, DateTime expiryDate, string createdByIp)
+        public RefreshToken(Guid userId, string token, DateTime expiryDate)
         {
+            Id = Guid.NewGuid();
             UserId = userId;
             Token = token;
             ExpiryDate = expiryDate;
-            CreatedByIp = createdByIp;
         }
 
         // ✅ Đánh dấu token đã sử dụng

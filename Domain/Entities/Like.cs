@@ -33,7 +33,7 @@ namespace Domain.Entities
         /// </summary>
         public void Unlike()
         {
-            IsLike = true;
+            IsLike = false;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Domain.Entities
         /// </summary>
         public void Relike()
         {
-            IsLike = false;
+            IsLike = true;
         }
     }
 }
