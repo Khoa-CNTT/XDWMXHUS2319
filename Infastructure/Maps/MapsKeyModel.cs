@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interface
+namespace Infrastructure.Maps
 {
-    public interface IGeminiService
+    public class MapsKeyModel
     {
-        Task<bool> ValidatePostContentAsync(string text);
+        public string ApiKey { get; set; } = string.Empty;
     }
 }

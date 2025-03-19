@@ -3,7 +3,7 @@ namespace Application.Interface
 {
     public interface IJwtProvider
     {
-        Task<string> GenerateJwtToken(User user);
+        (string token, string refreshToken) GenerateJwtToken(User user);
         Task<string?> ValidateAndGenerateAccessToken();
     }
 }

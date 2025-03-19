@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Application.Interface
 {
-    class IPostService
+    public interface IPostService
     {
+        Task<Guid> GetPostOwnerId(Guid postId);
     }
 }

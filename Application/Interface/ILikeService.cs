@@ -8,6 +8,6 @@ namespace Application.Interface
 {
     public interface ILikeService
     {
-        Task<bool> AddLikeAsync(Guid userId, Guid postId);
+       
     }
 }

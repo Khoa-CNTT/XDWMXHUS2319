@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Post;
+using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using Application.Services;
 
@@ -56,7 +57,8 @@ namespace Application.CQRS.Commands.Posts
 
                 var postDto = new ResponsePostDto
                 {
-                    Id = userId,
+                    Id = post.Id,
+                    UserId = userId,
                     Content = post.Content,
                     PostType = post.PostType,
                     IsApproved = post.IsApproved,

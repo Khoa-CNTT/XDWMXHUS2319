@@ -13,5 +13,6 @@ namespace Domain.Interface
         Task<IEnumerable<Post>> GetPostsByTypeAsync(PostTypeEnum postType);
 
         Task<List<Post>> GetAllPostsAsync(CancellationToken cancellationToken);
+        Task<Guid> GetPostOwnerIdAsync(Guid id);
     }
 }
