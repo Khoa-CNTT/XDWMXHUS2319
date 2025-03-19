@@ -3,6 +3,7 @@ using Application.DTOs.Likes;
 using Application.DTOs.Post;
 using Application.DTOs.Posts;
 using Application.DTOs.Shares;
+using Application.DTOs.User;
 using Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,17 @@ namespace Application
                 Content = comment.Content,
                 User = new UserPostDto(user),
                 OriginalPost = new OriginalPostDto(post)
+            };
+        }
+        public static UserDto MapToUserDto(this User user)
+        {
+            if (user == null) return null;
+
+            return new UserDto
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                ProfilePicture = user.ProfilePicture
             };
         }
         private static PostDto MapToOriginalPostDto(Post p)
