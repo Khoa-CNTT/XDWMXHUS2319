@@ -204,7 +204,7 @@ namespace Infrastructure
             modelBuilder.Entity<CommentLike>()
                 .HasOne(cl => cl.Comment)
                 .WithMany(c => c.CommentLikes)
-                .HasForeignKey(cl => cl.CommentId)
+                .HasForeignKey(cl => cl.CommentId);
 
             //huy
             // 1. Quan hệ 1 User - N RidePost

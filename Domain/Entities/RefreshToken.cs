@@ -15,7 +15,7 @@ namespace Domain.Entities
         public bool IsRevoked { get; private set; } = false;
         public bool IsUsed { get; private set; } = false;
         public string? CreatedByIp { get; private set; }
-       // public string? RevokedByIp { get; set; } // 🛠 IP thu hồi token
+        // public string? RevokedByIp { get; set; } // 🛠 IP thu hồi token
         public string? ReplacedByToken { get; private set; } // 🔄 Token mới thay thế
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; private set; } // 🆕 Thêm thời gian cập nhật
