@@ -34,7 +34,9 @@ namespace Domain.Entities
             //CHUPS
             public virtual ICollection<Share> Shares { get; private set; } = new HashSet<Share>();
 
-
+        public User()
+        {
+        }
         public User(string fullName, string email, string passwordHash)
             {
                 if (string.IsNullOrWhiteSpace(fullName)) throw new ArgumentException("Full name is required.");

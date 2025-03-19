@@ -11,7 +11,7 @@ namespace Domain.Entities
         public Guid Id { get; private set; }
         public Guid UserId { get; private set; }  // Không nên nullable (bình luận cần có người dùng)
         public Guid PostId { get; private set; }  // Không nên nullable (cần gắn với bài viết)
-        public string Content { get; private set; }
+        public string? Content { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime? UpdatedAt { get; private set; }
         public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
@@ -19,7 +19,8 @@ namespace Domain.Entities
         public virtual User? User { get; private set; }
         public virtual Post? Post { get; private set; }
 
-        public Comment(Guid userId, Guid postId, string content)
+        public Comment() { }
+        public Comment(Guid userId, Guid postId, string? content)
         {
             if (userId == Guid.Empty) throw new ArgumentException("UserId cannot be empty.");
             if (postId == Guid.Empty) throw new ArgumentException("PostId cannot be empty.");

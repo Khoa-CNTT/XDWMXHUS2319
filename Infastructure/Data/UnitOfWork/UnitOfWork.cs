@@ -19,7 +19,9 @@ namespace Infrastructure.Data.UnitOfWork
             IPostRepository postRepository,
             IEmailTokenRepository emailTokenRepository,
             ILikeRepository likeRepository,
-            IRefreshtokenRepository refreshtokenRepository
+            IRefreshtokenRepository refreshtokenRepository,
+            IShareRepository shareRepository,
+            ICommentRepository commentRepository
             )
         {
             _context = context;
@@ -28,12 +30,16 @@ namespace Infrastructure.Data.UnitOfWork
             EmailTokenRepository = emailTokenRepository;
             LikeRepository = likeRepository;
             RefreshtokenRepository = refreshtokenRepository;
+            ShareRepository = shareRepository;
+            CommentRepository = commentRepository;
         }
         public IUserRepository UserRepository { get; }
         public IPostRepository PostRepository { get; }
         public IEmailTokenRepository EmailTokenRepository { get; }
         public ILikeRepository LikeRepository { get; }
         public IRefreshtokenRepository RefreshtokenRepository { get; }
+        public IShareRepository ShareRepository { get; }
+        public ICommentRepository CommentRepository { get; }
 
         public async Task<int> SaveChangesAsync()
         => await _context.SaveChangesAsync();

@@ -28,5 +28,10 @@ namespace Infrastructure.Data.Repositories
         {
            return await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
         }
+
+        public async Task<List<User>> SearchUsersAsync(string keyword)
+        {
+            return await _context.Users.Where(x => x.FullName.Contains(keyword)).ToListAsync();
+        }
     }
 }

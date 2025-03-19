@@ -10,7 +10,7 @@ namespace Domain.Common
     {
         public enum PostTypeEnum
         {
-            Moving, StudyMaterial, Exchange, StudyGroup, Discussion
+            Moving, StudyMaterial, Exchange, StudyGroup, Discussion, Share
         }
         public enum ApprovalStatusEnum
         {

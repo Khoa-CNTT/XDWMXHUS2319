@@ -28,7 +28,10 @@ namespace Domain.Entities
         public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
         //CHUPS
         public virtual User? User { get; private set; }
-
+        // Nếu là bài Share
+        public bool IsSharedPost { get;private set; } = false;
+        public Guid? OriginalPostId { get;private set; }
+        public Post? OriginalPost { get;private set; }
 
         public Post(Guid userId, string content, PostTypeEnum postType, ScopeEnum scope, string? imageUrl = null, string? videoUrl = null)
         {
@@ -63,17 +66,23 @@ namespace Domain.Entities
             IsApproved = true;
             UpdateAt = DateTime.UtcNow;
         }
+        public void IsNotShare()
+        {
+            IsSharedPost = false;
+        }
+        public void IsShare()
+        {
+            IsSharedPost = true;
+        }
 
         public void Reject()
         {
             IsApproved = false;
-            UpdateAt = DateTime.UtcNow;
         }
         public void ApproveAI()
         {
             IsApproved = true;
             ApprovalStatus = ApprovalStatusEnum.Approved;
-            UpdateAt = DateTime.UtcNow;
         }
 
         public void RejectAI()
@@ -89,7 +98,17 @@ namespace Domain.Entities
                 throw new ArgumentException("Điểm tăng phải lớn hơn 0.");
             Score += amount;
         }
+        //CHUPS
+        // Tạo bài Share
+        public static Post CreateShare(Guid userId, Post originalPost, string content = "")
+        {
+            if (originalPost == null) throw new ArgumentNullException(nameof(originalPost));
 
+            return new Post(userId, content, originalPost.PostType, ScopeEnum.Public) // Scope mặc định là Public
+            {
+                OriginalPostId = originalPost.Id
+            };
+        }
     }
 }
 

@@ -52,6 +52,8 @@ namespace Infrastructure
             services.AddScoped<ILikeRepository, LikeRepository>();
             services.AddScoped<IRefreshtokenRepository, RefreshtokenRepository>();
             services.AddScoped<IUserContextService, UserContextService>();
+            services.AddScoped<IShareRepository, ShareRepository>();
+            services.AddScoped<ICommentRepository, CommentRepository>();
             // ✅ Đăng ký HttpClient
             services.AddHttpClient();
 

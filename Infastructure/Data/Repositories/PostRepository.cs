@@ -19,9 +19,23 @@ namespace Infrastructure.Data.Repositories
             throw new NotImplementedException();
         }
 
-        public override Task<Post?> GetByIdAsync(Guid id)
+        public override async Task<Post?> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            return await _context.Posts
+                    .Include(p => p.User)
+                .Include(p => p.Comments).ThenInclude(c => c.User)
+                .Include(p => p.Likes).ThenInclude(l => l.User)
+                .Include(p => p.Shares).ThenInclude(s => s.User)
+                .Include(p => p.OriginalPost) // Load bài gốc
+                    .ThenInclude(op => op.Comments) // Load comments của bài gốc
+                    .ThenInclude(c => c.User)
+                .Include(p => p.OriginalPost)
+                    .ThenInclude(op => op.Likes) // Load likes của bài gốc
+                    .ThenInclude(l => l.User)
+                .Include(p => p.OriginalPost)
+                    .ThenInclude(op => op.Shares) // Load shares của bài gốc
+                    .ThenInclude(s => s.User)
+                    .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<IEnumerable<Post>> GetPostsByApprovalStatusAsync(ApprovalStatusEnum approvalStatusEnum)
@@ -35,12 +49,21 @@ namespace Infrastructure.Data.Repositories
         {
             return await _context.Posts
                  .Include(p => p.User)         // Lấy thông tin người đăng bài
-                 .Include(p => p.Comments)
+                 .Include(p => p.Comments.Where(c => !c.IsDeleted)) //Lấy những bình luận chưa xóa
                      .ThenInclude(c => c.User) // Lấy thông tin người bình luận
-                 .Include(p => p.Likes)
-                     .ThenInclude(l => l.User) // ⚠️ Thêm Include(User) vào đây
-                 .Include(p => p.Shares)
+                 .Include(p => p.Likes.Where(l => !l.IsLike)) // Lấy những người thích bài viết đã like nếu like = false thì k lấy
+                     .ThenInclude(l => l.User) //  Thêm Include(User) vào đây
+                 .Include(p => p.Shares.Where(s => !s.IsDeleted)) //Lấy những bài viết đã chia sẻ nếu đã xóa chia sẻ thì k lấy
                      .ThenInclude(s => s.User) // Lấy thông tin người chia sẻ
+                     .Include(p => p.OriginalPost) // Load bài gốc
+                    .ThenInclude(op => op.Comments) // Load comments của bài gốc
+                    .ThenInclude(c => c.User)
+                .Include(p => p.OriginalPost)
+                    .ThenInclude(op => op.Likes) // Load likes của bài gốc
+                    .ThenInclude(l => l.User)
+                .Include(p => p.OriginalPost)
+                    .ThenInclude(op => op.Shares) // Load shares của bài gốc
+                    .ThenInclude(s => s.User)
                  .ToListAsync(cancellationToken);
         }
 
@@ -48,15 +71,29 @@ namespace Infrastructure.Data.Repositories
         {
             return await _context.Posts
                 .Include(p => p.User)
-                .Include(p => p.Comments)
+                .Include(p => p.Comments.Where(c => !c.IsDeleted)) //Lấy những bình luận chưa xóa
                      .ThenInclude(c => c.User) // Lấy thông tin người bình luận
-                 .Include(p => p.Likes)
-                     .ThenInclude(l => l.User) // ⚠️ Thêm Include(User) vào đây
-                 .Include(p => p.Shares)
+                 .Include(p => p.Likes.Where(l => !l.IsLike)) // Lấy những người thích bài viết đã like nếu like = false thì k lấy
+                     .ThenInclude(l => l.User) //  Thêm Include(User) vào đây
+                 .Include(p => p.Shares.Where(s => !s.IsDeleted)) //Lấy những bài viết đã chia sẻ nếu đã xóa chia sẻ thì k lấy
                      .ThenInclude(s => s.User) // Lấy thông tin người chia sẻ
                 .Where(p => p.PostType == postTypeEnum)
                 .ToListAsync();
         }
 
+        public async Task<List<Post>> SearchPostsAsync(string keyword)
+        {
+            return await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Comments.Where(c => !c.IsDeleted)) //Lấy những bình luận chưa xóa
+                     .ThenInclude(c => c.User) // Lấy thông tin người bình luận
+                 .Include(p => p.Likes.Where(l => !l.IsLike)) // Lấy những người thích bài viết đã like nếu like = false thì k lấy
+                     .ThenInclude(l => l.User) //  Thêm Include(User) vào đây
+                 .Include(p => p.Shares.Where(s => !s.IsDeleted)) //Lấy những bài viết đã chia sẻ nếu đã xóa chia sẻ thì k lấy
+                     .ThenInclude(s => s.User) // Lấy thông tin người chia sẻ
+                .Where(p => p.Content.Contains(keyword) || p.User.FullName.Contains(keyword))
+                .ToListAsync();
+
+        }
     }
 }

@@ -11,6 +11,7 @@ namespace Domain.Interface
     {
         Task<IEnumerable<Post>> GetPostsByApprovalStatusAsync(ApprovalStatusEnum approvalStatusEnum);
         Task<IEnumerable<Post>> GetPostsByTypeAsync(PostTypeEnum postType);
+        Task<List<Post>> SearchPostsAsync(string keyword);
 
         Task<List<Post>> GetAllPostsAsync(CancellationToken cancellationToken);
     }
