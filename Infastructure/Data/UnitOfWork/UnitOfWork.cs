@@ -23,7 +23,7 @@ namespace Infrastructure.Data.UnitOfWork
 
             IShareRepository shareRepository,
             ICommentRepository commentRepository,
-            ICommentLikeRepository commentLikeRepository
+            ICommentLikeRepository commentLikeRepository,
 
             IRidePostRepository ridePostRepository,
             IRideRepository rideRepository,

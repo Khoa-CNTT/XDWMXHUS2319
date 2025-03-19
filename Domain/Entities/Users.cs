@@ -32,7 +32,7 @@ namespace Domain.Entities
             public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
             public virtual ICollection<GroupMember> GroupMembers { get; private set; } = new HashSet<GroupMember>();
 
-        public virtual ICollection<CommentLike> CommentLikes { get; private set; } = new List<CommentLike>();
+                public virtual ICollection<CommentLike> CommentLikes { get; private set; } = new List<CommentLike>();
 
             //CHUPS
             public virtual ICollection<Share> Shares { get; private set; } = new HashSet<Share>();

@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.Comments;
 using Application.DTOs.Shares;
 using Application.Interface;
+using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using System;
 using System.Collections.Generic;

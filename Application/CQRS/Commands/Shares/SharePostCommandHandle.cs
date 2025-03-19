@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.Post;
 using Application.DTOs.Shares;
 using Application.Interface;
+using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using Domain.Entities;
 using System;
