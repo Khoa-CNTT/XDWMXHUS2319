@@ -8,8 +8,10 @@ namespace Domain.Interface
 {
      public interface IUserRepository : IBaseRepository<User>
     {
+        
         Task<bool> GetExsitsEmailAsync(string email);
         Task<User?> GetUserByEmailAsync(string email);
-
+        //tim kiem nguoi (dang)
+        Task<List<User>> SearchUsersAsync(string keyword);
     }
 }

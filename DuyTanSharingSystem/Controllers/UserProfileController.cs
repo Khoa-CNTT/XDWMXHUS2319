@@ -35,11 +35,16 @@ namespace DuyTanSharingSystem.Controllers
             }
             command.UserId = Guid.Parse(uesrid);
             var result = await _mediator.Send(command);
-            if (result.Success)
+            if (result.Success && result.Data != null)
             {
-                return Ok("cap nhat thanh cong");
+                return Ok(new
+                {
+                    Message = "Cập nhật thành công",
+                    updatedUserDto = result.Data
+                });
             }
-            return BadRequest("cap nhat that bai");
+
+            return BadRequest(new { Message = "Cập nhật thất bại", Errors = result.Errors });
         }
     }
 }

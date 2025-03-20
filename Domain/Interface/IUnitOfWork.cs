@@ -13,9 +13,15 @@ namespace Domain.Interface
         IPostRepository PostRepository { get; }
         ILikeRepository LikeRepository { get; }
         IRefreshtokenRepository RefreshtokenRepository { get; }
+
+        IShareRepository ShareRepository { get; }
+        ICommentRepository CommentRepository { get; }
+        ICommentLikeRepository CommentLikeRepository { get; }
+
         IRidePostRepository RidePostRepository { get; }
         IRideRepository RideRepository { get; }
         ILocationUpdateRepository LocationUpdateRepository { get; }
+
 
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync(); // ✅ Bắt đầu giao dịch

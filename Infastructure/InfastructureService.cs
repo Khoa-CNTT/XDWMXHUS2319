@@ -47,6 +47,8 @@ namespace Infrastructure
             // Đăng ký Cache Service
             services.AddScoped<ICacheService, RedisCacheService>();
 
+
+            
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IEmailTokenRepository, EmailTokenRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
@@ -56,6 +58,12 @@ namespace Infrastructure
             services.AddScoped<IRideRepository, RideRepository>();
             services.AddScoped<ILocationUpdateRepository, LocationUpdateRepository>();
             services.AddScoped<IUserContextService, UserContextService>();
+
+            services.AddScoped<IShareRepository, ShareRepository>();
+            services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
+
+
 
             // ✅ Đăng ký HttpClient
             services.AddHttpClient();

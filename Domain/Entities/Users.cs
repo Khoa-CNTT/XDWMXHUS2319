@@ -31,6 +31,9 @@ namespace Domain.Entities
             public virtual ICollection<Message> MessageReceivers { get; private set; } = new List<Message>();
             public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
             public virtual ICollection<GroupMember> GroupMembers { get; private set; } = new HashSet<GroupMember>();
+
+                public virtual ICollection<CommentLike> CommentLikes { get; private set; } = new List<CommentLike>();
+
             //CHUPS
             public virtual ICollection<Share> Shares { get; private set; } = new HashSet<Share>();
             //huy
@@ -39,6 +42,9 @@ namespace Domain.Entities
              public ICollection<Ride> RidesAsPassenger { get; set; } = new List<Ride>(); // Những chuyến đi user là hành khách
              public ICollection<LocationUpdate> LocationUpdates { get; set; } = new List<LocationUpdate>();
 
+        public User()
+        {
+        }
         public User(string fullName, string email, string passwordHash)
             {
                 if (string.IsNullOrWhiteSpace(fullName)) throw new ArgumentException("Full name is required.");
