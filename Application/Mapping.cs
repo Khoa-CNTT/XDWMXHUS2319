@@ -40,15 +40,26 @@ namespace Application
                 OriginalPost = new OriginalPostDto(post)
             };
         }
-        public static UserDto MapToUserDto(this User user)
+        public static UserDto MapToUserDto(User user)
         {
-            if (user == null) return null;
-
             return new UserDto
             {
                 Id = user.Id,
+                Email = user.Email,
+                ProfilePicture = user.ProfilePicture,
+                
+            };
+        }
+        public static UserProfileDto MaptoUserprofileDto(User user)
+        {
+            return new UserProfileDto
+            {
+                Id = user.Id,
+                Email = user.Email,
                 FullName = user.FullName,
-                ProfilePicture = user.ProfilePicture
+                ProfilePicture = user.ProfilePicture,
+                Bio = user.Bio,
+                CreatedAt = user.CreatedAt
             };
         }
         private static PostDto MapToOriginalPostDto(Post p)

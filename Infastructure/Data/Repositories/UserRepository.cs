@@ -30,15 +30,16 @@ namespace Infrastructure.Data.Repositories
            return await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
         }
 
+        public async Task<User?> GetUserByIdAsync(Guid userId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
         public async Task<List<User>> SearchUsersAsync(string keyword)
         {
-
             return await _context.Users
             .Where(u => u.FullName.Contains(keyword) || u.Email.Contains(keyword))
             .ToListAsync();
-
-            
-
         }
     }
 }
