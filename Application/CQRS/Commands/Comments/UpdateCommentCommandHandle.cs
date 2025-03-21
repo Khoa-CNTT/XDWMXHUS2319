@@ -24,13 +24,14 @@ namespace Application.CQRS.Commands.Comments
         public async Task<ResponseModel<CommentPostDto>> Handle(UpdateCommentCommand request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId();
+
             //Tìm bài post xem có tồn tại không
             var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
             if (post == null)
             {
                 return ResponseFactory.Fail<CommentPostDto>("Không tìm thấy bài viết này", 404);
             }
-
+            
             //Tìm comment xem có tồn tại không
             var comment = await _unitOfWork.CommentRepository.GetByIdAsync(request.CommentId);
             if (comment == null)
@@ -49,7 +50,7 @@ namespace Application.CQRS.Commands.Comments
             {
                 return ResponseFactory.Fail<CommentPostDto>("Nội dung bình luận không được để trống", 400);
             }
-
+            
             //Kiểm tra xem bình luận có thuộc bài viết không
             if (request.PostId != comment.PostId)
             {
@@ -64,7 +65,6 @@ namespace Application.CQRS.Commands.Comments
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-               
                 var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
                 comment.Edit(request.Content);
                 await _unitOfWork.CommentRepository.UpdateAsync(comment);

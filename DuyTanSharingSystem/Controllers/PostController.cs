@@ -20,6 +20,8 @@ namespace DuyTanSharingSystem.Controllers
             _mediator = mediator;
             _logger = logger;
         }
+
+
         [HttpGet("ML")]
         public async Task<IActionResult> GetPostForTrainingML([FromQuery] GetPostForTrainingMLQueries request)
         {

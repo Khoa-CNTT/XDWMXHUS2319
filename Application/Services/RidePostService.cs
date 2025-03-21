@@ -1,6 +1,8 @@
-﻿using Application.Interface;
+﻿using Application.DTOs.RidePost;
+using static Domain.Common.Helper;
 using Application.Interface.Api;
-using Application.Model.Events;
+using static Application.DTOs.RidePost.GetAllRidePostForOwnerDto;
+
 
 
 namespace Application.Services
@@ -165,7 +167,71 @@ namespace Application.Services
             double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
             return R * c; // Khoảng cách (km)
         }
-       
+
+        public async Task<GetAllRidePostDto> GetAllRidePostAsync(Guid? lastPostId, int pageSize)
+        {
+            var ridePosts = await _unitOfWork.RidePostRepository.GetAllRidePostAsync(lastPostId, pageSize);
+            var result = ridePosts.Select(x => new ResponseRidePostDto
+            {
+                Id = x.Id,
+                UserId = x.UserId,
+                StartLocation = x.StartLocation,
+                EndLocation = x.EndLocation,
+                StartTime =FormatUtcToLocal(x.StartTime),
+                Status = x.Status,
+                CreatedAt =FormatUtcToLocal(x.CreatedAt)
+            }).ToList();
+            var nextCursor = result.Count > 0 ? (Guid?)result.Last().Id : null;
+            return new GetAllRidePostDto
+            {
+                ResponseRidePostDto = result,
+                NextCursor = nextCursor
+            };
+        }
+
+        public async Task<GetAllRidePostForOwnerDto> GetAllRidePostForOwnerAsync(Guid? lastPostId, int pageSize, Guid ownerId)
+        {
+            var ridePosts = await _unitOfWork.RidePostRepository.GetAllRidePostForOwnerAsync(lastPostId, pageSize, ownerId);
+            // Lấy danh sách PassengerName trước khi mapping
+            var passengerNames = await Task.WhenAll(ridePosts
+                .Where(x => x.Ride?.PassengerId != null)
+                .Select(async x => new
+                {
+                    RideId = x.Ride!.Id,
+                    PassengerName = await _unitOfWork.UserRepository.GetFullNameByIdAsync(x.Ride.PassengerId!)
+                })
+            );
+            var result = ridePosts.Select(x => new RidePostDto
+            {
+                Id = x.Id,
+                FullName = x.User?.FullName ?? "unknown",
+                StartLocation = x.StartLocation,
+                EndLocation = x.EndLocation,
+                StartTime = FormatUtcToLocal(x.StartTime),
+                Status = x.Status.ToString(),
+                CreatedAt = FormatUtcToLocal(x.CreatedAt),
+                Ride = x.Ride != null ? new RideDto
+                {
+                    Id = x.Ride.Id,
+                    DriverName = x.Ride.Driver?.FullName ?? "unknown",
+                    PassengerName = passengerNames.FirstOrDefault(p => p.RideId == x.Ride.Id)?.PassengerName ?? "unknown",
+                    StartTime = x.Ride.StartTime.HasValue ? FormatUtcToLocal(x.Ride.StartTime.Value) : null,
+                    EndTime = x.Ride.EndTime.HasValue ? FormatUtcToLocal(x.Ride.EndTime.Value) : null,
+                    EstimatedDistance = x.Ride.EstimatedDuration,
+                    Status = x.Ride.Status.ToString(),
+                    Fare = x.Ride.Fare,
+                    CreatedAt = FormatUtcToLocal(x.Ride.CreatedAt)
+                } : null
+            }).ToList();
+
+            var nextCursor = result.Any() ? (Guid?)result.Last().Id : null;
+
+            return new GetAllRidePostForOwnerDto
+            {
+                RidePosts = result,
+                NextCursor = nextCursor
+            };
+        }
 
 
     }

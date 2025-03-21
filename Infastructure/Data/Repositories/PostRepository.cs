@@ -12,11 +12,9 @@ namespace Infrastructure.Data.Repositories
 {
     public class PostRepository : BaseRepository<Post>, IPostRepository
     {
-        private readonly AppDbContext _context;
 
         public PostRepository(AppDbContext context) : base(context)
         {
-            _context = context;
         }
 
         public override Task<bool> DeleteAsync(Guid id)
@@ -91,6 +89,7 @@ namespace Infrastructure.Data.Repositories
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
         }
+
 
         public async Task<List<Post>> GetPostsByTypeAsync(PostTypeEnum postType, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {

@@ -5,12 +5,6 @@ using Application.DTOs.Post;
 using Application.DTOs.Posts;
 using Application.DTOs.Shares;
 using Application.DTOs.User;
-using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application
 {

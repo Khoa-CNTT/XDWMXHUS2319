@@ -39,6 +39,8 @@ namespace Application.CQRS.Commands.RidePosts
             {
                 
                 ridePost.Canceled();
+                await _unitOfWork.RidePostRepository.UpdateAsync(ridePost);
+                await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
                 return ResponseFactory.Success(true,"Change status success",200);
             }

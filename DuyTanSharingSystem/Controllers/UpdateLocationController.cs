@@ -15,6 +15,7 @@ namespace DuyTanSharingSystem.Controllers
         {
             _mediator = mediator;
         }
+        //cập nhật vị trí mỗi 2p
         [HttpPost("update")]
         public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationCommand command)
         {
