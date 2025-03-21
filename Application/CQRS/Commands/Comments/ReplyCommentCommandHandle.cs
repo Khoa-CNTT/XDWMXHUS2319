@@ -24,31 +24,29 @@ namespace Application.CQRS.Commands.Comments
         }
         public async Task<ResponseModel<bool>> Handle(ReplyCommentCommand request, CancellationToken cancellationToken)
         {
+            // Lấy UserId từ context
+            var userId = _userContextService.UserId();
+
+            // Kiểm tra bình luận cha có tồn tại không
+            var parentComment = await _unitOfWork.CommentRepository.GetByIdAsync(request.ParentCommentId);
+
+            if (parentComment == null)
+            {
+                return ResponseFactory.Fail<bool>("Bình luận này không tồn tại", 404);
+            }
+
+            if (request.PostId != parentComment.PostId && request.PostId != Guid.Empty)
+            {
+                return ResponseFactory.Fail<bool>("Bình luận này không thuộc bài viết này", 400);
+            }
+            // Kiểm tra nội dung bình luận
+            if (!await _geminiService.ValidatePostContentAsync(request.Content))
+            {
+                return ResponseFactory.Fail<bool>("Warning! Content is not accepted! If you violate it again, your reputation will be deducted!!", 400);
+            }
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // Lấy UserId từ context
-                var userId = _userContextService.UserId();
-
-                // Kiểm tra bình luận cha có tồn tại không
-                var parentComment = await _unitOfWork.CommentRepository.GetByIdAsync(request.ParentCommentId);
-                if (parentComment == null)
-                {
-                    return ResponseFactory.Fail<bool>("Bình luận này không tồn tại", 404);
-                }
-                if (request.PostId != parentComment.PostId && request.PostId != Guid.Empty)
-                {
-                    return ResponseFactory.Fail<bool>("Bình luận này không thuộc bài viết này", 400);
-                }
-
-                // Kiểm tra nội dung bình luận
-                var isValidContent = await _geminiService.ValidatePostContentAsync(request.Content);
-                if (!isValidContent)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<bool>("Warning! Content is not accepted! If you violate it again, your reputation will be deducted!!", 400);
-                }
-
                 // Tạo bình luận phản hồi
                 var replyComment = new Comment(userId, parentComment.PostId, request.Content ?? "")
                 {

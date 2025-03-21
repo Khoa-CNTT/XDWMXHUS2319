@@ -26,6 +26,14 @@ namespace Infrastructure.Data.Repositories
         {
             return await _context.CommentLikes.FirstOrDefaultAsync(x => x.UserId == userId && x.CommentId == commentId);
         }
+        public async Task<List<User?>> GetLikedByCommentIdAsync(Guid commentId)
+        {
+            return await _context.CommentLikes
+                    .Where(cl => cl.CommentId == commentId && cl.IsLike)
+                    .Select(cl => cl.User)
+                    .Where(u => u != null) // Loại bỏ User null
+                    .ToListAsync();
+        }
 
         public async Task<List<User>> GetLikedUsersAsync(Guid commentId)
         {
@@ -36,6 +44,12 @@ namespace Infrastructure.Data.Repositories
                           .Where(cl => cl.CommentId == commentId && cl.IsLike && cl.User != null)
                           .Select(cl => cl.User!)
                           .ToListAsync();
+        }
+        public async Task<List<CommentLike>> GetCommentLikeByCommentIdAsync(Guid CommentId)
+        {
+            return await _context.CommentLikes
+                .Where(c => c.CommentId == CommentId)
+                .ToListAsync();
         }
     }
 }

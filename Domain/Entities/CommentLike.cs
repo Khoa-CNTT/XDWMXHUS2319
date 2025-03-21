@@ -30,5 +30,9 @@ namespace Domain.Entities
         {
             IsLike = isLike;
         }
+        public void UnLike()
+        {
+            IsLike = false;
+        }
     }
 }
