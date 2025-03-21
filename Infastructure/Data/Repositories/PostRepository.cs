@@ -12,11 +12,9 @@ namespace Infrastructure.Data.Repositories
 {
     public class PostRepository : BaseRepository<Post>, IPostRepository
     {
-        private readonly AppDbContext _context;
 
         public PostRepository(AppDbContext context) : base(context)
         {
-            _context = context;
         }
 
         public override Task<bool> DeleteAsync(Guid id)
@@ -83,7 +81,7 @@ namespace Infrastructure.Data.Repositories
                     .Where(p => !p.IsDeleted)
                  .ToListAsync(cancellationToken);
         }
-
+        
         public async Task<IEnumerable<Post>> GetPostsByTypeAsync(PostTypeEnum postTypeEnum)
         {
             return await _context.Posts

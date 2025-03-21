@@ -26,6 +26,5 @@ namespace Domain.Interface
 
         Task<Guid> GetPostOwnerIdAsync(Guid id);
 
-
     }
 }

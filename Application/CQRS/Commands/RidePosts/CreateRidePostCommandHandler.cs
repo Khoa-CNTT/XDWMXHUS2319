@@ -26,6 +26,18 @@ namespace Application.CQRS.Commands.RidePosts
         }
         public async Task<ResponseModel<ResponseRidePostDto>> Handle(CreateRidePostCommand request, CancellationToken cancellationToken)
         {
+            if (request.StartTime < DateTime.UtcNow)
+            {
+                return ResponseFactory.Fail<ResponseRidePostDto>("Start time must be greater than current time", 400);
+            }
+            if (request.StartLocation == request.EndLocation)
+            {
+                return ResponseFactory.Fail<ResponseRidePostDto>("Start location and end location must be different", 400);
+            }
+            if (request == null)
+            {
+                return ResponseFactory.Fail<ResponseRidePostDto>("Request is null", 400);
+            }
             await _unitOfWork.BeginTransactionAsync();
             try
             {

@@ -28,22 +28,20 @@ namespace Application.BackgroundServices
 
                 var updateLocationEvents = await redisService.GetAsync<List<UpdateLocationEvent>>("update_location_events");
 
+              
+
                 if (updateLocationEvents?.Any() == true)
                 {
                     await unitOfWork.BeginTransactionAsync(); // 🛠 Bắt đầu transaction
 
                     try
                     {
-                        var updateEntities = updateLocationEvents.Select(e => new LocationUpdate(e.RideId,e.Latitude,e.Longitude)).ToList();
+                        var updateEntities = updateLocationEvents.Select(e => new LocationUpdate(e.RideId,e.UserId,e.Latitude,e.Longitude,e.IsDriver)).ToList();
                         // Chỉ cập nhật StartTime nếu nó chưa được set trước đó
                         var ride = await unitOfWork.RideRepository.GetByIdAsync(updateEntities.First().RideId);
                         if (ride == null)
                         {
                             throw new Exception("Ride not found");
-                        }
-                        if (ride.StartTime == null)
-                        {
-                            ride.UpdateStartTime(DateTime.UtcNow);
                         }
                         await updateLocationRepository.AddRangeAsync(updateEntities);
                         await unitOfWork.SaveChangesAsync();
