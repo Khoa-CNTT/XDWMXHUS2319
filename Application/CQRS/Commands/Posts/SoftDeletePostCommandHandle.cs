@@ -12,46 +12,43 @@ namespace Application.CQRS.Commands.Posts
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
+        private readonly IPostService _postService;
 
-        public SoftDeletePostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public SoftDeletePostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IPostService postService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
+            _postService = postService;
         }
 
         public async Task<ResponseModel<bool>> Handle(SoftDeletePostCommand request, CancellationToken cancellationToken)
         {
-            await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                var userId = _userContextService.UserId();
-                var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
-
-                if (post == null)
+            // 🔥 Lấy thông tin user hiện tại
+            var userId = _userContextService.UserId();
+            // 🔥 Lấy thông tin bài viết
+            var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
+            // 🔥 Kiểm tra xem bài viết có tồn tại không
+            if (post == null)
                 {
                     return ResponseFactory.Fail<bool>("Không tìm thấy bài viết này", 404);
                 }
-
-                if (post.UserId != userId)
+            // 🔥 Kiểm tra xem user hiện tại có quyền xóa bài viết không
+            if (post.UserId != userId)
                 {
-                    await _unitOfWork.RollbackTransactionAsync();
                     return ResponseFactory.Fail<bool>("Bạn không có quyền xóa bài viết này", 403);
                 }
-                if (post.IsDeleted)
+            // 🔥 Kiểm tra xem bài viết có bị xóa chưa
+            if (post.IsDeleted)
                 {
-                    await _unitOfWork.RollbackTransactionAsync();
                     return ResponseFactory.Fail<bool>("Bình luận này đã bị xóa", 404);
                 }
-                // Xóa mềm comment gốc
-                post.Delete();
-
-                // 🔥 Tìm và xóa mềm tất cả các replies
-                var sharedPosts = await _unitOfWork.PostRepository.GetSharedPostAllAsync(request.PostId);
-                foreach (var sharedPost in sharedPosts)
-                {
-                    sharedPost.Delete();
-                }
-
+            // 🔥 Bắt đầu giao dịch
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                // 🔥 Xóa mềm tất cả bài chia sẻ liên quan (đệ quy)
+                await _postService.SoftDeletePostAndRelatedDataAsync(post.Id);
+                // 🔥 Lưu thay đổi
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
                 return ResponseFactory.Success(true, "Xóa bài viết và các bài chia sẻ thành công", 200);

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Commands.Shares
 {
-    public class SharePostCommand : IRequest<ResponseModel<SharePostDto>>
+    public class SharePostCommand : IRequest<ResponseModel<ResultSharePostDto>>
     {
         public Guid PostId { get; set; }
         public string? Content { get; set; }

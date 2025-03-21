@@ -18,7 +18,8 @@ namespace Application.DTOs.Comments
         public string? ProfilePicture { get; set; }
         public string? Content { get; set; }
         public DateTime CreatedAt { get; set; }
-        public CommentLikeDto CommentLikes { get; set; } = new CommentLikeDto();
+        /*        public CommentLikeDto CommentLikes { get; set; } = new CommentLikeDto();*/
+        public int LikeCountComment { get; set; }
 
         public List<CommentDto> Replies { get; set; } = new(); // Danh sách comment con (reply)
         public Guid? ParentCommentId { get; set; } // Chỉ có ID của cha, không cần danh sách Replies
@@ -36,11 +37,15 @@ namespace Application.DTOs.Comments
             var validLikes = comment.CommentLikes?.Where(l => l.IsLike).ToList() ?? new List<CommentLike>();
 
             // Ánh xạ số lượt like và danh sách người like
-            CommentLikes = new CommentLikeDto(validLikes);
+            LikeCountComment = comment.CommentLikes?.Count ?? 0;
+/*            LikeCountComment = comment.CommentLikes?.Count(l => l.IsLike) ?? 0;*/
 
             // Ánh xạ danh sách phản hồi (reply)
-            Replies = comment.Replies?.Select(r => new CommentDto(r)).ToList() ?? new List<CommentDto>();
-
+            Replies = comment.Replies?
+               .Where(r => !r.IsDeleted)
+               .Take(10)
+               .Select(r => new CommentDto(r))
+               .ToList() ?? new List<CommentDto>();
         }
     }
 }

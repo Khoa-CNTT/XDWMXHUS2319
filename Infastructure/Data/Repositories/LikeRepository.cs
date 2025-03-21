@@ -27,5 +27,22 @@ namespace Infrastructure.Data.Repositories
         {
             return await _context.Likes.FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == userId);
         }
+
+        public async Task<List<Like>> GetLikesByPostIdAsync(Guid postId, int page, int pageSize)
+        {
+            return await _context.Likes
+            .Where(l => l.PostId == postId)
+            .OrderByDescending(l => l.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Include(l => l.User) // Load thông tin User
+            .ToListAsync();
+        }
+        public async Task<List<Like>> GetLikesByPostIdDeleteAsync(Guid postId)
+        {
+            return await _context.Likes
+                .Where(l => l.PostId == postId && !l.IsDeleted)
+                .ToListAsync();
+        }
     }
 }

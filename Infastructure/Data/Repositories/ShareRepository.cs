@@ -24,14 +24,16 @@ namespace Infrastructure.Data.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<Share>> GetSharesByPostIdAsync(Guid postId)
+        public async Task<List<Share>> GetSharesByPostIdAsync(Guid postId, int page, int pageSize)
         {
             return await _context.Shares
-                .Where(x => x.PostId == postId)
-                .Include(x => x.User)
-                .ToListAsync();
+            .Where(s => s.PostId == postId)
+            .OrderByDescending(s => s.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Include(s => s.User) // Load thông tin User
+            .ToListAsync();
         }
-
         public async Task<List<Share>> SearchSharesAsync(string keyword)
         {
             return await _context.Shares
@@ -40,6 +42,12 @@ namespace Infrastructure.Data.Repositories
               .ThenInclude(p => p.User)
               .Where(s => s.Content.Contains(keyword) || s.User.FullName.Contains(keyword))
               .ToListAsync();
+        }
+        public async Task<List<Post>> GetSharedPostAllDeleteAsync(Guid originalPostId)
+        {
+            return await _context.Posts
+                .Where(p => p.OriginalPostId == originalPostId && !p.IsDeleted)
+                .ToListAsync();
         }
     }
 }

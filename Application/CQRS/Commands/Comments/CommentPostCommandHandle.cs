@@ -24,36 +24,41 @@ namespace Application.CQRS.Commands.Comments
         }
         public async Task<ResponseModel<CommentPostDto>> Handle(CommentPostCommand request, CancellationToken cancellationToken)
         {
+            var userId = _userContextService.UserId();
+
+            var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
+            if (post == null)
+            {
+                return ResponseFactory.Fail<CommentPostDto>("Không tìm thấy bài viết này", 404);
+            }
+
+            // Kiểm tra số lần share của user đối với bài viết này
+            // Nếu trong vòng 5 phút user đã share bài viết này quá 3 lần thì không cho share nữa
+            var fiveMinutesAgo = DateTime.UtcNow.AddMinutes(-5);
+            var commentCount = await _unitOfWork.CommentRepository.CountPostCommentAsync(c =>
+                c.UserId == userId && c.PostId == request.PostId && c.CreatedAt >= fiveMinutesAgo);
+
+            if (commentCount >= 3)
+            {
+                return ResponseFactory.Fail<CommentPostDto>("Bạn đã bình luận bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
+            }
+
+
+            if (!await _geminiService.ValidatePostContentAsync(request.Content))
+            {
+                return ResponseFactory.Fail<CommentPostDto>("Warning! Content is not accepted! If you violate it again, your reputation will be deducted!!", 400);
+            }
+
             await _unitOfWork.BeginTransactionAsync();
             try
-            {
-                var userId = _userContextService.UserId();
-                var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
-                if (post == null)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<CommentPostDto>("Không tìm thấy bài viết này", 404);
-                }
-                // Kiểm tra số lần share của user đối với bài viết này
-                // Nếu trong vòng 5 phút user đã share bài viết này quá 3 lần thì không cho share nữa
-                var fiveMinutesAgo = DateTime.UtcNow.AddMinutes(-5);
-                var commentCount = await _unitOfWork.CommentRepository.CountPostCommentAsync(s => s.UserId == userId && s.PostId == request.PostId && s.CreatedAt >= fiveMinutesAgo);
-                if (commentCount >= 3)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<CommentPostDto>("Bạn đã bình luận bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
-                }
+            {             
                 var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-                var result = await _geminiService.ValidatePostContentAsync(request.Content);
-                if (!result)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<CommentPostDto>("Warning! Content is not accepted! If you violate it again, your reputation will be deducted!!", 400);
-                }
                 var comment = new Comment(userId, request.PostId, request.Content);
+
                 await _unitOfWork.CommentRepository.AddAsync(comment);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
+
                 return ResponseFactory.Success(Mapping.MapToCommentPostDto(comment, post, user), "Bình luận bài viết thành công", 200);
             }
             catch(Exception ex)
