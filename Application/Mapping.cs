@@ -45,13 +45,14 @@ namespace Application
                 OriginalPost = new OriginalPostDto(post)
             };
         }
-        public static UserDto MapToUserDto(User user)
+        public static UserDto MapToUserDto(User? user)
         {
             return new UserDto
             {
-                Id = user.Id,
-                Email = user.Email,
-                ProfilePicture = user.ProfilePicture,
+                Id = user?.Id,
+                FullName = user?.FullName,
+                Email = user?.Email,
+                ProfilePicture = user?.ProfilePicture,
                 
             };
         }

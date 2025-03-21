@@ -26,9 +26,9 @@ namespace Application.CQRS.Queries.Likes
                     return ResponseFactory.Success(new List<UserDto>(), "Không có lượt like nào", 200);
                 }
 
-                var likeDtos = likes.Select(l => l.User.MapToUserDto()).ToList();
+            var likeDtos = likes.Select(l => Mapping.MapToUserDto(l.User)).ToList();
 
-                return ResponseFactory.Success(likeDtos, "Lấy danh sách like thành công", 200);
+            return ResponseFactory.Success(likeDtos, "Lấy danh sách like thành công", 200);
             }
     }
 }
