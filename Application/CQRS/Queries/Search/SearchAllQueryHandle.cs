@@ -3,11 +3,6 @@ using Application.DTOs.Posts;
 using Application.DTOs.Search;
 using Application.DTOs.User;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.Search
 {
@@ -16,11 +11,13 @@ namespace Application.CQRS.Queries.Search
         private readonly IUserRepository _userRepository;
         private readonly IPostRepository _postRepository;
 
+
         public SearchAllQueryHandle(IUserRepository userRepository, IPostRepository postRepository)
         {
             _userRepository = userRepository;
             _postRepository = postRepository;
         }
+
 
         public async Task<ResponseModel<List<DTOs.Search.SearchResultDto>>> Handle(SearchAllQuery request, CancellationToken cancellationToken)
         {
@@ -32,6 +29,7 @@ namespace Application.CQRS.Queries.Search
             {
                 return ResponseFactory.Fail<List<SearchResultDto>>("Chỉ có thể chọn lọc theo người dùng HOẶC bài đăng.", 400);
             }
+
 
             List<UserDto> userResults = new();
             List<PostDto> postResults = new();

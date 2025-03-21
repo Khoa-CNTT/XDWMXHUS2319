@@ -10,7 +10,7 @@ namespace Domain.Common
     {
         public enum PostTypeEnum
         {
-            Moving, StudyMaterial, Exchange, StudyGroup, Discussion, Share
+            Moving, StudyMaterial, Exchange, StudyGroup, Discussion
         }
         public enum ApprovalStatusEnum
         {
@@ -67,6 +67,12 @@ namespace Domain.Common
             open,//đang mở
             Matched,//đã tìm được người đi chung
             Canceled,//bị hủy
+        }
+        public enum AlertTypeEnums
+        {
+            DriverGPSOff,
+            TripDelayed,
+            NoResponse
         }
     }
 }

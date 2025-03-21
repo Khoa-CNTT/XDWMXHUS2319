@@ -18,5 +18,10 @@ namespace Infrastructure.Data.Repositories
                 .Where(r=>r.Status== StatusRideEnum.Accepted)
                 .ToListAsync();
         }
+
+        public async Task<Ride?> GetRideByUserIdAsync(Guid userId)
+        {
+            return await _context.Rides.FirstOrDefaultAsync(r=>r.PassengerId ==  userId);
+        }
     }
 }

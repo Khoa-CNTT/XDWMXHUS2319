@@ -32,6 +32,8 @@ namespace Infrastructure
         public DbSet<RidePost> RidePosts { get; set; }
         public DbSet<Ride> Rides { get; set; }
         public DbSet<LocationUpdate> LocationUpdates { get; set; }
+        public DbSet<RideReport> RideReports { get; set; }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +55,7 @@ namespace Infrastructure
             modelBuilder.Entity<RidePost>().HasKey(rp => rp.Id);
             modelBuilder.Entity<Ride>().HasKey(r => r.Id);
             modelBuilder.Entity<LocationUpdate>().HasKey(lu => lu.Id);
+            modelBuilder.Entity<RideReport>().HasKey(rr => rr.Id);
 
             //Dùng HasQueryFilter để tự động loại bỏ dữ liệu đã bị xóa mềm (IsDeleted = true) khi truy vấn.
             //Nếu không sử dụng, cần phải thêm điều kiện IsDeleted = false trong mỗi truy vấn.
@@ -223,7 +226,7 @@ namespace Infrastructure
             modelBuilder.Entity<Ride>()
                 .HasOne(r => r.RidePost)
                 .WithOne(rp => rp.Ride)
-                .HasForeignKey<Ride>(r => r.Id)
+                .HasForeignKey<Ride>(r => r.RidePostId)
                 .OnDelete(DeleteBehavior.Cascade); // Nếu RidePost bị xóa, Ride cũng bị xóa
 
             // 3. Quan hệ 1 User - N Rides (tài xế có thể có nhiều chuyến đi)
@@ -246,6 +249,12 @@ namespace Infrastructure
                 .WithMany(u => u.LocationUpdates)
                 .HasForeignKey(l => l.RideId)
 
+                .OnDelete(DeleteBehavior.Cascade);
+            // 6. Quan hệ 1 Ride - N LocationUpdates (mỗi chuyến đi có thể có nhiều cập nhật vị trí)
+            modelBuilder.Entity<LocationUpdate>()
+                .HasOne(l => l.Ride)
+                .WithMany(r => r.LocationUpdates)
+                .HasForeignKey(l => l.RideId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

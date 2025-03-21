@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Application.DTOs.RidePost;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,8 @@ namespace Application.Interface
         //phương thức lấy quãng đường đã đi của tài xế
         Task<double> GetDriverDistanceAsync(Guid rideId);
         Task<double> CalculateDistanceToDestinationAsync(double currentLat, double currentLng, string destinationAddress);
-
+        Task<GetAllRidePostDto> GetAllRidePostAsync(Guid? lastPostId, int pageSize);
+        Task<GetAllRidePostForOwnerDto> GetAllRidePostForOwnerAsync(Guid? lastPostId, int pageSize, Guid ownerId);
 
     }
 }

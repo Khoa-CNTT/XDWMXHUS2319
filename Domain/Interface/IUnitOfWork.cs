@@ -22,6 +22,8 @@ namespace Domain.Interface
         IRideRepository RideRepository { get; }
         ILocationUpdateRepository LocationUpdateRepository { get; }
 
+        IReportRepository ReportRepository { get; }
+        IRideReportRepository RideReportRepository { get; }
 
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync(); // ✅ Bắt đầu giao dịch

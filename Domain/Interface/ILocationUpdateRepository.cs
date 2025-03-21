@@ -16,5 +16,6 @@ namespace Domain.Interface
         //tạo phương thức add range
         Task AddRangeAsync(List<LocationUpdate> locationUpdates);
         Task<DateTime?> GetTimestampByRideIdAsync(Guid rideId);
+        Task<DateTime?> GetPassengerLocationTimestampAsync(Guid passengerId);
     }
 }

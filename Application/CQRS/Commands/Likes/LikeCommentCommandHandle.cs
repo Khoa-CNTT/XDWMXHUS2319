@@ -20,24 +20,24 @@ namespace Application.CQRS.Commands.Likes
 
         public async Task<ResponseModel<bool>> Handle(LikeCommentCommand request, CancellationToken cancellationToken)
         {
+            // Kiểm tra comment có tồn tại không
+            var userId = _userContextService.UserId();
+            // Tìm comment theo id
+            var comment = await _unitOfWork.CommentRepository.GetByIdAsync(request.CommentId);
+            //Kiểm tra comment có tồn tại không
+            if (comment == null)
+            {
+                return ResponseFactory.Fail<bool>("Comment không tồn tại!", 404);
+            }
+            //Kiểm tra post có tồn tại không
+            var post = await _unitOfWork.PostRepository.GetByIdAsync(comment.PostId);
+            if (post == null || post.Id == Guid.Empty)
+            {
+                return ResponseFactory.Fail<bool>("Không tìm thấy bài viết chứa bình luận này!", 404);
+            }
             await _unitOfWork.BeginTransactionAsync();
             try
-            {
-                // Kiểm tra comment có tồn tại không
-                var userId = _userContextService.UserId();
-                var comment = await _unitOfWork.CommentRepository.GetByIdAsync(request.CommentId);
-                if (comment == null)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<bool>("Comment không tồn tại!", 404);
-                }
-                //Kiểm tra post có tồn tại không
-                var post = await _unitOfWork.PostRepository.GetByIdAsync(comment.PostId);
-                if (post == null || post.Id == Guid.Empty)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<bool>("Không tìm thấy bài viết chứa bình luận này!", 404);
-                }
+            {        
                 // Kiểm tra user đã like comment này chưa
                 var existingLike = await _unitOfWork.CommentLikeRepository.GetLikeAsync(userId, request.CommentId);
                 if (existingLike != null)

@@ -29,6 +29,12 @@ namespace Domain.Entities
             PostType = postType;
             CreatedAt = DateTime.UtcNow;
         }
+        public void UpdateRidePost(string startLocation, string endLocation, DateTime startTime)
+        {
+            StartLocation = startLocation;
+            EndLocation = endLocation;
+            StartTime = startTime;
+        }
         public void Matched()
         {
             Status = RidePostStatusEnum.Matched;

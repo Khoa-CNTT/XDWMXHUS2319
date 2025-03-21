@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -48,6 +49,15 @@ namespace Infrastructure.Data.Repositories
             }
 
             return await query.ToListAsync();
+        }
+
+        public async Task<DateTime?> GetPassengerLocationTimestampAsync(Guid passengerId)
+        {
+            return await _context.LocationUpdates
+                .Where(r => r.UserId == passengerId)
+                .OrderByDescending(x => x.Timestamp)  // Sắp xếp giảm dần
+                .Select(x => x.Timestamp)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<DateTime?> GetTimestampByRideIdAsync(Guid rideId)

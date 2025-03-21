@@ -10,10 +10,11 @@ namespace Domain.Interface
     public interface IPostRepository : IBaseRepository<Post>
     {
         Task<IEnumerable<Post>> GetPostsByApprovalStatusAsync(ApprovalStatusEnum approvalStatusEnum);
-        Task<IEnumerable<Post>> GetPostsByTypeAsync(PostTypeEnum postType);
+        Task<List<Post>> GetPostsByTypeAsync(PostTypeEnum postType, Guid? lastPostId, int pageSize, CancellationToken cancellationToken);
+
         Task<List<Post>> SearchPostsAsync(string keyword);
 
-        Task<List<Post>> GetAllPostsAsync(CancellationToken cancellationToken);
+        Task<List<Post>> GetAllPostsAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken);
 
         //xoa mem
       
@@ -24,8 +25,9 @@ namespace Domain.Interface
 
         Task<List<Post>> GetSharedPostAllAsync(Guid originalPostId);
 
-        Task<Guid> GetPostOwnerIdAsync(Guid id);
-
+        Task<List<Post>> GetPostsByOwnerAsync(Guid userId, Guid? lastPostId, int pageSize, CancellationToken cancellationToken);
+        Task<Post?> GetByIdOriginalPostAsync(Guid id);
+        Task<Guid> GetPostOwnerIdAsync(Guid postId);
 
     }
 }

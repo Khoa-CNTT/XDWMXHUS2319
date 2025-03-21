@@ -11,5 +11,7 @@ namespace Domain.Interface
         Task<CommentLike?> GetLikeAsync(Guid userId, Guid commentId);
         Task<int> CountLikesAsync(Guid commentId);
         Task<List<User>> GetLikedUsersAsync(Guid commentId);
+        Task<List<User?>> GetLikedByCommentIdAsync(Guid commentId);
+        Task<List<CommentLike>> GetCommentLikeByCommentIdAsync(Guid CommentId);
     }
 }

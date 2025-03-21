@@ -9,9 +9,6 @@ namespace Application.CQRS.Commands.Posts
     public class SoftDeletePostCommand : IRequest<ResponseModel<bool>>
     {
         public Guid PostId { get; set; }
-        public SoftDeletePostCommand(Guid postId)
-        {
-            PostId = postId;
-        }
+        public SoftDeletePostCommand() { }
     }
 }

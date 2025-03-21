@@ -14,5 +14,6 @@ namespace Domain.Interface
         //tim kiem nguoi (dang)
         Task<User?> GetUserByIdAsync(Guid userId);
         Task<List<User>> SearchUsersAsync(string keyword);
+        Task<string?> GetFullNameByIdAsync(Guid id);
     }
 }

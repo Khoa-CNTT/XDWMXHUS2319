@@ -18,14 +18,14 @@ namespace Application.DTOs.Post
         public UserPostDto Author { get; set; }
         public DateTime CreateAt { get; set; }
 
-        public int CommentCount { get; set; }
+/*      public int CommentCount { get; set; }
         public List<CommentDto> Comments { get; set; } = new();
 
         public int LikeCount { get; set; }
         public List<UserPostDto> LikedUsers { get; set; } = new();
 
         public int ShareCount { get; set; }
-        public List<UserPostDto> SharedUsers { get; set; } = new();
+        public List<UserPostDto> SharedUsers { get; set; } = new();*/
         public OriginalPostDto() { }
         public OriginalPostDto(Domain.Entities.Post post)
         {
@@ -36,11 +36,11 @@ namespace Application.DTOs.Post
             CreateAt = post.CreatedAt;
             Author = new UserPostDto(post.User ?? new Domain.Entities.User("Người dùng ẩn danh", "anonymous@example.com", "hashed_password"));
 
-            CommentCount = post.Comments?.Count(c => !c.IsDeleted) ?? 0;
+/*            CommentCount = post.Comments?.Count(c => !c.IsDeleted) ?? 0;
             LikeCount = post.Likes?.Count ?? 0;
-            ShareCount = post.Shares?.Count ?? 0;
+            ShareCount = post.Shares?.Count ?? 0;*/
 
-            // 🔥 Thêm danh sách chi tiết
+       /*     // 🔥 Thêm danh sách chi tiết
             Comments = post.Comments?
                 .Where(c => !c.IsDeleted)
                 .Select(c => new CommentDto(c))
@@ -52,7 +52,7 @@ namespace Application.DTOs.Post
 
             SharedUsers = post.Shares?
                 .Select(s => new UserPostDto(s.User))
-                .ToList() ?? new();
+                .ToList() ?? new();*/
         }
     }
 }
