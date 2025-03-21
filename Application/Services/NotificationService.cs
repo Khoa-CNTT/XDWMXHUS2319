@@ -36,10 +36,10 @@ namespace Application.Services
             await _publisher.Publish(new LikeEvent(postId, userId));
         }
 
-        public async Task SendNotificationWhenTripEnds(Guid driverId, Guid passengerId)
+        public async Task SendNotificationWhenTripEnds(Guid driverId, Guid passengerId,string message)
         {
             // 🔥 Đẩy event sang IPublisher
-            await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId));
+            await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, message));
         }
     }
 }

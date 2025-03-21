@@ -1,5 +1,7 @@
 ﻿using Application.DTOs.UpdateLocation;
+using Application.Interface.ContextSerivce;
 using Application.Model.Events;
+using Domain.Entities;
 using Microsoft.Extensions.Logging;
 using static Domain.Common.Enums;
 using static Domain.Common.Helper;
@@ -11,14 +13,20 @@ namespace Application.CQRS.Commands.UpdateLocation
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRidePostService _ridePostService;
         private readonly IRedisService _redisService;
+        private readonly IUserContextService _userContextService;
+        private readonly IPublisher _publiser;
 
         public UpdateLocationCommandHandler(IUnitOfWork unitOfWork, 
             IRidePostService ridePostService,
-            IRedisService redisService)
+            IRedisService redisService,
+            IUserContextService userContextService,
+            IPublisher publisher)
         {
             _unitOfWork = unitOfWork;
             _ridePostService = ridePostService;
             _redisService = redisService;
+            _userContextService = userContextService;
+            _publiser = publisher;
 
         }
 
@@ -58,51 +66,90 @@ namespace Application.CQRS.Commands.UpdateLocation
                     return ResponseFactory.Fail<UpdateLocationDto>("No significant movement detected", 200);
                 }
             }
+            var userId = _userContextService.UserId();
+            bool isDriver = ride.DriverId == userId; // Xác định đây là tài xế hay khách hàng
+            bool isSafetyTrackingEnabled = ride.IsSafetyTrackingEnabled; // Kiểm tra chế độ an toàn
 
-                // Bắt đầu transaction vì có thay đổi dữ liệu
-                await _unitOfWork.BeginTransactionAsync();
+            await _unitOfWork.BeginTransactionAsync(); // Bắt đầu transaction
+
             try
             {
-                var locationUpdate = new LocationUpdate(Guid.Empty,0,0);
-                if (lastLocation == null)
-                {
-                    locationUpdate = new LocationUpdate(request.RideId, request.Latitude, request.Longitude);
-                    await _unitOfWork.LocationUpdateRepository.AddAsync(locationUpdate);
-                    await _unitOfWork.SaveChangesAsync();
-                    await _unitOfWork.CommitTransactionAsync();
-                }
-                if (distance > 0.05) // Chỉ tạo locationUpdate khi đi được trên 50m
-                {
-                    await _redisService.AddAsync("update_location_events", new UpdateLocationEvent(request.RideId, request.Latitude, request.Longitude));
-                }
-                // Lấy tọa độ điểm bắt đầu và điểm kết thúc của RidePost
-                var (startLat, startLng, endLat, endLng) = await _ridePostService.GetCoordinatesAsync(ridePost.StartLocation , ridePost.EndLocation);
+                LocationUpdate? locationUpdate = null;
 
-                // Tính khoảng cách giữa vị trí tài xế hiện tại và tọa độ đích
+                // Nếu là tài xế hoặc khách hàng đã bật chế độ an toàn thì mới cập nhật tọa độ
+                if (isDriver || isSafetyTrackingEnabled)
+                {
+                    if (lastLocation == null)
+                    {
+                        // Lần đầu tiên -> Tạo mới và lưu vào database
+                        locationUpdate = new LocationUpdate(request.RideId, userId, request.Latitude, request.Longitude, isDriver);
+                        await _unitOfWork.LocationUpdateRepository.AddAsync(locationUpdate);
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        // Các lần sau -> Chỉ lưu vào Redis
+                        locationUpdate = lastLocation;
+                    }
+
+                    if (distance > 0.05) // Chỉ gửi tọa độ lên Redis nếu đi trên 50m
+                    {
+                        await _redisService.AddAsync("update_location_events",
+                            new UpdateLocationEvent(request.RideId, userId, request.Latitude, request.Longitude, isDriver));
+                        if (ride.StartTime == null)
+                        {
+                            ride.UpdateStartTime();
+                            await _unitOfWork.RideRepository.UpdateAsync(ride);
+                        }
+                       
+                    }
+                }
+
+                // Nếu khách hàng không bật chế độ an toàn, chỉ tài xế mới được gửi tọa độ
+                if (!isDriver && !isSafetyTrackingEnabled)
+                {
+                    return ResponseFactory.Fail<UpdateLocationDto>(
+                        "Passenger location update ignored due to safety tracking disabled", 400);
+                }
+
+                // Lấy tọa độ điểm bắt đầu và kết thúc
+                var (startLat, startLng, endLat, endLng) = await _ridePostService.GetCoordinatesAsync(ridePost.StartLocation, ridePost.EndLocation);
+
+                // Tính khoảng cách đến đích
                 double distanceToEnd = await _ridePostService.CalculateDistanceToDestinationAsync(request.Latitude, request.Longitude, ridePost.EndLocation);
-                // Nếu khoảng cách <= 500m, cập nhật trạng thái chuyến đi
-                if (distanceToEnd <= 0.5) // 500m
+
+                if (distanceToEnd <= 0.5) // Nếu còn <= 500m, cập nhật trạng thái chuyến đi
                 {
                     ride.UpdateStatus(StatusRideEnum.Completed);
-                    locationUpdate.UpdateLocation(request.Latitude, request.Longitude);
-                    await _unitOfWork.SaveChangesAsync();
-                    await _unitOfWork.CommitTransactionAsync();
+                    ride.ChangeIsSafetyTrackingEnabled(false);
+
+                    if (locationUpdate != null)
+                    {
+                        locationUpdate.UpdateLocation(request.Latitude, request.Longitude);
+                    }
+                    await _publiser.Publish(new UpdateLocationEvent(ride.DriverId, userId,$"Chuyến đi từ {ridePost.StartLocation} đến {ridePost.EndLocation} đã hoàn thành!!" ));
                 }
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync(); // Chỉ commit một lần
+
                 return ResponseFactory.Success(new UpdateLocationDto
                 {
-                    Id = locationUpdate.Id,
+                    Id = locationUpdate?.Id ?? Guid.NewGuid(), // Nếu locationUpdate không tồn tại, tạo ID ngẫu nhiên
                     RideId = request.RideId,
                     Latitude = request.Latitude,
                     Longitude = request.Longitude,
-                    Timestamp = FormatUtcToLocal(locationUpdate.Timestamp),
+                    Timestamp = locationUpdate != null ? FormatUtcToLocal(locationUpdate.Timestamp) : DateTime.UtcNow.ToString(),
                     RideStatus = ride.Status.ToString()
                 }, "Update location success", 200);
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                return ResponseFactory.Fail<UpdateLocationDto>("Update location failed"+ex, 500);
+                return ResponseFactory.Fail<UpdateLocationDto>("Update location failed: " + ex.Message, 500);
             }
+
+
         }
 
         private bool IsValidCoordinates(double latitude, double longitude)

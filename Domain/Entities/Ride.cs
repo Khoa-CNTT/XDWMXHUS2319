@@ -19,9 +19,11 @@ namespace Domain.Entities
         public StatusRideEnum Status { get; private set; } = StatusRideEnum.Accepted;
         public decimal? Fare { get; private set; }
         public DateTime CreatedAt { get; private set; }
+        public bool IsSafetyTrackingEnabled { get; private set; } = false;
         public RidePost? RidePost { get;private set; }
         public User? Driver { get; private set; }
         public User? Passenger { get; private set; }
+        public ICollection<LocationUpdate>? LocationUpdates { get; private set; }
         public Ride(Guid driverId, Guid passengerId, decimal? fare, int estimatedDuration, Guid ridePostId)
         {
             Id = Guid.NewGuid();
@@ -37,13 +39,17 @@ namespace Domain.Entities
         {
             Status = status;
         }
-        public void UpdateStartTime(DateTime startTime)
+        public void UpdateStartTime()
         {
             if (StartTime == null)
             {
-                StartTime = startTime;
+                StartTime = DateTime.UtcNow;
                 UpdateEndTime(StartTime);
             }
+        }
+        public void ChangeIsSafetyTrackingEnabled(bool isSafetyTrackingEnabled)
+        {
+            IsSafetyTrackingEnabled = isSafetyTrackingEnabled;
         }
 
         private void UpdateEndTime(DateTime? startTime)

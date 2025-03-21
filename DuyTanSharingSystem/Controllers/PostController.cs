@@ -4,6 +4,7 @@ using Application.CQRS.Queries.Posts;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace DuyTanSharingSystem.Controllers
 {
@@ -16,6 +17,8 @@ namespace DuyTanSharingSystem.Controllers
         {
             _mediator = mediator;
         }
+
+
         [HttpGet("ML")]
         public async Task<IActionResult> GetPostForTrainingML([FromQuery] GetPostForTrainingMLQueries request)
         {

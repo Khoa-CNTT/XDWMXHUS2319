@@ -68,5 +68,11 @@ namespace Domain.Common
             Matched,//đã tìm được người đi chung
             Canceled,//bị hủy
         }
+        public enum AlertTypeEnums
+        {
+            DriverGPSOff,
+            TripDelayed,
+            NoResponse
+        }
     }
 }

@@ -13,5 +13,6 @@ namespace Domain.Interface
         Task<User?> GetUserByEmailAsync(string email);
         //tim kiem nguoi (dang)
         Task<List<User>> SearchUsersAsync(string keyword);
+        Task<string?> GetFullNameByIdAsync(Guid id);
     }
 }

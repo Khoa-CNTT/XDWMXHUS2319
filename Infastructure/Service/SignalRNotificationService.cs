@@ -65,13 +65,13 @@ namespace Infrastructure.Service
             await _hubContext.Clients.Group(ownerId.ToString())
                 .SendAsync("ReceiveNotification", $"User {userName.FullName} liked your post.");
         }
-        public async Task SendNotificationWhenTripEnds(Guid driverId, Guid passengerId)
+        public async Task SendNotificationWhenTripEnds(Guid driverId, Guid passengerId, string message)
         {
             await _hubContext.Clients.User(driverId.ToString())
-                .SendAsync("ReceiveNotification", "Your trip has ended.");
+                .SendAsync("ReceiveNotification",message);
 
             await _hubContext.Clients.User(passengerId.ToString())
-                .SendAsync("ReceiveNotification", "Your trip has ended.");
+                .SendAsync("ReceiveNotification", message);
         }
     }
 }

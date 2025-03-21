@@ -57,6 +57,8 @@ namespace Infrastructure
             services.AddScoped<IRidePostRepository, RidePostRepository>();
             services.AddScoped<IRideRepository, RideRepository>();
             services.AddScoped<ILocationUpdateRepository, LocationUpdateRepository>();
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IRideReportRepository, RideReportRepository>();
             services.AddScoped<IUserContextService, UserContextService>();
 
             services.AddScoped<IShareRepository, ShareRepository>();

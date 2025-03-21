@@ -3,11 +3,6 @@
 //using Application.DTOs.Search;
 //using Application.DTOs.User;
 
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
 
 //namespace Application.CQRS.Queries.Search
 //{
@@ -21,10 +16,10 @@
 //            _userRepository = userRepository;
 //            _postRepository = postRepository;
 //        }
-        
+
 //        public async Task<ResponseModel<List<DTOs.Search.SearchResultDto>>> Handle(SearchAllQuery request, CancellationToken cancellationToken)
 //        {
-            
+
 //            var results = new List<SearchResultDto>();
 
 //            // Kiểm tra nếu cả OnlyUsers và OnlyPosts cùng true thì trả về lỗi
@@ -45,10 +40,10 @@
 //            else if (request.OnlyPosts == true)
 //            {
 //                // Chỉ tìm bài đăng
-//                var posts = await _postRepository.SearchPostsAsync(request.Keyword, request.FromDate, request.ToDate,request.Year,request.Month,request.Day);
+//                var posts = await _postRepository.SearchPostsAsync(request.Keyword, request.FromDate, request.ToDate, request.Year, request.Month, request.Day);
 //                postResults = posts.Select(Mapping.MapToPostDto).ToList();
 //            }
-//            else 
+//            else
 //            {
 //                // Nếu không chọn OnlyUsers hoặc OnlyPosts, tìm cả hai
 //                var users = await _userRepository.SearchUsersAsync(request.Keyword);
