@@ -19,8 +19,6 @@ namespace DuyTanSharingSystem.Controllers
             _mediator = mediator;
         }
         [HttpGet]
-
-     
         public async Task<IActionResult> Search([FromQuery] string keyword)
         {
             var result = await _mediator.Send(new SearchQuery(keyword));

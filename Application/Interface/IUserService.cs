@@ -1,4 +1,6 @@
-﻿using Application.DTOs.User;
+﻿using Application.CQRS.Commands.Users;
+using Application.CQRS.Queries.User;
+using Application.DTOs.User;
 
 using System;
 using System.Collections.Generic;
@@ -16,5 +18,6 @@ namespace Application.Interface
         Task<string?> SendVerifiEmailAsync(Guid userId,string email);
         Task<string> GenerateTokenAsync(Guid userId);
         Task<User?> GetByIdAsync(Guid userId);
+        
     }
 }
