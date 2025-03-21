@@ -25,21 +25,25 @@ namespace Infrastructure.Data.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<Comment>> GetCommentByPostIdAsync(Guid postId)
+        public async Task<(List<Comment>, int)> GetCommentByPostIdAsync(Guid postId, int page, int pageSize)
         {
-            return await _context.Comments
-         .Include(c => c.User)
-         .Include(c => c.Post)
-             .ThenInclude(p => p.User)
-         .Include(c => c.CommentLikes)
-             .ThenInclude(cl => cl.User) // Lấy danh sách người like bình luận
-         .Include(c => c.Replies)
-             .ThenInclude(r => r.User)
-         .Include(c => c.Replies)
-             .ThenInclude(r => r.CommentLikes) // Lấy lượt like của reply
-                 .ThenInclude(cl => cl.User)
-         .Where(c => c.PostId == postId && !c.IsDeleted)
-         .ToListAsync();
+            var query = _context.Comments
+                     .Include(c => c.User)
+                     .Include(c => c.Post)
+                         .ThenInclude(p => p.User)
+                     .Include(c => c.CommentLikes)
+                     .Include(c => c.Replies)
+                         .ThenInclude(r => r.User)
+                     .Include(c => c.Replies)
+                         .ThenInclude(r => r.CommentLikes) // Lấy lượt like của reply
+                     .Where(c => c.PostId == postId && !c.IsDeleted && c.ParentCommentId == null) ;
+
+                        int totalRecords = await query.CountAsync(); // Tổng số bình luận
+                        var comments = await query
+                            .Skip((page - 1) * pageSize) // Bỏ qua các bình luận đã load
+                            .Take(pageSize) // Giới hạn số lượng bình luận theo pageSize
+                            .ToListAsync();
+                return (comments, totalRecords);
         }
         public async Task<Comment?> GetCommentByIdAsync(Guid commentId)
         {
@@ -61,6 +65,31 @@ namespace Infrastructure.Data.Repositories
             return await _context.Comments
            .Where(c => c.ParentCommentId == parentCommentId && !c.IsDeleted)
            .ToListAsync();
+        }
+
+        public async Task<List<Comment>> GetCommentsByPostIdAsync(Guid postId, int page, int pageSize)
+        {
+            return await _context.Comments
+            .Where(c => c.PostId == postId)
+            .OrderByDescending(c => c.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Include(c => c.User) // Load thông tin User
+            .ToListAsync();
+        }
+
+        public async Task<List<Comment>> GetCommentsByPostIdDeleteAsync(Guid postId)
+        {
+            return await _context.Comments
+                .Where(c => c.PostId == postId && !c.IsDeleted)
+                .ToListAsync();
+        }
+
+        public async Task<List<Comment>> GetRepliesByCommentIdAsync(Guid parentCommentId)
+        {
+            return await _context.Comments
+                .Where(c => c.ParentCommentId == parentCommentId && !c.IsDeleted)
+                .ToListAsync();
         }
     }
 }

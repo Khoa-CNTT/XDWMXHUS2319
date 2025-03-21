@@ -49,6 +49,10 @@ namespace Domain.Entities
         {
             IsLike = true;
         }
+        public void Delete()
+        {
+            IsDeleted = true;
+        }
     }
 }
 

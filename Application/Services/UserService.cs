@@ -1,4 +1,7 @@
-﻿using Application.DTOs.User;
+﻿using Application.CQRS.Commands.Users;
+using Application.CQRS.Queries.User;
+using Application.DTOs.User;
+using Application.Interface.ContextSerivce;
 using Application.Provider;
 using System;
 using System.Collections.Generic;
@@ -12,10 +15,12 @@ namespace Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
-        public UserService(IUnitOfWork unitOfWork, IEmailService emailService)
+        private readonly IUserContextService _userContextService;
+        public UserService(IUnitOfWork unitOfWork, IEmailService emailService, IUserContextService userContextService)
         {
             _unitOfWork = unitOfWork;
             _emailService = emailService;
+            _userContextService = userContextService;
         }
         public UserResponseDto MapUserToUserResponseDto(User user)
         {
@@ -82,5 +87,10 @@ namespace Application.Services
         {
             return await _unitOfWork.UserRepository.GetByIdAsync(userId);
         }
+
+        
+        
     }
+    
+    
 }
