@@ -42,6 +42,11 @@ namespace Domain.Entities
             IsLike = false;
         }
 
+        public void ToggleLike()
+        {
+            IsLike = !IsLike;
+        }
+
         /// <summary>
         /// Thích lại bài viết nếu đã hủy trước đó
         /// </summary>

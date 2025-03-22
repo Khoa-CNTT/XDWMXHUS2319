@@ -29,6 +29,7 @@ namespace Application.DTOs.Post
         public int LikeCount { get; set; }
 
         public int ShareCount { get; set; }
+        public int HasLiked { get; set; }
         public bool IsSharedPost { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

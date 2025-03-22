@@ -52,6 +52,7 @@ namespace Domain.Entities
             VideoUrl = videoUrl;
         }
 
+
         public void UpdatePost(string? newContent, string? newImageUrl, string? newVideoUrl, ScopeEnum? newScope)
         {
             if (!string.IsNullOrWhiteSpace(newContent))
