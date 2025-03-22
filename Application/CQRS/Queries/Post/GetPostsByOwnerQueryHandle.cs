@@ -22,6 +22,7 @@ namespace Application.CQRS.Queries.Post
         }
         public async Task<ResponseModel<GetPostsResponse>> Handle(GetPostsByOwnerQuery request, CancellationToken cancellationToken)
         {
+            var userId = _userContextService.UserId();
             var postsResponse = await _postService.GetPostsByOwnerWithCursorAsync(request.LastPostId, request.PageSize, cancellationToken);
 
             if (postsResponse == null || !postsResponse.Posts.Any())

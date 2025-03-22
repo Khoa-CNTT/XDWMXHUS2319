@@ -5,6 +5,7 @@ using Application.DTOs.Post;
 using Application.DTOs.Posts;
 using Application.DTOs.Shares;
 using Application.DTOs.User;
+using Domain.Entities;
 
 namespace Application
 {
@@ -80,8 +81,12 @@ namespace Application
                 CreatedAt = user.CreatedAt
             };
         }
-        public static CommentDto MapToCommentByPostIdDto(Comment comment)
+        public static CommentDto MapToCommentByPostIdDto(Comment comment, Guid userId)
         {
+            var validLikes = comment.CommentLikes?
+                .Where(l => l.IsLike) // 🔥 Chỉ lấy lượt like hợp lệ
+                .ToList() ?? new List<CommentLike>();
+
             return new CommentDto
             {
                 Id = comment.Id,
@@ -91,7 +96,7 @@ namespace Application
                 Content = comment.Content,
                 CreatedAt = comment.CreatedAt,
                 ParentCommentId = comment.ParentCommentId,
-
+                HasLiked = validLikes.Any(l => l.UserId == userId) ? 1 : 0,
                 // Ánh xạ số lượt like
                 /*                CommentLikes = new CommentLikeDto(comment.CommentLikes?.Where(l => l.IsLike).ToList() ?? new List<CommentLike>()),*/
                 LikeCountComment = comment.CommentLikes?.Count ?? 0,
@@ -100,7 +105,7 @@ namespace Application
                 Replies = comment.Replies?
                     .OrderBy(r => r.CreatedAt)
                     .Take(10)
-                    .Select(MapToCommentByPostIdDto)
+                    .Select(r => MapToCommentByPostIdDto(r, userId))
                     .ToList() ?? new List<CommentDto>()
             };
         }
@@ -251,7 +256,7 @@ namespace Application
                 }).ToList() ?? new List<ShareDto>()
             };
         }
-        public static GetAllPostDto MapToAllPostDto(Post p)
+        public static GetAllPostDto MapToAllPostDto(Post p, Guid userId)
         {
             // Lọc các comment chưa bị xóa mềm
             var allComments = p.Comments?
@@ -277,6 +282,7 @@ namespace Application
                 CommentCount = p.Comments?.Count ?? 0,
                 LikeCount = p.Likes?.Count ?? 0,
                 ShareCount = p.Shares?.Count ?? 0,
+                HasLiked = validLikes.Any(l => l.UserId == userId) ? 1 : 0,
                 IsSharedPost = p.IsSharedPost,
                 OriginalPostId = p.OriginalPostId,
 
