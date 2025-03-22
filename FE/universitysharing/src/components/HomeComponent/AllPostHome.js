@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../styles/headerHome.scss";
 import shareIcon from "../../assets/iconweb/shareIcon.svg";
 import likeIcon from "../../assets/iconweb/likeIcon.svg";
@@ -10,34 +10,26 @@ import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
 import imagePost from "../../assets/ImgDefault.png";
 import ShareModal from "../shareModal";
-// import { Modal, Button } from "antd";
-const AllPosts = () => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      userName: "Nguyễn Thành Chè",
-      avatarUser: avatarWeb,
-      imgPost: imagePost,
-      content: "Cảnh này thật quen thuộc ",
-      likes: 2000,
-      comments: 200,
-      shares: 20,
-      isLiked: false, // Trạng thái like/unlike
-    },
-    {
-      id: 2,
-      userName: "Nguyễn Thành Đảng",
-      avatarUser: avatarWeb,
-      imgPost:
-        "https://wallpapers.com/images/featured/4k-nature-ztbad1qj8vdjqe0p.jpg",
-      content: "Cảnh này thật quen thuộc",
-      likes: 2000,
-      comments: 200,
-      shares: 20,
-      isLiked: false, // Trạng thái like/unlike
-    },
-  ]);
+import axios from "axios";
 
+const AllPosts = () => {
+  const [posts, setPosts] = useState([]);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    axios
+      .get("https://localhost:7053/api/Post/getallpost?pageSize=10", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setPosts(response.data.data.posts || []);
+        console.log("API Về: ", response);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy bài viết:", error);
+      });
+  }, []);
   // Toggle Like
   const handleLike = (postId) => {
     setPosts(
@@ -84,51 +76,61 @@ const AllPosts = () => {
 
   return (
     <div className="all-posts">
-      {posts.map((post) => (
-        <div className="post" key={post.id}>
-          {/* Header Post */}
-          <div className="header-post">
-            <p className="AvaName">
-              <img className="avtardefaut" src={post.avatarUser} alt="Avatar" />
-              <strong>{post.userName}</strong>
-            </p>
-            <p className="closemore">
-              <img className="btn-edit" src={moreIcon} alt="More" />
-              <img
-                className="btn-close"
-                src={closeIcon}
-                alt="Close"
-                onClick={() => handleDelete(post.id)}
-              />
-            </p>
-          </div>
+      {Array.isArray(posts) && posts.length > 0 ? (
+        posts.map((post) => (
+          <div className="post" key={post.id}>
+            {/* Header Post */}
+            <div className="header-post">
+              <p className="AvaName">
+                <img
+                  className="avtardefaut"
+                  src={post.profilePicture || avatarWeb}
+                  alt="Avatar"
+                />
+                <strong>{post.fullName}</strong>
+              </p>
+              <p className="closemore">
+                <img className="btn-edit" src={moreIcon} alt="More" />
+                <img
+                  className="btn-close"
+                  src={closeIcon}
+                  alt="Close"
+                  onClick={() => handleDelete(post.id)}
+                />
+              </p>
+            </div>
 
-          {/* Nội dung bài viết */}
-          <span className="content-posts">{post.content}</span>
-          <p></p>
-          <div className="postImg" onClick={() => openCommentModal(post)}>
-            <img src={post.imgPost} alt="Post" />
-          </div>
+            {/* Nội dung bài viết */}
+            <span className="content-posts">{post.content}</span>
+            <p></p>
+            <div className="postImg" onClick={() => openCommentModal(post)}>
+              <img src={post.imageUrl || imagePost} alt="Post" />
+            </div>
 
-          {/* Actions */}
-          <div className="actions">
-            <span onClick={() => handleLike(post.id)}>
-              <img src={post.isLiked ? likeFill : likeIcon} alt="Like" />
-              <span>{post.likes}</span>
-            </span>
-            <span onClick={() => openCommentModal(post)}>
-              <img src={commentIcon} alt="Comment" />
-              <span>{post.comments}</span>
-            </span>
-            <span onClick={() => openShareModal(post)}>
-              <img src={shareIcon} alt="Share" />
-              <span>{post.shares}</span>
-            </span>
+            {/* Actions */}
+            <div className="actions">
+              <span onClick={() => handleLike(post.id)}>
+                {/* <img src={post.isLiked ? likeFill : likeIcon} alt="Like" /> */}
+                <img src={likeIcon} alt="Like" />
+                <span>{post.likeCount}</span>
+              </span>
+              <span onClick={() => openCommentModal(post)}>
+                <img src={commentIcon} alt="Comment" />
+                <span>{post.commentCount}</span>
+              </span>
+              <span onClick={() => openShareModal(post)}>
+                <img src={shareIcon} alt="Share" />
+                <span>{post.shareCount}</span>
+              </span>
+            </div>
           </div>
-        </div>
-      ))}
+        ))
+      ) : (
+        <p>Không có bài viết nào.</p>
+      )}
+
       {selectedPost && (
-        <CommentModal post={selectedPost} onClose={closeCommentModal} />
+        <CommentModal post={selectedPost.id} onClose={closeCommentModal} />
       )}
       {selectedPostToShare && (
         <ShareModal isOpen={isShareModalOpen} onClose={closeShareModal} />

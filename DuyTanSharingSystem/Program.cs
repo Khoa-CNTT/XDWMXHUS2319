@@ -5,6 +5,7 @@ using Application.Model;
 using Application.Interface.Hubs;
 using Domain.Common;
 using Infrastructure.Hubs;
+using Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,7 +63,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseCors("AllowFrontend"); // 🚀 Sử dụng CORS
+app.UseCors("AllowReactApp");
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

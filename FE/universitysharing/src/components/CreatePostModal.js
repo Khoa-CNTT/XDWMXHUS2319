@@ -109,9 +109,9 @@ const CreatePostModal = ({ isOpen, onClose }) => {
             <option value="2">Riêng tư</option>
           </select>
           <select className="type-post">
-            <option value="5">Thảo luận</option>
-            <option value="2">Tư liệu học tập</option>
-            <option value="3">Trao đổi</option>
+            <option value="4">Thảo luận</option>
+            <option value="1">Tư liệu học tập</option>
+            <option value="2">Trao đổi</option>
           </select>
         </div>
         <button className="btn-create-post">Đăng bài</button>
