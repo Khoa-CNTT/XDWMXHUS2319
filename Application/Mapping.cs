@@ -5,6 +5,7 @@ using Application.DTOs.Post;
 using Application.DTOs.Posts;
 using Application.DTOs.Shares;
 using Application.DTOs.User;
+using Domain.Entities;
 
 namespace Application
 {
@@ -251,7 +252,7 @@ namespace Application
                 }).ToList() ?? new List<ShareDto>()
             };
         }
-        public static GetAllPostDto MapToAllPostDto(Post p)
+        public static GetAllPostDto MapToAllPostDto(Post p, Guid userId)
         {
             // Lọc các comment chưa bị xóa mềm
             var allComments = p.Comments?
@@ -277,6 +278,7 @@ namespace Application
                 CommentCount = p.Comments?.Count ?? 0,
                 LikeCount = p.Likes?.Count ?? 0,
                 ShareCount = p.Shares?.Count ?? 0,
+                HasLiked = validLikes.Any(l => l.UserId == userId) ? 1 : 0,
                 IsSharedPost = p.IsSharedPost,
                 OriginalPostId = p.OriginalPostId,
 

@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.Post;
 using Application.DTOs.Shares;
 using Application.Interface.ContextSerivce;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,22 +25,24 @@ namespace Application.Services
         {
            return await _unitOfWork.PostRepository.GetPostOwnerIdAsync(postId);
         }
-        public async Task<GetPostsResponse> GetPostsWithCursorAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
-        {
+            public async Task<GetPostsResponse> GetPostsWithCursorAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
+            {
+                var userId = _userContextService.UserId();
             var posts = await _unitOfWork.PostRepository.GetAllPostsAsync(lastPostId, pageSize, cancellationToken);
 
-            // Nếu số bài viết trả về ít hơn pageSize => Không còn bài để tải
-            var nextCursor = posts.Count == pageSize ? (Guid?)posts.Last().Id : null;
+                // Nếu số bài viết trả về ít hơn pageSize => Không còn bài để tải
+                var nextCursor = posts.Count == pageSize ? (Guid?)posts.Last().Id : null;
 
-            return new GetPostsResponse
-            {
-                Posts = posts.Select(Mapping.MapToAllPostDto).ToList(),
-                NextCursor = nextCursor
-            };
-        }
+                return new GetPostsResponse
+                {
+                    Posts = posts.Select(post => Mapping.MapToAllPostDto(post, userId)).ToList(), // 🔥 Truyền userId vào
+                    NextCursor = nextCursor
+                };
+            }
 
         public async Task<GetPostsResponse> GetPostByTypeWithCursorAsync(PostTypeEnum postTypeEnum, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {
+            var userId = _userContextService.UserId();
             // 🔥 Gọi đúng phương thức với đủ tham số
             var posts = await _unitOfWork.PostRepository.GetPostsByTypeAsync(postTypeEnum, lastPostId, pageSize, cancellationToken);
 
@@ -48,7 +51,7 @@ namespace Application.Services
 
             return new GetPostsResponse
             {
-                Posts = posts.Select(Mapping.MapToAllPostDto).ToList(),
+                Posts = posts.Select(post => Mapping.MapToAllPostDto(post, userId)).ToList(), // 🔥 Truyền userId vào
                 NextCursor = nextCursor
             };
         }
@@ -128,7 +131,7 @@ namespace Application.Services
 
             return new GetPostsResponse
             {
-                Posts = posts.Select(Mapping.MapToAllPostDto).ToList(),
+                Posts = posts.Select(post => Mapping.MapToAllPostDto(post, userId)).ToList(),
                 NextCursor = nextCursor
             };
         }

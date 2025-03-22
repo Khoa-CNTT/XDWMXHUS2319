@@ -44,15 +44,14 @@ namespace Application.BackgroundServices
 
                             if (existingLike == null)
                             {
-                                // 🔹 Chưa like -> Thêm mới
+                                // 🔹 Chưa like -> Thêm mới với trạng thái mặc định là true
                                 existingLike = new Like(likeEvent.UserId, likeEvent.PostId);
                                 await likeRepository.AddAsync(existingLike);
                             }
                             else
                             {
-                                // 🔹 Đã like -> Toggle trạng thái
-                                if (existingLike.IsLike)
-                                    existingLike.Unlike();
+                                // 🔹 Toggle trạng thái like
+                                existingLike.ToggleLike();
                                 await likeRepository.UpdateAsync(existingLike);
                             }
                         }
