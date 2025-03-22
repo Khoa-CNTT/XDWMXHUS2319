@@ -28,22 +28,34 @@ namespace Infrastructure.Data.Repositories
         public async Task<(List<Comment>, int)> GetCommentByPostIdAsync(Guid postId, int page, int pageSize)
         {
             var query = _context.Comments
-                     .Include(c => c.User)
-                     .Include(c => c.Post)
-                         .ThenInclude(p => p.User)
-                     .Include(c => c.CommentLikes)
-                     .Include(c => c.Replies)
-                         .ThenInclude(r => r.User)
-                     .Include(c => c.Replies)
-                         .ThenInclude(r => r.CommentLikes) // Lấy lượt like của reply
-                     .Where(c => c.PostId == postId && !c.IsDeleted && c.ParentCommentId == null) ;
+              .Include(c => c.User)
+              .Include(c => c.Post)
+                  .ThenInclude(p => p.User)
+              .Include(c => c.CommentLikes) // Lấy danh sách Like của comment
+              .Include(c => c.Replies)
+                  .ThenInclude(r => r.User)
+              .Include(c => c.Replies)
+                  .ThenInclude(r => r.CommentLikes) // Lấy danh sách Like của replies
+              .Where(c => c.PostId == postId && !c.IsDeleted && c.ParentCommentId == null);
 
-                        int totalRecords = await query.CountAsync(); // Tổng số bình luận
-                        var comments = await query
-                            .Skip((page - 1) * pageSize) // Bỏ qua các bình luận đã load
-                            .Take(pageSize) // Giới hạn số lượng bình luận theo pageSize
-                            .ToListAsync();
-                return (comments, totalRecords);
+            int totalRecords = await query.CountAsync(); // Tổng số bình luận
+
+            var comments = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // 📌 **Lọc Like của Comment & Reply sau khi truy vấn**
+            foreach (var comment in comments)
+            {
+                comment.CommentLikes = comment.CommentLikes.Where(cl => cl.IsLike).ToList();
+
+                foreach (var reply in comment.Replies)
+                {
+                    reply.CommentLikes = reply.CommentLikes.Where(cl => cl.IsLike).ToList();
+                }
+            }
+            return (comments, totalRecords);
         }
         public async Task<Comment?> GetCommentByIdAsync(Guid commentId)
         {

@@ -21,7 +21,7 @@ namespace Domain.Entities
 
 
         public Guid? ParentCommentId { get; set; }
-        public virtual Comment? ParentComment { get; set; }
+        public virtual Comment ParentComment { get; set; } = null!;
 
         // 🔥 Danh sách các bình luận con
         public virtual ICollection<Comment> Replies { get; set; } = new List<Comment>();

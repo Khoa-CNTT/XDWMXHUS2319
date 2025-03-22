@@ -40,6 +40,7 @@ namespace Application
             //services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
             //services.AddHostedService<GpsMonitorService>();
+            services.AddHostedService<LikeCommentEventProcessor>();
             //đăng kí hub
             services.AddScoped<INotificationService, NotificationService>();
             // Đăng ký Auth Services
