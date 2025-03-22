@@ -18,6 +18,15 @@ builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddInfastructureServices(builder.Configuration);
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
+// Thêm CORS vào services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy => policy.WithOrigins("http://localhost:3000") // Thay bằng URL của React app
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials());
+});
 
 
 builder.Services.AddLogging();
@@ -39,6 +48,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+
+// Kích hoạt CORS trước khi dùng Authentication, Authorization
+app.UseCors("AllowReactApp");
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -36,3 +36,20 @@
     transform: rotate(360deg);
   }
 }
+
+/* Đổi màu thanh loading */
+#nprogress .bar {
+  background: #00409f !important; /* Màu cam đỏ (thay bằng màu bạn muốn) */
+  height: 5px !important;
+}
+
+/* Đổi màu loading bóng */
+#nprogress .peg {
+  box-shadow: 0 0 10px #0051ca, 0 0 5px #00317a !important;
+}
+
+/* Đổi màu vòng xoay (spinner) */
+#nprogress .spinner-icon {
+  border-top-color: #ff5733 !important;
+  border-left-color: #ff5733 !important;
+}
