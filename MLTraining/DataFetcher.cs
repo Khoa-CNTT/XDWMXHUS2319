@@ -36,14 +36,14 @@ namespace MLTraining
 
         // DTO đại diện cho dữ liệu bài viết từ API
         public class PostDto
-    {
-        public string Content { get; set; }
-    }
+        {
+        public required string Content { get; set; }
+        }
         public class ApiResponse<T>
         {
-            public string Message { get; set; }
-            public bool Success { get; set; }
-            public T Data { get; set; }
+            public required string Message { get; set; }
+            public required bool Success { get; set; }
+            public required T Data { get; set; }
         }
 
     }

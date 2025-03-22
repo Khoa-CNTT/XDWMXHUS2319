@@ -136,7 +136,7 @@ namespace Infrastructure.Data.Repositories
              .ThenInclude(l => l.User)
          .Include(p => p.Shares.Where(s => !s.IsDeleted))
              .ThenInclude(s => s.User)
-        .Where(p => p.Content.Contains(keyword) || p.User.FullName.Contains(keyword));
+        .Where(p => p.Content.Contains(keyword) || p.User != null && p.User.FullName.Contains(keyword));
 
             if (fromDate.HasValue)
             {
@@ -186,7 +186,7 @@ namespace Infrastructure.Data.Repositories
         public async Task<List<Post>> SearchPostsAsync(string keyword)
         {
             return await _context.Posts
-                .Where(p => p.Content.Contains(keyword) || p.User.FullName.Contains(keyword))
+                .Where(p => p.Content.Contains(keyword) || p.User != null && p.User.FullName.Contains(keyword))
                 .Include(p => p.User) // Lấy thông tin người đăng bài
                 .Include(p => p.Comments.Where(c => !c.IsDeleted)) // Chỉ lấy bình luận chưa bị xóa
                     .ThenInclude(c => c.User) // Lấy thông tin người bình luận

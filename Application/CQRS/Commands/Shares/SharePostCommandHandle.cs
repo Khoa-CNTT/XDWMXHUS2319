@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Post;
+﻿using Application.DTOs.Comments;
+using Application.DTOs.Post;
 using Application.DTOs.Shares;
 using Application.Interface;
 using Application.Interface.Api;
@@ -40,12 +41,15 @@ namespace Application.CQRS.Commands.Shares
             {
                 return ResponseFactory.Fail<ResultSharePostDto>("Bạn đã chia sẻ bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
             }
+            // Lấy thông tin người dùng chia sẻ
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return ResponseFactory.Fail<ResultSharePostDto>("Không tìm thấy người dùng", 404);
+            }
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // Lấy thông tin người dùng chia sẻ
-                var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-
                 // **Tạo bài Share**
                 var share = new Share(userId, request.PostId, request.Content);
                 await _unitOfWork.ShareRepository.AddAsync(share);

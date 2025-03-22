@@ -16,8 +16,8 @@ namespace Domain.Entities
         public DateTime? UpdatedAt { get; private set; }
         
         //CHUPS
-        public virtual User? User { get; private set; }
-        public virtual Post? Post { get; private set; }
+        public virtual User User { get; private set; } = null!;
+        public virtual Post Post { get; private set; } = null!;
 
 
         public Guid? ParentCommentId { get; set; }

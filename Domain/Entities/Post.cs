@@ -35,7 +35,7 @@ namespace Domain.Entities
 
         public bool IsSharedPost { get;private set; } = false;
         public Guid? OriginalPostId { get;private set; }
-        public Post? OriginalPost { get;private set; }
+        public Post OriginalPost { get;private set; } = null!;
 
         public void SoftDelete()
         {
