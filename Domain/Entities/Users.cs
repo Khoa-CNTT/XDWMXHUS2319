@@ -22,6 +22,8 @@ namespace Domain.Entities
             public bool IsVerifiedEmail { get; private set; } = false;
             public int TrustScore { get; private set; } = 0;
             public RoleEnum Role { get; private set; } = RoleEnum.User;
+            public string? RelativePhone { get; private set; }
+            public string? Phone { get; private set; }
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
             public virtual ICollection<Comment> Comments { get; private set; } = new HashSet<Comment>();
@@ -31,11 +33,17 @@ namespace Domain.Entities
             public virtual ICollection<Message> MessageReceivers { get; private set; } = new List<Message>();
             public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
             public virtual ICollection<GroupMember> GroupMembers { get; private set; } = new HashSet<GroupMember>();
+
+            public virtual ICollection<CommentLike> CommentLikes { get; private set; } = new List<CommentLike>();
+
             //CHUPS
             public virtual ICollection<Share> Shares { get; private set; } = new HashSet<Share>();
-
-
-        public User(string fullName, string email, string passwordHash)
+            //huy
+            public ICollection<RidePost> RidePosts { get; set; } = new List<RidePost>();
+            public ICollection<Ride> DrivenRides { get; set; } = new List<Ride>(); // Những chuyến đi do user làm tài xế
+            public ICollection<Ride> RidesAsPassenger { get; set; } = new List<Ride>(); // Những chuyến đi user là hành khách
+            public ICollection<LocationUpdate> LocationUpdates { get; set; } = new List<LocationUpdate>();
+            public User(string fullName, string email, string passwordHash)
             {
                 if (string.IsNullOrWhiteSpace(fullName)) throw new ArgumentException("Full name is required.");
                 if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email is required.");

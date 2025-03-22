@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Post;
+using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using Application.Services;
 
@@ -10,11 +11,12 @@ namespace Application.CQRS.Commands.Posts
         private readonly IUserContextService _userContextService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGeminiService _geminiService;
-        private readonly MLService _mLService;
-        public CreatePostCommandHandler(IUnitOfWork unitOfWork,MLService mLService, IUserContextService userContextService, IGeminiService geminiService)
+
+      
+        public CreatePostCommandHandler(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService)
         {
             _unitOfWork = unitOfWork;
-            _mLService = mLService;
+
             _userContextService = userContextService;
             _geminiService = geminiService;
         }
@@ -56,7 +58,8 @@ namespace Application.CQRS.Commands.Posts
 
                 var postDto = new ResponsePostDto
                 {
-                    Id = userId,
+                    Id = post.Id,
+                    UserId = userId,
                     Content = post.Content,
                     PostType = post.PostType,
                     IsApproved = post.IsApproved,
@@ -70,6 +73,5 @@ namespace Application.CQRS.Commands.Posts
                 return ResponseFactory.Fail<ResponsePostDto>(e.Message, 500);
             }
         }
-
     }
 }

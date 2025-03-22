@@ -11,10 +11,13 @@ namespace Domain.Entities
         public Guid Id { get; private set; }
         public Guid UserId { get; private set; }  // Không nên nullable (một lượt chia sẻ cần có người chia sẻ)
         public Guid PostId { get; private set; }  // Không nên nullable (một lượt chia sẻ cần gắn với bài viết)
-        public DateTime CreatedAt { get; private set; }
+        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
         public string? Content { get; private set; } // Tin nhắn hoặc ghi chú khi chia sẻ
         public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
-
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+        }
 
         //CHUPS
         public virtual User User { get; private set; } = null!;

@@ -3,11 +3,21 @@ using Application;
 using MediatR;
 using Application.Model;
 using Application.Interface.Hubs;
-using DuyTanSharingSystem.Service;
-using DuyTanSharingSystem.Hubs;
 using Domain.Common;
+using Infrastructure.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy => policy
+            .WithOrigins("http://127.0.0.1:5500") // ⚡ Chỉ cho phép frontend truy cập
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()); // ⚡ Bật chế độ gửi cookie/token
+});
+
 // 🔹 Nạp User Secrets (nếu đang ở môi trường Development)
 if (builder.Environment.IsDevelopment())
 {
@@ -16,6 +26,7 @@ if (builder.Environment.IsDevelopment())
 // Add services to the container.
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddInfastructureServices(builder.Configuration);
+
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Thêm CORS vào services
@@ -27,6 +38,8 @@ builder.Services.AddCors(options =>
                         .AllowAnyHeader()
                         .AllowCredentials());
 });
+
+
 
 
 builder.Services.AddLogging();
@@ -49,10 +62,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-
-// Kích hoạt CORS trước khi dùng Authentication, Authorization
-app.UseCors("AllowReactApp");
-
+app.UseCors("AllowFrontend"); // 🚀 Sử dụng CORS
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -67,6 +77,7 @@ app.UseAuthentication(); // ✅ Đảm bảo đăng nhập trước khi xác th�
 app.UseAuthorization();
 //app.UseCors(); // ✅ Đặt trước SignalR
 
+app.MapHub<NotificationHub>("/notificationHub").RequireAuthorization(); // ✅ Chỉ ở tầng Web API
+
 app.MapControllers();
-app.MapHub<NotificationHub>("/NotificationHub"); // Đảm bảo đường dẫn chính xác
 app.Run();

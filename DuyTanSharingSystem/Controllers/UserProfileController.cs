@@ -21,25 +21,14 @@ namespace DuyTanSharingSystem.Controllers
         [HttpGet("profile")]
         public async Task<IActionResult> GetUserProfile()
         {
-            var result = await _mediator.Send(new GetUserProfileQuery());
-            return Ok(result);
+            return Ok(await _mediator.Send(new GetUserProfileQuery()));
         }
         [Authorize]
         [HttpPut("upProfile")]
         public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileCommand command)
         {
-            var uesrid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (uesrid == null)
-            {
-                return Unauthorized("ban chua dang nhap");
-            }
-            command.UserId = Guid.Parse(uesrid);
             var result = await _mediator.Send(command);
-            if (result.Success)
-            {
-                return Ok("cap nhat thanh cong");
-            }
-            return BadRequest("cap nhat that bai");
+            return Ok(result);
         }
     }
 }
