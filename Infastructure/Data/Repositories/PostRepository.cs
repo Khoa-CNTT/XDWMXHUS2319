@@ -256,7 +256,11 @@ namespace Infrastructure.Data.Repositories
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
         }
+        public async Task<bool> HasUserLikedPostAsync(Guid userId, Guid postId)
+        {
+            return await _context.Likes
+                .AnyAsync(l => l.UserId == userId && l.PostId == postId && l.IsLike);
+        }
 
-        
     }
 }
