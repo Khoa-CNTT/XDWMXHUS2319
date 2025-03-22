@@ -10,9 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
+    options.AddPolicy("AllowReactApp",
         policy => policy
-            .WithOrigins("http://127.0.0.1:5500") // ⚡ Chỉ cho phép frontend truy cập
+            .WithOrigins("http://localhost:3000") // ⚡ Chỉ cho phép frontend truy cập
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()); // ⚡ Bật chế độ gửi cookie/token
@@ -27,20 +27,16 @@ if (builder.Environment.IsDevelopment())
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddInfastructureServices(builder.Configuration);
 
-builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Thêm CORS vào services
-builder.Services.AddCors(options =>
+/*builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         policy => policy.WithOrigins("http://localhost:3000") // Thay bằng URL của React app
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials());
-});
-
-
-
+});*/
 
 builder.Services.AddLogging();
 // C?u hình logging ?? xu?t log ra console
@@ -62,7 +58,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseCors("AllowFrontend"); // 🚀 Sử dụng CORS
+app.UseCors("AllowReactApp"); // 🚀 Sử dụng CORS
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
