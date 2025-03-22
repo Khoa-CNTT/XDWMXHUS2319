@@ -18,6 +18,7 @@ namespace Application.DTOs.Comments
         public string? ProfilePicture { get; set; }
         public string? Content { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int HasLiked { get; set; }
         /*        public CommentLikeDto CommentLikes { get; set; } = new CommentLikeDto();*/
         public int LikeCountComment { get; set; }
 
