@@ -22,6 +22,11 @@ namespace MLTraining
 
             using (var process = Process.Start(processInfo))
             {
+                if (process == null)
+                {
+                    Console.WriteLine("❌ Không thể khởi động tiến trình.");
+                    return;
+                }
                 process.WaitForExit();
                 string result = process.StandardOutput.ReadToEnd();
                 string error = process.StandardError.ReadToEnd();

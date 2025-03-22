@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Commands.Comments
 {
-    public class CommentPostCommand : IRequest<ResponseModel<CommentPostDto>>
+    public class CommentPostCommand : IRequest<ResponseModel<ResultCommentDto>>
     {
         public Guid PostId { get; set; }
-        public string Content { get; set; }
+        public string? Content { get; set; }
     }
 }

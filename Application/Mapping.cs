@@ -45,6 +45,18 @@ namespace Application
                 OriginalPost = new OriginalPostDto(post)
             };
         }
+        public static ResultCommentDto MapToResultCommentPostDto(Comment comment, string fullName, string? profilePicture)
+        {
+            return new ResultCommentDto
+            {
+                CommentId = comment.Id,
+                CreatedAt = comment.CreatedAt,
+                UpdatedAt = comment.UpdatedAt,
+                Content = comment.Content,
+                FullName = fullName,
+                ProfilePicture = profilePicture,
+            };
+        }
         public static UserDto MapToUserDto(User? user)
         {
             return new UserDto
@@ -163,11 +175,6 @@ namespace Application
         }
         public static PostDto MapToPostDto(Post p)
         {
-            if (p == null || p.IsDeleted)
-            {
-                return null; // 🔥 Nếu bài viết bị xóa, trả về null
-            }
-
             // Lọc các comment chưa bị xóa mềm
             var allComments = p.Comments?
                 .Where(c => !c.IsDeleted) // 🔥 Lọc comment hợp lệ
@@ -246,11 +253,6 @@ namespace Application
         }
         public static GetAllPostDto MapToAllPostDto(Post p)
         {
-            if (p == null || p.IsDeleted)
-            {
-                return null; // 🔥 Nếu bài viết bị xóa, trả về null
-            }
-
             // Lọc các comment chưa bị xóa mềm
             var allComments = p.Comments?
                 .Where(c => !c.IsDeleted) // 🔥 Lọc comment hợp lệ

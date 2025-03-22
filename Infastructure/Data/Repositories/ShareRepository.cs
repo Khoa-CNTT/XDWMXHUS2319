@@ -40,7 +40,8 @@ namespace Infrastructure.Data.Repositories
               .Include(s => s.User)
               .Include(s => s.Post)
               .ThenInclude(p => p.User)
-              .Where(s => s.Content.Contains(keyword) || s.User.FullName.Contains(keyword))
+              .Where(s => (s.Content != null && s.Content.Contains(keyword)) ||
+                            (s.User != null && s.User.FullName.Contains(keyword)))
               .ToListAsync();
         }
         public async Task<List<Post>> GetSharedPostAllDeleteAsync(Guid originalPostId)
