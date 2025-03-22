@@ -15,7 +15,7 @@ namespace Domain.Entities
         public virtual User? User { get; private set; }
         public Guid CommentId { get; private set; }
         public bool IsLike { get; private set; } = true;
-        public virtual Comment? Comment { get;private set; }
+        public virtual Comment Comment { get;private set; } = null!;
 
         public DateTime CreatedAt { get;private set; } = DateTime.UtcNow;
         public CommentLike(Guid userId, Guid commentId)

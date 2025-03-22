@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Commands.Comments
 {
-    public class CommentPostCommandHandle : IRequestHandler<CommentPostCommand, ResponseModel<CommentPostDto>>
+    public class CommentPostCommandHandle : IRequestHandler<CommentPostCommand, ResponseModel<ResultCommentDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
@@ -22,14 +22,14 @@ namespace Application.CQRS.Commands.Comments
             _userContextService = userContextService;
             _geminiService = geminiService;
         }
-        public async Task<ResponseModel<CommentPostDto>> Handle(CommentPostCommand request, CancellationToken cancellationToken)
+        public async Task<ResponseModel<ResultCommentDto>> Handle(CommentPostCommand request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId();
 
             var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
             if (post == null)
             {
-                return ResponseFactory.Fail<CommentPostDto>("Không tìm thấy bài viết này", 404);
+                return ResponseFactory.Fail<ResultCommentDto>("Không tìm thấy bài viết này", 404);
             }
 
             // Kiểm tra số lần share của user đối với bài viết này
@@ -40,31 +40,38 @@ namespace Application.CQRS.Commands.Comments
 
             if (commentCount >= 3)
             {
-                return ResponseFactory.Fail<CommentPostDto>("Bạn đã bình luận bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
+                return ResponseFactory.Fail<ResultCommentDto>("Bạn đã bình luận bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
             }
-
+            if(request.Content == null)
+            {
+                return ResponseFactory.Fail<ResultCommentDto>("Nội dung bình luận không được để trống", 400);
+            }
 
             if (!await _geminiService.ValidatePostContentAsync(request.Content))
             {
-                return ResponseFactory.Fail<CommentPostDto>("Warning! Content is not accepted! If you violate it again, your reputation will be deducted!!", 400);
+                return ResponseFactory.Fail<ResultCommentDto>("Warning! Content is not accepted! If you violate it again, your reputation will be deducted!!", 400);
             }
 
             await _unitOfWork.BeginTransactionAsync();
             try
             {             
                 var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+                if(user == null)
+                {
+                    return ResponseFactory.Fail<ResultCommentDto>("Không tìm thấy người dùng này", 404);
+                }
                 var comment = new Comment(userId, request.PostId, request.Content);
 
                 await _unitOfWork.CommentRepository.AddAsync(comment);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
-                return ResponseFactory.Success(Mapping.MapToCommentPostDto(comment, post, user), "Bình luận bài viết thành công", 200);
+                return ResponseFactory.Success(Mapping.MapToResultCommentPostDto(comment, user.FullName, user.ProfilePicture), "Bình luận bài viết thành công", 200);
             }
             catch(Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                return ResponseFactory.Fail<CommentPostDto>(ex.Message, 500);
+                return ResponseFactory.Fail<ResultCommentDto>(ex.Message, 500);
             }
         }
     }

@@ -11,11 +11,11 @@ namespace Application.DTOs.Post
     public class OriginalPostDto
     {
         public Guid PostId { get; set; }
-        public string Content { get; set; }
+        public string Content { get; set; } = null!;
 
         public string? ImageUrl { get; set; }
         public string? VideoUrl { get; set; }
-        public UserPostDto Author { get; set; }
+        public UserPostDto Author { get; set; } = null!;
         public DateTime CreateAt { get; set; }
 
 /*      public int CommentCount { get; set; }
