@@ -30,11 +30,12 @@ namespace DuyTanSharingSystem.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreatePost([FromBody] CreatePostCommand request)
+        public async Task<IActionResult> CreatePost([FromForm] CreatePostCommand request)
         {
             var response = await _mediator.Send(request);
             return Ok(response);
         }
+
         [HttpGet("getallpost")]
         public async Task<IActionResult> GetAllPost([FromQuery] GetAllPostQuery query)
         {
@@ -68,7 +69,7 @@ namespace DuyTanSharingSystem.Controllers
                 return Ok(response);
         }
         [HttpPatch("update-post")]
-        public async Task<IActionResult> UpdatePost([FromBody] UpdatePostCommand command)
+        public async Task<IActionResult> UpdatePost([FromForm] UpdatePostCommand command)
         {
             var response = await _mediator.Send(command);
             return Ok(response);

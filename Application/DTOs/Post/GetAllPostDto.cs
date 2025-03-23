@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using static Domain.Common.Enums;
 
 namespace Application.DTOs.Post
 {
@@ -24,6 +25,8 @@ namespace Application.DTOs.Post
 
         public string? VideoUrl { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? UpdateAt { get;  set; }
+        public PostTypeEnum PostType { get;  set; }
         public int CommentCount { get; set; }
 
         public int LikeCount { get; set; }
