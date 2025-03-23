@@ -3,11 +3,22 @@ using Application;
 using MediatR;
 using Application.Model;
 using Application.Interface.Hubs;
-using DuyTanSharingSystem.Service;
-using DuyTanSharingSystem.Hubs;
 using Domain.Common;
+using Infrastructure.Hubs;
+using Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy => policy
+            .WithOrigins("http://localhost:3000") // ⚡ Chỉ cho phép frontend truy cập
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()); // ⚡ Bật chế độ gửi cookie/token
+});
+
 // 🔹 Nạp User Secrets (nếu đang ở môi trường Development)
 if (builder.Environment.IsDevelopment())
 {
@@ -16,9 +27,17 @@ if (builder.Environment.IsDevelopment())
 // Add services to the container.
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddInfastructureServices(builder.Configuration);
-builder.Services.AddScoped<INotificationService, NotificationService>();
 
 
+// Thêm CORS vào services
+/*builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy => policy.WithOrigins("http://localhost:3000") // Thay bằng URL của React app
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials());
+});*/
 
 builder.Services.AddLogging();
 // C?u hình logging ?? xu?t log ra console
@@ -40,6 +59,10 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+
+app.UseCors("AllowReactApp"); // 🚀 Sử dụng CORS
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -53,6 +76,7 @@ app.UseAuthentication(); // ✅ Đảm bảo đăng nhập trước khi xác th�
 app.UseAuthorization();
 //app.UseCors(); // ✅ Đặt trước SignalR
 
+app.MapHub<NotificationHub>("/notificationHub").RequireAuthorization(); // ✅ Chỉ ở tầng Web API
+
 app.MapControllers();
-app.MapHub<NotificationHub>("/NotificationHub"); // Đảm bảo đường dẫn chính xác
 app.Run();

@@ -16,6 +16,19 @@ namespace Infrastructure.Service
         {
             _httpContextAccessor = httpContextAccessor;
         }
+
+        public string FullName()
+        {
+            var fullName = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (string.IsNullOrEmpty(fullName))
+            {
+                throw new UnauthorizedAccessException("User Full Name not found in token");
+            }
+
+            return fullName;
+        }
+
         public Guid UserId()
         {
             var userIdString = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

@@ -50,5 +50,29 @@ namespace Domain.Common
             User,
             Admin
         }
+        public enum StatusRideEnum
+        {
+            Pending,
+            Accepted,
+            Rejected,
+            Completed
+        }
+        public enum PostRideTypeEnum
+        {
+            OfferRide,//tài xế đăng
+            RequestRide//hành khách đăng
+        }
+        public enum RidePostStatusEnum
+        {
+            open,//đang mở
+            Matched,//đã tìm được người đi chung
+            Canceled,//bị hủy
+        }
+        public enum AlertTypeEnums
+        {
+            DriverGPSOff,
+            TripDelayed,
+            NoResponse
+        }
     }
 }

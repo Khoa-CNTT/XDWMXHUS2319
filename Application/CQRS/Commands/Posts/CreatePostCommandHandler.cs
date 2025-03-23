@@ -1,6 +1,8 @@
 ﻿using Application.DTOs.Post;
+using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using Application.Services;
+using static Domain.Common.Enums;
 
 
 namespace Application.CQRS.Commands.Posts
@@ -10,16 +12,18 @@ namespace Application.CQRS.Commands.Posts
         private readonly IUserContextService _userContextService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGeminiService _geminiService;
-        private readonly MLService _mLService;
-        public CreatePostCommandHandler(IUnitOfWork unitOfWork,MLService mLService, IUserContextService userContextService, IGeminiService geminiService)
+        private readonly IFileService _fileService;
+
+        public CreatePostCommandHandler(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, IFileService fileService)
         {
             _unitOfWork = unitOfWork;
-            _mLService = mLService;
             _userContextService = userContextService;
             _geminiService = geminiService;
+            _fileService = fileService;
         }
         public async Task<ResponseModel<ResponsePostDto>> Handle(CreatePostCommand request, CancellationToken cancellationToken)
         {
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -27,9 +31,16 @@ namespace Application.CQRS.Commands.Posts
                 if (userId == Guid.Empty)
                     return ResponseFactory.Fail<ResponsePostDto>("User not found", 404);
 
-                var post = new Post(userId, request.Content, request.PostType,request.Scope, request.ImageUrl, request.VideoUrl);
+                // Kiểm tra và lưu ảnh
+                string? imageUrl = request.Image != null ?
+                    await _fileService.SaveFileAsync(request.Image, "images", isImage: true) : null;
 
-               
+                // Kiểm tra và lưu video
+                string? videoUrl = request.Video != null ?
+                    await _fileService.SaveFileAsync(request.Video, "videos", isImage: false) : null;
+
+                var post = new Post(userId, request.Content, request.PostType, ScopeEnum.Public, imageUrl, videoUrl);
+          
                 //kiểm tra xem bài đăng có hợp lệ không bằng Genimi
                var result = await _geminiService.ValidatePostContentAsync(post.Content);
                 if (!result)
@@ -56,8 +67,12 @@ namespace Application.CQRS.Commands.Posts
 
                 var postDto = new ResponsePostDto
                 {
-                    Id = userId,
+                    Id = post.Id,
+                    UserId = userId,
                     Content = post.Content,
+                    CreatedAt = post.CreatedAt,
+                    ImageUrl = post.ImageUrl,
+                    VideoUrl = post.VideoUrl,
                     PostType = post.PostType,
                     IsApproved = post.IsApproved,
                 };
@@ -70,6 +85,5 @@ namespace Application.CQRS.Commands.Posts
                 return ResponseFactory.Fail<ResponsePostDto>(e.Message, 500);
             }
         }
-
     }
 }

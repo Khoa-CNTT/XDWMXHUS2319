@@ -19,7 +19,19 @@ namespace Infrastructure.Data.UnitOfWork
             IPostRepository postRepository,
             IEmailTokenRepository emailTokenRepository,
             ILikeRepository likeRepository,
-            IRefreshtokenRepository refreshtokenRepository
+            IRefreshtokenRepository refreshtokenRepository,
+
+            IShareRepository shareRepository,
+            ICommentRepository commentRepository,
+            ICommentLikeRepository commentLikeRepository,
+
+            IRidePostRepository ridePostRepository,
+            IRideRepository rideRepository,
+            ILocationUpdateRepository locationUpdateRepository,
+            IReportRepository reportRepository,
+
+            IRideReportRepository rideReportRepository
+
             )
         {
             _context = context;
@@ -28,6 +40,17 @@ namespace Infrastructure.Data.UnitOfWork
             EmailTokenRepository = emailTokenRepository;
             LikeRepository = likeRepository;
             RefreshtokenRepository = refreshtokenRepository;
+
+            ShareRepository = shareRepository;
+            CommentRepository = commentRepository;
+            CommentLikeRepository = commentLikeRepository;
+
+            RidePostRepository = ridePostRepository;
+            RideRepository = rideRepository;
+            LocationUpdateRepository = locationUpdateRepository;
+
+            ReportRepository = reportRepository;
+            RideReportRepository = rideReportRepository;
         }
         public IUserRepository UserRepository { get; }
         public IPostRepository PostRepository { get; }
@@ -35,6 +58,16 @@ namespace Infrastructure.Data.UnitOfWork
         public ILikeRepository LikeRepository { get; }
         public IRefreshtokenRepository RefreshtokenRepository { get; }
 
+        public IShareRepository ShareRepository { get; }
+        public ICommentRepository CommentRepository { get; }
+        public ICommentLikeRepository CommentLikeRepository { get; }
+
+        public IRidePostRepository RidePostRepository { get; }
+        public IRideRepository RideRepository { get; }
+        public ILocationUpdateRepository LocationUpdateRepository { get; }
+
+        public IReportRepository ReportRepository { get; }
+        public IRideReportRepository RideReportRepository { get; }
         public async Task<int> SaveChangesAsync()
         => await _context.SaveChangesAsync();
 
