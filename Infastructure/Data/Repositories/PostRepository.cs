@@ -71,7 +71,7 @@ namespace Infrastructure.Data.Repositories
                      .ThenInclude(s => s.User)
                  .Include(p => p.OriginalPost)
                      .ThenInclude(op => op.User)
-                 .Where(p => !p.IsDeleted) // Chỉ lấy bài chưa bị xóa
+                 .Where(p => !p.IsDeleted && p.Scope == ScopeEnum.Public) // Chỉ lấy bài chưa bị xóa
                  .OrderByDescending(p => p.CreatedAt); // Sắp xếp bài mới nhất lên trước
 
             // Nếu có LastPostId, chỉ lấy bài viết cũ hơn nó

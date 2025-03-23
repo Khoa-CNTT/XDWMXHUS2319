@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Post;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +12,9 @@ namespace Application.CQRS.Commands.Posts
     public class CreatePostCommand : IRequest<ResponseModel<ResponsePostDto>>
     {
         public required string Content { get;  set; }
-        public string? ImageUrl { get;  set; }
-        public string? VideoUrl { get;  set; }
+        public IFormFile? Image { get;  set; }
+        public IFormFile? Video { get;  set; }
         public PostTypeEnum PostType { get;  set; }
-        public ScopeEnum Scope { get;  set; }
+        public ScopeEnum Scope { get;  set; } = ScopeEnum.Public;
     }
 }
