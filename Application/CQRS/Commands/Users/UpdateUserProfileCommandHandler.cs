@@ -14,11 +14,13 @@ namespace Application.CQRS.Commands.Users
         private readonly IUserRepository _userRepository;
         private readonly IUserContextService _userContextService;
         private readonly IUnitOfWork _unitOfWork;
-        public UpdateUserProfileCommandHandler(IUserRepository userRepository, IUserContextService userContextService, IUnitOfWork unitOfWork)
+        private readonly IFileService _fileService;
+        public UpdateUserProfileCommandHandler(IUserRepository userRepository, IUserContextService userContextService, IUnitOfWork unitOfWork, IFileService fileService)
         {
             _userRepository = userRepository;
             _userContextService = userContextService;
             _unitOfWork = unitOfWork;
+            _fileService = fileService;
         }
 
         public async Task<ResponseModel<UserProfileDto>> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
@@ -36,18 +38,19 @@ namespace Application.CQRS.Commands.Users
             {
                 return ResponseFactory.Fail<UserProfileDto>("User not found", 404);
             }
+            // 🔄 Cập nhật thông tin người dùng
+            string? newProfileImageUrl = user.ProfilePicture;
 
-            // 🛑 Ngăn chặn giả mạo UserId
-            if (request.UserId != userIdFromToken)
+            if (request.ProfileImage != null && _fileService.IsImage(request.ProfileImage))
             {
-                return ResponseFactory.Fail<UserProfileDto>("Forbidden: You cannot update another user's profile", 403);
+                newProfileImageUrl = await _fileService.SaveFileAsync(request.ProfileImage, "images/profile", true);
             }
 
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 // Cập nhật thông tin người dùng
-                user.UpdateProfile(request.FullName, request.Bio, request.ProfilePicture);
+                user.UpdateProfile(request.FullName, newProfileImageUrl, request.Bio);
                 await _userRepository.UpdateAsync(user);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
