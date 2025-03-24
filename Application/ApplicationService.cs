@@ -34,6 +34,8 @@ namespace Application
             services.AddScoped<IRedisService, RedisService>();
             services.AddScoped<IPostService, PostService>();
 
+            // Đăng ký File Service để lưu ảnh và video
+            services.AddScoped<IFileService, FileService>();
 
             //background services
             //nếu ko làm việc liên quan đến like và LocationUpdate thì comment lại

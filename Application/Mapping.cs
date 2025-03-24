@@ -279,6 +279,8 @@ namespace Application
                 ImageUrl = p.ImageUrl,
                 VideoUrl = p.VideoUrl,
                 CreatedAt = p.CreatedAt,
+                UpdateAt = p.UpdateAt,
+                PostType = p.PostType,
                 CommentCount = p.Comments?.Count ?? 0,
                 LikeCount = p.Likes?.Count ?? 0,
                 ShareCount = p.Shares?.Count ?? 0,
