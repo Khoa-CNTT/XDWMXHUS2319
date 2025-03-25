@@ -14,6 +14,7 @@ namespace Application.Interface.Hubs
         //gửi cảnh báo khi gps bị tắt
         Task SendInAppNotificationAsync(Guid driverId, string message);
         Task SendAlertAsync(Guid driverId, string message);
+        Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName);
     }
 
 }

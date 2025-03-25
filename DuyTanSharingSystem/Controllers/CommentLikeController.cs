@@ -17,10 +17,10 @@ namespace DuyTanSharingSystem.Controllers
             _mediator = mediator;
         }
         [Authorize]
-        [HttpGet("GetCommentLikes/{commentId}")]
-        public async Task<IActionResult> GetCommentLikes([FromRoute] Guid commentId)
+        [HttpGet("GetCommentLikes")]
+        public async Task<IActionResult> GetCommentLikes([FromQuery] GetCommentLikeQuery query)
         {
-            var response = await _mediator.Send(new GetCommentLikeQuery(commentId));
+            var response = await _mediator.Send(query);
             return Ok(response);
         }
         [Authorize]

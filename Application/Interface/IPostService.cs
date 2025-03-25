@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Post;
+﻿using Application.DTOs.Comments;
+using Application.DTOs.Post;
 using Application.DTOs.Shares;
 using System;
 using System.Collections.Generic;
@@ -12,12 +13,13 @@ namespace Application.Interface
     public interface IPostService
     {
         Task<Guid> GetPostOwnerId(Guid postId);
-        Task<GetPostsResponse> GetPostsWithCursorAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken);
+        Task<GetPostsResponse> GetPostsWithCursorAsync(Guid? lastPostId, CancellationToken cancellationToken);
         Task<GetPostsResponse> GetPostsByOwnerWithCursorAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken);
         Task<GetPostsResponse> GetPostByTypeWithCursorAsync(PostTypeEnum postTypeEnum, Guid? lastPostId, int pageSize, CancellationToken cancellationToken);
         Task<bool> IsUserSpammingSharesAsync(Guid userId, Guid postId);
 
         Task SoftDeletePostAndRelatedDataAsync(Guid postId);
         Task SoftDeleteCommentAndRepliesAsync(Guid commentId);
+        Task<GetCommentsResponse> GetCommentByPostIdWithCursorAsync(Guid postId, Guid? lastCommentId, CancellationToken cancellationToken);
     }
 }

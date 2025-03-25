@@ -9,30 +9,30 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.Comment
 {
-    public class GetCommentByPostIdQueryHandle : IRequestHandler<GetCommentByPostIdQuery, ResponseModel<List<CommentDto>>>
+    public class GetCommentByPostIdQueryHandle : IRequestHandler<GetCommentByPostIdQuery, ResponseModel<GetCommentsResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
+        private readonly IPostService _postService;
 
-        public GetCommentByPostIdQueryHandle(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public GetCommentByPostIdQueryHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IPostService postService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
+            _postService = postService;
         }
 
-        public async Task<ResponseModel<List<CommentDto>>> Handle(GetCommentByPostIdQuery request, CancellationToken cancellationToken)
+        public async Task<ResponseModel<GetCommentsResponse>> Handle(GetCommentByPostIdQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId();
-            var (comments, totalRecords) = await _unitOfWork.CommentRepository.GetCommentByPostIdAsync(request.PostId, request.Page, request.PageSize);
+            var response = await _postService.GetCommentByPostIdWithCursorAsync(request.PostId, request.LastCommentId, cancellationToken);
 
-            if (comments == null || !comments.Any())
+            if (!response.Comments.Any())
             {
-                return ResponseFactory.Success(new List<CommentDto>(), "Không có bình luận nào", 200);
+                return ResponseFactory.Success(response, "Không có bình luận nào", 200);
             }
 
-            var commentDtos = comments.Select(c => Mapping.MapToCommentByPostIdDto(c, userId)).ToList(); // ✅ Truyền userId vào
-
-            return ResponseFactory.Success(commentDtos, "Lấy danh sách bình luận thành công", 200);
+            return ResponseFactory.Success(response, "Lấy danh sách bình luận thành công", 200);
         }
     }
 }

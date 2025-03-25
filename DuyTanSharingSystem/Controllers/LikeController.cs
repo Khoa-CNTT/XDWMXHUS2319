@@ -25,10 +25,9 @@ namespace DuyTanSharingSystem.Controllers
             var response = await _mediator.Send(likePost);
             return Ok(response);
         }
-        [HttpGet("get-likes/{postId}")]
-        public async Task<IActionResult> GetLikes(Guid postId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        [HttpGet("get-likes")]
+        public async Task<IActionResult> GetLikes([FromQuery] GetLikeByPostIdQuery query)
         {
-            var query = new GetLikeByPostIdQuery(postId, page, pageSize);
             var result = await _mediator.Send(query);
             return Ok(result);
         }
