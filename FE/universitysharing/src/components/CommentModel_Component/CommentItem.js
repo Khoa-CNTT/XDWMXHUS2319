@@ -45,7 +45,11 @@ const CommentItem = ({ comments }) => {
           {comments.replies.map((reply) => (
             <>
               <div key={reply.id} className="reply-comment">
-                <img className="avatar" src={avatarDefaut} alt="Avatar" />
+                <img
+                  className="avatar"
+                  src={reply.profilePicture || avatarDefaut}
+                  alt="Avatar"
+                />
                 <div className="reply-content">
                   <span className="reply-username">{reply.userName}</span>
                   <p></p>

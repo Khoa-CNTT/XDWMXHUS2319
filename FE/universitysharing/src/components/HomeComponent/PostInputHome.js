@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../../styles/headerHome.scss";
 import CreatePostModal from "../CreatePostModal";
-const PostInput = () => {
+const PostInput = ({ usersProfile }) => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const openPost = () => {
     setIsShareModalOpen(true);
@@ -19,6 +19,7 @@ const PostInput = () => {
         <CreatePostModal
           isOpen={isShareModalOpen}
           onClose={ClosePost}
+          usersProfile={usersProfile}
         ></CreatePostModal>
       )}
     </>
