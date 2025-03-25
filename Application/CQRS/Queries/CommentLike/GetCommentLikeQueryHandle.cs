@@ -8,18 +8,20 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.CommentLike
 {
-    public class GetCommentLikeQueryHandle : IRequestHandler<GetCommentLikeQuery, ResponseModel<List<CommentLikeDto>>>
+    public class GetCommentLikeQueryHandle : IRequestHandler<GetCommentLikeQuery, ResponseModel<GetCommentLikeWithCursorResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICommentLikeService _commentLikeService;
 
-        public GetCommentLikeQueryHandle(IUnitOfWork unitOfWork)
+        public GetCommentLikeQueryHandle(IUnitOfWork unitOfWork, ICommentLikeService commentLikeService)
         {
             _unitOfWork = unitOfWork;
+            _commentLikeService = commentLikeService;
         }
 
-        public async Task<ResponseModel<List<CommentLikeDto>>> Handle(GetCommentLikeQuery request, CancellationToken cancellationToken)
+        public async Task<ResponseModel<GetCommentLikeWithCursorResponse>> Handle(GetCommentLikeQuery request, CancellationToken cancellationToken)
         {
-            var likeCount = await _unitOfWork.CommentLikeRepository.CountLikesAsync(request.CommentId);
+            /*var likeCount = await _unitOfWork.CommentLikeRepository.CountLikesAsync(request.CommentId);
             var likedUsers = await _unitOfWork.CommentLikeRepository.GetLikedUsersAsync(request.CommentId);
 
             // Kiểm tra nếu danh sách user bị null hoặc rỗng
@@ -37,7 +39,10 @@ namespace Application.CQRS.Queries.CommentLike
                 LikedUsers = likedUserDtos
             };
 
-            return ResponseFactory.Success(new List<CommentLikeDto> { commentLikeDto }, "Lấy danh sách người đã like bình luận thành công", 200);
+            return ResponseFactory.Success(new List<CommentLikeDto> { commentLikeDto }, "Lấy danh sách người đã like bình luận thành công", 200);*/
+            var response = await _commentLikeService.GetLikedUsersWithCursorAsync(request.CommentId, request.LastUserId);
+
+            return ResponseFactory.Success(response, "Lấy danh sách người đã like thành công", 200);
         }
     }
 }

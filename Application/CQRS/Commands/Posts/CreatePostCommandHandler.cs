@@ -33,11 +33,11 @@ namespace Application.CQRS.Commands.Posts
 
                 // Kiểm tra và lưu ảnh
                 string? imageUrl = request.Image != null ?
-                    await _fileService.SaveFileAsync(request.Image, "images", isImage: true) : null;
+                    await _fileService.SaveFileAsync(request.Image, "images/posts", isImage: true) : null;
 
                 // Kiểm tra và lưu video
                 string? videoUrl = request.Video != null ?
-                    await _fileService.SaveFileAsync(request.Video, "videos", isImage: false) : null;
+                    await _fileService.SaveFileAsync(request.Video, "videos/posts", isImage: false) : null;
 
                 var post = new Post(userId, request.Content, request.PostType, ScopeEnum.Public, imageUrl, videoUrl);
           

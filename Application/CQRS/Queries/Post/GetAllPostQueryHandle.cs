@@ -32,7 +32,7 @@ namespace Application.CQRS.Queries.Posts
         {
             var userId = _userContextService.UserId();
 
-            var postsResponse = await _postService.GetPostsWithCursorAsync(request.LastPostId, request.PageSize, cancellationToken);
+            var postsResponse = await _postService.GetPostsWithCursorAsync(request.LastPostId, cancellationToken);
 
             if (postsResponse == null || !postsResponse.Posts.Any())
             {

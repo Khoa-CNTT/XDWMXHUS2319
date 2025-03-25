@@ -56,6 +56,7 @@ namespace Application
                 Content = comment.Content,
                 FullName = fullName,
                 ProfilePicture = profilePicture,
+                ParentCommentId = comment.ParentCommentId // 📌 Thêm ParentCommentId
             };
         }
         public static UserDto MapToUserDto(User? user)
@@ -83,9 +84,9 @@ namespace Application
         }
         public static CommentDto MapToCommentByPostIdDto(Comment comment, Guid userId)
         {
-            var validLikes = comment.CommentLikes?
+/*            var validLikes = comment.CommentLikes?
                 .Where(l => l.IsLike) // 🔥 Chỉ lấy lượt like hợp lệ
-                .ToList() ?? new List<CommentLike>();
+                .ToList() ?? new List<CommentLike>();*/
 
             return new CommentDto
             {
@@ -96,17 +97,18 @@ namespace Application
                 Content = comment.Content,
                 CreatedAt = comment.CreatedAt,
                 ParentCommentId = comment.ParentCommentId,
-                HasLiked = validLikes.Any(l => l.UserId == userId) ? 1 : 0,
+                HasLiked = comment.CommentLikes?.Any(l => l.IsLike && l.UserId == userId) == true ? 1 : 0,
                 // Ánh xạ số lượt like
                 /*                CommentLikes = new CommentLikeDto(comment.CommentLikes?.Where(l => l.IsLike).ToList() ?? new List<CommentLike>()),*/
-                LikeCountComment = comment.CommentLikes?.Count ?? 0,
+                LikeCountComment = comment.CommentLikes?.Count(l => l.IsLike) ?? 0, // ✅ Đếm số like hợp lệ
 
                 // Chỉ lấy tối đa 10 comment con
+                // 🔥 Cải tiến: Đệ quy để lấy mọi cấp reply (reply trong reply)
                 Replies = comment.Replies?
-                    .OrderBy(r => r.CreatedAt)
-                    .Take(10)
-                    .Select(r => MapToCommentByPostIdDto(r, userId))
-                    .ToList() ?? new List<CommentDto>()
+                        .Where(r => !r.IsDeleted)
+                        .OrderBy(r => r.CreatedAt)
+                        .Select(r => MapToCommentByPostIdDto(r, userId)) // 💡 Gọi lại chính nó để lấy reply của reply
+                        .ToList() ?? new List<CommentDto>()
             };
         }
        
