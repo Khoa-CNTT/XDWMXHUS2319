@@ -1,5 +1,7 @@
 import logo from "./logo.svg";
 import "./App.css";
+import { useEffect } from "react";
+import { startAutoRefresh } from "./utils/RefeshToken";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,6 +12,9 @@ import ResetForgotPassword from "./views/ResetForgotPassword";
 import Homeview from "./views/HomeView";
 
 function App() {
+  // useEffect(() => {
+  //   startAutoRefresh(); //Auto chạy refeshToken
+  // }, []);
   return (
     <>
       <Router>
