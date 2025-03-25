@@ -1,5 +1,6 @@
 ﻿using Application.Interface.Hubs;
 using Application.Model.Events;
+using Domain.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,16 +13,24 @@ namespace Application.Services
     {
         private readonly IRidePostService _rideService;
         private readonly IPublisher _publisher;  // 🔥 Dùng Event Bus để publish event
+        private readonly IUnitOfWork _unitOfWork;
 
-        public NotificationService( IRidePostService rideService, IPublisher publisher)
+        public NotificationService( IRidePostService rideService, IPublisher publisher, IUnitOfWork unitOfWork)
         {
             _rideService = rideService;
             _publisher = publisher;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task SendAlertAsync(Guid driverId, string message)
         {
             await _publisher.Publish(new SendInAppNotificationEvent(driverId, message));
+        }
+
+        public async Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName)
+        {
+
+            await _publisher.Publish(new CommentEvent(postId, commenterId, commenterName));
         }
 
         public async Task SendInAppNotificationAsync(Guid driverId, string message)

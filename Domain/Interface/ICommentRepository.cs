@@ -16,5 +16,6 @@ namespace Domain.Interface
         Task<(List<Comment>, int)> GetCommentByPostIdAsync(Guid postId, int page, int pageSize);
         Task<List<Comment>> GetCommentsByPostIdDeleteAsync(Guid postId);
         Task<List<Comment>> GetRepliesByCommentIdAsync(Guid parentCommentId);
+        Task<List<Comment>> GetCommentsByPostIdWithCursorAsync(Guid postId, Guid? lastCommentId, int pageSize, CancellationToken cancellationToken);
     }
 }

@@ -13,5 +13,6 @@ namespace Domain.Interface
         Task<List<User>> GetLikedUsersAsync(Guid commentId);
         Task<List<User?>> GetLikedByCommentIdAsync(Guid commentId);
         Task<List<CommentLike>> GetCommentLikeByCommentIdAsync(Guid CommentId);
+        Task<(List<User>, Guid?)> GetLikedUsersWithCursorAsync(Guid commentId, Guid? lastUserId);
     }
 }

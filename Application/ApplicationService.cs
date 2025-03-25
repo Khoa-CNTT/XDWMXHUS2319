@@ -24,7 +24,8 @@ namespace Application
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ILikeService, LikeService>();
             services.AddScoped<ISearchService, SearchService>();
-
+            services.AddScoped<IShareService, ShareService>();
+            services.AddScoped<ICommentLikeService, CommentLikeService>();
 
             //services.AddScoped<IPostService, PostService>();
             //services.AddHostedService<LikeEventProcessor>();

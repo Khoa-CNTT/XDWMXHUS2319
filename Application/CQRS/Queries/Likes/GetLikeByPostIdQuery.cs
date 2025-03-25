@@ -1,4 +1,5 @@
-﻿using Application.DTOs.User;
+﻿using Application.DTOs.Likes;
+using Application.DTOs.User;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,17 +8,17 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.Likes
 {
-    public class GetLikeByPostIdQuery : IRequest<ResponseModel<List<UserDto>>>
+    public class GetLikeByPostIdQuery : IRequest<ResponseModel<GetLikeWithCursorResponse>>
     {
         public Guid PostId { get; set; }
-        public int Page { get; set; }
-        public int PageSize { get; set; }
+        public Guid? LastUserId { get; set; }
+        public GetLikeByPostIdQuery() { }
 
-        public GetLikeByPostIdQuery(Guid postId, int page = 1, int pageSize = 2)
+        public GetLikeByPostIdQuery(Guid postId, Guid? lastUserId = null)
         {
             PostId = postId;
-            Page = page;
-            PageSize = pageSize;
+            LastUserId = lastUserId;
         }
+
     }
 }

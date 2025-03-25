@@ -44,6 +44,15 @@ namespace Infrastructure.Service
             }
         }
 
+        public async Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName)
+        {
+            var postOwnerId = await _postService.GetPostOwnerId(postId);
+            if (postOwnerId == commenterId) return; // Không gửi nếu chủ bài viết tự bình luận
+
+            string message = $"{commenterName} đã bình luận vào bài viết của bạn.";
+            await _hubContext.Clients.User(postOwnerId.ToString()).SendAsync("ReceiveNotification", message);
+        }
+
         /// <summary>
         /// Gửi thông báo trong ứng dụng (không khẩn cấp)
         /// </summary>

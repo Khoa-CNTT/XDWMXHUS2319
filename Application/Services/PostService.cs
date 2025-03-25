@@ -1,7 +1,9 @@
-﻿using Application.DTOs.Post;
+﻿using Application.DTOs.Comments;
+using Application.DTOs.Post;
 using Application.DTOs.Shares;
 using Application.Interface.ContextSerivce;
 using Domain.Entities;
+using Domain.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,29 +27,53 @@ namespace Application.Services
         {
            return await _unitOfWork.PostRepository.GetPostOwnerIdAsync(postId);
         }
-            public async Task<GetPostsResponse> GetPostsWithCursorAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
+            public async Task<GetPostsResponse> GetPostsWithCursorAsync(Guid? lastPostId, CancellationToken cancellationToken)
             {
                 var userId = _userContextService.UserId();
-            var posts = await _unitOfWork.PostRepository.GetAllPostsAsync(lastPostId, pageSize, cancellationToken);
+                const int PAGE_SIZE = 10; // 📌 Set cứng PageSize = 10
+                var posts = await _unitOfWork.PostRepository.GetAllPostsAsync(lastPostId, PAGE_SIZE, cancellationToken);
 
-                // Nếu số bài viết trả về ít hơn pageSize => Không còn bài để tải
-                var nextCursor = posts.Count == pageSize ? (Guid?)posts.Last().Id : null;
+            // Nếu số bài viết trả về ít hơn PAGE_SIZE => Không còn bài để tải
+                var nextCursor = posts.Count == PAGE_SIZE ? (Guid?)posts.Last().Id : null;
 
                 return new GetPostsResponse
+                    {
+                        Posts = posts.Select(post => Mapping.MapToAllPostDto(post, userId)).ToList(), // 🔥 Truyền userId vào
+                        NextCursor = nextCursor
+                    };
+            }
+
+        public async Task<GetCommentsResponse> GetCommentByPostIdWithCursorAsync(Guid postId, Guid? lastCommentId, CancellationToken cancellationToken)
+        {
+            var userId = _userContextService.UserId();
+            int pageSize = 10; // 📌 Set cứng pageSize = 5
+            var comments = await _unitOfWork.CommentRepository.GetCommentsByPostIdWithCursorAsync(postId, lastCommentId, pageSize, cancellationToken);
+
+            if (!comments.Any())
+            {
+                return new GetCommentsResponse
                 {
-                    Posts = posts.Select(post => Mapping.MapToAllPostDto(post, userId)).ToList(), // 🔥 Truyền userId vào
-                    NextCursor = nextCursor
+                    Comments = new List<CommentDto>(),
+                    LastCommentId = null
                 };
             }
+
+            return new GetCommentsResponse
+            {
+                Comments = comments.Select(c => Mapping.MapToCommentByPostIdDto(c, userId)).ToList(),
+                LastCommentId = comments.Count < pageSize ? null : comments.Last().Id
+            };
+        }
 
         public async Task<GetPostsResponse> GetPostByTypeWithCursorAsync(PostTypeEnum postTypeEnum, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId();
+            const int PAGE_SIZE = 10;
             // 🔥 Gọi đúng phương thức với đủ tham số
             var posts = await _unitOfWork.PostRepository.GetPostsByTypeAsync(postTypeEnum, lastPostId, pageSize, cancellationToken);
 
             // ✅ Kiểm tra số lượng bài viết hợp lệ
-            var nextCursor = (posts.Count == pageSize) ? (Guid?)posts.Last().Id : null;
+            var nextCursor = (posts.Count == PAGE_SIZE) ? (Guid?)posts.Last().Id : null;
 
             return new GetPostsResponse
             {
@@ -121,13 +147,13 @@ namespace Application.Services
         {
             // 🟢 Lấy UserId từ IUserContextService (Kiểm tra nếu là phương thức)
             var userId = _userContextService.UserId(); // Nếu lỗi, sửa thành: _userContextService.UserId();
-
+            const int PAGE_SIZE = 10;
 
             // 🟢 Lấy danh sách bài viết theo chủ sở hữu
             var posts = await _unitOfWork.PostRepository.GetPostsByOwnerAsync(userId, lastPostId, pageSize, cancellationToken);
 
             // 🟢 Xác định nextCursor nếu còn bài viết
-            var nextCursor = (posts.Count == pageSize) ? (Guid?)posts.Last().Id : null;
+            var nextCursor = (posts.Count == PAGE_SIZE) ? (Guid?)posts.Last().Id : null;
 
             return new GetPostsResponse
             {
