@@ -6,7 +6,7 @@ import videoIcon from "../assets/iconweb/videoIcon.svg";
 import "../styles/CreatePostModal.scss";
 import "animate.css";
 
-const CreatePostModal = ({ isOpen, onClose }) => {
+const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
   const [mediaFiles, setMediaFile] = useState([]);
 
   useEffect(() => {
@@ -58,8 +58,14 @@ const CreatePostModal = ({ isOpen, onClose }) => {
           />
         </div>
         <div className="user-create-post">
-          <img src={avatarDeafault} alt="Avatar" />
-          <span className="userName-share">Nguyễn Thành Chè</span>
+          <img
+            src={usersProfile.profilePicture || avatarDeafault}
+            alt="Avatar"
+          />
+          <span className="userName-share">
+            {" "}
+            {usersProfile.fullName || "University Sharing"}
+          </span>
         </div>
         <textarea placeholder="Bạn đang nghĩ gì thế?"></textarea>
 

@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import "../../styles/CommentOverlay.scss";
 import CommentItem from "./CommentItem";
 import { useDispatch, useSelector } from "react-redux";
-const CommentList = ({ comment }) => {
+const CommentList = ({ comment, commentEndRef }) => {
   const dispatch = useDispatch();
-  console.log("Danh sách bình luận:", comment);
+  console.log("Danh sách bình luận ở CommentList:", comment);
   return (
     <div className="comments-section">
-      {Array.isArray(comment?.data) && comment.data.length > 0 ? (
-        comment.data.map((comments) => (
+      {Array.isArray(comment) && comment.length > 0 ? (
+        comment.map((comments) => (
           <CommentItem key={comments.id} comments={comments}></CommentItem>
         ))
       ) : (
@@ -16,7 +16,7 @@ const CommentList = ({ comment }) => {
       )}
 
       {/* Thẻ ẩn giúp scroll xuống bình luận mới nhất */}
-      {/* <div ref={commentsEndRef} /> */}
+      <div ref={commentEndRef} />
     </div>
   );
 };

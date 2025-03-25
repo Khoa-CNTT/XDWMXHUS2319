@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import logoweb from "../assets/Logo.png";
 import avatarDefaut from "../assets/AvatarDefault.png";
 import "../styles/CommentOverlay.scss";
@@ -6,9 +6,9 @@ import ImagePostComment from "./CommentModel_Component/imagePost";
 import ContentPostComment from "./CommentModel_Component/ContenPostComment";
 import CommentList from "./CommentModel_Component/CommentList";
 import { useDispatch, useSelector } from "react-redux";
-import { commentPost } from "../stores/action/listPostActions";
-const CommentModal = ({ post, onClose }) => {
-  // Tắt bằng nút trên phím
+import { commentPost, addCommentPost } from "../stores/action/listPostActions";
+
+const CommentModal = ({ post, onClose, usersProfile }) => {
   useEffect(() => {
     const handleKeyClose = (event) => {
       if (event.key === "Escape") {
@@ -20,9 +20,10 @@ const CommentModal = ({ post, onClose }) => {
       document.removeEventListener("keydown", handleKeyClose);
     };
   }, [onClose]);
-  //Gọi ListComment từ Redux
-  const dispatch = useDispatch();
 
+  const dispatch = useDispatch();
+  const commentTextRef = useRef("");
+  const commentEndRef = useRef(null); // Thêm ref để scroll
   const comments = useSelector((state) => state.posts.comments[post.id] || []);
 
   useEffect(() => {
@@ -31,6 +32,34 @@ const CommentModal = ({ post, onClose }) => {
     }
   }, [dispatch, post?.id]);
 
+  const handleInputChange = (e) => {
+    commentTextRef.current = e.target.value;
+  };
+
+  const handleAddComment = () => {
+    const text = commentTextRef.current.trim();
+    if (!text) return;
+
+    dispatch(
+      addCommentPost({
+        postId: post.id,
+        content: text,
+      })
+    ).then(() => {
+      commentTextRef.current = "";
+      document.querySelector("textarea").value = "";
+
+      setTimeout(() => {
+        if (commentEndRef.current) {
+          commentEndRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+          });
+        }
+      }, 1000);
+    });
+  };
+
   if (!post) return null;
   return (
     <div className="comment-modal-overlay ">
@@ -38,30 +67,25 @@ const CommentModal = ({ post, onClose }) => {
         <img className="logoUS" src={logoweb} alt="Logo" />
       </div>
       <div className="post-overlay">
-        <ImagePostComment post={post}></ImagePostComment>
+        <ImagePostComment post={post} />
 
         <div className="content-post animate__animated animate__fadeInRight animate_faster">
-          <ContentPostComment
-            post={post}
-            onClose={onClose}
-            // handleLike={handleLike}
-          ></ContentPostComment>
-
-          {/* Bình luận */}
-          <CommentList comment={comments} />
+          <ContentPostComment post={post} onClose={onClose} />
+          <CommentList comment={comments} commentEndRef={commentEndRef} />
         </div>
+
         <div className="comment-input animate__animated animate__fadeInUp animate_faster">
-          <img className="avatar" src={avatarDefaut} alt="Avatar" />
+          <img
+            className="avatar"
+            src={usersProfile.profilePicture || avatarDefaut}
+            alt="Avatar"
+          />
           <textarea
             type="text"
             placeholder="Nhập vào bình luận"
-            //value={commentText}
-            //onChange={(e) => setCommentText(e.target.value)}
+            onChange={handleInputChange}
           />
-          <button
-            type="submit"
-            // onClick={() => addComment(1)}
-          >
+          <button type="submit" onClick={handleAddComment}>
             Đăng
           </button>
         </div>
@@ -69,6 +93,7 @@ const CommentModal = ({ post, onClose }) => {
     </div>
   );
 };
+
 export default CommentModal;
 
 // const addComment = (postId) => {
