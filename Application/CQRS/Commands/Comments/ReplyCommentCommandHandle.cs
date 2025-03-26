@@ -29,14 +29,13 @@ namespace Application.CQRS.Commands.Comments
             // Lấy UserId từ context
             var userId = _userContextService.UserId();
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-            if(user == null)
+            if (user == null)
             {
                 return ResponseFactory.Fail<ResultCommentDto>("Người dùng không tồn tại", 404);
             }
 
             // Kiểm tra bình luận cha có tồn tại không
             var parentComment = await _unitOfWork.CommentRepository.GetByIdAsync(request.ParentCommentId);
-
             if (parentComment == null)
             {
                 return ResponseFactory.Fail<ResultCommentDto>("Bình luận này không tồn tại", 404);
@@ -46,18 +45,33 @@ namespace Application.CQRS.Commands.Comments
             {
                 return ResponseFactory.Fail<ResultCommentDto>("Bình luận này không thuộc bài viết này", 400);
             }
+
             // Kiểm tra nội dung bình luận
             if (!await _geminiService.ValidatePostContentAsync(request.Content))
             {
                 return ResponseFactory.Fail<ResultCommentDto>("Warning! Content is not accepted! If you violate it again, your reputation will be deducted!!", 400);
             }
+
+            // 📌 Xác định cấp độ của bình luận cha
+            int depth = 1;
+            var currentComment = parentComment;
+            while (currentComment.ParentCommentId != null)
+            {
+                depth++;
+                currentComment = await _unitOfWork.CommentRepository.GetByIdAsync(currentComment.ParentCommentId.Value);
+                if (currentComment == null) break;
+            }
+
+            // 📌 Nếu comment cha ở tầng 3, đặt ParentCommentId về tầng 2
+            Guid? finalParentId = depth >= 3 ? parentComment.ParentCommentId : parentComment.Id;
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 // Tạo bình luận phản hồi
                 var replyComment = new Comment(userId, parentComment.PostId, request.Content ?? "")
                 {
-                    ParentCommentId = parentComment.Id
+                    ParentCommentId = finalParentId
                 };
 
                 // Thêm vào database

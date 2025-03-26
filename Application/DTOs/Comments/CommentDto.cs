@@ -22,7 +22,8 @@ namespace Application.DTOs.Comments
         /*        public CommentLikeDto CommentLikes { get; set; } = new CommentLikeDto();*/
         public int LikeCountComment { get; set; }
 
-        public List<CommentDto> Replies { get; set; } = new(); // Danh sách comment con (reply)
+/*        public List<CommentDto> Replies { get; set; } = new(); // Danh sách comment con (reply)*/
+        public bool HasMoreReplies { get; set; } // 🔥 Kiểm tra có thêm reply không
         public Guid? ParentCommentId { get; set; } // Chỉ có ID của cha, không cần danh sách Replies
         public CommentDto() { }
         public CommentDto(Comment comment)
@@ -40,13 +41,13 @@ namespace Application.DTOs.Comments
             // Ánh xạ số lượt like và danh sách người like
             LikeCountComment = comment.CommentLikes?.Count ?? 0;
 /*            LikeCountComment = comment.CommentLikes?.Count(l => l.IsLike) ?? 0;*/
-
-            // Ánh xạ danh sách phản hồi (reply)
-            Replies = comment.Replies?
-               .Where(r => !r.IsDeleted)
-               .Take(10)
-               .Select(r => new CommentDto(r))
-               .ToList() ?? new List<CommentDto>();
+            HasMoreReplies = comment.Replies?.Any() ?? false; // Kiểm tra có thêm reply không
+                                                              // Ánh xạ danh sách phản hồi (reply)
+            /*  Replies = comment.Replies?
+                 .Where(r => !r.IsDeleted)
+                 .Take(10)
+                 .Select(r => new CommentDto(r))
+                 .ToList() ?? new List<CommentDto>();*/
         }
     }
 }

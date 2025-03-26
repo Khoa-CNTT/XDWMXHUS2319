@@ -25,6 +25,7 @@ namespace Infrastructure.Data.Repositories
             throw new NotImplementedException();
         }
 
+
         public async Task<List<Comment>> GetCommentsByPostIdWithCursorAsync(Guid postId, Guid? lastCommentId, int pageSize, CancellationToken cancellationToken)
         {
             pageSize = 10; // 📌 Set cứng pageSize = 5
@@ -76,6 +77,9 @@ namespace Infrastructure.Data.Repositories
 
             return comments;
         }
+
+
+
 
         public async Task<(List<Comment>, int)> GetCommentByPostIdAsync(Guid postId, int page, int pageSize)
         {
@@ -154,6 +158,36 @@ namespace Infrastructure.Data.Repositories
             return await _context.Comments
                 .Where(c => c.ParentCommentId == parentCommentId && !c.IsDeleted)
                 .ToListAsync();
+        }
+
+        public async Task<int> CountRepliesAsync(Guid parentCommentId)
+        {
+            return await _context.Comments
+                .Where(c => c.ParentCommentId == parentCommentId && !c.IsDeleted)
+                .CountAsync();
+        }
+
+        public async Task<List<Comment>> GetRepliesByCommentIdWithCursorAsync(Guid parentCommentId, Guid? lastReplyId, int pageSize, CancellationToken cancellationToken)
+        {
+            var query = _context.Comments
+         .Where(c => c.ParentCommentId == parentCommentId && !c.IsDeleted)
+         .OrderBy(c => c.CreatedAt)
+         .AsQueryable();
+
+            if (lastReplyId.HasValue)
+            {
+                var lastComment = await _context.Comments.FindAsync(lastReplyId.Value);
+                if (lastComment != null)
+                {
+                    query = query.Where(c => c.CreatedAt > lastComment.CreatedAt);
+                }
+            }
+
+            return await query.Take(pageSize + 1).ToListAsync(cancellationToken); // 🔥 Lấy thêm 1 bản ghi để kiểm tra còn nữa không
+        }
+        public bool HasMoreReplies(Guid commentId)
+        {
+            return _context.Comments.Any(c => c.ParentCommentId == commentId && !c.IsDeleted);
         }
     }
 }
