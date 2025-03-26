@@ -34,6 +34,7 @@ namespace Application
             services.AddScoped<IRidePostService, RidePostService>();
             services.AddScoped<IRedisService, RedisService>();
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<ICommentService, CommentService>();
 
             // Đăng ký File Service để lưu ảnh và video
             services.AddScoped<IFileService, FileService>();

@@ -16,7 +16,12 @@ namespace Infrastructure.Data.Repositories
         {
             return await _context.CommentLikes.CountAsync(x => x.CommentId == commentId && x.IsLike);
         }
-
+        public async Task<List<CommentLike>> GetLikesByCommentIdsAsync(List<Guid> commentIds)
+        {
+            return await _context.CommentLikes
+                .Where(cl => commentIds.Contains(cl.CommentId) && cl.IsLike)
+                .ToListAsync();
+        }
         public override Task<bool> DeleteAsync(Guid id)
         {
             throw new NotImplementedException();

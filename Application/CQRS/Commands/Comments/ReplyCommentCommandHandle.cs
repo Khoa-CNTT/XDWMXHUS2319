@@ -63,7 +63,7 @@ namespace Application.CQRS.Commands.Comments
             }
 
             // 📌 Nếu comment cha ở tầng 3, đặt ParentCommentId về tầng 2
-            Guid? finalParentId = depth >= 3 ? parentComment.ParentCommentId : parentComment.Id;
+            Guid? finalParentId = depth >= 2 ? parentComment.ParentCommentId : parentComment.Id;
 
             await _unitOfWork.BeginTransactionAsync();
             try

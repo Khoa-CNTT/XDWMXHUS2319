@@ -8,5 +8,6 @@ namespace Application.Interface
 {
     public interface ICommentService
     {
+        Task<bool> SoftDeleteCommentWithRepliesAndLikesAsync(Guid commentId);
     }
 }
