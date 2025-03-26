@@ -4,6 +4,7 @@ import {
   commentPost,
   fetchPosts,
   likePost,
+  likeComment,
 } from "../action/listPostActions";
 
 const listPostSlice = createSlice({
@@ -63,12 +64,88 @@ const listPostSlice = createSlice({
             : post
         );
       })
+      .addCase(likeComment.fulfilled, (state, action) => {
+        const commentId = action.payload;
+
+        // Duyệt qua từng bài post trong danh sách
+        Object.keys(state.comments).forEach((postId) => {
+          // Duyệt qua danh sách comment của post đó
+          state.comments[postId] = state.comments[postId].map((comment) => {
+            // Nếu comment chính được like
+            if (comment.id === commentId) {
+              return {
+                ...comment,
+                hasLiked: comment.hasLiked ? 0 : 1,
+                likeCountComment: comment.hasLiked
+                  ? comment.likeCountComment - 1
+                  : comment.likeCountComment + 1,
+              };
+            }
+
+            // Nếu là một comment có replies, kiểm tra trong replies
+            const updatedReplies = comment.replies.map((reply) =>
+              reply.id === commentId
+                ? {
+                    ...reply,
+                    hasLiked: reply.hasLiked ? 0 : 1,
+                    likeCountComment: reply.hasLiked
+                      ? reply.likeCountComment - 1
+                      : reply.likeCountComment + 1,
+                  }
+                : reply
+            );
+
+            return {
+              ...comment,
+              replies: updatedReplies,
+            };
+          });
+        });
+      })
+
+      // .addCase(commentPost.fulfilled, (state, action) => {
+      //   const { postId, comments } = action.payload;
+      //   state.comments[postId] = comments;
+      // }) //Lấy bình luận thuần kiểu có gì nhận nấy
+
+      //Đưa các bình luận cấp 3+ lên trên cấp 2
       .addCase(commentPost.fulfilled, (state, action) => {
         const { postId, comments } = action.payload;
-        state.comments[postId] = comments;
+
+        let newComments = [];
+
+        comments.forEach((comment) => {
+          // Tạo một bản sao bình luận cấp 1, nhưng xóa replies để tự xử lý lại
+          let parentComment = { ...comment, replies: [] };
+
+          let level2Replies = []; // Lưu danh sách cấp 2
+
+          comment.replies.forEach((reply) => {
+            // Nếu reply có replies con (cấp 3+), đẩy chúng ra cùng cấp 2
+            let extractedReplies = reply.replies.map((subReply) => ({
+              ...subReply,
+              parentCommentId: comment.id, // Đưa lên thành cấp 2
+            }));
+
+            // Tạo bình luận cấp 2, xóa replies vì đã tách riêng
+            let childComment = { ...reply, replies: [] };
+
+            level2Replies.push(childComment, ...extractedReplies);
+          });
+
+          // Gán lại danh sách replies (chỉ có cấp 2)
+          parentComment.replies = level2Replies;
+
+          // Đưa bình luận cấp 1 vào danh sách chính
+          newComments.push(parentComment);
+        });
+
+        // Cập nhật state
+        state.comments[postId] = newComments;
       })
+
       .addCase(addCommentPost.fulfilled, (state, action) => {
-        console.log("🔥 Payload nhận được:", action.payload);
+        // console.log("🔥 Payload nhận được:", action.payload);
         const { postId, data } = action.payload;
         if (!postId || !data) return;
 

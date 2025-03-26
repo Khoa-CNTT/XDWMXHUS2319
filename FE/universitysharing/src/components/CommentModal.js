@@ -6,9 +6,14 @@ import ImagePostComment from "./CommentModel_Component/imagePost";
 import ContentPostComment from "./CommentModel_Component/ContenPostComment";
 import CommentList from "./CommentModel_Component/CommentList";
 import { useDispatch, useSelector } from "react-redux";
-import { commentPost, addCommentPost } from "../stores/action/listPostActions";
+import {
+  commentPost,
+  addCommentPost,
+  likeComment,
+} from "../stores/action/listPostActions";
 
 const CommentModal = ({ post, onClose, usersProfile }) => {
+  console.log("Data bài viết được lưạ chọn>> ", post);
   useEffect(() => {
     const handleKeyClose = (event) => {
       if (event.key === "Escape") {
@@ -26,6 +31,8 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
   const commentEndRef = useRef(null); // Thêm ref để scroll
   const comments = useSelector((state) => state.posts.comments[post.id] || []);
 
+  console.log("Comment trả về>>", comments);
+
   useEffect(() => {
     if (post?.id) {
       dispatch(commentPost(post.id));
@@ -36,6 +43,9 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
     commentTextRef.current = e.target.value;
   };
 
+  const handleLikeComment = (commentId) => {
+    dispatch(likeComment(commentId));
+  };
   const handleAddComment = () => {
     const text = commentTextRef.current.trim();
     if (!text) return;
@@ -71,7 +81,11 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
 
         <div className="content-post animate__animated animate__fadeInRight animate_faster">
           <ContentPostComment post={post} onClose={onClose} />
-          <CommentList comment={comments} commentEndRef={commentEndRef} />
+          <CommentList
+            comment={comments}
+            commentEndRef={commentEndRef}
+            handleLikeComment={handleLikeComment}
+          />
         </div>
 
         <div className="comment-input animate__animated animate__fadeInUp animate_faster">
