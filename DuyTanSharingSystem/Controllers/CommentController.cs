@@ -52,5 +52,12 @@ namespace DuyTanSharingSystem.Controllers
             var response = await _mediator.Send(query);
             return Ok(response);
         }
+        [HttpGet("replies")]
+        public async Task<IActionResult> GetReplies([FromQuery] GetRepliesByCommentIdQuery query)
+        {
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
     }
 }

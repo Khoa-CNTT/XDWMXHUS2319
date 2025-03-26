@@ -70,6 +70,7 @@ namespace Application
                 
             };
         }
+
         public static UserProfileDto MaptoUserprofileDto(User user)
         {
             return new UserProfileDto
@@ -101,14 +102,14 @@ namespace Application
                 // Ánh xạ số lượt like
                 /*                CommentLikes = new CommentLikeDto(comment.CommentLikes?.Where(l => l.IsLike).ToList() ?? new List<CommentLike>()),*/
                 LikeCountComment = comment.CommentLikes?.Count(l => l.IsLike) ?? 0, // ✅ Đếm số like hợp lệ
-
+                HasMoreReplies = comment.Replies?.Any(r => !r.IsDeleted) == true
                 // Chỉ lấy tối đa 10 comment con
                 // 🔥 Cải tiến: Đệ quy để lấy mọi cấp reply (reply trong reply)
-                Replies = comment.Replies?
-                        .Where(r => !r.IsDeleted)
-                        .OrderBy(r => r.CreatedAt)
-                        .Select(r => MapToCommentByPostIdDto(r, userId)) // 💡 Gọi lại chính nó để lấy reply của reply
-                        .ToList() ?? new List<CommentDto>()
+                /* Replies = comment.Replies?
+                         .Where(r => !r.IsDeleted)
+                         .OrderBy(r => r.CreatedAt)
+                         .Select(r => MapToCommentByPostIdDto(r, userId)) // 💡 Gọi lại chính nó để lấy reply của reply
+                         .ToList() ?? new List<CommentDto>()*/
             };
         }
        
@@ -228,9 +229,9 @@ namespace Application
                         ParentCommentId = c.ParentCommentId,
 
                         // 🔥 Lọc replies chưa bị xóa
-                        Replies = allComments
+/*                        Replies = allComments
                             .Where(r => r.ParentCommentId == c.Id)
-                            .ToList()
+                            .ToList()*/
                     })
                     .ToList(),
 
