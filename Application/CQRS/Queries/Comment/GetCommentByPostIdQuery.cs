@@ -13,7 +13,7 @@ namespace Application.CQRS.Queries.Comment
         public Guid? LastCommentId { get; set; }
         public int PageSize { get; private set; } = 10;
         public GetCommentByPostIdQuery() { }
-        public GetCommentByPostIdQuery(Guid postId, Guid? lastCommentId = null, int pageSize= 10)
+        public GetCommentByPostIdQuery(Guid postId, Guid? lastCommentId = null, int pageSize = 10)
         {
             PostId = postId;
             LastCommentId = lastCommentId;
