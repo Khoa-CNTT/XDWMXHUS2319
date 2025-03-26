@@ -12,10 +12,12 @@ namespace Application.CQRS.Commands.Comments
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
-        public SoftDeleteCommentCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        private readonly ICommentService _commentService;
+        public SoftDeleteCommentCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, ICommentService commentService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
+            _commentService = commentService;
         }
         public async Task<ResponseModel<bool>> Handle(SoftDeleteCommentCommand request, CancellationToken cancellationToken)
         {
@@ -35,6 +37,9 @@ namespace Application.CQRS.Commands.Comments
             {
                 return ResponseFactory.Fail<bool>("Bạn không có quyền xóa bình luận này", 403);
             }
+            if(userId  == Guid.Empty) {
+                return ResponseFactory.Fail<bool>("Bạn cần đăng nhập để thực hiện chức năng này", 401);
+            }
             if (comment.IsDeleted)
             {
                 return ResponseFactory.Fail<bool>("Bình luận này đã bị xóa", 404);
@@ -43,16 +48,18 @@ namespace Application.CQRS.Commands.Comments
 
             try
             {
-                // Xóa mềm comment gốc
-                comment.Delete();
+                // 🔥 Gọi service xử lý xóa comment, reply và like
+                var isDeleted = await _commentService.SoftDeleteCommentWithRepliesAndLikesAsync(request.CommentId);
 
-                // 🔥 Tìm và xóa mềm tất cả các replies
-                var replies = await _unitOfWork.CommentRepository.GetReplysCommentAllAsync(request.CommentId);
-                foreach (var reply in replies)
+                if (!isDeleted)
                 {
-                    reply.Delete();
+                    await _unitOfWork.RollbackTransactionAsync();
+                    return ResponseFactory.Fail<bool>("Không thể xóa bình luận", 400);
                 }
+
+                // 🔥 Lưu thay đổi vào database
                 await _unitOfWork.SaveChangesAsync();
+
                 await _unitOfWork.CommitTransactionAsync();
                 return ResponseFactory.Success(true, "Xóa bình luận và các phản hồi thành công", 200);
             }

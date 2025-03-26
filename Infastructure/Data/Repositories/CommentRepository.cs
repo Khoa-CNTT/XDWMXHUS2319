@@ -170,6 +170,8 @@ namespace Infrastructure.Data.Repositories
         public async Task<List<Comment>> GetRepliesByCommentIdWithCursorAsync(Guid parentCommentId, Guid? lastReplyId, int pageSize, CancellationToken cancellationToken)
         {
             var query = _context.Comments
+                .Include(c => c.User)
+                .Include(c => c.CommentLikes)
          .Where(c => c.ParentCommentId == parentCommentId && !c.IsDeleted)
          .OrderBy(c => c.CreatedAt)
          .AsQueryable();
