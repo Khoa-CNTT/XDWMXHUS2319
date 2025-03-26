@@ -31,14 +31,16 @@ export const commentPost = createAsyncThunk(
   async (postId, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `https://localhost:7053/api/Comment/GetCommentByPost/${postId}`,
+        `https://localhost:7053/api/Comment/GetCommentByPost?PostId=${postId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      return { postId, comments: response.data.data }; // Trả về danh sách comments
+      // console.log("ID PostID selected : >>", postId);
+      // console.log("Data CMT : >>", response.data.data);
+      return { postId, comments: response.data.data.comments }; // Trả về danh sách comments
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi không xác định");
     }
@@ -66,6 +68,53 @@ export const addCommentPost = createAsyncThunk(
       return { postId, data: response.data.data };
     } catch (error) {
       return rejectWithValue(error.response?.data || "Có lỗi xảy ra");
+    }
+  }
+);
+
+//LikeComment
+export const likeComment = createAsyncThunk(
+  "posts/likeComment",
+  async (commentId, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `https://localhost:7053/api/CommentLike/like/${commentId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return commentId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || " Đã có lỗi ");
+    }
+  }
+);
+
+//Rely comment
+export const ReplyComment = createAsyncThunk(
+  "post/replyComment",
+  async ({ postId, commentId, content }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        "https://localhost:7053/api/Comment/ReplyComment",
+        {
+          postId: postId,
+          parentCommentId: commentId,
+          content: content,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return { commentId, data: response.data.data };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Có lỗi khi comment");
     }
   }
 );

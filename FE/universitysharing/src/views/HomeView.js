@@ -13,7 +13,7 @@ const HomeView = () => {
   const dispatch = useDispatch();
   const usersState = useSelector((state) => state.users) || {};
   const { users } = usersState;
-  console.log("Thong tin user>>>", users);
+  // console.log("Thong tin user>>>", users);
 
   useEffect(() => {
     dispatch(userProfile());

@@ -5,7 +5,22 @@ import likeIcon from "../../assets/iconweb/likeIcon.svg";
 import likeIconFill from "../../assets/iconweb/likefillIcon.svg";
 import moreIcon from "../../assets/iconweb/moreIcon.svg";
 
-const CommentItem = ({ comments }) => {
+const CommentItem = ({ comments, handleLikeComment }) => {
+  const [isReplying, setIsReplying] = useState(false); // Kiểm soát hiển thị input
+  const [replyText, setReplyText] = useState(""); // Lưu nội dung nhập vào
+  const replyInputTargert = useRef(null);
+
+  const handleReplyClick = () => {
+    setIsReplying(!isReplying); // Khi click, đảo trạng thái true/false
+    setTimeout(() => {
+      if (replyInputTargert.current) {
+        replyInputTargert.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
+      }
+    }, 100);
+  };
   return (
     <div className="comment-wrapper">
       <div className="comment">
@@ -28,13 +43,10 @@ const CommentItem = ({ comments }) => {
           className="like-icon"
           src={comments.hasLiked ? likeIconFill : likeIcon}
           alt="Like"
-          //onClick={() => handleLikeComment(comment.id)}
+          onClick={() => handleLikeComment(comments.id)}
         />
         <span className="number-like">{comments.likeCountComment}</span>
-        <span
-          className="reply"
-          //onClick={() => handleReplyClick(comment.id)}
-        >
+        <span className="reply" onClick={handleReplyClick}>
           Trả lời
         </span>
       </div>
@@ -43,8 +55,8 @@ const CommentItem = ({ comments }) => {
       {comments.replies.length > 0 && (
         <div className="reply-section">
           {comments.replies.map((reply) => (
-            <>
-              <div key={reply.id} className="reply-comment">
+            <React.Fragment key={reply.id}>
+              <div className="reply-comment">
                 <img
                   className="avatar"
                   src={reply.profilePicture || avatarDefaut}
@@ -62,34 +74,31 @@ const CommentItem = ({ comments }) => {
                   className="like-rely-icon"
                   src={reply.hasLiked ? likeIconFill : likeIcon}
                   alt="Like"
-                  //onClick={() => handleLikeCommentRely(reply.id)}
+                  onClick={() => handleLikeComment(reply.id)}
                 />
                 <span className="number-rely-like">
                   {reply.likeCountComment}
                 </span>
-                <span
-                  className="reply-comment"
-                  //onClick={() => handleReplyClick(comment.id)}
-                >
+                <span className="reply-comment" onClick={handleReplyClick}>
                   Trả lời
                 </span>
               </div>
               {/* <div ref={relyScroll}></div> */}
-            </>
+            </React.Fragment>
           ))}
         </div>
       )}
 
       {/* Hiển thị input reply nếu người dùng nhấn "Trả lời" */}
 
-      {/* {replyingTo === comments.id && (
+      {isReplying && (
         <>
           <div className="reply-input">
             <textarea
               type="text"
               placeholder="Trả lời bình luận..."
               value={replyText}
-              // onChange={(e) => setReplyText(e.target.value)}
+              onChange={(e) => setReplyText(e.target.value)}
             />
             <button
               type="submit"
@@ -98,9 +107,9 @@ const CommentItem = ({ comments }) => {
               Trả lời
             </button>
           </div>
-          {/* <div ref={replyInputRef} /> *
+          <div ref={replyInputTargert} />
         </>
-      )} */}
+      )}
 
       {/* <div ref={replyInputRef} /> */}
     </div>

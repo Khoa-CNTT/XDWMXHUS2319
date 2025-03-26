@@ -10,7 +10,7 @@ import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
 
 const Header = ({ usersProfile }) => {
-  console.log("Data User truyền xuống: ", usersProfile);
+  // console.log("Data User truyền xuống: ", usersProfile);
 
   const [modalState, setModalState] = useState({
     notify: false,
