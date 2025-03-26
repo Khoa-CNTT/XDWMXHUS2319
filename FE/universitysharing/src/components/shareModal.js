@@ -4,7 +4,7 @@ import closeIcon from "../assets/iconweb/closeIcon.svg";
 import "../styles/ShareModal.scss";
 import "animate.css";
 
-const ShareModal = ({ isOpen, onClose }) => {
+const ShareModal = ({ isOpen, onClose, usersProfile }) => {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -29,8 +29,10 @@ const ShareModal = ({ isOpen, onClose }) => {
           />
         </div>
         <div className="Avar-name-share">
-          <img src={avatarDefaut} alt="Avatar" />
-          <span className="userName-share">Nguyễn Thành Chè</span>
+          <img src={usersProfile.profilePicture || avatarDefaut} alt="Avatar" />
+          <span className="userName-share">
+            {usersProfile.fullName || "University Sharing"}
+          </span>
         </div>
 
         <textarea

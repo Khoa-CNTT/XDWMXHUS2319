@@ -18,19 +18,42 @@ import {
   closeCommentModal,
   openShareModal,
   closeShareModal,
+  openPostOptionModal,
+  closePostOptionModal,
 } from "../../stores/reducers/listPostReducers";
 
-const AllPosts = () => {
+import PostOptionsModal from "./PostOptionModal";
+import getUserIdFromToken from "../../utils/JwtDecode";
+
+const AllPosts = ({ usersProfile }) => {
   const dispatch = useDispatch();
-  const { posts, selectedPost, isShareModalOpen, selectedPostToShare } =
-    useSelector((state) => state.posts);
+  //lấy các trạng thái khai báo từ Redux
+  const {
+    posts,
+    selectedPost,
+    isShareModalOpen,
+    selectedPostToShare,
+    selectedPostToOption,
+    isPostOptionsOpen,
+  } = useSelector((state) => state.posts);
   useEffect(() => {
     dispatch(fetchPosts());
   }, [dispatch]);
-  const isLoading = useSelector((state) => state.posts.loading); // Trạng thái loading
-  if (isLoading) {
-    return <span>Đang tải bài viết </span>;
-  }
+
+  //Mở modal option
+  const userId = getUserIdFromToken(); // Lấy userId từ token
+
+  const handleOpenPostOptions = (event, post) => {
+    event.stopPropagation();
+    const rect = event.target.getBoundingClientRect();
+    dispatch(
+      openPostOptionModal({
+        post,
+        position: { top: rect.bottom + 5, left: rect.left - 120 }, // Điều chỉnh vị trí
+      })
+    );
+  };
+
   return (
     <div className="all-posts">
       {Array.isArray(posts) && posts.length > 0 ? (
@@ -47,7 +70,12 @@ const AllPosts = () => {
                 <strong>{post.fullName}</strong>
               </p>
               <p className="closemore">
-                <img className="btn-edit" src={moreIcon} alt="More" />
+                <img
+                  className="btn-edit"
+                  src={moreIcon}
+                  alt="More"
+                  onClick={(event) => handleOpenPostOptions(event, post)}
+                />
                 <img
                   className="btn-close"
                   src={closeIcon}
@@ -88,13 +116,23 @@ const AllPosts = () => {
       ) : (
         <p>Không có bài viết nào.</p>
       )}
+      {/* Post Options Modal */}
+      {isPostOptionsOpen && selectedPostToOption && (
+        <PostOptionsModal
+          isOwner={userId === selectedPostToOption.userId}
+          onClose={() => dispatch(closePostOptionModal())}
+          position={selectedPostToOption.position} // Truyền vị trí vào modal
+          postId={selectedPostToOption.id}
+        />
+      )}
 
       {/* Comment Modal */}
       {selectedPost && (
         <CommentModal
           post={selectedPost}
-          isOpen={!selectedPost}
+          isOpen={true}
           onClose={() => dispatch(closeCommentModal())}
+          usersProfile={usersProfile}
         />
       )}
 
@@ -104,6 +142,7 @@ const AllPosts = () => {
           post={selectedPostToShare}
           isOpen={isShareModalOpen}
           onClose={() => dispatch(closeShareModal())}
+          usersProfile={usersProfile}
         />
       )}
     </div>
