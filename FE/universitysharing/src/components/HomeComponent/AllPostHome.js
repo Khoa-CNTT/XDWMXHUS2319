@@ -119,7 +119,7 @@ const AllPosts = ({ usersProfile }) => {
       {/* Post Options Modal */}
       {isPostOptionsOpen && selectedPostToOption && (
         <PostOptionsModal
-          isOwner={userId === selectedPostToOption.userId}
+          isOwner={userId === selectedPostToOption.post.userId}
           onClose={() => dispatch(closePostOptionModal())}
           position={selectedPostToOption.position} // Truyền vị trí vào modal
           postId={selectedPostToOption.id}
