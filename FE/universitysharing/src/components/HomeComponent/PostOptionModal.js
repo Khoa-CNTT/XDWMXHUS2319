@@ -6,6 +6,7 @@ import { closePostOptionModal } from "../../stores/reducers/listPostReducers";
 
 const PostOptionsModal = ({ isOwner, onClose, position, postId }) => {
   const modalRef = useRef(null); // Tạo ref để kiểm tra click ra ngoài modal
+  console.log("Người chủ>>", isOwner);
   const dispatch = useDispatch();
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -20,17 +21,6 @@ const PostOptionsModal = ({ isOwner, onClose, position, postId }) => {
     };
   }, [onClose]);
 
-  // Đóng modal khi scroll
-  //   useEffect(() => {
-  //     const handleScroll = () => {
-  //       dispatch(closePostOptionModal());
-  //     };
-
-  //     window.addEventListener("scroll", handleScroll);
-  //     return () => {
-  //       window.removeEventListener("scroll", handleScroll);
-  //     };
-  //   }, [dispatch]);
   useEffect(() => {
     const handleScroll = () => {
       dispatch(closePostOptionModal());
