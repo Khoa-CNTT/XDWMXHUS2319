@@ -11,6 +11,7 @@ import {
   addCommentPost,
   likeComment,
 } from "../stores/action/listPostActions";
+import { debounce } from "lodash";
 
 const CommentModal = ({ post, onClose, usersProfile }) => {
   console.log("Data bài viết được lưạ chọn>> ", post);
@@ -43,9 +44,9 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
     commentTextRef.current = e.target.value;
   };
 
-  const handleLikeComment = (commentId) => {
+  const handleLikeComment = debounce((commentId) => {
     dispatch(likeComment(commentId));
-  };
+  }, 1000);
   const handleAddComment = () => {
     const text = commentTextRef.current.trim();
     if (!text) return;
