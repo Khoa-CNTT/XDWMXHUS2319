@@ -22,7 +22,7 @@ namespace Application.DTOs.Comments
         /*        public CommentLikeDto CommentLikes { get; set; } = new CommentLikeDto();*/
         public int LikeCountComment { get; set; }
 
-/*        public List<CommentDto> Replies { get; set; } = new(); // Danh sách comment con (reply)*/
+        public List<CommentDto> Replies { get; set; } = new(); // Danh sách comment con (reply)
         public bool HasMoreReplies { get; set; } // 🔥 Kiểm tra có thêm reply không
         public Guid? ParentCommentId { get; set; } // Chỉ có ID của cha, không cần danh sách Replies
         public CommentDto() { }

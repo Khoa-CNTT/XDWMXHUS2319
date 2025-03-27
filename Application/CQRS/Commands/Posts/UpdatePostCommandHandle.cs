@@ -26,6 +26,7 @@ namespace Application.CQRS.Commands.Posts
         }
         public async Task<ResponseModel<UpdatePostDto>> Handle(UpdatePostCommand request, CancellationToken cancellationToken)
         {
+            const string baseUrl = "https://localhost:7053";
             var userId = _userContextService.UserId();
             var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
 
@@ -68,8 +69,8 @@ namespace Application.CQRS.Commands.Posts
                         Id = post.Id,
                         UserId = post.UserId,
                         Content = post.Content,
-                        ImageUrl = post.ImageUrl,
-                        VideoUrl = post.VideoUrl,
+                        ImageUrl = post.ImageUrl != null ? $"{baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
+                        VideoUrl = post.VideoUrl != null ? $"{baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
                         IsApproved = post.IsApproved,
                         UpdatedAt = post.UpdateAt.GetValueOrDefault(post.CreatedAt)
                     }, "Không có thay đổi nào trong bài viết", 200);
@@ -87,8 +88,8 @@ namespace Application.CQRS.Commands.Posts
                     Id = post.Id,
                     UserId = post.UserId,
                     Content = post.Content,
-                    ImageUrl = post.ImageUrl,
-                    VideoUrl = post.VideoUrl,
+                    ImageUrl = post.ImageUrl != null ? $"{baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
+                    VideoUrl = post.VideoUrl != null ? $"{baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
                     Scope = (int)post.Scope,
                     IsApproved = post.IsApproved,
                     UpdatedAt = post.UpdateAt.GetValueOrDefault(post.CreatedAt)
