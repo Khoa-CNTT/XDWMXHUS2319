@@ -64,15 +64,15 @@ namespace Application.CQRS.Commands.Posts
                 await _unitOfWork.PostRepository.AddAsync(post);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync(); // Thêm dòng này để commit nếu hợp lệ
-
+                const string baseUrl = "https://localhost:7053";
                 var postDto = new ResponsePostDto
                 {
                     Id = post.Id,
                     UserId = userId,
                     Content = post.Content,
                     CreatedAt = post.CreatedAt,
-                    ImageUrl = post.ImageUrl,
-                    VideoUrl = post.VideoUrl,
+                    ImageUrl = post.ImageUrl != null ? $"{baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
+                    VideoUrl = post.VideoUrl != null ? $"{baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
                     PostType = post.PostType,
                     IsApproved = post.IsApproved,
                 };
