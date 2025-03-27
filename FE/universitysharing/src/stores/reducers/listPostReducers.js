@@ -5,6 +5,9 @@ import {
   fetchPosts,
   likePost,
   likeComment,
+  createPost,
+  deletePost,
+  getReplyComment,
 } from "../action/listPostActions";
 
 const listPostSlice = createSlice({
@@ -17,6 +20,7 @@ const listPostSlice = createSlice({
     selectedPostToShare: null,
     selectedPostToOption: null,
     isPostOptionsOpen: false, // 🆕 Thêm trạng thái modal options
+    loading: false,
   },
   reducers: {
     hidePost: (state, action) => {
@@ -166,10 +170,11 @@ const listPostSlice = createSlice({
           hasLiked: 0,
           likeCountComment: 0,
           hasMoreReplies: false,
+          replies: [],
           parentCommentId: null,
         };
 
-        // 🛠 FIX: Nếu `state.comments[postId]` chưa tồn tại, khởi tạo nó là một mảng rỗng
+        // Nếu `state.comments[postId]` chưa tồn tại, khởi tạo nó là một mảng rỗng
         if (!Array.isArray(state.comments[postId])) {
           state.comments[postId] = [];
         }
@@ -181,6 +186,26 @@ const listPostSlice = createSlice({
         const postIndex = state.posts.findIndex((post) => post.id === postId);
         if (postIndex !== -1) {
           state.posts[postIndex].commentCount += 1;
+        }
+      })
+      .addCase(createPost.fulfilled, (state, action) => {
+        state.loading = false;
+        state.posts.unshift(action.payload);
+      })
+      .addCase(deletePost.fulfilled, (state, action) => {
+        state.loading = false;
+        state.posts = state.posts.filter((post) => post.id !== action.payload);
+      })
+      .addCase(getReplyComment.fulfilled, (state, action) => {
+        state.loading = false;
+        const { commentId, data } = action.payload; // Nhận commentId và danh sách replies từ API
+        if (state.comments[commentId]) {
+          state.comments[commentId] = [
+            ...state.comments[commentId], // Giữ nguyên comments hiện tại
+            ...data, // Thêm replies vào danh sách
+          ];
+        } else {
+          state.comments[commentId] = data; // Nếu chưa có commentId, tạo mới
         }
       });
   },

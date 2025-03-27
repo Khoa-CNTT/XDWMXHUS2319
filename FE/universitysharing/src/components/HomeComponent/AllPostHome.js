@@ -11,7 +11,11 @@ import CommentModal from "../CommentModal";
 import imagePost from "../../assets/ImgDefault.png";
 import ShareModal from "../shareModal";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchPosts, likePost } from "../../stores/action/listPostActions";
+import {
+  fetchPosts,
+  likePost,
+  deletePost,
+} from "../../stores/action/listPostActions";
 import {
   hidePost,
   openCommentModal,
@@ -21,7 +25,7 @@ import {
   openPostOptionModal,
   closePostOptionModal,
 } from "../../stores/reducers/listPostReducers";
-
+import { debounce } from "lodash";
 import PostOptionsModal from "./PostOptionModal";
 import getUserIdFromToken from "../../utils/JwtDecode";
 
@@ -42,7 +46,6 @@ const AllPosts = ({ usersProfile }) => {
 
   //Mở modal option
   const userId = getUserIdFromToken(); // Lấy userId từ token
-
   const handleOpenPostOptions = (event, post) => {
     event.stopPropagation();
     const rect = event.target.getBoundingClientRect();
@@ -54,6 +57,14 @@ const AllPosts = ({ usersProfile }) => {
     );
   };
 
+  //Xóa bài viết
+  const handleDeletePost = debounce((postId) => {
+    dispatch(deletePost(postId)); // Truyền trực tiếp ID (string)
+  }, 300);
+  //Like bài viết
+  const handleLikePost = debounce((postId) => {
+    dispatch(likePost(postId));
+  }, 1000);
   return (
     <div className="all-posts">
       {Array.isArray(posts) && posts.length > 0 ? (
@@ -97,7 +108,7 @@ const AllPosts = ({ usersProfile }) => {
 
             {/* Actions */}
             <div className="actions">
-              <span onClick={() => dispatch(likePost(post.id))}>
+              <span onClick={() => handleLikePost(post.id)}>
                 <img src={post.hasLiked ? likeFill : likeIcon} alt="Like" />
 
                 <span>{post.likeCount}</span>
@@ -122,7 +133,8 @@ const AllPosts = ({ usersProfile }) => {
           isOwner={userId === selectedPostToOption.post.userId}
           onClose={() => dispatch(closePostOptionModal())}
           position={selectedPostToOption.position} // Truyền vị trí vào modal
-          postId={selectedPostToOption.id}
+          postId={selectedPostToOption.post.id}
+          handleDeletePost={handleDeletePost}
         />
       )}
 
