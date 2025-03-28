@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Application.DTOs.Post;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,13 +9,13 @@ using static Domain.Common.Enums;
 
 namespace Application.CQRS.Commands.Posts
 {
-    public class UpdatePostCommand : IRequest<ResponseModel<bool>>
+    public class UpdatePostCommand : IRequest<ResponseModel<UpdatePostDto>>
     {
-        public Guid PostId { get; set; }
-        public string? Content { get; set; }
-        public string? ImageUrl { get; set; }
-        public string? VideoUrl { get; set; }
-        public ScopeEnum? Scope { get; set; }
+        public required Guid PostId { get; set; }
+        public required string Content { get; set; }
+        public IFormFile? Image { get; set; }  // ✅ Chấp nhận file thay vì đường dẫn
+        public IFormFile? Video { get; set; }  // ✅ Chấp nhận file thay vì đường dẫn
+        public ScopeEnum? Scope { get; set; } // ➜ Thêm dòng này
 
     }
 }

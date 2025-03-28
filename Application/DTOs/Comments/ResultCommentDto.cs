@@ -14,7 +14,8 @@ namespace Application.DTOs.Comments
         public DateTime? UpdatedAt { get; set; }
          public string? Content { get; set; }
          public required string FullName { get; set; }
-            public string? ProfilePicture { get; set; }
-        }
+         public string? ProfilePicture { get; set; }
+        public Guid? ParentCommentId { get; set; } // 📌 Thêm ParentCommentId (có thể null)
+    }
     }
 

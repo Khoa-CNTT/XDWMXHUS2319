@@ -29,10 +29,12 @@ namespace Application.DTOs.Post
         public OriginalPostDto() { }
         public OriginalPostDto(Domain.Entities.Post post)
         {
+            const string baseUrl = " https://localhost:7053";
             PostId = post.Id;
             Content = post.Content;
-            ImageUrl = post.ImageUrl;
-            VideoUrl = post.VideoUrl;
+            ImageUrl = post.ImageUrl != null ? $"{baseUrl}{post.ImageUrl}" : null; // ✅ Thêm Base URL
+            VideoUrl = post.VideoUrl != null ? $"{baseUrl}{post.VideoUrl}" : null; // ✅ Thêm Base URL
+
             CreateAt = post.CreatedAt;
             Author = new UserPostDto(post.User ?? new Domain.Entities.User("Người dùng ẩn danh", "anonymous@example.com", "hashed_password"));
 

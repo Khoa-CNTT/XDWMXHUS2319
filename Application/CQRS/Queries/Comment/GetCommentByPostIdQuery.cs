@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.Comment
 {
-    public class GetCommentByPostIdQuery : IRequest<ResponseModel<List<CommentDto>>>
+    public class GetCommentByPostIdQuery : IRequest<ResponseModel<GetCommentsResponse>>
     {
         public Guid PostId { get; set; }
-        public int Page { get; set; }
-        public int PageSize { get; set; }
-
-        public GetCommentByPostIdQuery(Guid postId, int page = 1, int pageSize = 2)
+        public Guid? LastCommentId { get; set; }
+        public int PageSize { get; private set; } = 10;
+        public GetCommentByPostIdQuery() { }
+        public GetCommentByPostIdQuery(Guid postId, Guid? lastCommentId = null, int pageSize = 10)
         {
             PostId = postId;
-            Page = page;
-            PageSize = pageSize;
+            LastCommentId = lastCommentId;
+            PageSize = 10;
         }
     }
 }

@@ -3,6 +3,7 @@ using Application.DTOs.Shares;
 using Application.Interface;
 using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
+using Application.Interface.Hubs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,15 @@ namespace Application.CQRS.Commands.Comments
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
         private readonly IGeminiService _geminiService;
-        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService)
+        private readonly INotificationService _notificationService;
+        private readonly IPublisher _publisher;
+        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _geminiService = geminiService;
+            _notificationService = notificationService;
+            _publisher = publisher;
         }
         public async Task<ResponseModel<ResultCommentDto>> Handle(CommentPostCommand request, CancellationToken cancellationToken)
         {
@@ -33,15 +38,15 @@ namespace Application.CQRS.Commands.Comments
             }
 
             // Kiểm tra số lần share của user đối với bài viết này
-            // Nếu trong vòng 5 phút user đã share bài viết này quá 3 lần thì không cho share nữa
-            var fiveMinutesAgo = DateTime.UtcNow.AddMinutes(-5);
+            var oneMinutesAgo = DateTime.UtcNow.AddMinutes(-1);
             var commentCount = await _unitOfWork.CommentRepository.CountPostCommentAsync(c =>
-                c.UserId == userId && c.PostId == request.PostId && c.CreatedAt >= fiveMinutesAgo);
+                c.UserId == userId && c.PostId == request.PostId && c.CreatedAt >= oneMinutesAgo);
 
-            if (commentCount >= 3)
+            if (commentCount >= 10)
             {
                 return ResponseFactory.Fail<ResultCommentDto>("Bạn đã bình luận bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
             }
+
             if(request.Content == null)
             {
                 return ResponseFactory.Fail<ResultCommentDto>("Nội dung bình luận không được để trống", 400);
@@ -66,6 +71,11 @@ namespace Application.CQRS.Commands.Comments
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
+                // 🔥 Publish sự kiện bình luận để gửi thông báo qua SignalR
+                if (post.UserId != userId)
+                {
+                    await _notificationService.SendCommentNotificationAsync(request.PostId, userId, user.FullName);
+                }
                 return ResponseFactory.Success(Mapping.MapToResultCommentPostDto(comment, user.FullName, user.ProfilePicture), "Bình luận bài viết thành công", 200);
             }
             catch(Exception ex)

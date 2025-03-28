@@ -25,7 +25,7 @@ namespace DuyTanSharingSystem.Controllers
         }
         [Authorize]
         [HttpPut("upProfile")]
-        public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileCommand command)
+        public async Task<IActionResult> UpdateUserProfile([FromForm] UpdateUserProfileCommand command)
         {
             var result = await _mediator.Send(command);
             return Ok(result);

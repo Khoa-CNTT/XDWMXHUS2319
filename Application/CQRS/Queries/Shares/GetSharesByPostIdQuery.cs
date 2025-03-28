@@ -9,17 +9,16 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.Shares
 {
-    public class GetSharesByPostIdQuery : IRequest<ResponseModel<List<UserDto>>>
+    public class GetSharesByPostIdQuery : IRequest<ResponseModel<GetSharedUsersResponse>>
     {
         public Guid PostId { get; set; }
-        public int Page { get; set; }
-        public int PageSize { get; set; }
-
-        public GetSharesByPostIdQuery(Guid postId, int page, int pageSize)
+        public Guid? LastUserId { get; set; }
+        public int PageSize { get; } = 10;
+        public GetSharesByPostIdQuery() { }
+        public GetSharesByPostIdQuery(Guid postId, Guid? lastUserId = null)
         {
             PostId = postId;
-            Page = page;
-            PageSize = pageSize;
+            LastUserId = lastUserId;
         }
     }
 }

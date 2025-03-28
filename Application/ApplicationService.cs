@@ -24,7 +24,8 @@ namespace Application
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ILikeService, LikeService>();
             services.AddScoped<ISearchService, SearchService>();
-
+            services.AddScoped<IShareService, ShareService>();
+            services.AddScoped<ICommentLikeService, CommentLikeService>();
 
             //services.AddScoped<IPostService, PostService>();
             //services.AddHostedService<LikeEventProcessor>();
@@ -33,11 +34,14 @@ namespace Application
             services.AddScoped<IRidePostService, RidePostService>();
             services.AddScoped<IRedisService, RedisService>();
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<ICommentService, CommentService>();
 
+            // Đăng ký File Service để lưu ảnh và video
+            services.AddScoped<IFileService, FileService>();
 
             //background services
             //nếu ko làm việc liên quan đến like và LocationUpdate thì comment lại
-            //services.AddHostedService<LikeEventProcessor>();
+            services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
             //services.AddHostedService<GpsMonitorService>();
             services.AddHostedService<LikeCommentEventProcessor>();

@@ -3,6 +3,7 @@ using Application.DTOs.Likes;
 using Application.DTOs.Post;
 using Application.DTOs.Posts;
 using Application.DTOs.Shares;
+using Application.Interface.ContextSerivce;
 using Domain.Interface;
 using Microsoft.Extensions.Logging;
 using System;
@@ -18,16 +19,20 @@ namespace Application.CQRS.Queries.Posts
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<GetAllPostQueryHandle> _logger;
         private readonly IPostService _postService;
-        public GetAllPostQueryHandle(IUnitOfWork unitOfWork, ILogger<GetAllPostQueryHandle> logger, IPostService postService)
+        private readonly IUserContextService _userContextService;
+        public GetAllPostQueryHandle(IUnitOfWork unitOfWork, ILogger<GetAllPostQueryHandle> logger, IPostService postService, IUserContextService userContextService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _postService = postService;
+            _userContextService = userContextService;
         }
 
         public async Task<ResponseModel<GetPostsResponse>> Handle(GetAllPostQuery request, CancellationToken cancellationToken)
         {
-            var postsResponse = await _postService.GetPostsWithCursorAsync(request.LastPostId, request.PageSize, cancellationToken);
+            var userId = _userContextService.UserId();
+
+            var postsResponse = await _postService.GetPostsWithCursorAsync(request.LastPostId, cancellationToken);
 
             if (postsResponse == null || !postsResponse.Posts.Any())
             {

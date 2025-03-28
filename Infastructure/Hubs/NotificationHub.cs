@@ -29,7 +29,7 @@ namespace Infrastructure.Hubs
         {
             await Clients.All.SendAsync("ReceiveNotification", message);
         }
-
+        
         /// <summary>
         /// Gửi cảnh báo đến một tài xế cụ thể
         /// </summary>
@@ -52,6 +52,7 @@ namespace Infrastructure.Hubs
         public override async Task OnConnectedAsync()
         {
             var userId = _userContextService.UserId();
+            Console.WriteLine($"🔗 User {userId} đã kết nối với SignalR");
             if (userId != Guid.Empty)
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, userId.ToString());
