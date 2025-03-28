@@ -50,5 +50,10 @@ namespace Application.Services
             // 🔥 Đẩy event sang IPublisher
             await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, message));
         }
+
+        public async Task SendShareNotificationAsync(Guid postId, Guid userId)
+        {
+            await _publisher.Publish(new ShareEvent(postId, userId));
+        }
     }
 }
