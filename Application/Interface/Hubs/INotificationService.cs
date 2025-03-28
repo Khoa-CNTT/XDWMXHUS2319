@@ -12,6 +12,7 @@ namespace Application.Interface.Hubs
         Task SendLikeNotificationAsync(Guid postId, Guid userId);
         Task SendNotificationWhenTripEnds(Guid driverId, Guid passengerId, string message);
         //gửi cảnh báo khi gps bị tắt
+        Task SendShareNotificationAsync(Guid postId, Guid userId);
         Task SendInAppNotificationAsync(Guid driverId, string message);
         Task SendAlertAsync(Guid driverId, string message);
         Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName);
