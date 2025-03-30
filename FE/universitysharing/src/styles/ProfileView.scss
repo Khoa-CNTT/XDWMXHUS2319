@@ -1,0 +1,50 @@
+.profile-user-view {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  .header {
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px; // Re-added padding for consistency
+  }
+
+  &__content {
+    display: flex;
+    flex: 1;
+    padding: 20px;
+    gap: 20px;
+    max-width: 100%; // Constrain the content width
+    box-sizing: border-box;
+  }
+
+  &__left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__right {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (max-width: 768px) {
+    &__content {
+      flex-direction: column;
+      padding: 10px;
+    }
+
+    &__left,
+    &__right {
+      flex: 1;
+    }
+  }
+}

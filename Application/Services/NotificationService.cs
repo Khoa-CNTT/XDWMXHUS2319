@@ -50,5 +50,10 @@ namespace Application.Services
             // 🔥 Đẩy event sang IPublisher
             await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, message));
         }
+
+        public async Task SendReplyNotificationAsync(Guid commentId, Guid responderId, string responderName)
+        {
+            await _publisher.Publish(new CommentEvent(commentId, responderId, responderName));
+        }
     }
 }

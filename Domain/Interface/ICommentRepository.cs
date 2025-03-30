@@ -18,6 +18,7 @@ namespace Domain.Interface
         Task<List<Comment>> GetRepliesByCommentIdAsync(Guid parentCommentId);
         Task<int> CountRepliesAsync(Guid parentCommentId);
         bool HasMoreReplies(Guid commentId);
+        Task<Guid> GetCommentOwnerIdAsync(Guid commentId);
         Task<List<Comment>> GetRepliesByCommentIdWithCursorAsync(Guid parentCommentId, Guid? lastReplyId, int pageSize, CancellationToken cancellationToken);
         Task<List<Comment>> GetCommentsByPostIdWithCursorAsync(Guid postId, Guid? lastCommentId, int pageSize, CancellationToken cancellationToken);
     }

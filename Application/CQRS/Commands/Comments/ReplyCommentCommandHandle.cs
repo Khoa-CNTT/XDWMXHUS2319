@@ -2,7 +2,9 @@
 using Application.DTOs.Shares;
 using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
+using Application.Interface.Hubs;
 using Domain.Entities;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +19,14 @@ namespace Application.CQRS.Commands.Comments
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
         private readonly IGeminiService _geminiService;
+        private readonly INotificationService _notificationService;
 
-        public ReplyCommentCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService)
+        public ReplyCommentCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _geminiService = geminiService;
+            _notificationService = notificationService;
         }
         public async Task<ResponseModel<ResultCommentDto>> Handle(ReplyCommentCommand request, CancellationToken cancellationToken)
         {
@@ -78,7 +82,11 @@ namespace Application.CQRS.Commands.Comments
                 await _unitOfWork.CommentRepository.AddAsync(replyComment);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-
+                // 🔥 Publish sự kiện bình luận để gửi thông báo qua SignalR
+                if (parentComment.UserId != userId)
+                {
+                    await _notificationService.SendReplyNotificationAsync(request.ParentCommentId, userId, user.FullName);
+                }
                 return ResponseFactory.Success(Mapping.MapToResultCommentPostDto(replyComment, user.FullName, user.ProfilePicture), "Phản hồi bình luận thành công", 201);
             }
             catch (Exception ex)

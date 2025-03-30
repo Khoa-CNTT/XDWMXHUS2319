@@ -23,6 +23,12 @@ namespace Infrastructure.Data.Repositories
         {
             throw new NotImplementedException();
         }
+        public async Task<List<Share>> GetSharesByPostIdAsync(Guid postId)
+        {
+            return await _context.Shares
+                .Where(s => s.PostId == postId && !s.IsDeleted)
+                .ToListAsync();
+        }
         public async Task<List<Share>> GetSharedUsersByPostIdWithCursorAsync(Guid postId, Guid? lastUserId, int pageSize, CancellationToken cancellationToken)
         {
 
