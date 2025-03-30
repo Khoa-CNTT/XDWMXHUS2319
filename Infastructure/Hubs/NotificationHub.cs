@@ -37,7 +37,13 @@ namespace Infrastructure.Hubs
         {
             await Clients.Group(userId.ToString()).SendAsync("ReceiveAlert", message);
         }
-
+        /// <summary>
+        /// Gửi thông báo đến chủ bài viết
+        /// </summary>
+        public async Task SendShareNotification(Guid userId, string message)
+        {
+            await Clients.User(userId.ToString()).SendAsync("ReceiveNotification", message);
+        }
         /// <summary>
         /// Gửi thông báo trong ứng dụng đến một tài xế cụ thể
         /// </summary>

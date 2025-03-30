@@ -55,5 +55,9 @@ namespace Application.Services
         {
             await _publisher.Publish(new CommentEvent(commentId, responderId, responderName));
         }
+        public async Task SendShareNotificationAsync(Guid postId, Guid userId)
+        {
+            await _publisher.Publish(new ShareEvent(postId, userId));
+        }
     }
 }

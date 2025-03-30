@@ -6,9 +6,16 @@ import videoIcon from "../assets/iconweb/videoIcon.svg";
 import "../styles/CreatePostModal.scss";
 import "animate.css";
 
+import { useDispatch, useSelector } from "react-redux";
+import { createPost } from "../stores/action/listPostActions"; // Import action từ Redux
+
 const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
   const [mediaFiles, setMediaFile] = useState([]);
-
+  const dispatch = useDispatch();
+  const [content, setContent] = useState("");
+  const [postType, setPostType] = useState(4);
+  const [scope, setScope] = useState(0);
+  const loading = useSelector((state) => state.posts.loading); // Lấy trạng thái loading từ Redux
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -27,6 +34,7 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
     const newMedia = {
       url: URL.createObjectURL(file),
       type: file.type.startsWith("video") ? "video" : "image",
+      file: file, // Lưu file gốc vào đây
     };
 
     setMediaFile((prev) => {
@@ -39,6 +47,37 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
     setMediaFile((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Thêm bài viết
+  const handleSubmit = async () => {
+    if (!content.trim()) {
+      alert("Vui lòng nhập nội dung bài viết!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("Content", content);
+    formData.append("PostType", postType);
+    formData.append("Scope", scope);
+
+    if (mediaFiles.length > 0) {
+      const file = mediaFiles[0].file; // Lấy file đầu tiên
+      if (file.type.startsWith("video")) {
+        formData.append("Video", file);
+      } else {
+        formData.append("Image", file);
+      }
+    }
+
+    dispatch(
+      createPost({
+        formData,
+        fullName: usersProfile.fullName || "University Sharing",
+        profilePicture: usersProfile.profilePicture || avatarDeafault,
+      })
+    );
+
+    onClose(); // Đóng modal sau khi gửi bài
+  };
   if (!isOpen) return null;
 
   return (
@@ -67,7 +106,11 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
             {usersProfile.fullName || "University Sharing"}
           </span>
         </div>
-        <textarea placeholder="Bạn đang nghĩ gì thế?"></textarea>
+        <textarea
+          placeholder="Bạn đang nghĩ gì thế?"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+        ></textarea>
 
         <div className="preview-imgae-or-video">
           {mediaFiles.map((media, index) => (
@@ -110,17 +153,31 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
           </label>
         </div>
         <div className="type-status-post">
-          <select className="status-post">
+          <select
+            className="status-post"
+            value={scope}
+            onChange={(e) => setScope(Number(e.target.value))}
+          >
             <option value="0">Công khai</option>
             <option value="1">Riêng tư</option>
           </select>
-          <select className="type-post">
+          <select
+            className="type-post"
+            value={postType}
+            onChange={(e) => setPostType(Number(e.target.value))}
+          >
             <option value="4">Thảo luận</option>
             <option value="4 ">Tư liệu học tập</option>
             <option value="4 ">Trao đổi</option>
           </select>
         </div>
-        <button className="btn-create-post">Đăng bài</button>
+        <button
+          className="btn-create-post"
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? "Đang đăng..." : "Đăng bài"}
+        </button>
       </div>
     </>
   );

@@ -93,5 +93,17 @@ namespace Infrastructure.Service
             string message = $"{responderName} đã bình luận vào bài viết của bạn.";
             await _hubContext.Clients.User(commentOwnerId.ToString()).SendAsync("ReceiveNotification", message);
         }
+        public async Task SendShareNotificationAsync(Guid postId, Guid userId)
+        {
+            var ownerId = await _postService.GetPostOwnerId(postId);
+            var user = await _userService.GetByIdAsync(userId);
+
+            if (user == null || ownerId == Guid.Empty) return;
+
+            string message = $"{user.FullName} đã chia sẻ bài viết của bạn.";
+
+            await _hubContext.Clients.User(ownerId.ToString())
+                .SendAsync("ReceiveNotification", message);
+        }
     }
 }

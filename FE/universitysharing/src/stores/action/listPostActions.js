@@ -29,6 +29,12 @@ export const likePost = createAsyncThunk("posts/likePosts", async (postId) => {
 export const commentPost = createAsyncThunk(
   "posts/commentPost",
   async (postId, { rejectWithValue }) => {
+    console.log(
+      "postID nhận được load Comment",
+      postId,
+      "Loại:",
+      typeof postId
+    );
     try {
       const response = await axios.get(
         `https://localhost:7053/api/Comment/GetCommentByPost?PostId=${postId}`,
@@ -38,8 +44,6 @@ export const commentPost = createAsyncThunk(
           },
         }
       );
-      // console.log("ID PostID selected : >>", postId);
-      // console.log("Data CMT : >>", response.data.data);
       return { postId, comments: response.data.data.comments }; // Trả về danh sách comments
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi không xác định");
@@ -115,6 +119,84 @@ export const ReplyComment = createAsyncThunk(
       return { commentId, data: response.data.data };
     } catch (error) {
       return rejectWithValue(error.response?.data || "Có lỗi khi comment");
+    }
+  }
+);
+
+// //Đăng bài
+export const createPost = createAsyncThunk(
+  "post/createPost",
+  async ({ formData, fullName, profilePicture }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        "https://localhost:7053/api/Post/create",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Gửi token trong header
+          },
+        }
+      );
+      if (response.data.success) {
+        console.log("Đăng bài thành công ");
+        return {
+          fullName,
+          profilePicture,
+          ...response.data.data,
+          updateAt: null, // API không trả về updateAt, nên thêm vào để đồng bộ
+          commentCount: 0,
+          likeCount: 0,
+          shareCount: 0,
+          hasLiked: false,
+          isSharedPost: false,
+        };
+      } else {
+        return rejectWithValue(response.data.errors);
+      }
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+//Xóa bài viết
+export const deletePost = createAsyncThunk(
+  "posts/deletePost",
+  async (postID, { rejectWithValue }) => {
+    // console.log("postID nhận được:", postID, "Loại:", typeof postID);
+    try {
+      const response = await axios.delete(
+        `https://localhost:7053/api/Post/delete?PostId=${postID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Gửi token trong header
+          },
+        }
+      );
+      // console.log("Xóa bài viết thành công!", response.data);
+      return postID;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+//Lấy comment reply
+export const getReplyComment = createAsyncThunk(
+  "post/getReplyComment",
+  async (commentId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `https://localhost:7053/api/Comment/replies?ParentCommentId=${commentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Gửi token trong header
+          },
+        }
+      );
+      return { commentId, data: response.data.data.replies };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );

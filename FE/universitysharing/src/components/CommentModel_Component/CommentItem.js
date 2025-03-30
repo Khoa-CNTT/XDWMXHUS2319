@@ -6,6 +6,7 @@ import likeIconFill from "../../assets/iconweb/likefillIcon.svg";
 import moreIcon from "../../assets/iconweb/moreIcon.svg";
 
 const CommentItem = ({ comments, handleLikeComment }) => {
+  console.log("Dũ liệu comment ", comments);
   const [isReplying, setIsReplying] = useState(false); // Kiểm soát hiển thị input
   const [replyText, setReplyText] = useState(""); // Lưu nội dung nhập vào
   const [replyingCommentId, setReplyingCommentId] = useState(null); // Lưu ID của comment đang được trả lời
@@ -112,7 +113,9 @@ const CommentItem = ({ comments, handleLikeComment }) => {
           ))}
         </div>
       )}
-
+      {comments.hasMoreReplies && (
+        <div className="more-reply-comment">Xem thêm bình luận </div>
+      )}
       {/* Hiển thị input reply nếu người dùng nhấn "Trả lời" */}
 
       {isReplying && (

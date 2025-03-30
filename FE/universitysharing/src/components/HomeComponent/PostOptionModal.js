@@ -4,9 +4,16 @@ import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
 import { closePostOptionModal } from "../../stores/reducers/listPostReducers";
 
-const PostOptionsModal = ({ isOwner, onClose, position, postId }) => {
+const PostOptionsModal = ({
+  isOwner,
+  onClose,
+  position,
+  postId,
+  handleDeletePost,
+}) => {
   const modalRef = useRef(null); // Tạo ref để kiểm tra click ra ngoài modal
   console.log("Người chủ>>", isOwner);
+  console.log("ID post>>", postId);
   const dispatch = useDispatch();
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -54,7 +61,15 @@ const PostOptionsModal = ({ isOwner, onClose, position, postId }) => {
           {isOwner ? (
             <>
               <p className="option-item option-edit">Chỉnh sửa bài viết</p>
-              <p className="option-item option-delete">Xóa bài viết</p>
+              <p
+                className="option-item option-delete"
+                onClick={() => {
+                  handleDeletePost(postId);
+                  onClose();
+                }}
+              >
+                Xóa bài viết
+              </p>
             </>
           ) : (
             <p className="option-item option-report">Báo cáo bài viết</p>
