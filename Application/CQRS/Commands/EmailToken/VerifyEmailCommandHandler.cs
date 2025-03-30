@@ -49,7 +49,7 @@ namespace Application.CQRS.Commands.EmailToken
                 }
 
                 user.VerifyEmail(); // 🛠 Cập nhật trạng thái đã xác minh
-                 emailToken.MarkAsUsed(); // 🔄 Đánh dấu token đã sử dụng
+                emailToken.MarkAsUsed(); // 🔄 Đánh dấu token đã sử dụng
                 emailToken.IsUsedToken(); // 🔄 Đánh dấu token đã sử dụng
                 // ❌ Xóa token sau khi xác minh thành công
                 await _unitOfWork.EmailTokenRepository.DeleteAsync(emailToken.Id);

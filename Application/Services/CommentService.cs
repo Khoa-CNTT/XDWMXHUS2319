@@ -16,6 +16,10 @@ namespace Application.Services
             _unitOfWork = unitOfWork;
 
         }
+        public async Task<Guid> GetCommentOwnerId(Guid commentId)
+        {
+            return await _unitOfWork.CommentRepository.GetCommentOwnerIdAsync(commentId);
+        }
         public async Task<bool> SoftDeleteCommentWithRepliesAndLikesAsync(Guid commentId)
         {
             var comment = await _unitOfWork.CommentRepository.GetByIdAsync(commentId);

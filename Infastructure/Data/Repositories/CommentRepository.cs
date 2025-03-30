@@ -24,7 +24,13 @@ namespace Infrastructure.Data.Repositories
         {
             throw new NotImplementedException();
         }
-
+        public async Task<Guid> GetCommentOwnerIdAsync(Guid commentId)
+        {
+            return await _context.Comments
+                .Where(p => p.Id == commentId) // ✅ Lọc bài viết theo ID
+                .Select(p => p.UserId) // ✅ Lấy OwnerId (chủ sở hữu)
+                .FirstOrDefaultAsync(); // ✅ Lấy giá trị đầu tiên (hoặc null nếu không có)
+        }
 
         public async Task<List<Comment>> GetCommentsByPostIdWithCursorAsync(Guid postId, Guid? lastCommentId, int pageSize, CancellationToken cancellationToken)
         {

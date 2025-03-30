@@ -1,0 +1,35 @@
+.Container-MessageView {
+  background-color: #ececec;
+  display: flex;
+  flex-direction: column;
+  height: 100vh; // Full viewport height
+  overflow-y: hidden; // Prevent vertical scrolling
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  .header {
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px; // Re-added padding for consistency
+  }
+
+  .message-view {
+    display: flex;
+    height: calc(
+      100vh - 60px
+    ); // Adjust for header height (assuming header is 60px)
+    border-top: 1px solid lightgray;
+    overflow-y: hidden; // Prevent vertical scrolling
+  }
+
+  .message-view__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px); // Match the height of message-view
+    overflow-y: hidden; // Prevent vertical scrolling
+  }
+}
