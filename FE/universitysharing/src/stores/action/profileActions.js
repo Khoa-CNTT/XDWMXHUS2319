@@ -19,3 +19,23 @@ export const userProfile = createAsyncThunk(
     }
   }
 );
+
+export const getPostOwner = createAsyncThunk(
+  "profile/getPostOwner",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "https://localhost:7053/api/Post/GetPostsByOwner",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data.data.posts;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Có lỗi xảy ra!");
+    }
+  }
+);

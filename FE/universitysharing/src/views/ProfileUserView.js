@@ -8,23 +8,31 @@ import Header from "../components/HomeComponent/Header";
 import { useDispatch, useSelector } from "react-redux";
 import { userProfile } from "../stores/action/profileActions";
 import "../styles/ProfileView.scss";
+import AllPosts from "../components/HomeComponent/AllPostHome";
+import { getPostOwner } from "../stores/action/profileActions";
+import PostInput from "../components/HomeComponent/PostInputHome";
 
 const ProfileUserView = () => {
   const dispatch = useDispatch();
+  const { post } = useSelector((state) => state.users);
   const usersState = useSelector((state) => state.users) || {};
   const { users } = usersState;
+
   return (
     <div className="profile-user-view">
       <Header className="header" usersProfile={users} />
       <ProfileHeader />
       <div className="profile-user-view__content">
-        <div className="profile-user-view__left">
-          <ProfileIntro />
-          <ProfilePhotos />
-          <ProfileFriends />
+        <div className="left-sidebar-container">
+          <div className="left-sidebar-content">
+            <ProfileIntro />
+            <ProfilePhotos />
+            <ProfileFriends />
+          </div>
         </div>
         <div className="profile-user-view__right">
-          <ProfilePost />
+          <PostInput className="post-input" usersProfile={users} />
+          <AllPosts usersProfile={users} post={post} />
         </div>
       </div>
     </div>

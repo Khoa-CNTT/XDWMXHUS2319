@@ -30,6 +30,7 @@ function App() {
           <Route path="*" element={<Login />} />
           <Route path="/MessageView" element={<MessageView />} />
           <Route path="/AccountVerified" element={<AccountVerified />} />
+          <Route path="/ProfileUserView" element={<ProfileUserView />} />
         </Routes>
       </Router>
       <ToastContainer></ToastContainer>
