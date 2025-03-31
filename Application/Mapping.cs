@@ -1,4 +1,5 @@
-﻿using Application.DTOs.CommentLikes;
+﻿using Application.Common;
+using Application.DTOs.CommentLikes;
 using Application.DTOs.Comments;
 using Application.DTOs.Likes;
 using Application.DTOs.Post;
@@ -48,7 +49,6 @@ namespace Application
         }
         public static ResultCommentDto MapToResultCommentPostDto(Comment comment, string fullName, string? profilePicture)
         {
-            const string baseUrl = "https://localhost:7053";
             return new ResultCommentDto
             {
                 CommentId = comment.Id,
@@ -56,31 +56,29 @@ namespace Application
                 UpdatedAt = comment.UpdatedAt,
                 Content = comment.Content,
                 FullName = fullName,
-                ProfilePicture = profilePicture != null ? $"{baseUrl}{profilePicture}" : null, // ✅ Thêm Base URL
+                ProfilePicture = profilePicture != null ? $"{Constaint.baseUrl}{profilePicture}" : null, // ✅ Thêm Base URL
                 ParentCommentId = comment.ParentCommentId // 📌 Thêm ParentCommentId
             };
         }
         public static UserDto MapToUserDto(User? user)
         {
-            const string baseUrl = "https://localhost:7053";
             return new UserDto
             {
                 Id = user?.Id,
                 FullName = user?.FullName,
                 Email = user?.Email,
-                ProfilePicture = user?.ProfilePicture != null ? $"{baseUrl}{user?.ProfilePicture}" : null,
+                ProfilePicture = user?.ProfilePicture != null ? $"{Constaint.baseUrl}{user?.ProfilePicture}" : null,
             };
         }
 
         public static UserProfileDto MaptoUserprofileDto(User user)
         {
-            const string baseUrl = "https://localhost:7053";
             return new UserProfileDto
             {
                 Id = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
-                ProfilePicture = user.ProfilePicture != null ? $"{baseUrl}{user.ProfilePicture}" : null,
+                ProfilePicture = user.ProfilePicture != null ? $"{Constaint.baseUrl}{user.ProfilePicture}" : null,
                 Bio = user.Bio,
                 CreatedAt = user.CreatedAt
             };
@@ -90,13 +88,12 @@ namespace Application
             /*            var validLikes = comment.CommentLikes?
                             .Where(l => l.IsLike) // 🔥 Chỉ lấy lượt like hợp lệ
                             .ToList() ?? new List<CommentLike>();*/
-            const string baseUrl = " https://localhost:7053";
             return new CommentDto
             {
                 Id = comment.Id,
                 UserId = comment.UserId,
                 UserName = comment.User?.FullName ?? "Unknown",
-                ProfilePicture = comment.User?.ProfilePicture != null ? $"{baseUrl}{comment.User?.ProfilePicture}" : null,
+                ProfilePicture = comment.User?.ProfilePicture != null ? $"{Constaint.baseUrl}{comment.User?.ProfilePicture}" : null,
                 Content = comment.Content,
                 CreatedAt = comment.CreatedAt,
                 ParentCommentId = comment.ParentCommentId,
@@ -116,16 +113,14 @@ namespace Application
         }
        
         private static PostDto MapToOriginalPostDto(Post p)
-        {
-            const string baseUrl = "https://localhost:7053";
-            var originalPostDto = new PostDto
+        {            var originalPostDto = new PostDto
             {
                 Id = p.Id,
                 Content = p.Content,
                 FullName = p.User?.FullName ?? "Unknown",
                 ProfilePicture = p.User?.ProfilePicture ?? "default.jpg",
-                ImageUrl = p.ImageUrl,
-                VideoUrl = p.VideoUrl,
+                ImageUrl = p.ImageUrl != null ? $"{Constaint.baseUrl}{p.ImageUrl}" : null, // ✅ Thêm Base URL
+                VideoUrl = p.VideoUrl != null ? $"{Constaint.baseUrl}{p.VideoUrl}" : null, // ✅ Thêm Base URL
                 CreatedAt = p.CreatedAt,
                 IsSharedPost = p.IsSharedPost,
                 OriginalPostId = p.OriginalPostId,
@@ -172,13 +167,12 @@ namespace Application
         }
         private static OriginalPostDto MapToAllOriginalPostDto(Post p)
         {
-            const string baseUrl = "https://localhost:7053";
             var originalPostDto = new OriginalPostDto
             {
                 PostId = p.Id,
                 Content = p.Content,
-                ImageUrl = p.ImageUrl != null ? $"{baseUrl}{p.ImageUrl}" : null, // ✅ Thêm Base URL
-                VideoUrl = p.VideoUrl != null ? $"{baseUrl}{p.VideoUrl}" : null, // ✅ Thêm Base URL
+                ImageUrl = p.ImageUrl != null ? $"{Constaint.baseUrl}{p.ImageUrl}" : null, // ✅ Thêm Base URL
+                VideoUrl = p.VideoUrl != null ? $"{Constaint.baseUrl}{p.VideoUrl}" : null, // ✅ Thêm Base URL
                 CreateAt = p.CreatedAt,
                 Author = new UserPostDto(p.User ?? new Domain.Entities.User("Người dùng ẩn danh", "anonymous@example.com", "hashed_password"))
             };
@@ -264,9 +258,7 @@ namespace Application
             };
         }
         public static GetAllPostDto MapToAllPostDto(Post p, Guid userId)
-        {
-            const string baseUrl = "https://localhost:7053";
-            // Lọc các comment chưa bị xóa mềm
+        {            // Lọc các comment chưa bị xóa mềm
             var allComments = p.Comments?
                 .Where(c => !c.IsDeleted) // 🔥 Lọc comment hợp lệ
                 .Select(c => new CommentDto(c))
@@ -283,9 +275,9 @@ namespace Application
                 UserId = p.UserId,
                 Content = p.Content,
                 FullName = p.User?.FullName ?? "Unknown",
-                ProfilePicture = p.User?.ProfilePicture != null ? $"{baseUrl}{p.User.ProfilePicture}" : null, // ✅ Thêm Base URL
-                ImageUrl = p.ImageUrl != null ? $"{baseUrl}{p.ImageUrl}" : null, // ✅ Thêm Base URL
-                VideoUrl = p.VideoUrl != null ? $"{baseUrl}{p.VideoUrl}" : null, // ✅ Thêm Base URL
+                ProfilePicture = p.User?.ProfilePicture != null ? $"{Constaint.baseUrl}{p.User.ProfilePicture}" : null, // ✅ Thêm Base URL
+                ImageUrl = p.ImageUrl != null ? $"{Constaint.baseUrl}{p.ImageUrl}" : null, // ✅ Thêm Base URL
+                VideoUrl = p.VideoUrl != null ? $"{Constaint.baseUrl}{p.VideoUrl}" : null, // ✅ Thêm Base URL
                 CreatedAt = p.CreatedAt,
                 UpdateAt = p.UpdateAt,
                 PostType = p.PostType,
