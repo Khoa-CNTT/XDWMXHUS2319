@@ -9,5 +9,6 @@ namespace Application.Interface.Api
     public interface IGeminiService
     {
         Task<bool> ValidatePostContentAsync(string text);
+        Task<string> GenerateNaturalResponseAsync(string query,string result);
     }
 }

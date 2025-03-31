@@ -191,7 +191,9 @@ namespace Application.Services
 
         public async Task<GetAllRidePostForOwnerDto> GetAllRidePostForOwnerAsync(Guid? lastPostId, int pageSize, Guid ownerId)
         {
+            // Lấy danh sách 10 bài mới từ DB
             var ridePosts = await _unitOfWork.RidePostRepository.GetAllRidePostForOwnerAsync(lastPostId, pageSize, ownerId);
+
             // Lấy danh sách PassengerName trước khi mapping
             var passengerNames = await Task.WhenAll(ridePosts
                 .Where(x => x.Ride?.PassengerId != null)

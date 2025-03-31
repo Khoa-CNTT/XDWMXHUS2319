@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.Model.Events
 {
-    public class SendInAppNotificationEvent
+    public class SendInAppNotificationEvent : INotification
     {
         public Guid userId { get; set; }
         public string message { get; set; }

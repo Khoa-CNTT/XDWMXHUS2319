@@ -36,7 +36,23 @@ namespace Application.Services
             }
             return await _cacheService.GetAsync<List<object>>(key) != null;
         }
+        //chat ai
+        public async Task SaveDataAsync<T>(string key, T data, TimeSpan? expiry = null)
+        {
+            await _cacheService.SetAsync(key, data, expiry ?? TimeSpan.FromMinutes(30));
+        }
 
+        public async Task<T?> GetDataAsync<T>(string key)
+        {
+            return await _cacheService.GetAsync<T>(key);
+        }
+
+        public async Task RemoveDataAsync(string key)
+        {
+            await _cacheService.RemoveAsync(key);
+        }
+
+        //chat ai
         public Task<TimeSpan?> GetExpiryAsync(string key)
         {
             throw new NotImplementedException();

@@ -1,8 +1,12 @@
 ﻿using Application.DTOs.Post;
 using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
+
+using static Domain.Common.Helper;
+
 using Application.Services;
 using static Domain.Common.Enums;
+
 
 
 namespace Application.CQRS.Commands.Posts
@@ -75,6 +79,7 @@ namespace Application.CQRS.Commands.Posts
                     VideoUrl = post.VideoUrl != null ? $"{baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
                     PostType = post.PostType,
                     IsApproved = post.IsApproved,
+                    CreatedAt =FormatUtcToLocal(post.CreatedAt),
                 };
 
                 return ResponseFactory.Success(postDto, "Create Post Success", 200);

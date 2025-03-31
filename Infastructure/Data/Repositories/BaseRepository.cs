@@ -30,7 +30,7 @@ namespace Infrastructure.Data.Repositories
             return _dbSet;
         }
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<List<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
         }

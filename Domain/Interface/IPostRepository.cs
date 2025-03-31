@@ -28,5 +28,9 @@ namespace Domain.Interface
         Task<List<Post>> GetPostsByOwnerAsync(Guid userId, Guid? lastPostId, int pageSize, CancellationToken cancellationToken);
         Task<Post?> GetByIdOriginalPostAsync(Guid id);
         Task<Guid> GetPostOwnerIdAsync(Guid postId);
+
+        Task<List<Post>> GetAllPostForSearchAI();
+        Task<int> GetPostCountAsync(Guid userId);
+
     }
 }

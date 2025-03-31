@@ -15,5 +15,7 @@ namespace Domain.Interface
         Task<User?> GetUserByIdAsync(Guid userId);
         Task<List<User>> SearchUsersAsync(string keyword);
         Task<string?> GetFullNameByIdAsync(Guid id);
+        Task<List<User>> GetAllUsersAsync();
+       
     }
 }
