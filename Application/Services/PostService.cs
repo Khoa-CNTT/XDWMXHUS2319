@@ -118,6 +118,12 @@ namespace Application.Services
             {
                 await SoftDeletePostAndRelatedDataAsync(sharedPost.Id);
             }
+            // 🔥 Xóa tất cả bài share liên quan đến bài viết này
+            var shares = await _unitOfWork.ShareRepository.GetSharesByPostIdAsync(postId);
+            foreach (var share in shares)
+            {
+                share.SoftDelete(); // ✅ Xóa mềm bài chia sẻ
+            }
         }
         public async Task SoftDeleteCommentAndRepliesAsync(Guid commentId)
         {

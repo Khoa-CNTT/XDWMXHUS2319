@@ -16,6 +16,7 @@ namespace Application.Interface.Hubs
         Task SendInAppNotificationAsync(Guid driverId, string message);
         Task SendAlertAsync(Guid driverId, string message);
         Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName);
+        Task SendReplyNotificationAsync(Guid commentId, Guid responderId, string responderName);
     }
 
 }

@@ -51,6 +51,10 @@ namespace Application.Services
             await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, message));
         }
 
+        public async Task SendReplyNotificationAsync(Guid commentId, Guid responderId, string responderName)
+        {
+            await _publisher.Publish(new CommentEvent(commentId, responderId, responderName));
+        }
         public async Task SendShareNotificationAsync(Guid postId, Guid userId)
         {
             await _publisher.Publish(new ShareEvent(postId, userId));

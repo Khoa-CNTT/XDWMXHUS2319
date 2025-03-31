@@ -13,16 +13,19 @@ namespace Infrastructure.Service
         private readonly IPostService _postService;
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
+        private readonly ICommentService _commentService;
 
         public SignalRNotificationService(IHubContext<NotificationHub> hubContext,
             IPostService postService,
             IUserService userService,
-            IEmailService emailService)
+            IEmailService emailService,
+            ICommentService commentService)
         {
             _hubContext = hubContext;
             _postService = postService;
             _userService = userService;
             _emailService = emailService;
+            _commentService = commentService;
         }
 
         /// <summary>
@@ -83,6 +86,13 @@ namespace Infrastructure.Service
                 .SendAsync("ReceiveNotification", message);
         }
 
+        public async Task SendReplyNotificationAsync(Guid commentId, Guid responderId, string responderName)
+        {
+            var commentOwnerId = await _commentService.GetCommentOwnerId(commentId);
+            if(commentOwnerId == responderId) return;
+            string message = $"{responderName} đã bình luận vào bài viết của bạn.";
+            await _hubContext.Clients.User(commentOwnerId.ToString()).SendAsync("ReceiveNotification", message);
+        }
         public async Task SendShareNotificationAsync(Guid postId, Guid userId)
         {
             var ownerId = await _postService.GetPostOwnerId(postId);

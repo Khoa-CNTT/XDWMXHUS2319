@@ -1,0 +1,46 @@
+.auth-success-card {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  background-color: #fff;
+
+  .success-icon {
+    font-size: 60px;
+    color: #4caf50;
+    margin-bottom: 20px;
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  .app-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 1.5rem;
+  }
+
+  .success-message {
+    color: #666;
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+// Animation effect (optional)
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-success-card {
+  animation: fadeIn 0.5s ease-out forwards;
+}
