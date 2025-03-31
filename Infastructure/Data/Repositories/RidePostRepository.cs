@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Infrastructure.Data.Repositories
 {
@@ -68,6 +64,16 @@ namespace Infrastructure.Data.Repositories
         public async Task<RidePost?> GetByDriverIdAsync(Guid userId)
         {
             return await _dbSet.FirstOrDefaultAsync(x => x.UserId == userId);
+        }
+        public async Task<List<RidePost>> GetAllRidePostForSearchAI()
+        {
+            return await _context.RidePosts
+                .OrderByDescending(rp => rp.CreatedAt)
+                .ToListAsync();
+        }
+        public Task<int> GetRidePostCountAsync(Guid userId)
+        {
+            return _context.RidePosts.CountAsync(rp => rp.UserId == userId);
         }
     }
 }

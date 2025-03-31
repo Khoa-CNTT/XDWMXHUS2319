@@ -1,7 +1,7 @@
 ﻿using Application.DTOs.Post;
 using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
-using Application.Services;
+using static Domain.Common.Helper;
 
 
 namespace Application.CQRS.Commands.Posts
@@ -63,6 +63,7 @@ namespace Application.CQRS.Commands.Posts
                     Content = post.Content,
                     PostType = post.PostType,
                     IsApproved = post.IsApproved,
+                    CreatedAt =FormatUtcToLocal(post.CreatedAt),
                 };
 
                 return ResponseFactory.Success(postDto, "Create Post Success", 200);

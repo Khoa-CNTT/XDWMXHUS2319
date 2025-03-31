@@ -12,7 +12,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         policy => policy
-            .WithOrigins("http://localhost:3000") // ⚡ Chỉ cho phép frontend truy cập
+            .WithOrigins("http://127.0.0.1:5500") // ⚡ Chỉ cho phép frontend truy cập
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()); // ⚡ Bật chế độ gửi cookie/token

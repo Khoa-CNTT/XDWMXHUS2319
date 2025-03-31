@@ -30,7 +30,7 @@ namespace Application.BackgroundServices
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                 string redisKey = "like_events";
-                var likeEvents = await redisService.GetAsync<List<LikeEvent>>(redisKey);
+                var likeEvents = await redisService.GetAsync<List<Like>>(redisKey);
                 
                 if (likeEvents?.Any() == true)
                 {

@@ -13,6 +13,7 @@ namespace Domain.Interface
         Task<List<Share>> SearchSharesAsync(string keyword);
         Task<List<Share>> GetSharesByPostIdAsync(Guid postId, int page, int pageSize);
         Task<List<Post>> GetSharedPostAllDeleteAsync(Guid originalPostId);
+        Task<int> GetShareCountAsync(Guid userId);
 
     }
 }

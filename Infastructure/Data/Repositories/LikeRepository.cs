@@ -44,5 +44,14 @@ namespace Infrastructure.Data.Repositories
                 .Where(l => l.PostId == postId && !l.IsDeleted)
                 .ToListAsync();
         }
+        public Task<int> GetLikeCountAsync(Guid userId)
+        {
+            return _context.Likes.CountAsync(l => l.UserId == userId);
+        }
+
+        public async Task<bool> CheckLike(Guid postId, Guid userId)
+        {
+            return await _context.Likes.AnyAsync(l => l.PostId == postId && l.UserId == userId);
+        }
     }
 }

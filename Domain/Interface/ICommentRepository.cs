@@ -12,9 +12,12 @@ namespace Domain.Interface
 /*        Task<IEnumerable<Comment>> GetCommentByPostIdAsync(Guid postId);*/
         Task<int> CountPostCommentAsync(Expression<Func<Comment, bool>> predicate);
         Task<Comment?> GetCommentByIdAsync(Guid commentId);
+        //lấy các comment mà user đã bình luận
+        Task<List<Comment>> GetAllCommentByUserIdAsync(Guid userId);
         Task<List<Comment>> GetReplysCommentAllAsync(Guid parentCommentId);
         Task<(List<Comment>, int)> GetCommentByPostIdAsync(Guid postId, int page, int pageSize);
         Task<List<Comment>> GetCommentsByPostIdDeleteAsync(Guid postId);
         Task<List<Comment>> GetRepliesByCommentIdAsync(Guid parentCommentId);
+        Task<int> GetCommentCountAsync(Guid userId);
     }
 }

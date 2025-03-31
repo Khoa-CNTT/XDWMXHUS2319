@@ -103,5 +103,17 @@ namespace Infrastructure.Data.Repositories
                 .Where(c => c.ParentCommentId == parentCommentId && !c.IsDeleted)
                 .ToListAsync();
         }
+        public Task<int> GetCommentCountAsync(Guid userId)
+        {
+            return _context.Comments.CountAsync(c => c.UserId == userId);
+        }
+
+
+        public async Task<List<Comment>> GetAllCommentByUserIdAsync(Guid userId)
+        {
+            return await _context.Comments
+                .Where(c => c.UserId == userId && !c.IsDeleted)
+                .ToListAsync();
+        }
     }
 }

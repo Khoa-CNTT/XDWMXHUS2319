@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Domain.Common;
 using Application.Interface.Hubs;
+using Application.Interface.SearchAI;
+
 
 
 namespace Application
@@ -33,14 +35,16 @@ namespace Application
             services.AddScoped<IRidePostService, RidePostService>();
             services.AddScoped<IRedisService, RedisService>();
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<ITrustScoreService, TrustScoreService>();
 
 
             //background services
             //nếu ko làm việc liên quan đến like và LocationUpdate thì comment lại
-            services.AddHostedService<LikeEventProcessor>();
+            //services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
             //services.AddHostedService<GpsMonitorService>();
-            services.AddHostedService<LikeCommentEventProcessor>();
+            //services.AddHostedService<LikeCommentEventProcessor>();
+            services.AddHostedService<TrustScoreBackgroundService>();
             //đăng kí hub
             services.AddScoped<INotificationService, NotificationService>();
             // Đăng ký Auth Services
@@ -49,8 +53,10 @@ namespace Application
             services.AddScoped<ITokenService, TokenService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-       /*     services.AddScoped<MLService>();*/
-
+            /*     services.AddScoped<MLService>();*/
+            //đăn kí các service của search AI
+            // services.AddScoped<IDocumentEmbeddingService,EmbeddingService>();
+            services.AddScoped<ISearchAIService, SearchAIService>();
 
 
 
