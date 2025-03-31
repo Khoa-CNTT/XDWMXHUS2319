@@ -1,38 +1,25 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import "../../styles/CommentOverlay.scss";
 import CommentItem from "./CommentItem";
-const CommentList = ({
-  comments,
-  handleLikeComment,
-  handleLikeCommentRely,
-  handleReplyClick,
-  replyingTo,
-  replyText,
-  setReplyText,
-  replyComment,
-  replyInputRef,
-  commentsEndRef,
-  relyScroll,
-}) => {
+
+const CommentList = ({ comment, commentEndRef, handleLikeComment }) => {
+  // console.log("Danh sách bình luận ở CommentList:", comment);
   return (
     <div className="comments-section">
-      {comments.map((comment) => (
-        <CommentItem
-          key={comment.id}
-          comment={comment}
-          handleLikeComment={handleLikeComment}
-          handleLikeCommentRely={handleLikeCommentRely}
-          handleReplyClick={handleReplyClick}
-          replyingTo={replyingTo}
-          replyText={replyText}
-          setReplyText={setReplyText}
-          replyComment={replyComment}
-          replyInputRef={replyInputRef}
-          relyScroll={relyScroll}
-        />
-      ))}
+      {Array.isArray(comment) && comment.length > 0 ? (
+        comment.map((comments) => (
+          <CommentItem
+            key={comments.id}
+            comments={comments}
+            handleLikeComment={handleLikeComment}
+          ></CommentItem>
+        ))
+      ) : (
+        <span>Không có bình luận nào</span>
+      )}
+
       {/* Thẻ ẩn giúp scroll xuống bình luận mới nhất */}
-      <div ref={commentsEndRef} />
+      <div ref={commentEndRef} />
     </div>
   );
 };

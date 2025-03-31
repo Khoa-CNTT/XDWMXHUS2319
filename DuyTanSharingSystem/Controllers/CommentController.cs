@@ -46,12 +46,18 @@ namespace DuyTanSharingSystem.Controllers
             var response = await _mediator.Send(command);
             return Ok(response);
         }
-        [HttpGet("GetCommentByPost/{postId}")]
-        public async Task<IActionResult> GetCommentsByPostId([FromRoute] Guid postId, [FromQuery] int page = 1, [FromQuery] int pageSize = 2)
+        [HttpGet("GetCommentByPost")]
+        public async Task<IActionResult> GetCommentsByPostId([FromQuery] GetCommentByPostIdQuery query)
         {
-            var query = new GetCommentByPostIdQuery(postId, page, pageSize);
             var response = await _mediator.Send(query);
             return Ok(response);
+        }
+        [HttpGet("replies")]
+        public async Task<IActionResult> GetReplies([FromQuery] GetRepliesByCommentIdQuery query)
+        {
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
         }
     }
 }

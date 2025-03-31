@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../styles/headerHome.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
@@ -9,7 +9,9 @@ import NotifyModal from "../NotifyModal";
 import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
 
-const Header = () => {
+const Header = ({ usersProfile }) => {
+  // console.log("Data User truyền xuống: ", usersProfile);
+
   const [modalState, setModalState] = useState({
     notify: false,
     messenger: false,
@@ -43,7 +45,11 @@ const Header = () => {
             <img src={notifyIcon} alt="Notifications" />
           </span>
           <span onClick={() => toggleModal("setting")}>
-            <img className="avatarweb" src={avatarweb} alt="Avatar" />
+            <img
+              className="avatarweb"
+              src={usersProfile.profilePicture || avatarweb}
+              alt="Avatar"
+            />
           </span>
         </div>
       </div>
@@ -66,6 +72,7 @@ const Header = () => {
         <SettingModal
           isOpen={modalState.setting}
           onClose={() => toggleModal("setting")}
+          users={usersProfile}
         />
       )}
     </>

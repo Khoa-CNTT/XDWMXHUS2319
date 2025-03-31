@@ -18,6 +18,13 @@ namespace Infrastructure.Data.Repositories
             await _context.AddRangeAsync(entities);
         }
 
+        public async Task<int> CountLikesByPostIdAsync(Guid postId)
+        {
+            return await _context.Likes
+                .Where(l => l.PostId == postId && !l.IsDeleted && l.IsLike)
+                .CountAsync();
+        }
+
         public override Task<bool> DeleteAsync(Guid id)
         {
             throw new NotImplementedException();
@@ -31,7 +38,7 @@ namespace Infrastructure.Data.Repositories
         public async Task<List<Like>> GetLikesByPostIdAsync(Guid postId, int page, int pageSize)
         {
             return await _context.Likes
-            .Where(l => l.PostId == postId)
+            .Where(l => l.PostId == postId && !l.IsDeleted && l.IsLike)
             .OrderByDescending(l => l.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -44,6 +51,7 @@ namespace Infrastructure.Data.Repositories
                 .Where(l => l.PostId == postId && !l.IsDeleted)
                 .ToListAsync();
         }
+
         public Task<int> GetLikeCountAsync(Guid userId)
         {
             return _context.Likes.CountAsync(l => l.UserId == userId);
@@ -53,5 +61,29 @@ namespace Infrastructure.Data.Repositories
         {
             return await _context.Likes.AnyAsync(l => l.PostId == postId && l.UserId == userId);
         }
+
+
+        public async Task<(List<Like>, Guid?)> GetLikesByPostIdWithCursorAsync(Guid postId, Guid? lastUserId, int pageSize)
+        {
+            var query = _context.Likes
+       .Include(l => l.User)
+       .Where(l => l.PostId == postId && l.User != null)
+       .OrderBy(l => l.UserId) // 📌 Sắp xếp theo UserId để dùng cursor
+       .AsQueryable();
+
+            if (lastUserId.HasValue)
+            {
+                query = query.Where(l => l.UserId.CompareTo(lastUserId.Value) > 0);
+            }
+
+            var likes = await query.Take(pageSize + 1).ToListAsync(); // 📌 Lấy thêm 1 để kiểm tra còn dữ liệu không
+
+            // 📌 Nếu lấy đủ 2 người (pageSize), nextCursor = người thứ 2, nếu ít hơn thì nextCursor = null
+            Guid? nextCursor = likes.Count > pageSize ? likes[pageSize - 1].UserId : null;
+
+            return (likes.Take(pageSize).ToList(), nextCursor);
+        }
+
+
     }
 }

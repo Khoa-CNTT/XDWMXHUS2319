@@ -56,19 +56,29 @@ namespace Domain.Entities
 
         public void UpdatePost(string? newContent, string? newImageUrl, string? newVideoUrl, ScopeEnum? newScope)
         {
-            if (!string.IsNullOrWhiteSpace(newContent))
-                Content = newContent;
+            bool isUpdated = false;
 
-            if (newImageUrl != null || newVideoUrl != null)
+            if (!string.IsNullOrWhiteSpace(newContent) && newContent != Content)
+            {
+                Content = newContent;
+                isUpdated = true;
+            }
+
+            if ((newImageUrl != null && newImageUrl != ImageUrl) || (newVideoUrl != null && newVideoUrl != VideoUrl))
             {
                 ImageUrl = newImageUrl;
                 VideoUrl = newVideoUrl;
+                isUpdated = true;
             }
 
-            if (newScope.HasValue)
+            if (newScope.HasValue && newScope.Value != Scope)
+            {
                 Scope = newScope.Value;
+                isUpdated = true;
+            }
 
-            UpdateAt = DateTime.UtcNow;
+            if (isUpdated)
+                UpdateAt = DateTime.UtcNow; // ✅ Chỉ cập nhật nếu có thay đổi
         }
 
         public void Approve()

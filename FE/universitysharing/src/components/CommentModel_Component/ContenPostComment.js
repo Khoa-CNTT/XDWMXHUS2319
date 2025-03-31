@@ -7,36 +7,55 @@ import commentIcon from "../../assets/iconweb/commentIcon.svg";
 import moreIcon from "../../assets/iconweb/moreIcon.svg";
 import closeIcon from "../../assets/iconweb/closeIcon.svg";
 import shareIcon from "../../assets/iconweb/shareIcon.svg";
-const ContentPostComment = ({ onClose, content, handleLike }) => {
+
+import { useDispatch, useSelector } from "react-redux";
+import { likePost } from "../../stores/action/listPostActions";
+import { debounce } from "lodash";
+
+const ContentPostComment = ({ post, onClose }) => {
+  const dispatch = useDispatch();
+
+  const posts = useSelector((state) =>
+    state.posts.posts.find((p) => p.id === post.id)
+  );
+  //Like bài viết
+  const handleLikePost = debounce((postId) => {
+    dispatch(likePost(postId));
+  }, 1000);
+  if (!posts) return null; // Tránh lỗi nếu post chưa được truyền xuống
   return (
     <>
       <div className="avatar-and-option">
         <div className="avatar-and-name">
-          <img className="avatar" src={content[0].avatar} alt="Avatar" />
-          <span className="username">{content[0].username}</span>
+          <img
+            className="avatar"
+            src={posts.profilePicture || avatarDefaut}
+            alt="Avatar"
+          />
+          <span className="username">{posts.fullName}</span>
         </div>
         <div className="more-options">
           <img src={moreIcon} alt="More" />
           <img src={closeIcon} alt="Close" onClick={onClose} />
         </div>
       </div>
-      <span className="post-content">Cảnh này thật quen thuộc</span>
+      <span className="post-content">{posts.content}</span>
       <div className="interactions">
-        <div className="likes" onc>
+        <div className="likes">
           <img
-            src={content[0].islike ? likeIconFill : likeIcon}
+            src={posts.hasLiked ? likeIconFill : likeIcon}
             alt="Like"
-            onClick={() => handleLike(content[0].id)}
+            onClick={() => handleLikePost(post.id)}
           />
-          <span>{content[0].like}</span>
+          <span>{posts.likeCount}</span>
         </div>
         <div className="comments">
           <img src={commentIcon} alt="Comment" />
-          <span>{content[0].comments}</span>
+          <span>{posts.commentCount}</span>
         </div>
         <div className="shares">
           <img src={shareIcon} alt="Share" />
-          <span>{content[0].share}</span>
+          <span>{posts.shareCount}</span>
         </div>
       </div>
     </>

@@ -1,0 +1,27 @@
+.message-area {
+  flex: 1; // Take up the remaining space in the flex container
+  padding: 20px;
+  background-color: #f9f9f9;
+  overflow-y: auto; // Scroll only if content overflows
+  display: flex;
+  flex-direction: column;
+
+  &__message {
+    max-width: 60%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    font-size: 14px;
+
+    &.other {
+      background-color: #e0e0e0;
+      margin-right: auto;
+    }
+
+    &.self {
+      background-color: #007bff;
+      color: #fff;
+      margin-left: auto;
+    }
+  }
+}

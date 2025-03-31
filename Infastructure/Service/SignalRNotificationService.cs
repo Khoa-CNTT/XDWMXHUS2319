@@ -11,11 +11,22 @@ namespace Infrastructure.Service
     {
         private readonly IHubContext<NotificationHub> _hubContext;
 
+
         public SignalRNotificationService(IHubContext<NotificationHub> hubContext)
         {
             _hubContext = hubContext;
 
+
         }
+// sửa lại
+//         public async Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName)
+//         {
+//             var postOwnerId = await _postService.GetPostOwnerId(postId);
+//             if (postOwnerId == commenterId) return; // Không gửi nếu chủ bài viết tự bình luận
+
+//             string message = $"{commenterName} đã bình luận vào bài viết của bạn.";
+//             await _hubContext.Clients.User(postOwnerId.ToString()).SendAsync("ReceiveNotification", message);
+//         }
 
         /// <summary>
         /// Gửi cảnh báo khẩn cấp đến tài xế qua thông báo ứng dụng và email (nếu cần)
@@ -38,6 +49,27 @@ namespace Infrastructure.Service
             await _hubContext.Clients.User(passengerId.ToString())
                 .SendAsync("ReceiveNotificationUpdateLocation", message);
         }
+
+
+//         public async Task SendReplyNotificationAsync(Guid commentId, Guid responderId, string responderName)
+//         {
+//             var commentOwnerId = await _commentService.GetCommentOwnerId(commentId);
+//             if(commentOwnerId == responderId) return;
+//             string message = $"{responderName} đã bình luận vào bài viết của bạn.";
+//             await _hubContext.Clients.User(commentOwnerId.ToString()).SendAsync("ReceiveNotification", message);
+//         }
+//         public async Task SendShareNotificationAsync(Guid postId, Guid userId)
+//         {
+//             var ownerId = await _postService.GetPostOwnerId(postId);
+//             var user = await _userService.GetByIdAsync(userId);
+
+//             if (user == null || ownerId == Guid.Empty) return;
+
+//             string message = $"{user.FullName} đã chia sẻ bài viết của bạn.";
+
+//             await _hubContext.Clients.User(ownerId.ToString())
+//                 .SendAsync("ReceiveNotification", message);
+//         }
 
     }
 }

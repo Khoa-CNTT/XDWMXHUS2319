@@ -40,7 +40,7 @@ namespace DuyTanSharingSystem.Controllers
             {
                 return BadRequest(new { message = response.Message });
             }
-            return Ok(response);
+            return Redirect("http://localhost:3000/AccountVerified");
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto user)

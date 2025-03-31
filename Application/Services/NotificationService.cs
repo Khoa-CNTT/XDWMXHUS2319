@@ -3,7 +3,9 @@ using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using Application.Interface.Hubs;
 using Application.Model.Events;
+
 using static Domain.Common.Helper;
+
 
 namespace Application.Services
 {
@@ -18,13 +20,16 @@ namespace Application.Services
         public NotificationService( IUnitOfWork unitOfWork,IPublisher publisher,
             IUserContextService userContextService, IEmailService emailService,
             IPostService postService,IMapService mapService)
+
         {
             _unitOfWork = unitOfWork;
             _publisher = publisher;
+
             _emailService = emailService;
             _userContextService = userContextService;
             _postService = postService;
             _mapService = mapService;
+
         }
 
         public async Task SendAlertAsync(Guid driverId, string message)
@@ -36,6 +41,12 @@ namespace Application.Services
             {
                 await _emailService.SendEmailAsync(user.Email, "Cảnh báo GPS", message);
             }
+        }
+
+        public async Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName)
+        {
+
+            await _publisher.Publish(new CommentEvent(postId, commenterId, commenterName));
         }
 
         public async Task SendInAppNotificationAsync(Guid driverId, string message)
@@ -78,6 +89,15 @@ namespace Application.Services
                 await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, $"Bạn đang ở: {location}"));
             }
 
+        }
+
+        public async Task SendReplyNotificationAsync(Guid commentId, Guid responderId, string responderName)
+        {
+            await _publisher.Publish(new CommentEvent(commentId, responderId, responderName));
+        }
+        public async Task SendShareNotificationAsync(Guid postId, Guid userId)
+        {
+            await _publisher.Publish(new ShareEvent(postId, userId));
         }
     }
 }

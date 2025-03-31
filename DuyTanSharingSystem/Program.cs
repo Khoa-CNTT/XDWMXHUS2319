@@ -5,6 +5,7 @@ using Application.Model;
 using Application.Interface.Hubs;
 using Domain.Common;
 using Infrastructure.Hubs;
+using Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,7 +59,9 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+
 app.UseCors("AllowReactApp"); // 🚀 Sử dụng CORS
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -68,7 +71,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseStaticFiles(new StaticFileOptions
+{
+    ServeUnknownFileTypes = true, // Cho phép phục vụ file không có MIME type xác định
+    DefaultContentType = "video/mp4" // Nếu bị lỗi MIME type
+});
 app.UseAuthentication(); // ✅ Đảm bảo đăng nhập trước khi xác thực quyền
 app.UseAuthorization();
 //app.UseCors(); // ✅ Đặt trước SignalR

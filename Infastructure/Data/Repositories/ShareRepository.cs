@@ -23,7 +23,39 @@ namespace Infrastructure.Data.Repositories
         {
             throw new NotImplementedException();
         }
+        public async Task<List<Share>> GetSharesByPostIdAsync(Guid postId)
+        {
+            return await _context.Shares
+                .Where(s => s.PostId == postId && !s.IsDeleted)
+                .ToListAsync();
+        }
+        public async Task<List<Share>> GetSharedUsersByPostIdWithCursorAsync(Guid postId, Guid? lastUserId, int pageSize, CancellationToken cancellationToken)
+        {
 
+            const int PAGE_SIZE = 10; // 🔥 Giới hạn cố định 10 người
+            pageSize = Math.Min(pageSize, PAGE_SIZE); // Đảm bảo không vượt quá 10
+
+            var query = _context.Shares
+                .Where(s => s.PostId == postId)
+                .OrderByDescending(s => s.CreatedAt); // ⚠️ OrderByDescending trả về IOrderedQueryable
+
+            // Nếu có LastUserId, lấy những user có CreatedAt nhỏ hơn
+            if (lastUserId.HasValue)
+            {
+                var lastUserShare = await _context.Shares.FirstOrDefaultAsync(s => s.User.Id == lastUserId.Value);
+                if (lastUserShare != null)
+                {
+                    query = query.Where(s => s.CreatedAt < lastUserShare.CreatedAt)
+                                 .OrderByDescending(s => s.CreatedAt); // 🔥 Sắp xếp lại để giữ kiểu IOrderedQueryable
+                }
+            }
+
+            // Thêm Include sau khi đã xử lý các điều kiện lọc
+            return await query
+                .Include(s => s.User) // Đặt Include ở đây
+                .Take(pageSize) // Giới hạn tối đa 10 người
+                .ToListAsync(cancellationToken);
+        }
         public async Task<List<Share>> GetSharesByPostIdAsync(Guid postId, int page, int pageSize)
         {
             return await _context.Shares

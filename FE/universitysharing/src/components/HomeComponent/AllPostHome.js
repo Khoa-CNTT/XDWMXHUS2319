@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../styles/headerHome.scss";
 import shareIcon from "../../assets/iconweb/shareIcon.svg";
 import likeIcon from "../../assets/iconweb/likeIcon.svg";
@@ -10,128 +10,152 @@ import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
 import imagePost from "../../assets/ImgDefault.png";
 import ShareModal from "../shareModal";
-// import { Modal, Button } from "antd";
-const AllPosts = () => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      userName: "Nguyễn Thành Chè",
-      avatarUser: avatarWeb,
-      imgPost: imagePost,
-      content: "Cảnh này thật quen thuộc ",
-      likes: 2000,
-      comments: 200,
-      shares: 20,
-      isLiked: false, // Trạng thái like/unlike
-    },
-    {
-      id: 2,
-      userName: "Nguyễn Thành Đảng",
-      avatarUser: avatarWeb,
-      imgPost:
-        "https://wallpapers.com/images/featured/4k-nature-ztbad1qj8vdjqe0p.jpg",
-      content: "Cảnh này thật quen thuộc",
-      likes: 2000,
-      comments: 200,
-      shares: 20,
-      isLiked: false, // Trạng thái like/unlike
-    },
-  ]);
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchPosts,
+  likePost,
+  deletePost,
+} from "../../stores/action/listPostActions";
+import {
+  hidePost,
+  openCommentModal,
+  closeCommentModal,
+  openShareModal,
+  closeShareModal,
+  openPostOptionModal,
+  closePostOptionModal,
+} from "../../stores/reducers/listPostReducers";
+import { debounce } from "lodash";
+import PostOptionsModal from "./PostOptionModal";
+import getUserIdFromToken from "../../utils/JwtDecode";
 
-  // Toggle Like
-  const handleLike = (postId) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              isLiked: !post.isLiked,
-              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
-            }
-          : post
-      )
+const AllPosts = ({ usersProfile }) => {
+  const dispatch = useDispatch();
+  //lấy các trạng thái khai báo từ Redux
+  const {
+    posts,
+    selectedPost,
+    isShareModalOpen,
+    selectedPostToShare,
+    selectedPostToOption,
+    isPostOptionsOpen,
+  } = useSelector((state) => state.posts);
+  useEffect(() => {
+    dispatch(fetchPosts());
+  }, [dispatch]);
+
+  //Mở modal option
+  const userId = getUserIdFromToken(); // Lấy userId từ token
+  const handleOpenPostOptions = (event, post) => {
+    event.stopPropagation();
+    const rect = event.target.getBoundingClientRect();
+    dispatch(
+      openPostOptionModal({
+        post,
+        position: { top: rect.bottom + 5, left: rect.left - 120 }, // Điều chỉnh vị trí
+      })
     );
   };
 
-  // Xóa bài viết kiểu ẩn thôi
-  const handleDelete = (postId) => {
-    setPosts(posts.filter((post) => post.id !== postId));
-  };
-  //Đóng mở modal bình luận
-  const [selectedPost, setSelectedPost] = useState(null);
-  const openCommentModal = (post) => {
-    setSelectedPost(post);
-  };
-  const closeCommentModal = () => {
-    setSelectedPost(null);
-  };
-
-  // State để điều khiển mở/đóng modal chia sẻ
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [selectedPostToShare, setSelectedPostToShare] = useState(null);
-
-  // Mở modal chia sẻ
-  const openShareModal = (post) => {
-    setSelectedPostToShare(post);
-    setIsShareModalOpen(true);
-  };
-
-  // Đóng modal chia sẻ
-  const closeShareModal = () => {
-    setIsShareModalOpen(false);
-    setSelectedPostToShare(null);
-  };
-
+  //Xóa bài viết
+  const handleDeletePost = debounce((postId) => {
+    dispatch(deletePost(postId)); // Truyền trực tiếp ID (string)
+  }, 300);
+  //Like bài viết
+  const handleLikePost = debounce((postId) => {
+    dispatch(likePost(postId));
+  }, 1000);
   return (
     <div className="all-posts">
-      {posts.map((post) => (
-        <div className="post" key={post.id}>
-          {/* Header Post */}
-          <div className="header-post">
-            <p className="AvaName">
-              <img className="avtardefaut" src={post.avatarUser} alt="Avatar" />
-              <strong>{post.userName}</strong>
-            </p>
-            <p className="closemore">
-              <img className="btn-edit" src={moreIcon} alt="More" />
-              <img
-                className="btn-close"
-                src={closeIcon}
-                alt="Close"
-                onClick={() => handleDelete(post.id)}
-              />
-            </p>
-          </div>
+      {Array.isArray(posts) && posts.length > 0 ? (
+        posts.map((post) => (
+          <div className="post" key={post.id}>
+            {/* Header Post */}
+            <div className="header-post">
+              <p className="AvaName">
+                <img
+                  className="avtardefaut"
+                  src={post.profilePicture || avatarWeb}
+                  alt="Avatar"
+                />
+                <strong>{post.fullName}</strong>
+              </p>
+              <p className="closemore">
+                <img
+                  className="btn-edit"
+                  src={moreIcon}
+                  alt="More"
+                  onClick={(event) => handleOpenPostOptions(event, post)}
+                />
+                <img
+                  className="btn-close"
+                  src={closeIcon}
+                  alt="Close"
+                  onClick={() => dispatch(hidePost(post.id))}
+                />
+              </p>
+            </div>
 
-          {/* Nội dung bài viết */}
-          <span className="content-posts">{post.content}</span>
-          <p></p>
-          <div className="postImg" onClick={() => openCommentModal(post)}>
-            <img src={post.imgPost} alt="Post" />
-          </div>
+            {/* Nội dung bài viết */}
+            <span className="content-posts">{post.content}</span>
+            <p></p>
+            <div
+              className="postImg"
+              onClick={() => dispatch(openCommentModal(post))}
+            >
+              <img src={post.imageUrl || imagePost} alt="Post" />
+            </div>
 
-          {/* Actions */}
-          <div className="actions">
-            <span onClick={() => handleLike(post.id)}>
-              <img src={post.isLiked ? likeFill : likeIcon} alt="Like" />
-              <span>{post.likes}</span>
-            </span>
-            <span onClick={() => openCommentModal(post)}>
-              <img src={commentIcon} alt="Comment" />
-              <span>{post.comments}</span>
-            </span>
-            <span onClick={() => openShareModal(post)}>
-              <img src={shareIcon} alt="Share" />
-              <span>{post.shares}</span>
-            </span>
+            {/* Actions */}
+            <div className="actions">
+              <span onClick={() => handleLikePost(post.id)}>
+                <img src={post.hasLiked ? likeFill : likeIcon} alt="Like" />
+
+                <span>{post.likeCount}</span>
+              </span>
+              <span onClick={() => dispatch(openCommentModal(post))}>
+                <img src={commentIcon} alt="Comment" />
+                <span>{post.commentCount}</span>
+              </span>
+              <span onClick={() => dispatch(openShareModal(post))}>
+                <img src={shareIcon} alt="Share" />
+                <span>{post.shareCount}</span>
+              </span>
+            </div>
           </div>
-        </div>
-      ))}
-      {selectedPost && (
-        <CommentModal post={selectedPost} onClose={closeCommentModal} />
+        ))
+      ) : (
+        <p>Không có bài viết nào.</p>
       )}
+      {/* Post Options Modal */}
+      {isPostOptionsOpen && selectedPostToOption && (
+        <PostOptionsModal
+          isOwner={userId === selectedPostToOption.post.userId}
+          onClose={() => dispatch(closePostOptionModal())}
+          position={selectedPostToOption.position} // Truyền vị trí vào modal
+          postId={selectedPostToOption.post.id}
+          handleDeletePost={handleDeletePost}
+        />
+      )}
+
+      {/* Comment Modal */}
+      {selectedPost && (
+        <CommentModal
+          post={selectedPost}
+          isOpen={true}
+          onClose={() => dispatch(closeCommentModal())}
+          usersProfile={usersProfile}
+        />
+      )}
+
+      {/* Share Modal */}
       {selectedPostToShare && (
-        <ShareModal isOpen={isShareModalOpen} onClose={closeShareModal} />
+        <ShareModal
+          post={selectedPostToShare}
+          isOpen={isShareModalOpen}
+          onClose={() => dispatch(closeShareModal())}
+          usersProfile={usersProfile}
+        />
       )}
     </div>
   );

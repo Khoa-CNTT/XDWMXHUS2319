@@ -58,8 +58,7 @@ namespace Infrastructure.Data.Repositories
         public async Task<List<Post>> GetAllPostsAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {
 
-            const int MAX_PAGE_SIZE = 50;
-            pageSize = Math.Min(pageSize, MAX_PAGE_SIZE);
+            const int PAGE_SIZE = 10;
 
             var query = _context.Posts
                  .Include(p => p.User)
@@ -71,7 +70,7 @@ namespace Infrastructure.Data.Repositories
                      .ThenInclude(s => s.User)
                  .Include(p => p.OriginalPost)
                      .ThenInclude(op => op.User)
-                 .Where(p => !p.IsDeleted) // Chỉ lấy bài chưa bị xóa
+                 .Where(p => !p.IsDeleted && p.Scope == ScopeEnum.Public) // Chỉ lấy bài chưa bị xóa
                  .OrderByDescending(p => p.CreatedAt); // Sắp xếp bài mới nhất lên trước
 
             // Nếu có LastPostId, chỉ lấy bài viết cũ hơn nó
@@ -86,15 +85,14 @@ namespace Infrastructure.Data.Repositories
             }
 
             return await query
-                .Take(pageSize)
+                .Take(PAGE_SIZE)
                 .ToListAsync(cancellationToken);
         }
 
 
         public async Task<List<Post>> GetPostsByTypeAsync(PostTypeEnum postType, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {
-            const int MAX_PAGE_SIZE = 50;
-            pageSize = Math.Min(pageSize, MAX_PAGE_SIZE);
+            const int PAGE_SIZE = 10;
 
             var query = _context.Posts
                 .Include(p => p.User)
@@ -121,7 +119,7 @@ namespace Infrastructure.Data.Repositories
             }
 
             return await query
-                .Take(pageSize)
+                .Take(PAGE_SIZE)
                 .ToListAsync(cancellationToken);
         }
 
@@ -230,6 +228,7 @@ namespace Infrastructure.Data.Repositories
 
         public async Task<List<Post>> GetPostsByOwnerAsync(Guid userId, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {
+            const int PAGE_SIZE = 10;
             var query = _context.Posts
                .Include(p => p.User)
                .Include(p => p.Likes.Where(l => l.IsLike))
@@ -253,7 +252,7 @@ namespace Infrastructure.Data.Repositories
             query = query.OrderByDescending(p => p.CreatedAt);
 
             return await query
-                .Take(pageSize)
+                .Take(PAGE_SIZE)
                 .ToListAsync(cancellationToken);
         }
         public async Task<bool> HasUserLikedPostAsync(Guid userId, Guid postId)

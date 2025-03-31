@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.User;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,8 @@ namespace Application.CQRS.Commands.Users
 {
     public class UpdateUserProfileCommand : IRequest<ResponseModel<UserProfileDto>>
     {
-        public Guid UserId { get; set; }
         public string FullName { get; set; } = string.Empty;
-        public string? ProfilePicture { get; set; }
+        public IFormFile? ProfileImage { get; set; }
         public string? Bio { get; set; }
     }
 }
