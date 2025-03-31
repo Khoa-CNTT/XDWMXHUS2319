@@ -1,10 +1,8 @@
-﻿using Application.DTOs.Post;
+﻿using Application.Common;
+using Application.DTOs.Post;
 using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
-
 using static Domain.Common.Helper;
-
-using Application.Services;
 using static Domain.Common.Enums;
 
 
@@ -68,14 +66,14 @@ namespace Application.CQRS.Commands.Posts
                 await _unitOfWork.PostRepository.AddAsync(post);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync(); // Thêm dòng này để commit nếu hợp lệ
-                const string baseUrl = "https://localhost:7053";
                 var postDto = new ResponsePostDto
                 {
                     Id = post.Id,
                     UserId = userId,
                     Content = post.Content,
-                    ImageUrl = post.ImageUrl != null ? $"{baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
-                    VideoUrl = post.VideoUrl != null ? $"{baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
+
+                    ImageUrl = post.ImageUrl != null ? $"{Constaint.baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
+                    VideoUrl = post.VideoUrl != null ? $"{Constaint.baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
                     PostType = post.PostType,
                     IsApproved = post.IsApproved,
                     CreatedAt =FormatUtcToLocal(post.CreatedAt),
