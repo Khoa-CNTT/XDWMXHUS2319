@@ -12,8 +12,8 @@ const PostOptionsModal = ({
   handleDeletePost,
 }) => {
   const modalRef = useRef(null); // Tạo ref để kiểm tra click ra ngoài modal
-  console.log("Người chủ>>", isOwner);
-  console.log("ID post>>", postId);
+  // console.log("Người chủ>>", isOwner);
+  // console.log("ID post>>", postId);
   const dispatch = useDispatch();
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -28,6 +28,7 @@ const PostOptionsModal = ({
     };
   }, [onClose]);
 
+  //Tắt modal khi có sự kiện srcoll
   useEffect(() => {
     const handleScroll = () => {
       dispatch(closePostOptionModal());

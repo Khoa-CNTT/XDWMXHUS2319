@@ -8,6 +8,8 @@ import {
   createPost,
   deletePost,
   getReplyComment,
+  deleteComments,
+  replyComments,
 } from "../action/listPostActions";
 
 const listPostSlice = createSlice({
@@ -21,6 +23,9 @@ const listPostSlice = createSlice({
     selectedPostToOption: null,
     isPostOptionsOpen: false, // 🆕 Thêm trạng thái modal options
     loading: false,
+    // selectedCommentTOption: null,
+    // isCommentOptionOpen: false,
+    openCommentOptionId: null, // ID comment nào đang mở option
   },
   reducers: {
     hidePost: (state, action) => {
@@ -47,6 +52,17 @@ const listPostSlice = createSlice({
     closePostOptionModal: (state) => {
       state.isPostOptionsOpen = false;
       state.selectedPostToOption = null;
+    },
+    //Mở CommentOption
+    openCommentOption: (state, action) => {
+      // state.selectedCommentTOption = action.payload;
+      // state.isCommentOptionOpen = true;
+      state.openCommentOptionId = action.payload;
+    },
+    closeCommentOption: (state) => {
+      // state.isCommentOptionOpen = false;
+      // state.selectedCommentTOption = null;
+      state.openCommentOptionId = null;
     },
   },
   extraReducers: (builder) => {
@@ -157,12 +173,12 @@ const listPostSlice = createSlice({
 
       .addCase(addCommentPost.fulfilled, (state, action) => {
         // console.log("🔥 Payload nhận được:", action.payload);
-        const { postId, data } = action.payload;
+        const { postId, data, userId } = action.payload;
         if (!postId || !data) return;
 
         const newComment = {
           id: data.commentId,
-          userId: state.auth?.user?.id || "",
+          userId: userId || "",
           userName: data.fullName,
           profilePicture: data.profilePicture,
           content: data.content,
@@ -196,16 +212,152 @@ const listPostSlice = createSlice({
         state.loading = false;
         state.posts = state.posts.filter((post) => post.id !== action.payload);
       })
+
       .addCase(getReplyComment.fulfilled, (state, action) => {
-        state.loading = false;
-        const { commentId, data } = action.payload; // Nhận commentId và danh sách replies từ API
-        if (state.comments[commentId]) {
-          state.comments[commentId] = [
-            ...state.comments[commentId], // Giữ nguyên comments hiện tại
-            ...data, // Thêm replies vào danh sách
-          ];
-        } else {
-          state.comments[commentId] = data; // Nếu chưa có commentId, tạo mới
+        console.log("🔥 Payload getReplyComment:", action.payload);
+        const { commentId, data } = action.payload;
+
+        let found = false; // Cờ kiểm tra có tìm thấy comment không
+
+        // Duyệt qua tất cả postId
+        Object.keys(state.comments).forEach((postId) => {
+          const commentsArray = state.comments[postId]; // Lấy danh sách comment của bài post
+
+          // Tìm comment có id trùng với commentId
+          const comment = commentsArray.find((c) => c.id === commentId);
+          if (comment) {
+            comment.replies = data; // Gán replies vào comment tương ứng
+            comment.hasMoreReplies = false;
+            found = true;
+          }
+        });
+
+        if (!found) {
+          console.error(
+            `⚠️ Không tìm thấy commentId: ${commentId} trong state`
+          );
+        }
+      })
+
+      // .addCase(deleteComments.fulfilled, (state, action) => {
+      //   const { postId, commentId } = action.payload;
+
+      //   // Xóa comment trong danh sách comments
+      //   if (state.comments[postId]) {
+      //     // Kiểm tra xem commentId là comment gốc hay reply
+      //     const isRootComment = state.comments[postId].some(
+      //       (comment) => comment.id === commentId
+      //     );
+
+      //     if (isRootComment) {
+      //       // Nếu là comment gốc, xóa bình thường
+      //       state.comments[postId] = state.comments[postId].filter(
+      //         (comment) => comment.id !== commentId
+      //       );
+      //     } else {
+      //       // Nếu là reply, duyệt qua tất cả comments để xóa
+      //       state.comments[postId] = state.comments[postId].map((comment) => {
+      //         return {
+      //           ...comment,
+      //           replies: comment.replies.filter(
+      //             (reply) => reply.id !== commentId
+      //           ),
+      //         };
+      //       });
+      //     }
+      //   }
+
+      //   // Cập nhật số lượng commentCount trong posts
+      //   const postIndex = state.posts.findIndex((post) => post.id === postId);
+      //   if (postIndex !== -1 && state.posts[postIndex].commentCount > 0) {
+      //     state.posts[postIndex].commentCount -= 1;
+      //   }
+      // })
+
+      .addCase(deleteComments.fulfilled, (state, action) => {
+        const { postId, commentId } = action.payload;
+
+        if (state.comments[postId]) {
+          let deletedCount = 0; // Đếm số comment bị xóa
+
+          const isRootComment = state.comments[postId].some(
+            (comment) => comment.id === commentId
+          );
+
+          if (isRootComment) {
+            // Tìm comment gốc
+            const commentToDelete = state.comments[postId].find(
+              (comment) => comment.id === commentId
+            );
+
+            if (commentToDelete) {
+              deletedCount = 1 + (commentToDelete.replies?.length || 0); // Tính tổng số comment bị xóa
+            }
+
+            // Xóa comment gốc
+            state.comments[postId] = state.comments[postId].filter(
+              (comment) => comment.id !== commentId
+            );
+          } else {
+            // Nếu là reply, tìm trong tất cả comments
+            state.comments[postId] = state.comments[postId].map((comment) => {
+              const newReplies = comment.replies.filter(
+                (reply) => reply.id !== commentId
+              );
+
+              if (newReplies.length < comment.replies.length) {
+                deletedCount = 1; // Chỉ xóa 1 reply
+              }
+
+              return { ...comment, replies: newReplies };
+            });
+          }
+
+          // ✅ Cập nhật chính xác số lượng comment trong posts
+          const postIndex = state.posts.findIndex((post) => post.id === postId);
+          if (postIndex !== -1 && state.posts[postIndex].commentCount > 0) {
+            state.posts[postIndex].commentCount = Math.max(
+              0,
+              state.posts[postIndex].commentCount - deletedCount
+            );
+          }
+        }
+      })
+
+      .addCase(replyComments.fulfilled, (state, action) => {
+        const { postId, data, userId } = action.payload;
+        if (!data) return;
+        const { parentCommentId } = data;
+
+        if (!state.comments[postId]) return;
+
+        const newReply = {
+          id: data.commentId,
+          userId: userId, // Thay bằng user hiện tại
+          userName: data.fullName,
+          profilePicture: data.profilePicture,
+          content: data.content,
+          createdAt: data.createdAt,
+          hasLiked: 0,
+          likeCountComment: 0,
+          replies: [],
+          hasMoreReplies: false,
+          parentCommentId: parentCommentId,
+        };
+
+        // Tìm comment gốc
+        const postComment = state.comments[postId];
+        const rootComment = postComment.find(
+          (comment) => comment.id === parentCommentId
+        );
+
+        if (rootComment) {
+          rootComment.replies.push(newReply);
+        }
+        // Cập nhật số lượng bình luận trong bài post
+        const postIndex = state.posts.findIndex((post) => post.id === postId);
+        if (postIndex !== -1) {
+          state.posts[postIndex].commentCount += 1;
         }
       });
   },
@@ -219,6 +371,8 @@ export const {
   closeShareModal,
   openPostOptionModal,
   closePostOptionModal,
+  openCommentOption,
+  closeCommentOption,
 } = listPostSlice.actions;
 
 export default listPostSlice.reducer;
