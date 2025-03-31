@@ -261,5 +261,16 @@ namespace Infrastructure.Data.Repositories
                 .AnyAsync(l => l.UserId == userId && l.PostId == postId && l.IsLike);
         }
 
+        public async Task<List<Post>> GetAllPostForSearchAI()
+        {
+           return await _context.Posts
+                .Where(p => !p.IsDeleted && !p.IsApproved == false)
+                .ToListAsync();
+        }
+
+        public Task<int> GetPostCountAsync(Guid userId)
+        {
+            return _context.Posts.CountAsync(p => p.UserId == userId);
+        }
     }
 }

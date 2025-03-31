@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.UpdateLocation;
 using Application.Interface.ContextSerivce;
+using Application.Interface.Hubs;
 using Application.Model.Events;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -15,19 +16,21 @@ namespace Application.CQRS.Commands.UpdateLocation
         private readonly IRedisService _redisService;
         private readonly IUserContextService _userContextService;
         private readonly IPublisher _publiser;
+        private readonly INotificationService _notificationService;
 
         public UpdateLocationCommandHandler(IUnitOfWork unitOfWork, 
             IRidePostService ridePostService,
             IRedisService redisService,
             IUserContextService userContextService,
-            IPublisher publisher)
+            IPublisher publisher,
+            INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _ridePostService = ridePostService;
             _redisService = redisService;
             _userContextService = userContextService;
             _publiser = publisher;
-
+            _notificationService = notificationService;
         }
 
         public async Task<ResponseModel<UpdateLocationDto>> Handle(UpdateLocationCommand request, CancellationToken cancellationToken)
@@ -95,7 +98,9 @@ namespace Application.CQRS.Commands.UpdateLocation
                     if (distance > 0.05) // Chỉ gửi tọa độ lên Redis nếu đi trên 50m
                     {
                         await _redisService.AddAsync("update_location_events",
-                            new UpdateLocationEvent(request.RideId, userId, request.Latitude, request.Longitude, isDriver));
+                            new LocationUpdate(request.RideId, userId, request.Latitude, request.Longitude, isDriver));
+                        //phát sự kiện
+                        await _notificationService.SendNotificationUpdateLocationAsync(ride.DriverId, ride.PassengerId, request.Latitude, request.Longitude,false);
                         if (ride.StartTime == null)
                         {
                             ride.UpdateStartTime();
@@ -127,7 +132,7 @@ namespace Application.CQRS.Commands.UpdateLocation
                     {
                         locationUpdate.UpdateLocation(request.Latitude, request.Longitude);
                     }
-                    await _publiser.Publish(new UpdateLocationEvent(ride.DriverId, userId,$"Chuyến đi từ {ridePost.StartLocation} đến {ridePost.EndLocation} đã hoàn thành!!" ));
+                    await _notificationService.SendNotificationUpdateLocationAsync(ride.DriverId,ride.PassengerId, request.Latitude, request.Longitude, true);
                 }
 
                 await _unitOfWork.SaveChangesAsync();

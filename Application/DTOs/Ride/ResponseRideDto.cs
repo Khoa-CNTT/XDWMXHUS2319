@@ -18,6 +18,7 @@ namespace Application.DTOs.Ride
         public required string? EndTime { get; set; }
         public required string CreatedAt { get; set; }
         public int EstimatedDuration { get; set; }
+        public bool isSelf { get; set; }
         public StatusRideEnum Status { get; set; }
         public decimal Fare { get; set; }
 

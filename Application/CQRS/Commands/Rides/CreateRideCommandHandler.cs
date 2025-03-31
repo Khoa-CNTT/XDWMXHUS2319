@@ -58,7 +58,8 @@ namespace Application.CQRS.Commands.Rides
                     EndTime = ride.EndTime.HasValue ? FormatUtcToLocal(ride.EndTime.Value) : null,
                     EstimatedDuration = ride.EstimatedDuration,
                     Fare = ride.Fare ?? 0,
-                    Status = ride.Status
+                    Status = ride.Status,
+                    isSelf = ride.IsSafetyTrackingEnabled,
                 };
                 return ResponseFactory.Success(rideDto, "Create Ride Success", 200);
             }

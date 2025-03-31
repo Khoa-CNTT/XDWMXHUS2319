@@ -8,6 +8,9 @@ namespace Domain.Interface
 {
     public interface IReportRepository : IBaseRepository<Report>
     {
+         Task<int> GetCorrectReportCountAsync(Guid userId);
+        Task<int> GetReportCountAsync(Guid userId);
+        
 
     }
 }

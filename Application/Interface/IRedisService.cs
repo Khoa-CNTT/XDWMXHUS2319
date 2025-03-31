@@ -53,6 +53,9 @@ namespace Application.Interface
         /// </summary>
         /// <param name="key">Key trong Redis</param>
         Task<TimeSpan?> GetExpiryAsync(string key);
-
+        //chat ai
+        Task SaveDataAsync<T>(string key, T data, TimeSpan? expiry = null);
+        Task<T?> GetDataAsync<T>(string key);
+        Task RemoveDataAsync(string key);
     }
 }

@@ -19,6 +19,7 @@ namespace Domain.Entities
         public DateTime? UpdateAt { get; private set; }
         public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
         public double? Score { get; private set; } = 0;
+        //for ai
         public bool IsApproved { get; private set; } = false;
         public ApprovalStatusEnum ApprovalStatus { get; private set; } = ApprovalStatusEnum.Pending;
         public ScopeEnum Scope { get; private set; } = ScopeEnum.Public;

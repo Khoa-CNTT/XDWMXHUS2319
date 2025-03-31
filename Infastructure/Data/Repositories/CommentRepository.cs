@@ -166,6 +166,19 @@ namespace Infrastructure.Data.Repositories
                 .ToListAsync();
         }
 
+        public Task<int> GetCommentCountAsync(Guid userId)
+        {
+            return _context.Comments.CountAsync(c => c.UserId == userId);
+        }
+
+
+        public async Task<List<Comment>> GetAllCommentByUserIdAsync(Guid userId)
+        {
+            return await _context.Comments
+                .Where(c => c.UserId == userId && !c.IsDeleted)
+                .ToListAsync();
+
+
         public async Task<int> CountRepliesAsync(Guid parentCommentId)
         {
             return await _context.Comments
@@ -196,6 +209,7 @@ namespace Infrastructure.Data.Repositories
         public bool HasMoreReplies(Guid commentId)
         {
             return _context.Comments.Any(c => c.ParentCommentId == commentId && !c.IsDeleted);
+
         }
     }
 }

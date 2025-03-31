@@ -23,5 +23,13 @@ namespace Infrastructure.Data.Repositories
         {
             return await _context.Rides.FirstOrDefaultAsync(r=>r.PassengerId ==  userId);
         }
+        public Task<int> GetDriveRideCountAsync(Guid userId)
+        {
+            return _context.Rides.CountAsync(r => r.DriverId == userId);
+        }
+        public Task<int> GetPassengerRideCountAsync(Guid userId)
+        {
+            return _context.Rides.CountAsync(r => r.PassengerId == userId);
+        }
     }
 }
