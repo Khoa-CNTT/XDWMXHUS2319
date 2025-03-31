@@ -1,7 +1,7 @@
 .profile-user-view {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   overflow-x: hidden;
   width: 100%;
   max-width: 100%;
@@ -12,14 +12,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px; // Re-added padding for consistency
   }
 
   &__content {
     display: flex;
     flex: 1;
-    padding: 20px;
+    padding: 10px;
     gap: 20px;
+    background-color: #e2e2e2;
     max-width: 100%; // Constrain the content width
     box-sizing: border-box;
   }
@@ -34,6 +34,7 @@
     flex: 2;
     display: flex;
     flex-direction: column;
+    align-items: center;
   }
 
   @media (max-width: 768px) {
@@ -46,5 +47,35 @@
     &__right {
       flex: 1;
     }
+  }
+}
+
+.post-input {
+  width: 100%;
+  max-width: 610px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+.left-sidebar-container {
+  width: 360px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.left-sidebar-content {
+  position: sticky;
+  top: 20px; /* 60px header + 20px padding */
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  width: 500px;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #bcc0c4;
+    border-radius: 3px;
   }
 }

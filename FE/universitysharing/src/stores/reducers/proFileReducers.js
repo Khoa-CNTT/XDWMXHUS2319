@@ -1,10 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { userProfile } from "../action/profileActions";
+import { userProfile, getPostOwner } from "../action/profileActions";
 
 const listUser = createSlice({
   name: "users",
   initialState: {
     users: {},
+    post: [],
     loading: false,
     error: null,
   },
@@ -22,6 +23,9 @@ const listUser = createSlice({
       .addCase(userProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+      .addCase(getPostOwner.fulfilled, (state, action) => {
+        state.post = action.payload;
       });
   },
 });
