@@ -107,6 +107,7 @@ export const createPost = createAsyncThunk(
   "post/createPost",
   async ({ formData, fullName, profilePicture }, { rejectWithValue }) => {
     try {
+      console.log("formData", formData);
       const response = await axios.post(
         "https://localhost:7053/api/Post/create",
         formData,

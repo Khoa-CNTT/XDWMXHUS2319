@@ -99,7 +99,7 @@ const CreateRidePost = ({ onClose }) => {
     // Xử lý trường hợp từ <LocationSearch>
     // console.log("Cập nhật từ LocationSearch:", location);
     setEndLocation(location);
-    //setIsUserInteracted(true); // Đánh dấu rằng người dùng đã chọn điểm đến
+    setIsUserInteracted(true); // Đánh dấu rằng người dùng đã chọn điểm đến
   };
 
   useEffect(() => {
