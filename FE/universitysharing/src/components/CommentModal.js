@@ -11,10 +11,17 @@ import {
   addCommentPost,
   likeComment,
 } from "../stores/action/listPostActions";
+import getUserIdFromToken from "../utils/JwtDecode";
 import { debounce } from "lodash";
 
 const CommentModal = ({ post, onClose, usersProfile }) => {
-  console.log("Data bài viết được lưạ chọn>> ", post);
+  console.log("selectedPost", post);
+  const userId = getUserIdFromToken();
+  const dispatch = useDispatch();
+  const commentTextRef = useRef("");
+  const commentEndRef = useRef(null); // Thêm ref để scroll
+  const comments = useSelector((state) => state.posts.comments[post.id] || []);
+  //console.log("Data bài viết được lưạ chọn>> ", post);
   useEffect(() => {
     const handleKeyClose = (event) => {
       if (event.key === "Escape") {
@@ -27,12 +34,7 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
     };
   }, [onClose]);
 
-  const dispatch = useDispatch();
-  const commentTextRef = useRef("");
-  const commentEndRef = useRef(null); // Thêm ref để scroll
-  const comments = useSelector((state) => state.posts.comments[post.id] || []);
-
-  console.log("Comment trả về>>", comments);
+  // console.log("Comment trả về>>", comments);
 
   useEffect(() => {
     if (post?.id) {
@@ -40,13 +42,16 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
     }
   }, [dispatch, post?.id]);
 
+  //Để gõ text
   const handleInputChange = (e) => {
     commentTextRef.current = e.target.value;
   };
-
+  //Để like comment
   const handleLikeComment = debounce((commentId) => {
     dispatch(likeComment(commentId));
   }, 1000);
+
+  //Thêm Comment
   const handleAddComment = () => {
     const text = commentTextRef.current.trim();
     if (!text) return;
@@ -55,6 +60,7 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
       addCommentPost({
         postId: post.id,
         content: text,
+        userId: userId,
       })
     ).then(() => {
       commentTextRef.current = "";
@@ -83,6 +89,7 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
         <div className="content-post animate__animated animate__fadeInRight animate_faster">
           <ContentPostComment post={post} onClose={onClose} />
           <CommentList
+            post={post}
             comment={comments}
             commentEndRef={commentEndRef}
             handleLikeComment={handleLikeComment}

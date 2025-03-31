@@ -1,3 +1,7 @@
+* {
+  font-family: "Roboto", sans-serif;
+}
+
 .App {
   text-align: center;
 }
@@ -52,4 +56,51 @@
 #nprogress .spinner-icon {
   border-top-color: #ff5733 !important;
   border-left-color: #ff5733 !important;
+}
+
+/* Cho alert react  */
+/* Ghi đè giao diện mặc định */
+/* Chỉnh màu nền overlay thành xám đậm */
+.react-confirm-alert-overlay {
+  background: rgba(0, 0, 0, 0.5) !important; /* Xám mờ */
+}
+.react-confirm-alert {
+  background: rgba(255, 255, 255, 0.7); /* Làm mờ nền */
+}
+
+.react-confirm-alert-body {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.react-confirm-alert-button-group {
+  display: flex;
+  justify-content: flex-end !important;
+
+  gap: 10px;
+}
+
+.react-confirm-alert-button-group button {
+  padding: 10px 20px;
+  font-size: 16px !important;
+  border: none;
+  border-radius: 5px;
+  min-width: 70px;
+  min-height: 40px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.react-confirm-alert-button-group button:first-child {
+  background-color: #11a4ff; /* Màu đỏ */
+  color: white;
+}
+
+.react-confirm-alert-button-group button:last-child {
+  background-color: #ccc;
+  color: black;
 }
