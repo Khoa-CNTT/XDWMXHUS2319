@@ -1,0 +1,38 @@
+.comment-wrapper {
+  position: relative; /* Đảm bảo phần tử cha có position relative */
+}
+.comment-options {
+  position: absolute;
+  right: 60px;
+  top: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  z-index: 9999;
+  width: 300px;
+  font-weight: bold;
+
+  span {
+    display: block;
+    padding: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+
+    &:hover {
+      background: #f0f0f0;
+    }
+  }
+
+  .update-comment {
+    color: #007bff;
+  }
+
+  .delete-comment {
+    color: #ff4d4d;
+  }
+
+  .report-comment {
+    color: #ff9800;
+  }
+}

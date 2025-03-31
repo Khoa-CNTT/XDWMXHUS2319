@@ -82,5 +82,9 @@ namespace Infrastructure.Data.Repositories
                 .Where(p => p.OriginalPostId == originalPostId && !p.IsDeleted)
                 .ToListAsync();
         }
+        public Task<int> GetShareCountAsync(Guid userId)
+        {
+            return _context.Shares.CountAsync(s => s.UserId == userId);
+        }
     }
 }

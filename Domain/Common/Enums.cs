@@ -74,5 +74,12 @@ namespace Domain.Common
             TripDelayed,
             NoResponse
         }
+        public enum RatingLevelEnum
+        {
+            Poor,
+            Average,
+            Good,
+            Excellent
+        }
     }
 }

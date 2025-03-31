@@ -10,14 +10,16 @@ namespace Application.CQRS.Commands.RidePosts
 {
     public class CreateRidePostCommand : IRequest<ResponseModel<ResponseRidePostDto>>
     {
+        public string? Content { get; set; }
         public required string StartLocation { get; set; }
         public required string EndLocation { get; set; }
         public DateTime StartTime { get; set; }
         public PostRideTypeEnum PostType { get; set; }
 
         // tạo constructor
-        public CreateRidePostCommand(string startLocation, string endLocation, DateTime startTime, PostRideTypeEnum postType)
+        public CreateRidePostCommand(string? content,string startLocation, string endLocation, DateTime startTime, PostRideTypeEnum postType)
         {
+            Content = content;
             StartLocation = startLocation;
             EndLocation = endLocation;
             StartTime = startTime;

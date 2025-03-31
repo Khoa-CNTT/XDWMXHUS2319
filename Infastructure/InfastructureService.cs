@@ -3,7 +3,10 @@ using Application.Interface;
 using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using Application.Interface.Hubs;
+using Application.Interface.SearchAI;
 using Application.Services;
+using Infrastructure.ApiPython;
+using Infrastructure.ApiPython.Model;
 using Infrastructure.Data.Repositories;
 using Infrastructure.Data.UnitOfWork;
 using Infrastructure.Email;
@@ -12,6 +15,8 @@ using Infrastructure.Hubs;
 using Infrastructure.Maps;
 using Infrastructure.Redis;
 using Infrastructure.Service;
+using Infrastructure.TogetherAi;
+using Infrastructure.TogetherAi.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
@@ -34,9 +39,12 @@ namespace Infrastructure
             );
             // Đăng ký User Secrets
             services.Configure<GeminiModel>(configuration.GetSection("GoogleGeminiApi"));
+            services.Configure<GeminiModel2>(configuration.GetSection("GoogleGeminiApi2"));
             services.Configure<MapsKeyModel>(configuration.GetSection("GoogleMaps"));
+
            
             var geminiModel = configuration.GetSection("GoogleGeminiApi").Get<GeminiModel>();
+
             if (geminiModel == null || string.IsNullOrWhiteSpace(geminiModel.ApiKey))
             {
                 throw new Exception("⚠️ Jwt:Key không được để trống! Kiểm tra user-secrets hoặc appsettings.json.");
@@ -60,10 +68,15 @@ namespace Infrastructure
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IRideReportRepository, RideReportRepository>();
             services.AddScoped<IUserContextService, UserContextService>();
+            services.AddScoped<IRatingRepository, RatingRepository>();
 
             services.AddScoped<IShareRepository, ShareRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
             services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
+            //đăng kí cho search AI
+            services.AddScoped<IDataAIService, DataAIService>();
+            services.AddScoped<IApiPythonService, ApiPythonService>();
+            //services.AddScoped<ISearchAIService, ApiPythonService2>();
 
 
 
@@ -72,6 +85,7 @@ namespace Infrastructure
 
             // ✅ Đăng ký GeminiService
             services.AddScoped<IGeminiService, GeminiService>();
+            services.AddScoped<IGeminiService2, GeminiService2>();
             // Đăng ký Google Maps và HERE Maps nhưng chưa chọn
             services.AddScoped<GoogleMapsService>();
             services.AddScoped<HereMapService>();
@@ -86,7 +100,7 @@ namespace Infrastructure
             services.AddScoped<IEmailService, EmailService>();
 
             //đăng kí hub
-            services.AddScoped<INotificationService, SignalRNotificationService>(); // Dùng SignalR để gửi thông báo
+            services.AddScoped<ISignalRNotificationService, SignalRNotificationService>(); // Dùng SignalR để gửi thông báo
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(LikeEventHandler).Assembly));
 
 

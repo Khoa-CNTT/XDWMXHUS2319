@@ -209,7 +209,10 @@
         display: flex;
         align-items: center;
         gap: 10px;
-
+        .timePost {
+          font-size: 14px;
+          color: rgb(56, 56, 56);
+        }
         .avtardefaut {
           width: 80px;
           height: 80px;
@@ -234,22 +237,59 @@
       font-size: 18px;
       margin: 0px 20px;
     }
-    .postImg {
-      width: 100%;
-      height: 330px;
-      background: #f0f0f0;
-      border-radius: 5px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      border: 2px solid black;
-      margin-top: -30px;
+    // .postImg {
+    //   width: 100%;
+    //   height: 330px;
+    //   background: #f0f0f0;
+    //   border-radius: 5px;
+    //   display: flex;
+    //   justify-content: center;
+    //   align-items: center;
+    //   overflow: hidden;
+    //   border: 2px solid black;
+    //   margin-top: -30px;
 
-      img {
+    //   img {
+    //     width: 100%;
+    //     height: 100%;
+    //     object-fit: cover;
+    //   }
+    // }
+
+    .media-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .postImg,
+      .postVideo {
         width: 100%;
-        height: 100%;
-        object-fit: cover;
+        height: 330px;
+        background: #f0f0f0;
+        border-radius: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        border: 2px solid black;
+        margin-top: -30px;
+
+        img,
+        video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+
+      // Nếu có cả ảnh và video thì chia đôi
+      &.has-both {
+        flex-direction: row; // Xếp cạnh nhau
+        .postImg,
+        .postVideo {
+          width: 50%;
+          height: 330px;
+        }
       }
     }
 

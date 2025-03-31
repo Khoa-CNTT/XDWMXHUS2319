@@ -8,5 +8,6 @@ namespace Domain.Interface
 {
     public interface IRideReportRepository : IBaseRepository<RideReport>
     {
+        Task<int> GetWarningCountAsync(Guid userId);
     }
 }

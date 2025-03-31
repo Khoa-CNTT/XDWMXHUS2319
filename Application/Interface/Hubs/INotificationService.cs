@@ -10,13 +10,18 @@ namespace Application.Interface.Hubs
     public interface INotificationService
     {
         Task SendLikeNotificationAsync(Guid postId, Guid userId);
-        Task SendNotificationWhenTripEnds(Guid driverId, Guid passengerId, string message);
+        Task SendNotificationUpdateLocationAsync(Guid driverId, Guid passengerId, double lat, double lng, bool isEnd);
         //gửi cảnh báo khi gps bị tắt
+
+        Task SendAlertAsync(Guid driverId, string message);
+        Task SendInAppNotificationAsync(Guid driverId, string message);
+
         Task SendShareNotificationAsync(Guid postId, Guid userId);
         Task SendInAppNotificationAsync(Guid driverId, string message);
         Task SendAlertAsync(Guid driverId, string message);
         Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName);
         Task SendReplyNotificationAsync(Guid commentId, Guid responderId, string responderName);
+
     }
 
 }

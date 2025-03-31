@@ -16,5 +16,10 @@ namespace Infrastructure.Data.Repositories
         {
             throw new NotImplementedException();
         }
+        public Task<int> GetWarningCountAsync(Guid userId)
+        {
+            return _context.RideReports
+                .CountAsync(w => w.RideId == userId);
+        }
     }
 }
