@@ -54,7 +54,7 @@ namespace Application.BackgroundServices
                         }
                             // (1) Tài xế tắt GPS hơn 30 phút
                             if (lastDriverUpdate != null && (currentUtc - lastDriverUpdate) > TimeSpan.FromMinutes(30))
-                        {
+                            {
                             await notificationService.SendAlertAsync(ride.PassengerId, "🚨 Cảnh giác! Tài xế của bạn đã tắt GPS hơn 30 phút.");
 
                             try
@@ -137,7 +137,7 @@ namespace Application.BackgroundServices
                     }
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(3), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
             }
         }
 

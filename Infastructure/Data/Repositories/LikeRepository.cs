@@ -52,6 +52,17 @@ namespace Infrastructure.Data.Repositories
                 .ToListAsync();
         }
 
+        public Task<int> GetLikeCountAsync(Guid userId)
+        {
+            return _context.Likes.CountAsync(l => l.UserId == userId);
+        }
+
+        public async Task<bool> CheckLike(Guid postId, Guid userId)
+        {
+            return await _context.Likes.AnyAsync(l => l.PostId == postId && l.UserId == userId);
+        }
+
+
         public async Task<(List<Like>, Guid?)> GetLikesByPostIdWithCursorAsync(Guid postId, Guid? lastUserId, int pageSize)
         {
             var query = _context.Likes
@@ -72,6 +83,7 @@ namespace Infrastructure.Data.Repositories
 
             return (likes.Take(pageSize).ToList(), nextCursor);
         }
+
 
     }
 }

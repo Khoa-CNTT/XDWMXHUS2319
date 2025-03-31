@@ -1,0 +1,18 @@
+.right-sidebar {
+  width: 250px;
+  background-color: #fff;
+  border-left: 1px solid #ddd;
+
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  &__section {
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+    }
+  }
+}

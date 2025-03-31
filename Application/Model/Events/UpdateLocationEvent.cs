@@ -15,21 +15,12 @@ namespace Application.Model.Events
         public Guid DriverId { get; set; }
         public Guid PassengerId { get; set; }
         public bool IsDriver {  get; set; }
-        public string? Messsage { get; set; }
-        public UpdateLocationEvent() { }
+        public string Messsage { get; set; }
         public UpdateLocationEvent(Guid driverId,Guid passengerId,string message)
         {
             DriverId = driverId;
             PassengerId = passengerId;
             Messsage = message;
-        }
-        public UpdateLocationEvent(Guid rideId,Guid userId, double latitude, double longitude, bool isDriver)
-        {
-            RideId = rideId;
-            Latitude = latitude;
-            Longitude = longitude;
-            IsDriver = isDriver;
-            UserId = userId;
         }
     }
 }

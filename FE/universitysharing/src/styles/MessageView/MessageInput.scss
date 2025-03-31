@@ -1,0 +1,32 @@
+.message-input {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+
+  &__icon {
+    background: none;
+    border: none;
+    font-size: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+
+  input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    outline: none;
+    font-size: 14px;
+  }
+
+  &__send {
+    background: none;
+    border: none;
+    font-size: 20px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+}

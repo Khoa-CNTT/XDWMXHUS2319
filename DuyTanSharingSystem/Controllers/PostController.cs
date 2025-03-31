@@ -1,6 +1,7 @@
 ﻿using Application.CQRS.Commands.Posts;
 using Application.CQRS.Queries.Post;
 using Application.CQRS.Queries.Posts;
+using Application.CQRS.Queries.RIdePost;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -72,6 +73,13 @@ namespace DuyTanSharingSystem.Controllers
         public async Task<IActionResult> UpdatePost([FromForm] UpdatePostCommand command)
         {
             var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+        //lấy bài post theo id
+        [HttpGet("get-by-id")]
+        public async Task<IActionResult> GetRidePostById([FromQuery] GetPostByIdQueries query)
+        {
+            var response = await _mediator.Send(query);
             return Ok(response);
         }
     }

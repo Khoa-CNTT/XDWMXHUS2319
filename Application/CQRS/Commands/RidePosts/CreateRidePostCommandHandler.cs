@@ -45,7 +45,7 @@ namespace Application.CQRS.Commands.RidePosts
                 if (userId == Guid.Empty)
                     return ResponseFactory.Fail<ResponseRidePostDto>("User not found", 404);
 
-                var ridePost = new RidePost(userId, request.StartLocation, request.EndLocation, request.StartTime, request.PostType);
+                var ridePost = new RidePost(userId,request.Content, request.StartLocation, request.EndLocation, request.StartTime, request.PostType);
                 var content = $"StartLocation: {request.StartLocation} - EndLocation: {request.EndLocation} - StartTime: {request.StartTime}";
                 //kiểm tra xem bài đăng có hợp lệ không bằng Genimi
                 var result = await _geminiService.ValidatePostContentAsync(content);

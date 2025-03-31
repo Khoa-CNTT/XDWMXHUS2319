@@ -20,10 +20,11 @@ namespace Domain.Entities
             public string? Bio { get; private set; }
             public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
             public bool IsVerifiedEmail { get; private set; } = false;
-            public int TrustScore { get; private set; } = 0;
+            public decimal TrustScore { get; private set; } = 0;
             public RoleEnum Role { get; private set; } = RoleEnum.User;
             public string? RelativePhone { get; private set; }
             public string? Phone { get; private set; }
+            public DateTime? LastActive { get; private set; }
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
             public virtual ICollection<Comment> Comments { get; private set; } = new HashSet<Comment>();
@@ -68,7 +69,7 @@ namespace Domain.Entities
             /// Cập nhật điểm tin cậy của người dùng.
             /// </summary>
             /// <param name="score">Điểm tin cậy mới.</param>
-            public void UpdateTrustScore(int score)
+            public void UpdateTrustScore(decimal score)
             {
                 if (score < 0) throw new ArgumentException("Trust score cannot be negative.");
                 TrustScore = score;

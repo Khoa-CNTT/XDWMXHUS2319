@@ -11,6 +11,8 @@ namespace Domain.Interface
         Task<RidePost?> GetByDriverIdAsync(Guid userId);
         Task<List<RidePost>> GetAllRidePostAsync(Guid? lastPostId, int pageSize);
         Task<List<RidePost>> GetAllRidePostForOwnerAsync(Guid? lastPostId, int pageSize,Guid ownerId);
+        Task<List<RidePost>> GetAllRidePostForSearchAI();
+        Task<int> GetRidePostCountAsync(Guid userId);
 
     }
 }

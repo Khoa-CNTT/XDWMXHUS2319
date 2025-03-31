@@ -26,7 +26,7 @@ namespace Application.BackgroundServices
                 var updateLocationRepository = scope.ServiceProvider.GetRequiredService<ILocationUpdateRepository>();
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-                var updateLocationEvents = await redisService.GetAsync<List<UpdateLocationEvent>>("update_location_events");
+                var updateLocationEvents = await redisService.GetAsync<List<LocationUpdate>>("update_location_events");
 
               
 

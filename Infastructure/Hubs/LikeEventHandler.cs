@@ -11,16 +11,16 @@ namespace Infrastructure.Hubs
 {
     public class LikeEventHandler : INotificationHandler<LikeEvent>
     {
-        private readonly INotificationService _notificationService;
+        private readonly ISignalRNotificationService _signalRNotificationService;
 
-        public LikeEventHandler(INotificationService notificationService)
+        public LikeEventHandler(ISignalRNotificationService signalRNotificationService)
         {
-            _notificationService = notificationService;
+            _signalRNotificationService = signalRNotificationService;
         }
 
         public async Task Handle(LikeEvent notification, CancellationToken cancellationToken)
         {
-            await _notificationService.SendLikeNotificationAsync(notification.PostId, notification.UserId);
+            await _signalRNotificationService.SendLikeNotificationSiganlR(notification.PostId, notification.OwnerId,notification.Message);
         }
     }
 }

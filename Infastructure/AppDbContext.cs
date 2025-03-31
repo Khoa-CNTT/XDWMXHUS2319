@@ -33,7 +33,8 @@ namespace Infrastructure
         public DbSet<Ride> Rides { get; set; }
         public DbSet<LocationUpdate> LocationUpdates { get; set; }
         public DbSet<RideReport> RideReports { get; set; }
-        
+        public DbSet<Rating> Ratings { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -56,6 +57,7 @@ namespace Infrastructure
             modelBuilder.Entity<Ride>().HasKey(r => r.Id);
             modelBuilder.Entity<LocationUpdate>().HasKey(lu => lu.Id);
             modelBuilder.Entity<RideReport>().HasKey(rr => rr.Id);
+            modelBuilder.Entity<Rating>().HasKey(r => r.Id);
 
             //Dùng HasQueryFilter để tự động loại bỏ dữ liệu đã bị xóa mềm (IsDeleted = true) khi truy vấn.
             //Nếu không sử dụng, cần phải thêm điều kiện IsDeleted = false trong mỗi truy vấn.
