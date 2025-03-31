@@ -10,6 +10,7 @@ import Register from "./views/Register";
 import ForgotPass from "./views/ForgotPassword";
 import ResetForgotPassword from "./views/ResetForgotPassword";
 import Homeview from "./views/HomeView";
+import SharingRideView from "./views/SharingRideView";
 
 function App() {
   // useEffect(() => {
@@ -21,9 +22,11 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/home" element={<Homeview />} />
+          <Route path="/sharing-ride" element={<SharingRideView />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgotpassword" element={<ForgotPass />} />
           <Route path="/resetFP" element={<ResetForgotPassword />} />
+          <Route path="/post/:id" element={<Homeview />} />
           <Route path="*" element={<Login />} />
         </Routes>
       </Router>

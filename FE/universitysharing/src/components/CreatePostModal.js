@@ -59,15 +59,31 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
     formData.append("PostType", postType);
     formData.append("Scope", scope);
 
+    // if (mediaFiles.length > 0) {
+    //   const file = mediaFiles[0].file; // Lấy file đầu tiên
+    //   if (file.type.startsWith("video")) {
+    //     formData.append("Video", file);
+    //   } else {
+    //     formData.append("Image", file);
+    //   }
+    // }
     if (mediaFiles.length > 0) {
-      const file = mediaFiles[0].file; // Lấy file đầu tiên
-      if (file.type.startsWith("video")) {
-        formData.append("Video", file);
-      } else {
-        formData.append("Image", file);
-      }
+      let videoFile = null;
+      let imageFile = null;
+
+      mediaFiles.forEach(({ file }) => {
+        if (file.type.startsWith("video") && !videoFile) {
+          videoFile = file; // Lưu file video đầu tiên
+        } else if (!file.type.startsWith("video") && !imageFile) {
+          imageFile = file; // Lưu file ảnh đầu tiên
+        }
+      });
+
+      if (videoFile) formData.append("Video", videoFile);
+      if (imageFile) formData.append("Image", imageFile);
     }
 
+    console.log("Form Data", formData);
     dispatch(
       createPost({
         formData,
