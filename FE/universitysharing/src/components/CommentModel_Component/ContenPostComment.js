@@ -11,6 +11,8 @@ import shareIcon from "../../assets/iconweb/shareIcon.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { likePost } from "../../stores/action/listPostActions";
 import { debounce } from "lodash";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale"; // Tiếng Việt
 
 const ContentPostComment = ({ post, onClose }) => {
   const dispatch = useDispatch();
@@ -33,6 +35,14 @@ const ContentPostComment = ({ post, onClose }) => {
             alt="Avatar"
           />
           <span className="username">{posts.fullName}</span>
+
+          <span className="Time-post-Comments-Modal">
+            {" "}
+            {formatDistanceToNow(new Date(posts.createdAt), {
+              addSuffix: true,
+              locale: vi,
+            })}
+          </span>
         </div>
         <div className="more-options">
           <img src={moreIcon} alt="More" />
