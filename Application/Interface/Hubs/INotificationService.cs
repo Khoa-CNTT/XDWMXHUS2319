@@ -19,7 +19,7 @@ namespace Application.Interface.Hubs
         Task SendShareNotificationAsync(Guid postId, Guid userId);
 
         Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName);
-        Task SendReplyNotificationAsync(Guid commentId, Guid responderId, string responderName);
+        Task SendReplyNotificationAsync(Guid postId, Guid commentId, Guid responderId, string responderName);
 
     }
 

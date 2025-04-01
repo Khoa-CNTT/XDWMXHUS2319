@@ -58,27 +58,38 @@ namespace Domain.Entities
         {
             bool isUpdated = false;
 
+            // Cập nhật nội dung nếu có thay đổi
             if (!string.IsNullOrWhiteSpace(newContent) && newContent != Content)
             {
                 Content = newContent;
                 isUpdated = true;
             }
 
-            if ((newImageUrl != null && newImageUrl != ImageUrl) || (newVideoUrl != null && newVideoUrl != VideoUrl))
+            // Cập nhật hình ảnh và video nếu có thay đổi (bao gồm trường hợp gán null)
+            if (newImageUrl != ImageUrl)
             {
-                ImageUrl = newImageUrl;
-                VideoUrl = newVideoUrl;
+                ImageUrl = newImageUrl; // Cập nhật hoặc gán null nếu newImageUrl là null
                 isUpdated = true;
             }
 
+            if (newVideoUrl != VideoUrl)
+            {
+                VideoUrl = newVideoUrl; // Cập nhật hoặc gán null nếu newVideoUrl là null
+                isUpdated = true;
+            }
+
+            // Cập nhật Scope nếu có thay đổi
             if (newScope.HasValue && newScope.Value != Scope)
             {
                 Scope = newScope.Value;
                 isUpdated = true;
             }
 
+            // Cập nhật thời gian nếu có thay đổi
             if (isUpdated)
-                UpdateAt = DateTime.UtcNow; // ✅ Chỉ cập nhật nếu có thay đổi
+            {
+                UpdateAt = DateTime.UtcNow; // Cập nhật thời gian chỉ khi có thay đổi
+            }
         }
 
         public void Approve()

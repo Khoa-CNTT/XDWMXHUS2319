@@ -9,6 +9,17 @@ using Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy => policy
+            .WithOrigins("http://localhost:3000") // ⚡ Chỉ cho phép frontend truy cập
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()); // ⚡ Bật chế độ gửi cookie/token
+});
+
 //builder.Services.AddCors(options =>
 //{
 //    options.AddPolicy("AllowReactApp",
@@ -18,6 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
 //            .AllowAnyHeader()
 //            .AllowCredentials()); // ⚡ Bật chế độ gửi cookie/token
 //});
+
 
 // 🔹 Nạp User Secrets (nếu đang ở môi trường Development)
 if (builder.Environment.IsDevelopment())

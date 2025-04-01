@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProfileHeader from "../components/ProfileUserComponent/ProfileHeader";
 import ProfilePhotos from "../components/ProfileUserComponent/ProfilePhotos";
 import ProfileFriends from "../components/ProfileUserComponent/ProfileFriends";
 import ProfileIntro from "../components/ProfileUserComponent/ProfileIntro";
-import ProfilePost from "../components/ProfileUserComponent/ProfilePost";
 import Header from "../components/HomeComponent/Header";
 import { useDispatch, useSelector } from "react-redux";
 import { userProfile } from "../stores/action/profileActions";
@@ -18,16 +17,20 @@ const ProfileUserView = () => {
   const usersState = useSelector((state) => state.users) || {};
   const { users } = usersState;
 
+  useEffect(() => {
+    dispatch(userProfile()); // Lấy thông tin user
+  }, [dispatch]);
+
   return (
     <div className="profile-user-view">
       <Header className="header" usersProfile={users} />
-      <ProfileHeader />
+      <ProfileHeader usersProfile={users} />
       <div className="profile-user-view__content">
         <div className="left-sidebar-container">
           <div className="left-sidebar-content">
-            <ProfileIntro />
-            <ProfilePhotos />
-            <ProfileFriends />
+            <ProfileIntro usersProfile={users} />
+            <ProfilePhotos usersProfile={users} />
+            <ProfileFriends usersProfile={users} />
           </div>
         </div>
         <div className="profile-user-view__right">

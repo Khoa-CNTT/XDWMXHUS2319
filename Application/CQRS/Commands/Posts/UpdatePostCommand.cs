@@ -17,5 +17,6 @@ namespace Application.CQRS.Commands.Posts
         public IFormFile? Video { get; set; }  // ✅ Chấp nhận file thay vì đường dẫn
         public ScopeEnum? Scope { get; set; } // ➜ Thêm dòng này
 
+
     }
 }

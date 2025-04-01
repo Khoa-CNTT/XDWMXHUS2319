@@ -1,7 +1,7 @@
 import React from "react";
 import "../../styles/ProfileUserView/ProfileIntro.scss";
 
-const ProfileIntro = () => {
+const ProfileIntro = ({ usersProfile }) => {
   return (
     <div className="profile-intro">
       <div className="profile-intro__header">
@@ -10,7 +10,7 @@ const ProfileIntro = () => {
           Chỉnh sửa thông tin
         </a>
       </div>
-      <p>Là một người dùng đẹp trai</p>
+      <p>{usersProfile?.bio || "Chưa có thông tin giới thiệu."}</p>
     </div>
   );
 };

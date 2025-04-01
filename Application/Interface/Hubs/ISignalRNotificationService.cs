@@ -11,5 +11,7 @@ namespace Application.Interface.Hubs
         Task SendAlertSignalR(Guid driverId, string message);
         Task SendLikeNotificationSiganlR(Guid postId, Guid ownerId, string message);
         Task SendNotificationUpdateLocationSignalR(Guid driverId, Guid passengerId,string message);
+        Task SendReplyNotificationSignalR(Guid postId, Guid commentOwnerId, Guid responderId, string message);
+        Task SendCommentNotificationSignalR(Guid postId, Guid postOwnerId, Guid commenterId, string message);
     }
 }
