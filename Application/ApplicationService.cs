@@ -51,7 +51,7 @@ namespace Application
             //services.AddHostedService<UpdateLocationProcessor>();
             //services.AddHostedService<GpsMonitorService>();
             //services.AddHostedService<LikeCommentEventProcessor>();
-            services.AddHostedService<TrustScoreBackgroundService>();
+            //services.AddHostedService<TrustScoreBackgroundService>();
             //đăng kí hub
             services.AddScoped<INotificationService, NotificationService>();
             // Đăng ký Auth Services

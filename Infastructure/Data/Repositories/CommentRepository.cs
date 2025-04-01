@@ -177,6 +177,7 @@ namespace Infrastructure.Data.Repositories
             return await _context.Comments
                 .Where(c => c.UserId == userId && !c.IsDeleted)
                 .ToListAsync();
+        }
 
 
         public async Task<int> CountRepliesAsync(Guid parentCommentId)

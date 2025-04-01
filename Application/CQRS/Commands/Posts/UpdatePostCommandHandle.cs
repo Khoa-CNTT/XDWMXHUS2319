@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Post;
+﻿using Application.Common;
+using Application.DTOs.Post;
 using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using System;
@@ -26,7 +27,6 @@ namespace Application.CQRS.Commands.Posts
         }
         public async Task<ResponseModel<UpdatePostDto>> Handle(UpdatePostCommand request, CancellationToken cancellationToken)
         {
-            const string baseUrl = "https://localhost:7053";
             var userId = _userContextService.UserId();
             var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
 
@@ -44,18 +44,18 @@ namespace Application.CQRS.Commands.Posts
                 {
                     post.RejectAI();
                     await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<UpdatePostDto>("Warning! Content is not accepted! If you violate it again, your reputation will be deducted!!", 400);
+                    return ResponseFactory.Fail<UpdatePostDto>("Warning! Content is not accepted!", 400);
                 }
 
-                // ✅ Kiểm tra & lưu file (chỉ khi cần thiết)
-                string? imageUrl = post.ImageUrl;
-                string? videoUrl = post.VideoUrl;
-
+                // ✅ Kiểm tra & xử lý hình ảnh
+                string? imageUrl = request.Image == null ? null : post.ImageUrl;
                 if (request.Image != null && _fileService.IsImage(request.Image))
-                    imageUrl = await _fileService.SaveFileAsync(request.Image, "images", true);
+                    imageUrl = await _fileService.SaveFileAsync(request.Image, "images/posts", true);
 
+                // ✅ Kiểm tra & xử lý video
+                string? videoUrl = request.Video == null ? null : post.VideoUrl;
                 if (request.Video != null && _fileService.IsVideo(request.Video))
-                    videoUrl = await _fileService.SaveFileAsync(request.Video, "videos", false);
+                    videoUrl = await _fileService.SaveFileAsync(request.Video, "videos/posts", false);
 
                 // ✅ Kiểm tra có thay đổi không
                 if (post.Content == request.Content &&
@@ -69,8 +69,8 @@ namespace Application.CQRS.Commands.Posts
                         Id = post.Id,
                         UserId = post.UserId,
                         Content = post.Content,
-                        ImageUrl = post.ImageUrl != null ? $"{baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
-                        VideoUrl = post.VideoUrl != null ? $"{baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
+                        ImageUrl = null, // Trả về null nếu không có ảnh
+                        VideoUrl = null, // Trả về null nếu không có video
                         IsApproved = post.IsApproved,
                         UpdatedAt = post.UpdateAt.GetValueOrDefault(post.CreatedAt)
                     }, "Không có thay đổi nào trong bài viết", 200);
@@ -88,8 +88,8 @@ namespace Application.CQRS.Commands.Posts
                     Id = post.Id,
                     UserId = post.UserId,
                     Content = post.Content,
-                    ImageUrl = post.ImageUrl != null ? $"{baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
-                    VideoUrl = post.VideoUrl != null ? $"{baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
+                    ImageUrl = imageUrl != null ? $"{Constaint.baseUrl}{imageUrl}" : null,
+                    VideoUrl = videoUrl != null ? $"{Constaint.baseUrl}{videoUrl}" : null,
                     Scope = (int)post.Scope,
                     IsApproved = post.IsApproved,
                     UpdatedAt = post.UpdateAt.GetValueOrDefault(post.CreatedAt)
@@ -98,7 +98,7 @@ namespace Application.CQRS.Commands.Posts
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                Console.WriteLine($"Lỗi khi cập nhật bài viết: {ex}"); // Log đầy đủ hơn
+                Console.WriteLine($"Lỗi khi cập nhật bài viết: {ex}");
                 return ResponseFactory.Error<UpdatePostDto>("Đã xảy ra lỗi, vui lòng thử lại", 500, ex);
             }
         }

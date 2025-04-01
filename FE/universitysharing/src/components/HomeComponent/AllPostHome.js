@@ -60,7 +60,7 @@ const AllPosts = ({ usersProfile }) => {
   // Đóng modal và quay lại trang trước
   const handleCloseCommentModal = () => {
     dispatch(closeCommentModal());
-    navigate("/home");
+    navigate(-1);
   };
 
   //Mở modal option

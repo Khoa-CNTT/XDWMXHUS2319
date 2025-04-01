@@ -9,19 +9,19 @@ const RightSidebar = () => {
       <ul>
         <li>
           <img src={avatarDefaut}></img>
-          <span>Nguyễn Trung Đăng</span>
+          <span>Thanh Le</span>
         </li>
         <li>
           <img src={avatarDefaut}></img>
-          <span>Giàng A Giớt</span>
+          <span>Giàng A Lôi</span>
         </li>
         <li>
           <img src={avatarDefaut}></img>
-          <span> Đôm Xum Tún</span>
+          <span>Tuấn Đàm</span>
         </li>
         <li>
           <img src={avatarDefaut}></img>
-          <span> Ngô Nhật Hii</span>
+          <span>Ngô Nhật Hi</span>
         </li>
       </ul>
     </aside>
