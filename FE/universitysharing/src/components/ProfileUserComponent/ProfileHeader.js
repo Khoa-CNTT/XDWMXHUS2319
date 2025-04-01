@@ -1,4 +1,5 @@
 import React from "react";
+import EditProfileModal from "../components/ProfileUserComponent/EditProfileModal";
 import "../../styles/ProfileUserView/ProfileHeader.scss";
 
 const ProfileHeader = ({ usersProfile }) => {

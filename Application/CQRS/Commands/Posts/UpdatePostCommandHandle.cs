@@ -47,15 +47,29 @@ namespace Application.CQRS.Commands.Posts
                     return ResponseFactory.Fail<UpdatePostDto>("Warning! Content is not accepted!", 400);
                 }
 
-                // ✅ Kiểm tra & xử lý hình ảnh
-                string? imageUrl = request.Image == null ? null : post.ImageUrl;
-                if (request.Image != null && _fileService.IsImage(request.Image))
-                    imageUrl = await _fileService.SaveFileAsync(request.Image, "images/posts", true);
+                // ✅ Xử lý ảnh
+                string? imageUrl = post.ImageUrl;  // Giữ ảnh cũ nếu không có ảnh mới
+                if (request.Image != null && request.Image.Length > 0)  // Nếu có ảnh mới
+                {
+                    if (_fileService.IsImage(request.Image))  // Kiểm tra ảnh hợp lệ
+                        imageUrl = await _fileService.SaveFileAsync(request.Image, "images/posts", true);  // Lưu ảnh mới
+                }
+                else if (request.IsDeleteImage)  // Nếu người dùng muốn xóa ảnh
+                {
+                    imageUrl = null;  // Gán null cho imageUrl nếu xóa ảnh
+                }
 
-                // ✅ Kiểm tra & xử lý video
-                string? videoUrl = request.Video == null ? null : post.VideoUrl;
-                if (request.Video != null && _fileService.IsVideo(request.Video))
-                    videoUrl = await _fileService.SaveFileAsync(request.Video, "videos/posts", false);
+                // ✅ Xử lý video
+                string? videoUrl = post.VideoUrl;  // Giữ video cũ nếu không có video mới
+                if (request.Video != null && request.Video.Length > 0)  // Nếu có video mới
+                {
+                    if (_fileService.IsVideo(request.Video))  // Kiểm tra video hợp lệ
+                        videoUrl = await _fileService.SaveFileAsync(request.Video, "videos/posts", false);  // Lưu video mới
+                }
+                else if (request.IsDeleteVideo)  // Nếu người dùng muốn xóa video
+                {
+                    videoUrl = null;  // Gán null cho videoUrl nếu xóa video
+                }
 
                 // ✅ Kiểm tra có thay đổi không
                 if (post.Content == request.Content &&
@@ -69,8 +83,9 @@ namespace Application.CQRS.Commands.Posts
                         Id = post.Id,
                         UserId = post.UserId,
                         Content = post.Content,
-                        ImageUrl = null, // Trả về null nếu không có ảnh
-                        VideoUrl = null, // Trả về null nếu không có video
+                        ImageUrl = imageUrl != null ? $"{Constaint.baseUrl}{imageUrl}" : null,  // Trả về ảnh cũ hoặc null nếu không có ảnh
+                        VideoUrl = videoUrl != null ? $"{Constaint.baseUrl}{videoUrl}" : null,  // Trả về video mới nếu có, hoặc null nếu không có video
+                        Scope = (int)post.Scope,
                         IsApproved = post.IsApproved,
                         UpdatedAt = post.UpdateAt.GetValueOrDefault(post.CreatedAt)
                     }, "Không có thay đổi nào trong bài viết", 200);
@@ -88,8 +103,8 @@ namespace Application.CQRS.Commands.Posts
                     Id = post.Id,
                     UserId = post.UserId,
                     Content = post.Content,
-                    ImageUrl = imageUrl != null ? $"{Constaint.baseUrl}{imageUrl}" : null,
-                    VideoUrl = videoUrl != null ? $"{Constaint.baseUrl}{videoUrl}" : null,
+                    ImageUrl = imageUrl != null ? $"{Constaint.baseUrl}{imageUrl}" : null,  // Trả về ảnh cũ hoặc null nếu không có ảnh
+                    VideoUrl = videoUrl != null ? $"{Constaint.baseUrl}{videoUrl}" : null,  // Trả về video mới nếu có
                     Scope = (int)post.Scope,
                     IsApproved = post.IsApproved,
                     UpdatedAt = post.UpdateAt.GetValueOrDefault(post.CreatedAt)
