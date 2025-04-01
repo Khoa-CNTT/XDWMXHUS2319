@@ -33,6 +33,7 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
 import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
+
 const AllPosts = ({ usersProfile }) => {
   const dispatch = useDispatch();
   //lấy các trạng thái khai báo từ Redux
@@ -102,6 +103,7 @@ const AllPosts = ({ usersProfile }) => {
   const handleLikePost = debounce((postId) => {
     dispatch(likePost(postId));
   }, 1000);
+
   return (
     <div className="all-posts">
       {Array.isArray(posts) && posts.length > 0 ? (
@@ -228,6 +230,7 @@ const AllPosts = ({ usersProfile }) => {
           position={selectedPostToOption.position} // Truyền vị trí vào modal
           postId={selectedPostToOption.post.id}
           handleDeletePost={confirmDelete}
+          post={selectedPostToOption.post}
         />
       )}
 

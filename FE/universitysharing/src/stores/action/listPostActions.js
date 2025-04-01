@@ -107,7 +107,7 @@ export const createPost = createAsyncThunk(
   "post/createPost",
   async ({ formData, fullName, profilePicture }, { rejectWithValue }) => {
     try {
-      console.log("formData", formData);
+      // console.log("formData", formData);
       const response = await axios.post(
         "https://localhost:7053/api/Post/create",
         formData,
@@ -134,6 +134,49 @@ export const createPost = createAsyncThunk(
       } else {
         toast.error("Đăng bài thất bại!");
         return rejectWithValue(response.data.errors);
+      }
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+//Chỉnh sửa bài viết
+export const updatePost = createAsyncThunk(
+  "posts/updatePost",
+  async (
+    { postId, formData, fullName, profilePicture, createdAt },
+    { rejectWithValue }
+  ) => {
+    try {
+      console.log("FormData contents:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]); // In key và value của FormData
+      }
+
+      const response = await axios.patch(
+        "https://localhost:7053/api/Post/update-post",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Gửi token trong header
+          },
+        }
+      );
+      console.log("Response từ API >>", response.data); // Kiểm tra response trả về
+      if (response.data.data) {
+        toast.success("Sửa bài viết thành công!");
+        return {
+          postId,
+          data: response.data.data,
+          fullName,
+          profilePicture,
+          createdAt,
+        };
+        console.log("respone>>", response.data.data);
+      } else {
+        toast.error("Sửa bài viết không thành công!");
+        return rejectWithValue("Dữ liệu trả về không hợp lệ");
       }
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

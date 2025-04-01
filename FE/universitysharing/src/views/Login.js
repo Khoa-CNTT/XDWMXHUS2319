@@ -6,7 +6,10 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { useNavigate } from "react-router-dom";
 import { debounce } from "lodash";
+import { useDispatch } from "react-redux";
+import { fetchPosts } from "../stores/action/listPostActions";
 const Login = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate(); // ✅ Gọi hook đúng vị trí
 
   const handleLogin = async (e, formData) => {
@@ -22,7 +25,11 @@ const Login = () => {
       if (response.data.success) {
         localStorage.setItem("token", response.data.data); // Lưu token chính xác
         toast.success("Đăng nhập thành công!");
-        navigate("/home"); // ✅ Điều hướng sau khi đăng nhập
+        dispatch(fetchPosts());
+        // navigate("/home"); // ✅ Điều hướng sau khi đăng nhập
+        setTimeout(() => {
+          navigate("/home"); // ✅ Chuyển hướng sau 1 giây
+        }, 2000);
       } else if (response?.data?.message?.toLowerCase() === "user not found") {
         toast.error("Người dùng không tồn tại trong hệ thống!");
       } else {

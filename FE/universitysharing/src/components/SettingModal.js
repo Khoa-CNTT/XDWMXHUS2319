@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import avatarDefaut from "../assets/AvatarDefault.png";
 import "../styles/SettingModal.scss";
-const SettingModal = ({ isOpen, onClose, users }) => {
+const SettingModal = ({ isOpen, onClose, users, UserProfile }) => {
   const modalRef = useRef(null);
 
   const handleClickOutside = useCallback(
@@ -26,7 +26,7 @@ const SettingModal = ({ isOpen, onClose, users }) => {
 
   return (
     <div className="setting-Overlay" ref={modalRef}>
-      <div className="Account">
+      <div className="Account" onClick={UserProfile}>
         <img
           className="AvatarUser"
           src={users.profilePicture || avatarDefaut}
