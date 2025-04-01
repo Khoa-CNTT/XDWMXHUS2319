@@ -7,15 +7,35 @@ import "../styles/CreatePostModal.scss";
 import "animate.css";
 
 import { useDispatch, useSelector } from "react-redux";
-import { createPost } from "../stores/action/listPostActions"; // Import action từ Redux
+import { createPost, updatePost } from "../stores/action/listPostActions"; // Import action từ Redux
+import { set } from "nprogress";
 
-const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
+const EditModal = ({ isOpen, postId, post, onClose }) => {
+  //console.log("Nội dung post >> ", postId);
   const [mediaFiles, setMediaFile] = useState([]);
   const dispatch = useDispatch();
   const [content, setContent] = useState("");
   const [postType, setPostType] = useState(4);
   const [scope, setScope] = useState(0);
   const loading = useSelector((state) => state.posts.loading); // Lấy trạng thái loading từ Redux
+
+  useEffect(() => {
+    if (post) {
+      setContent(post.content || "");
+      setPostType(post.postType || 4);
+      setScope(post.scope || 0); // Quyền riêng tư
+      setMediaFile(() => {
+        const media = [];
+        if (post.imageUrl) {
+          media.push({ url: post.imageUrl, type: "image" });
+        }
+        if (post.videoUrl) {
+          media.push({ url: post.videoUrl, type: "video" });
+        }
+        return media;
+      });
+    }
+  }, [post]);
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -47,7 +67,54 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
     setMediaFile((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Thêm bài viết
+  // // Sửa bài viết
+  // const handleSubmit = async () => {
+  //   if (!content.trim()) {
+  //     alert("Vui lòng nhập nội dung bài viết!");
+  //     return;
+  //   }
+
+  //   const formData = new FormData();
+  //   formData.append("PostId", postId);
+
+  //   formData.append("Content", content);
+  //   // formData.append("PostType", postType);
+  //   formData.append("Scope", scope);
+
+  //   // if (mediaFiles.length > 0) {
+  //   //   mediaFiles.forEach(({ file }) => {
+  //   //     if (file.type.startsWith("video")) {
+  //   //       formData.append("Video", file);
+  //   //     } else {
+  //   //       formData.append("Image", file);
+  //   //     }
+  //   //   });
+  //   // }
+  //   mediaFiles.forEach(({ file }) => {
+  //     if (file && file.type) {
+  //       // Kiểm tra file trước khi truy cập type
+  //       if (file.type.startsWith("video")) {
+  //         formData.append("Video", file);
+  //       } else {
+  //         formData.append("Image", file);
+  //       }
+  //     }
+  //   });
+
+  //   dispatch(
+  //     updatePost({
+  //       postId: postId,
+  //       formData,
+  //       fullName: post.fullName || "University Sharing",
+  //       profilePicture: post.profilePicture || avatarDeafault,
+  //       createdAt: post.createdAt,
+  //     })
+  //   );
+
+  //   onClose(); // Đóng modal sau khi gửi bài
+  // };
+
+  // Sửa bài viết
   const handleSubmit = async () => {
     if (!content.trim()) {
       alert("Vui lòng nhập nội dung bài viết!");
@@ -55,41 +122,56 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
     }
 
     const formData = new FormData();
+    formData.append("PostId", postId);
     formData.append("Content", content);
-    formData.append("PostType", postType);
     formData.append("Scope", scope);
 
-    if (mediaFiles.length > 0) {
-      mediaFiles.forEach(({ file }) => {
+    let hasMedia = false;
+
+    mediaFiles.forEach(({ file }) => {
+      if (file && file.type) {
+        hasMedia = true;
         if (file.type.startsWith("video")) {
           formData.append("Video", file);
         } else {
           formData.append("Image", file);
         }
-      });
+      }
+    });
+
+    // Nếu không có media nào (đã xóa hết ảnh/video), gửi giá trị null về server
+    if (!hasMedia) {
+      formData.append("Video", "null");
+      formData.append("Image", "null");
     }
 
     dispatch(
-      createPost({
+      updatePost({
+        postId: postId,
         formData,
-        fullName: usersProfile.fullName || "University Sharing",
-        profilePicture: usersProfile.profilePicture || avatarDeafault,
+        fullName: post.fullName || "University Sharing",
+        profilePicture: post.profilePicture || avatarDeafault,
+        createdAt: post.createdAt,
       })
     );
 
     onClose(); // Đóng modal sau khi gửi bài
   };
+
   if (!isOpen) return null;
 
   return (
     <>
       <div
         className="create-post-overlay animate__animated animate__fadeIn animate_faster"
-        onClick={onClose}
+        onClick={(e) => {
+          e.stopPropagation(); // Ngăn chặn sự kiện lan ra ngoài
+          onClose();
+        }}
       ></div>
       <div className="create-post-modal  animate__animated animate__fadeIn animate_faster">
         <div className="header-post-modal">
-          <span>Đăng bài </span>
+          <span>Sửa bài đăng </span>
           <img
             src={closeIcon}
             alt="Close"
@@ -98,13 +180,10 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
           />
         </div>
         <div className="user-create-post">
-          <img
-            src={usersProfile.profilePicture || avatarDeafault}
-            alt="Avatar"
-          />
+          <img src={post.profilePicture || avatarDeafault} alt="Avatar" />
           <span className="userName-share">
             {" "}
-            {usersProfile.fullName || "University Sharing"}
+            {post.fullName || "University Sharing"}
           </span>
         </div>
         <textarea
@@ -177,10 +256,10 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
           onClick={handleSubmit}
           disabled={loading}
         >
-          {loading ? "Đang đăng..." : "Đăng bài"}
+          {loading ? "Đang đăng..." : "Sửa bài đăng"}
         </button>
       </div>
     </>
   );
 };
-export default CreatePostModal;
+export default EditModal;
