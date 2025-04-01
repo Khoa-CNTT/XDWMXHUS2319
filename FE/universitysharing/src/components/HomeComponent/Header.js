@@ -8,10 +8,18 @@ import messengerIcon from "../../assets/iconweb/MessIcon.png";
 import NotifyModal from "../NotifyModal";
 import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
+import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
 
 const Header = ({ usersProfile }) => {
   // console.log("Data User truyền xuống: ", usersProfile);
-
+  const navigate = useNavigate();
+  //chuyển hướng
+  const UserProfile = () => {
+    navigate("/ProfileUserView");
+  };
+  const handleHomeView = () => {
+    navigate("/home");
+  };
   const [modalState, setModalState] = useState({
     notify: false,
     messenger: false,
@@ -30,7 +38,7 @@ const Header = ({ usersProfile }) => {
   return (
     <>
       <div className="header">
-        <div className="logoWeb">
+        <div className="logoWeb" onClick={handleHomeView}>
           <img className="logowebsite" src={logoweb} alt="University Sharing" />
         </div>
         <div className="search">
@@ -73,6 +81,7 @@ const Header = ({ usersProfile }) => {
           isOpen={modalState.setting}
           onClose={() => toggleModal("setting")}
           users={usersProfile}
+          UserProfile={UserProfile}
         />
       )}
     </>
