@@ -65,16 +65,27 @@ namespace Domain.Entities
                 isUpdated = true;
             }
 
-            // Cập nhật hình ảnh và video nếu có thay đổi (bao gồm trường hợp gán null)
-            if (newImageUrl != ImageUrl)
+            // Cập nhật hình ảnh nếu có thay đổi (bao gồm trường hợp gán null khi truyền vào ảnh trống)
+            if (newImageUrl != null && newImageUrl != ImageUrl)
             {
-                ImageUrl = newImageUrl; // Cập nhật hoặc gán null nếu newImageUrl là null
+                ImageUrl = newImageUrl; // Cập nhật hình ảnh nếu có thay đổi
+                isUpdated = true;
+            }
+            else if (newImageUrl == null && ImageUrl != null)  // Nếu ảnh mới là null và ảnh cũ không phải null
+            {
+                ImageUrl = null; // Gán null nếu truyền ảnh trống
                 isUpdated = true;
             }
 
-            if (newVideoUrl != VideoUrl)
+            // Cập nhật video nếu có thay đổi
+            if (newVideoUrl != null && newVideoUrl != VideoUrl)
             {
-                VideoUrl = newVideoUrl; // Cập nhật hoặc gán null nếu newVideoUrl là null
+                VideoUrl = newVideoUrl; // Cập nhật video nếu có thay đổi
+                isUpdated = true;
+            }
+            else if (newVideoUrl == null && VideoUrl != null)  // Nếu video mới là null và video cũ không phải null
+            {
+                VideoUrl = null; // Gán null nếu truyền video trống
                 isUpdated = true;
             }
 
@@ -91,7 +102,6 @@ namespace Domain.Entities
                 UpdateAt = DateTime.UtcNow; // Cập nhật thời gian chỉ khi có thay đổi
             }
         }
-
         public void Approve()
         {
             IsApproved = true;
