@@ -68,22 +68,15 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
     //   }
     // }
     if (mediaFiles.length > 0) {
-      let videoFile = null;
-      let imageFile = null;
-
       mediaFiles.forEach(({ file }) => {
-        if (file.type.startsWith("video") && !videoFile) {
-          videoFile = file; // Lưu file video đầu tiên
-        } else if (!file.type.startsWith("video") && !imageFile) {
-          imageFile = file; // Lưu file ảnh đầu tiên
+        if (file.type.startsWith("video")) {
+          formData.append("Video", file);
+        } else {
+          formData.append("Image", file);
         }
       });
-
-      if (videoFile) formData.append("Video", videoFile);
-      if (imageFile) formData.append("Image", imageFile);
     }
 
-    console.log("Form Data", formData);
     dispatch(
       createPost({
         formData,
