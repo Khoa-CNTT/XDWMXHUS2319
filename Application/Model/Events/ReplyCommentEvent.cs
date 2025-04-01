@@ -8,15 +8,18 @@ namespace Application.Model.Events
 {
     public class ReplyCommentEvent : INotification
     {
-        public Guid CommentId { get; set; }
+        public Guid PostId {  get; set; }
+        public Guid CommentOwnerId { get; set; }
         public Guid ResponderId { get; set; }
-        public string ResponderName { get; set; }
+        public string? ResponderName { get; set; }
+        public string Message { get; set; }
 
-        public ReplyCommentEvent(Guid commentId, Guid cesponderId, string responderName)
+        public ReplyCommentEvent(Guid postId, Guid commentOwnerId, Guid cesponderId, string message)
         {
-            CommentId = commentId;
+            PostId = postId;
+            CommentOwnerId = commentOwnerId;
             ResponderId = cesponderId;
-            ResponderName = responderName;
+            Message = message;
         }
     }
 }

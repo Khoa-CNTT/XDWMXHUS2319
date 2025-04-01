@@ -2,10 +2,7 @@
 using Application.DTOs.Post;
 using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
-
 using static Domain.Common.Helper;
-
-using Application.Services;
 using static Domain.Common.Enums;
 
 
@@ -74,7 +71,6 @@ namespace Application.CQRS.Commands.Posts
                     Id = post.Id,
                     UserId = userId,
                     Content = post.Content,
-                    CreatedAt = post.CreatedAt,
                     ImageUrl = post.ImageUrl != null ? $"{Constaint.baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
                     VideoUrl = post.VideoUrl != null ? $"{Constaint.baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
                     PostType = post.PostType,

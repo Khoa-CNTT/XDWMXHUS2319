@@ -57,6 +57,7 @@
   border-radius: 10px;
   border: 1px solid #ccc;
   margin-bottom: 10px;
+  // z-index: 10;
 }
 .left-sidebar-container {
   width: 360px;
@@ -78,4 +79,7 @@
     background-color: #bcc0c4;
     border-radius: 3px;
   }
+}
+.profile-user-view__right {
+  z-index: 10;
 }
