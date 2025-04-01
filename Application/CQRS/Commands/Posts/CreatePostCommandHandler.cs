@@ -71,7 +71,6 @@ namespace Application.CQRS.Commands.Posts
                     Id = post.Id,
                     UserId = userId,
                     Content = post.Content,
-
                     ImageUrl = post.ImageUrl != null ? $"{Constaint.baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
                     VideoUrl = post.VideoUrl != null ? $"{Constaint.baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
                     PostType = post.PostType,

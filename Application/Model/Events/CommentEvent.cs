@@ -10,13 +10,16 @@ namespace Application.Model.Events
     {
         public Guid PostId { get; }
         public Guid CommenterId { get; }
-        public string CommenterName { get; }
+        public Guid PostOwnerId { get; }
+        public string? CommenterName { get; }
+        public string Message { get; }
 
-        public CommentEvent(Guid postId, Guid commenterId, string commenterName)
+        public CommentEvent(Guid postId, Guid postOwnerId, Guid commenterId, string message)
         {
             PostId = postId;
+            PostOwnerId = postOwnerId;
             CommenterId = commenterId;
-            CommenterName = commenterName;
+            Message = message;
         }
     }
 }

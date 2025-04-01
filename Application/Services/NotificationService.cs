@@ -17,9 +17,10 @@ namespace Application.Services
         private readonly IUserContextService _userContextService;
         private readonly IMapService _mapService;
         private readonly IEmailService _emailService;
+        private readonly ICommentService _commentService;
         public NotificationService( IUnitOfWork unitOfWork,IPublisher publisher,
             IUserContextService userContextService, IEmailService emailService,
-            IPostService postService,IMapService mapService)
+            IPostService postService,IMapService mapService, ICommentService commentService)
 
         {
             _unitOfWork = unitOfWork;
@@ -29,7 +30,7 @@ namespace Application.Services
             _userContextService = userContextService;
             _postService = postService;
             _mapService = mapService;
-
+            _commentService = commentService;
         }
 
         public async Task SendAlertAsync(Guid driverId, string message)
@@ -45,8 +46,9 @@ namespace Application.Services
 
         public async Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName)
         {
-
-            await _publisher.Publish(new CommentEvent(postId, commenterId, commenterName));
+            var postOwnerId = await _postService.GetPostOwnerId(postId);
+            if (postOwnerId == commenterId) return;
+            await _publisher.Publish(new CommentEvent(postId, postOwnerId, commenterId, $"{commenterName} đã bình luận vào bài viết của bạn"));
         }
 
         public async Task SendInAppNotificationAsync(Guid driverId, string message)
@@ -91,9 +93,11 @@ namespace Application.Services
 
         }
 
-        public async Task SendReplyNotificationAsync(Guid commentId, Guid responderId, string responderName)
+        public async Task SendReplyNotificationAsync(Guid postId, Guid commentId, Guid responderId, string responderName)
         {
-            await _publisher.Publish(new CommentEvent(commentId, responderId, responderName));
+            var commentOwnerId = await _commentService.GetCommentOwnerId(commentId);
+            if (commentOwnerId == responderId) return;
+            await _publisher.Publish(new CommentEvent(postId, commentOwnerId, responderId, $"{responderName} đã phản hồi bình luận vào bài viết của bạn."));
         }
         public async Task SendShareNotificationAsync(Guid postId, Guid userId)
         {
