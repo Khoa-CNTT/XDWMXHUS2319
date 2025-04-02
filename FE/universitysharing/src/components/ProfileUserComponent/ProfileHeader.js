@@ -7,7 +7,10 @@ import React, {
 import { useDispatch, useSelector } from "react-redux";
 import EditProfileModal from "./EditProfileModal";
 import { userProfileDetail } from "../../stores/action/profileActions";
+
 import "../../styles/ProfileUserView/ProfileHeader.scss";
+import avatarDefaut from "../../assets/AvatarDefaultFill.png";
+import logoWeb from "../../assets/Logo.png";
 
 const ProfileHeader = forwardRef((props, ref) => {
   const dispatch = useDispatch();
@@ -35,7 +38,7 @@ const ProfileHeader = forwardRef((props, ref) => {
     <div className="profile-header">
       <div className="profile-header__background">
         <img
-          src={usersProfile?.backgroundPicture || "defaultBackground.jpg"}
+          src={usersProfile?.backgroundPicture || logoWeb}
           alt="Background"
           className="profile-header__background-image"
         />
@@ -43,10 +46,7 @@ const ProfileHeader = forwardRef((props, ref) => {
       <div className="profile-header__container">
         <div className="profile-header__info">
           <img
-            src={
-              usersProfile?.profilePicture ||
-              "https://i.pinimg.com/originals/4a/7f/73/4a7f73035bb4743ee57c0e351b3c8bed.jpg"
-            }
+            src={usersProfile?.profilePicture || avatarDefaut}
             alt="Avatar"
             className="profile-header__avatar"
           />
