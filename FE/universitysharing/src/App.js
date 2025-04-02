@@ -17,7 +17,6 @@ import MessageView from "./views/MessageView";
 import ProfileUserView from "./views/ProfileUserView";
 import AccountVerified from "../src/components/AccountVerified";
 
-
 function App() {
   // useEffect(() => {
   //   startAutoRefresh(); //Auto chạy refeshToken

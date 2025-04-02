@@ -34,8 +34,6 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
     };
   }, [onClose]);
 
-  // console.log("Comment trả về>>", comments);
-
   useEffect(() => {
     if (post?.id) {
       dispatch(commentPost(post.id));
