@@ -3,6 +3,7 @@ import imagePost from "../../assets/ImgDefault.png";
 import "../../styles/CommentOverlay.scss";
 
 const ImagePostComment = ({ post }) => {
+  console.log("Data video", post);
   return (
     <div className="image-Post animate__animated animate__fadeInLeft animate_faster">
       <img
