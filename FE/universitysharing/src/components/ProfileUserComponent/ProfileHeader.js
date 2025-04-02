@@ -1,5 +1,5 @@
 import React from "react";
-import EditProfileModal from "../components/ProfileUserComponent/EditProfileModal";
+//import EditProfileModal from "../components/ProfileUserComponent/EditProfileModal";
 import "../../styles/ProfileUserView/ProfileHeader.scss";
 import avatarDefaut from "../../assets/AvatarDefaultFill.png";
 import logoWeb from "../../assets/Logo.png";

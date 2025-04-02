@@ -26,10 +26,10 @@ const Login = () => {
         localStorage.setItem("token", response.data.data); // Lưu token chính xác
         toast.success("Đăng nhập thành công!");
         dispatch(fetchPosts());
-        // navigate("/home"); // ✅ Điều hướng sau khi đăng nhập
-        setTimeout(() => {
-          navigate("/home"); // ✅ Chuyển hướng sau 1 giây
-        }, 2000);
+        navigate("/home"); // ✅ Điều hướng sau khi đăng nhập
+        // setTimeout(() => {
+        //   navigate("/home"); // ✅ Chuyển hướng sau 1 giây
+        // }, 2000);
       } else if (response?.data?.message?.toLowerCase() === "user not found") {
         toast.error("Người dùng không tồn tại trong hệ thống!");
       } else {

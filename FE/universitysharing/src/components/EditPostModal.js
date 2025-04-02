@@ -36,6 +36,7 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
       });
     }
   }, [post]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -76,23 +77,14 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
 
   //   const formData = new FormData();
   //   formData.append("PostId", postId);
-
   //   formData.append("Content", content);
-  //   // formData.append("PostType", postType);
   //   formData.append("Scope", scope);
 
-  //   // if (mediaFiles.length > 0) {
-  //   //   mediaFiles.forEach(({ file }) => {
-  //   //     if (file.type.startsWith("video")) {
-  //   //       formData.append("Video", file);
-  //   //     } else {
-  //   //       formData.append("Image", file);
-  //   //     }
-  //   //   });
-  //   // }
+  //   // let hasMedia = false;
+
   //   mediaFiles.forEach(({ file }) => {
   //     if (file && file.type) {
-  //       // Kiểm tra file trước khi truy cập type
+  //       //  hasMedia = true;
   //       if (file.type.startsWith("video")) {
   //         formData.append("Video", file);
   //       } else {
@@ -100,6 +92,18 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
   //       }
   //     }
   //   });
+  //   console.log("mediaFiles trước khi check hasMedia:", mediaFiles);
+  //   let hasMedia = mediaFiles.some((media) => media.type);
+
+  //   console.log("hasmedia>>", hasMedia);
+
+  //   // Nếu không có media nào (đã xóa hết ảnh/video), gửi giá trị null về server
+  //   if (!hasMedia) {
+  //     // formData.append("Video", "null");
+  //     // formData.append("Image", "null");
+  //     formData.append("IsDeleteVideo", true);
+  //     formData.append("IsDeleteImage", true);
+  //   }
 
   //   dispatch(
   //     updatePost({
@@ -115,6 +119,7 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
   // };
 
   // Sửa bài viết
+
   const handleSubmit = async () => {
     if (!content.trim()) {
       alert("Vui lòng nhập nội dung bài viết!");
@@ -126,24 +131,39 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
     formData.append("Content", content);
     formData.append("Scope", scope);
 
-    let hasMedia = false;
+    // Kiểm tra xem có video hoặc ảnh nào trong mediaFiles không
+    const hasVideo = mediaFiles.some((media) => media.type === "video");
+    const hasImage = mediaFiles.some((media) => media.type === "image");
 
-    mediaFiles.forEach(({ file }) => {
-      if (file && file.type) {
-        hasMedia = true;
-        if (file.type.startsWith("video")) {
-          formData.append("Video", file);
-        } else {
-          formData.append("Image", file);
-        }
-      }
-    });
-
-    // Nếu không có media nào (đã xóa hết ảnh/video), gửi giá trị null về server
-    if (!hasMedia) {
-      formData.append("Video", "null");
-      formData.append("Image", "null");
+    // Nếu không có video trong mediaFiles nhưng post ban đầu có video
+    // thì cần gửi yêu cầu xóa video
+    if (!hasVideo) {
+      formData.append("IsDeleteVideo", true);
     }
+
+    // Tương tự với ảnh
+    if (!hasImage) {
+      formData.append("IsDeleteImage", true);
+    }
+
+    if (mediaFiles.length > 0) {
+      mediaFiles.forEach(({ file }) => {
+        if (file && file.type) {
+          if (file.type.startsWith("video")) {
+            formData.append("Video", file);
+          } else {
+            formData.append("Image", file);
+          }
+        }
+      });
+    }
+    console.log("lengMedia", mediaFiles);
+
+    // Nếu không có media nào (tất cả đã bị xóa), gửi yêu cầu xóa
+    // if (mediaFiles.length === 0) {
+    //   formData.append("IsDeleteVideo", true);
+    //   formData.append("IsDeleteImage", true);
+    // }
 
     dispatch(
       updatePost({
