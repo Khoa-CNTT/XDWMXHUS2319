@@ -9,11 +9,13 @@ import "../../styles/CreateRideModal.scss";
 import pingIcon from "../../assets/iconweb/location_pingIcon.svg";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import { SetCenterMap, SetCenterMapEnd } from "../../utils/setCenterMap";
-
 import LocationSearch from "./LocationSreach";
-
+// Thêm import từ Redux huy làm
+import { useDispatch, useSelector } from "react-redux";
+import { createPost } from "../../stores/action/ridePostAction"; // Import action
+import { resetPostState } from "../../stores/reducers/ridePostReducer"; // Import reducer action
+//
 const CreateRidePost = ({ onClose }) => {
   const [selectedTime, setSelectedTime] = useState("");
   const [startLocation, setStartLocation] = useState([0, 0]);
@@ -24,7 +26,10 @@ const CreateRidePost = ({ onClose }) => {
   );
   const [isUserInteracted, setIsUserInteracted] = useState(false);
   const [minDateTime, setMinDateTime] = useState("");
-
+// Thêm Redux hooks để lấy state và dispatch action huy làm
+const dispatch = useDispatch();
+const { loading, error, success } = useSelector((state) => state.rides);
+//
   useEffect(() => {
     const now = new Date();
     const localISOTime = now.toISOString().slice(0, 16); // Lấy định dạng 'YYYY-MM-DDTHH:MM'
@@ -46,8 +51,8 @@ const CreateRidePost = ({ onClose }) => {
           if (data.display_name) {
             setStartAddress(data.display_name);
           } else {
-            //setStartAddress(`${lat}, ${lng}`);
-            setStartAddress("Vị trí của bạn đã được cập nhật!");
+            setStartAddress(`${lat}, ${lng}`);
+            //setStartAddress("Vị trí của bạn đã được cập nhật!");
           }
         } catch (error) {
           console.error("Lỗi khi lấy địa chỉ:", error);
@@ -108,6 +113,39 @@ const CreateRidePost = ({ onClose }) => {
       getRoute();
     }
   }, [endLocation]); // Chỉ chạy khi endLocation thay đổi và đã có tương tác của user
+
+  // Thêm useEffect để xử lý sau khi tạo post thành công huy làm
+  useEffect(() => {
+    if (success) {
+      toast.success("Đăng bài thành công!");
+      setTimeout(() => {
+        dispatch(resetPostState()); // Reset state sau khi thành công
+        onClose(); // Đóng modal
+      }, 2000);
+    }
+    if (error) {
+      toast.error(error); // Hiển thị lỗi nếu có
+    }
+  }, [success, error, dispatch, onClose]);
+
+  // Hàm xử lý khi nhấn nút "Đăng bài"
+  const handleCreatePost = () => {
+    if (!startAddress || !endLocation || !selectedTime) {
+      toast.error("Vui lòng điền đầy đủ thông tin!");
+      return;
+    }
+
+    // Chuẩn bị dữ liệu gửi lên BE
+    const postData = {
+      startLocation: startAddress, // Dùng địa chỉ thay vì tọa độ
+      endLocation: `${endLocation[0]}, ${endLocation[1]}`, // Chuyển tọa độ thành chuỗi
+      startTime: selectedTime, // Thời gian đã chọn từ input
+      postType: 0, // Giá trị mặc định theo mẫu JSON của bạn
+    };
+
+    dispatch(createPost(postData)); // Dispatch action để tạo post
+  };
+  //
   return (
     <>
       <div className="Create-Ride-Post-overlay" onClick={onClose}></div>
@@ -213,7 +251,14 @@ const CreateRidePost = ({ onClose }) => {
           </MapContainer>
         </div>
 
-        <button className="btn-create-ride">Đăng bài</button>
+        {/* Cập nhật nút "Đăng bài" để gọi handleCreatePost huy làm */}
+        <button
+          className="btn-create-ride"
+          onClick={handleCreatePost}
+          disabled={loading} // Vô hiệu hóa nút khi đang loading
+        >
+          {loading ? "Đang đăng..." : "Đăng bài"}
+        </button>
       </div>
     </>
   );
