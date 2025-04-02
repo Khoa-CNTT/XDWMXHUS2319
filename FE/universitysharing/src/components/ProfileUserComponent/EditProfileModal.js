@@ -1,33 +1,123 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  userProfileDetail,
+  updateUserProfile,
+} from "../../stores/action/profileActions";
+import iconCamera from "../../assets/iconweb/iconCamera.svg";
 import "../../styles/ProfileUserView/EditProfileModal.scss";
 
-const EditProfileModal = ({ isOpen, onClose, userProfile, onSave }) => {
-  // If the modal is not open, return null to render nothing
-  if (!isOpen) return null;
+const EditProfileModal = ({
+  isOpen,
+  onClose,
+  shouldFocusBio,
+  onModalOpened,
+}) => {
+  const dispatch = useDispatch();
+  const usersState = useSelector((state) => state.users) || {};
+  const { usersDetail } = usersState;
+  const bioInputRef = useRef();
 
-  // Initialize form state with user profile data or empty strings
   const [formData, setFormData] = useState({
-    fullName: userProfile?.fullName || "",
-    bio: userProfile?.bio || "",
-    phoneNumber: userProfile?.phoneNumber || "",
-    contactPhoneNumber: userProfile?.contactPhoneNumber || "",
+    fullName: "",
+    bio: "",
+    phoneNumber: "",
+    phoneRelativeNumber: "",
+    profileImage: null,
+    backgroundImage: null,
   });
 
-  // Handle input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (isOpen && shouldFocusBio && bioInputRef.current) {
+      bioInputRef.current.focus();
+      onModalOpened(); // Thông báo đã focus xong
+    }
+  }, [isOpen, shouldFocusBio]);
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(userProfileDetail());
+    }
+  }, [isOpen, dispatch]);
+
+  useEffect(() => {
+    if (isOpen && usersDetail) {
+      setFormData({
+        fullName: usersDetail?.fullName || "",
+        bio: usersDetail?.bio || "",
+        phoneNumber: usersDetail?.phoneNumber || "",
+        phoneRelativeNumber: usersDetail?.phoneNumberRelative || "",
+        profileImage: usersDetail?.profilePicture || null,
+        backgroundImage: usersDetail?.backgroundPicture || null,
+        profileImagePreview: usersDetail?.profilePicture || null,
+        backgroundImagePreview: usersDetail?.backgroundPicture || null,
+      });
+    }
+  }, [isOpen, usersDetail]);
+
+  const handleImageChange = (event, field) => {
+    const file = event.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        [field]: file,
+        [`${field}Preview`]: imageUrl,
+      }));
+    }
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData); // Call the onSave function passed as a prop
-    onClose(); // Close the modal after saving
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const profileData = new FormData();
+
+      // Append all fields
+      profileData.append("FullName", formData.fullName);
+      profileData.append("Bio", formData.bio);
+      profileData.append("PhoneNumber", formData.phoneNumber);
+      profileData.append("PhoneRelativeNumber", formData.phoneRelativeNumber);
+
+      // Append images only if they're new files
+      if (formData.profileImage instanceof File) {
+        profileData.append("ProfileImage", formData.profileImage);
+      }
+      if (formData.backgroundImage instanceof File) {
+        profileData.append("BackgroundImage", formData.backgroundImage);
+      }
+
+      // Debug: Log FormData contents
+      for (let [key, value] of profileData.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      const result = await dispatch(updateUserProfile(profileData));
+
+      if (updateUserProfile.fulfilled.match(result)) {
+        await dispatch(userProfileDetail());
+        window.location.reload(); // Reload lại trang sau khi cập nhật thành công
+      } else {
+        setError(result.error?.message || "Cập nhật thất bại");
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      setError(err.message || "Có lỗi xảy ra khi cập nhật");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="edit-profile-modal__overlay">
@@ -38,60 +128,125 @@ const EditProfileModal = ({ isOpen, onClose, userProfile, onSave }) => {
             ✕
           </button>
         </div>
+
         <div className="edit-profile-modal__content">
+          {error && <div className="edit-profile-modal__error">{error}</div>}
+
+          <div className="edit-profile-modal__background">
+            <img
+              src={
+                formData.backgroundImagePreview ||
+                formData.backgroundImage ||
+                "default-background.jpg"
+              }
+              alt="Background"
+              className="edit-profile-modal__background-image"
+            />
+            <div
+              className="edit-profile-modal__background-edit-container"
+              onClick={() =>
+                document.getElementById("background-upload").click()
+              }
+            >
+              <img
+                className="edit-profile-modal__edit-background"
+                src={iconCamera}
+                alt="Edit"
+              />
+              <span className="edit-profile-modal__edit-background-text">
+                Chỉnh sửa ảnh bìa
+              </span>
+            </div>
+            <input
+              type="file"
+              id="background-upload"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => handleImageChange(e, "backgroundImage")}
+            />
+          </div>
+
           <div className="edit-profile-modal__avatar">
             <img
               src={
-                userProfile?.profilePicture ||
-                "https://i.pinimg.com/originals/4a/7f/73/4a7f73035bb4743ee57c0e351b3c8bed.jpg"
+                formData.profileImagePreview ||
+                formData.profileImage ||
+                "default-avatar.jpg"
               }
               alt="Avatar"
             />
-            <button className="edit-profile-modal__edit-avatar">✎</button>
+            <button
+              className="edit-profile-modal__edit-avatar"
+              onClick={() => document.getElementById("profile-upload").click()}
+            >
+              ✎
+            </button>
+            <input
+              type="file"
+              id="profile-upload"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => handleImageChange(e, "profileImage")}
+            />
           </div>
+
           <form onSubmit={handleSubmit}>
             <div className="edit-profile-modal__field">
-              <label>Tên người dùng</label>
               <input
                 type="text"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
-                placeholder="Nhập tên người dùng"
+                required
+                placeholder=" "
               />
+              <label>Tên người dùng</label>
             </div>
+
             <div className="edit-profile-modal__field">
-              <label>Chỉnh sửa tiểu sử</label>
               <input
+                ref={bioInputRef}
                 type="text"
                 name="bio"
                 value={formData.bio}
                 onChange={handleChange}
-                placeholder="Nhập tiểu sử"
+                placeholder=" "
               />
+              <label>Tiểu sử</label>
             </div>
+
             <div className="edit-profile-modal__field">
-              <label>SDT</label>
               <input
-                type="text"
+                type="tel"
                 name="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                placeholder="Nhập số điện thoại"
+                pattern="[0-9]{10,12}"
+                title="Số điện thoại phải có 10-12 chữ số"
+                placeholder=" "
               />
+              <label>Số điện thoại</label>
             </div>
+
             <div className="edit-profile-modal__field">
-              <label>SDT liên hệ</label>
               <input
-                type="text"
-                name="contactPhoneNumber"
-                value={formData.contactPhoneNumber}
+                type="tel"
+                name="phoneRelativeNumber"
+                value={formData.phoneRelativeNumber}
                 onChange={handleChange}
-                placeholder="Nhập số điện thoại liên hệ"
+                pattern="[0-9]{10,12}"
+                title="Số điện thoại phải có 10-12 chữ số"
+                placeholder=" "
               />
+              <label>Số điện thoại liên hệ</label>
             </div>
-            <button type="submit" className="edit-profile-modal__submit">
-              Cập nhật
+
+            <button
+              type="submit"
+              className="edit-profile-modal__submit"
+              disabled={loading}
+            >
+              {loading ? "Đang cập nhật..." : "Cập nhật"}
             </button>
           </form>
         </div>

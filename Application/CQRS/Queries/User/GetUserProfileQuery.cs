@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.User
 {
-    public class GetUserProfileQuery : IRequest<ResponseModel<UserProfileDto>>
+    public class GetUserProfileQuery : IRequest<ResponseModel<MaptoUserprofileDetailDto>>
     {
         
     }
