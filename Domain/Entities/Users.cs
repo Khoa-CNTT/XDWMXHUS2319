@@ -17,6 +17,7 @@ namespace Domain.Entities
             public string Email { get; private set; }
             public string PasswordHash { get; private set; }
             public string? ProfilePicture { get; private set; }
+            public string? BackgroundPicture { get; private set; }
             public string? Bio { get; private set; }
             public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
             public bool IsVerifiedEmail { get; private set; } = false;
@@ -78,14 +79,17 @@ namespace Domain.Entities
             /// <summary>
             /// Cập nhật thông tin cá nhân (Họ tên, ảnh đại diện, tiểu sử).
             /// </summary>
-            public void UpdateProfile(string fullName, string? profilePicture, string? bio)
+            public void UpdateProfile(string fullName, string? profilePicture,string? backgroundPicture, string? bio, string? phone, string? relativePhone)
             {
                 if (string.IsNullOrWhiteSpace(fullName))
                     throw new ArgumentException("Full name cannot be empty.");
 
                 FullName = fullName;
                 ProfilePicture = profilePicture;
+                BackgroundPicture = backgroundPicture;
                 Bio = bio;
+                Phone = phone;
+                RelativePhone = relativePhone;
             }
 
             /// <summary>

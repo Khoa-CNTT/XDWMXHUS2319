@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Comments;
+﻿using Application.Common;
+using Application.DTOs.Comments;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -29,32 +30,39 @@ namespace Application.DTOs.Post
         public OriginalPostDto() { }
         public OriginalPostDto(Domain.Entities.Post post)
         {
-            const string baseUrl = " https://localhost:7053";
             PostId = post.Id;
             Content = post.Content;
-            ImageUrl = post.ImageUrl != null ? $"{baseUrl}{post.ImageUrl}" : null; // ✅ Thêm Base URL
-            VideoUrl = post.VideoUrl != null ? $"{baseUrl}{post.VideoUrl}" : null; // ✅ Thêm Base URL
+            ImageUrl = post.ImageUrl != null ? $"{Constaint.baseUrl}{post.ImageUrl}" : null; // ✅ Thêm Base URL
+            VideoUrl = post.VideoUrl != null ? $"{Constaint.baseUrl}{post.VideoUrl}" : null; // ✅ Thêm Base URL
 
             CreateAt = post.CreatedAt;
-            Author = new UserPostDto(post.User ?? new Domain.Entities.User("Người dùng ẩn danh", "anonymous@example.com", "hashed_password"));
+            if (post.User != null)
+            {
+                Author = new UserPostDto(post.User);
+            }
+            else
+            {
+                // Nếu không có User, tạo User mặc định
+                Author = new UserPostDto(new Domain.Entities.User("Người dùng ẩn danh", "anonymous@example.com", "hashed_password"));
+            }
 
-/*            CommentCount = post.Comments?.Count(c => !c.IsDeleted) ?? 0;
-            LikeCount = post.Likes?.Count ?? 0;
-            ShareCount = post.Shares?.Count ?? 0;*/
+            /*            CommentCount = post.Comments?.Count(c => !c.IsDeleted) ?? 0;
+                        LikeCount = post.Likes?.Count ?? 0;
+                        ShareCount = post.Shares?.Count ?? 0;*/
 
-       /*     // 🔥 Thêm danh sách chi tiết
-            Comments = post.Comments?
-                .Where(c => !c.IsDeleted)
-                .Select(c => new CommentDto(c))
-                .ToList() ?? new();
+            /*     // 🔥 Thêm danh sách chi tiết
+                 Comments = post.Comments?
+                     .Where(c => !c.IsDeleted)
+                     .Select(c => new CommentDto(c))
+                     .ToList() ?? new();
 
-            LikedUsers = post.Likes?
-                .Select(l => new UserPostDto(l.User))
-                .ToList() ?? new();
+                 LikedUsers = post.Likes?
+                     .Select(l => new UserPostDto(l.User))
+                     .ToList() ?? new();
 
-            SharedUsers = post.Shares?
-                .Select(s => new UserPostDto(s.User))
-                .ToList() ?? new();*/
+                 SharedUsers = post.Shares?
+                     .Select(s => new UserPostDto(s.User))
+                     .ToList() ?? new();*/
         }
     }
 }
