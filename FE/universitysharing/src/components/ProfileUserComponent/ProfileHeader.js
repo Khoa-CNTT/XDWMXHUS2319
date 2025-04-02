@@ -1,13 +1,15 @@
 import React from "react";
 import EditProfileModal from "../components/ProfileUserComponent/EditProfileModal";
 import "../../styles/ProfileUserView/ProfileHeader.scss";
+import avatarDefaut from "../../assets/AvatarDefaultFill.png";
+import logoWeb from "../../assets/Logo.png";
 
 const ProfileHeader = ({ usersProfile }) => {
   return (
     <div className="profile-header">
       <div className="profile-header__background">
         <img
-          src={"https://cdn.tgdd.vn/Files/2016/09/22/890600/1111.jpg"}
+          src={logoWeb}
           alt="Background"
           className="profile-header__background-image"
         />
@@ -15,10 +17,7 @@ const ProfileHeader = ({ usersProfile }) => {
       <div className="profile-header__container">
         <div className="profile-header__info">
           <img
-            src={
-              usersProfile?.profilePicture ||
-              "https://i.pinimg.com/originals/4a/7f/73/4a7f73035bb4743ee57c0e351b3c8bed.jpg"
-            }
+            src={usersProfile?.profilePicture || avatarDefaut}
             alt="Avatar"
             className="profile-header__avatar"
           />
