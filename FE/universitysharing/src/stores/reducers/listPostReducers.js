@@ -3,6 +3,7 @@ import {
   addCommentPost,
   commentPost,
   fetchPosts,
+  fetchPostsByOwner, // Add this import
   likePost,
   likeComment,
   createPost,
@@ -18,6 +19,8 @@ const listPostSlice = createSlice({
   name: "posts",
   initialState: {
     posts: [],
+    hasMoreAllPosts: true,
+    hasMoreOwnerPosts: true,
     comments: {},
     selectedPost: null,
     isShareModalOpen: false,
@@ -70,8 +73,31 @@ const listPostSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchPosts.fulfilled, (state, action) => {
-        //console.log("Data về >> ", action.payload);
-        state.posts = action.payload;
+        if (action.meta.arg) {
+          // Append for pagination
+          state.posts = [...state.posts, ...action.payload.posts];
+        } else {
+          // Replace for initial load
+          state.posts = action.payload.posts;
+        }
+        state.hasMoreAllPosts = action.payload.hasMore;
+      })
+      .addCase(fetchPostsByOwner.fulfilled, (state, action) => {
+        // Only append new posts if lastPostId was provided (pagination)
+        if (action.meta.arg) {
+          // Filter out duplicates before adding new posts
+          const newPosts = action.payload.posts.filter(
+            (newPost) =>
+              !state.posts.some(
+                (existingPost) => existingPost.id === newPost.id
+              )
+          );
+          state.posts = [...state.posts, ...newPosts];
+        } else {
+          // First load - replace all posts
+          state.posts = action.payload.posts;
+        }
+        state.hasMoreOwnerPosts = action.payload.hasMore; // Corrected this line
       })
       .addCase(likePost.fulfilled, (state, action) => {
         const postId = action.payload;

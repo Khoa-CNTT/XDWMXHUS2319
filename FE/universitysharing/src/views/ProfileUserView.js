@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { userProfile } from "../stores/action/profileActions";
 import "../styles/ProfileView.scss";
 import AllPosts from "../components/HomeComponent/AllPostHome";
-import { getPostOwner } from "../stores/action/profileActions";
+import { fetchPostsByOwner } from "../stores/action/listPostActions";
 import PostInput from "../components/HomeComponent/PostInputHome";
 
 const ProfileUserView = () => {
@@ -31,6 +31,7 @@ const ProfileUserView = () => {
 
   useEffect(() => {
     dispatch(userProfile()); // Lấy thông tin user
+    dispatch(fetchPostsByOwner()); // Sử dụng action mới
   }, [dispatch]);
 
   return (
@@ -54,7 +55,7 @@ const ProfileUserView = () => {
         </div>
         <div className="profile-user-view__right">
           <PostInput className="post-input" usersProfile={users} />
-          <AllPosts usersProfile={users} post={post} />
+          <AllPosts usersProfile={users} post={post} showOwnerPosts={true} />
         </div>
       </div>
     </div>
