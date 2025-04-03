@@ -12,6 +12,7 @@ import {
   deleteComments,
   replyComments,
   updatePost,
+  sharePost,
 } from "../action/listPostActions";
 import { da } from "date-fns/locale";
 
@@ -382,7 +383,29 @@ const listPostSlice = createSlice({
         if (postIndex !== -1) {
           state.posts[postIndex].commentCount += 1;
         }
-      });
+      })
+      //listpostReduucers
+      .addCase(sharePost.fulfilled, (state, action) => {
+        console.log("chia se")
+        const newPost = {
+          ...action.payload,
+          // Đảm bảo cấu trúc phù hợp với hệ thống hiện tại
+          hasLiked: false,
+          likeCount: 0,
+          commentCount: 0,
+          shareCount: 0,
+          postType: 1 // Loại shared post
+        };
+        
+        // Thêm vào đầu danh sách
+        state.posts.unshift(newPost);
+        
+        // Tăng shareCount cho bài gốc nếu có
+        if (newPost.originalPost?.postId) {
+          const originalPost = state.posts.find(p => p.id === newPost.originalPost.postId);
+          if (originalPost) originalPost.shareCount += 1;
+        }
+      })
   },
 });
 

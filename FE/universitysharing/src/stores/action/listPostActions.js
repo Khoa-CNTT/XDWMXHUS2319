@@ -295,6 +295,63 @@ export const replyComments = createAsyncThunk(
   }
 );
 
+//listpostaction
+export const sharePost = createAsyncThunk(
+  "post/sharePost",
+
+  async ({ postId, content }, { rejectWithValue }) => {
+    console.log("sharePost action started", { postId, content }); // Thêm dòng này
+    try {
+      const token = localStorage.getItem("token");
+      // if (!token) throw new Error('Vui lòng đăng nhập');
+
+      const response = await axios.post(
+        "https://localhost:7053/api/Share/SharePost",
+        { postId, content },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Chia sẻ thất bại");
+      }
+      console.log("chia se");
+      // Format dữ liệu theo chuẩn BE trả về
+      const formatSharedPost = (apiData) => ({
+        id: apiData.id,
+        userId: apiData.userId,
+        fullName: apiData.fullName,
+        profilePicture: apiData.profilePicture,
+        content: apiData.content,
+        createdAt: apiData.createdAt,
+        isSharedPost: true,
+        originalPost: {
+          postId: apiData.originalPostId,
+          content: apiData.originalPost.content,
+          author: apiData.originalPost.author,
+          createAt: apiData.originalPost.createAt,
+        },
+        stats: {
+          likes: 0,
+          comments: 0,
+          shares: 0,
+        },
+      });
+
+      toast.success(response.data.message);
+      return formatSharedPost(response.data.data);
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || error.message;
+      toast.error(errorMsg);
+      return rejectWithValue({
+        message: errorMsg,
+        code: error.response?.status,
+      });
+
 // Lấy bài viết của người sở hữu (tự động lấy theo token)
 export const fetchPostsByOwner = createAsyncThunk(
   "posts/fetchPostsByOwner",
@@ -317,6 +374,7 @@ export const fetchPostsByOwner = createAsyncThunk(
       return rejectWithValue(
         error.response?.data || "Error fetching owner posts"
       );
+
     }
   }
 );
