@@ -14,7 +14,7 @@ export const fetchPosts = createAsyncThunk(
       const url = lastPostId
         ? `https://localhost:7053/api/Post/getallpost?lastPostId=${lastPostId}`
         : "https://localhost:7053/api/Post/getallpost";
-
+      // console.log("Đang chạy", url);
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${tokens}` },
       });
@@ -355,6 +355,9 @@ export const sharePost = createAsyncThunk(
         message: errorMsg,
         code: error.response?.status,
       });
+    }
+  }
+);
 
 // Lấy bài viết của người sở hữu (tự động lấy theo token)
 export const fetchPostsByOwner = createAsyncThunk(
@@ -378,7 +381,6 @@ export const fetchPostsByOwner = createAsyncThunk(
       return rejectWithValue(
         error.response?.data || "Error fetching owner posts"
       );
-
     }
   }
 );

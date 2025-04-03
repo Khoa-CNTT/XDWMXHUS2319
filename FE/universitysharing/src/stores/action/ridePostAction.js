@@ -15,7 +15,7 @@ export const createPost = createAsyncThunk(
       const token = localStorage.getItem("token");
       const config = {
         headers: {
-           "Content-Type": "application/json",
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       };
@@ -35,7 +35,7 @@ export const createPost = createAsyncThunk(
       return response.data.data; // Trả về toàn bộ response để reducer xử lý
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Có lỗi xảy ra";
-      toast.error(errorMessage);
+      console.log(error.response?.data?.message);
       return rejectWithValue(errorMessage);
     }
   }
@@ -45,17 +45,28 @@ export const fetchRidePost = createAsyncThunk(
   "ride/fetchRidePost",
   async (_, { rejectWithValue }) => {
     try {
-      console.success("Đã gọi data");
       const token = localStorage.getItem("token");
+
+      if (!token) {
+        return rejectWithValue("Token không tồn tại hoặc chưa đăng nhập");
+      }
+
       const response = await axios.get(
         "https://localhost:7053/api/RidePost/get-all",
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
-      return response.data.data.responseRidePostDto; // Trả về dữ liệu cho Redux
+
+      return response.data?.data?.responseRidePostDto || [];
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi không xác định");
+      console.error("Lỗi API:", error);
+      return rejectWithValue(
+        error.response?.data || error.message || "Lỗi không xác định"
+      );
     }
   }
 );
