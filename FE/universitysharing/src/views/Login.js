@@ -24,12 +24,10 @@ const Login = () => {
       console.log("Phản hồi từ API:", response.data);
       if (response.data.success) {
         localStorage.setItem("token", response.data.data); // Lưu token chính xác
-        toast.success("Đăng nhập thành công!");
         dispatch(fetchPosts());
-        // navigate("/home"); // ✅ Điều hướng sau khi đăng nhập
-        setTimeout(() => {
-          navigate("/home"); // ✅ Chuyển hướng sau 1 giây
-        }, 2000);
+        toast.success("Đăng nhập thành công!");
+
+        navigate("/home"); // ✅ Điều hướng sau khi đăng nhập
       } else if (response?.data?.message?.toLowerCase() === "user not found") {
         toast.error("Người dùng không tồn tại trong hệ thống!");
       } else {

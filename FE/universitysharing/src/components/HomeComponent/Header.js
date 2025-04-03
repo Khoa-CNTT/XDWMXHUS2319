@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import "../../styles/headerHome.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
@@ -10,8 +11,9 @@ import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
 import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
 
-const Header = ({ usersProfile }) => {
+const Header = () => {
   // console.log("Data User truyền xuống: ", usersProfile);
+  const usersProfile = useSelector((state) => state.users.usersProfile);
   const navigate = useNavigate();
   //chuyển hướng
   const UserProfile = () => {

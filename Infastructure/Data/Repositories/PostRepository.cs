@@ -221,8 +221,9 @@ namespace Infrastructure.Data.Repositories
         public async Task<Post?> GetByIdOriginalPostAsync(Guid id)
         {
             return await _context.Posts
+                .Include(p => p.User)
                 .Include(p => p.OriginalPost)
-                .ThenInclude(op => op.User)
+                    .ThenInclude(op => op.User)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 

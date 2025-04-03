@@ -1,5 +1,6 @@
 import React from "react";
 import "../../styles/ProfileUserView/ProfileFriends.scss";
+import avatarDefaut from "../../assets/AvatarDefaultFill.png";
 
 const ProfileFriends = () => {
   const friends = [
@@ -18,7 +19,7 @@ const ProfileFriends = () => {
         {friends.map((friend, index) => (
           <div key={index} className="profile-friends__item">
             <img
-              src={friend.avatar}
+              src={avatarDefaut}
               alt={friend.name}
               className="profile-friends__avatar"
             />

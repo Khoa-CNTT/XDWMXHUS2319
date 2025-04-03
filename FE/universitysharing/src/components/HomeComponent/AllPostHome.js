@@ -193,7 +193,7 @@ const AllPosts = ({ usersProfile }) => {
 
               {post.videoUrl && (
                 <div className="postVideo">
-                  <video controls>
+                  <video controls onClick={() => handleOpenCommentModal(post)}>
                     <source src={post.videoUrl} type="video/mp4" />
                     Trình duyệt của bạn không hỗ trợ video.
                   </video>
