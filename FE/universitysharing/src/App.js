@@ -12,6 +12,7 @@ import ResetForgotPassword from "./views/ResetForgotPassword";
 import Homeview from "./views/HomeView";
 
 import SharingRideView from "./views/SharingRideView";
+import YourRideView from "./views/YourRideView";
 
 import MessageView from "./views/MessageView";
 import ProfileUserView from "./views/ProfileUserView";
@@ -28,6 +29,7 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/home" element={<Homeview />} />
           <Route path="/sharing-ride" element={<SharingRideView />} />
+          <Route path="/your-ride" element={<YourRideView />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgotpassword" element={<ForgotPass />} />
           <Route path="/resetFP" element={<ResetForgotPassword />} />
