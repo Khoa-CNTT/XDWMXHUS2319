@@ -2,11 +2,12 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { setUserProfile } from "../reducers/proFileReducers";
 
-const token = localStorage.getItem("token");
+// const token = localStorage.getItem("token");
 export const userProfile = createAsyncThunk(
   "profile/userProfile",
   async (_, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         "https://localhost:7053/api/UserProfile/profile",
         {
@@ -26,6 +27,7 @@ export const userProfileDetail = createAsyncThunk(
   "profile/userProfileDetail",
   async (_, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         "https://localhost:7053/api/UserProfile/profile-detail",
         {
@@ -46,6 +48,7 @@ export const getPostOwner = createAsyncThunk(
   "profile/getPostOwner",
   async (_, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         "https://localhost:7053/api/Post/GetPostsByOwner",
         {

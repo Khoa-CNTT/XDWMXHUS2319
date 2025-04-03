@@ -24,7 +24,7 @@ const Login = () => {
       console.log("Phản hồi từ API:", response.data);
       if (response.data.success) {
         localStorage.setItem("token", response.data.data); // Lưu token chính xác
-        dispatch(fetchPosts());
+        // dispatch(fetchPosts());
         toast.success("Đăng nhập thành công!");
 
         navigate("/home"); // ✅ Điều hướng sau khi đăng nhập

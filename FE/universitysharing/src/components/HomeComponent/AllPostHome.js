@@ -39,6 +39,7 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
 import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
+import Spinner from "../../utils/Spinner";
 
 const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
   const dispatch = useDispatch();
@@ -67,6 +68,10 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     }
   }, [dispatch, showOwnerPosts]);
 
+  const loading = useSelector((state) => state.posts.loading);
+  const loadingCreatePost = useSelector(
+    (state) => state.posts.loadingCreatePost
+  );
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -167,47 +172,54 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
 
   return (
     <div className="all-posts">
-      {Array.isArray(posts) && posts.length > 0 ? (
-        <>
-          {posts.map((post) => (
-            <div className="post" key={post.id}>
-              {/* Header Post */}
-              <div className="header-post">
-                <p className="AvaName">
-                  <img
-                    className="avtardefaut"
-                    src={post.profilePicture || avatarWeb}
-                    alt="Avatar"
-                  />
-                  <strong>{post.fullName}</strong>
-                  <span className="timePost">
-                    {formatDistanceToNow(new Date(post.createdAt), {
-                      addSuffix: true,
-                      locale: vi,
-                    })}
-                  </span>
-                </p>
-                <p className="closemore">
-                  <img
-                    className="btn-edit"
-                    src={moreIcon}
-                    alt="More"
-                    onClick={(event) => handleOpenPostOptions(event, post)}
-                  />
-                  <img
-                    className="btn-close"
-                    src={closeIcon}
-                    alt="Close"
-                    onClick={() => dispatch(hidePost(post.id))}
-                  />
-                </p>
-              </div>
 
+      {loadingCreatePost && (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      )}
+      {loading ? (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      ) : Array.isArray(posts) && posts.length > 0 ? (
+        posts.map((post) => (
+          <div className="post" key={post.id}>
+            {/* Header Post */}
+            <div className="header-post">
+              <p className="AvaName">
+                <img
+                  className="avtardefaut"
+                  src={post.profilePicture || avatarWeb}
+                  alt="Avatar"
+                />
+                <strong>{post.fullName}</strong>
+                <span className="timePost">
+                  {formatDistanceToNow(new Date(post.createdAt), {
+                    addSuffix: true,
+                    locale: vi,
+                  })}
+                </span>
+              </p>
+              <p className="closemore">
+                <img
+                  className="btn-edit"
+                  src={moreIcon}
+                  alt="More"
+                  onClick={(event) => handleOpenPostOptions(event, post)}
+                />
+                <img
+                  className="btn-close"
+                  src={closeIcon}
+                  alt="Close"
+                  onClick={() => dispatch(hidePost(post.id))}
+                />
+              </p>
+            </div>
 
             {/* Nội dung bài viết */}
             <span className="content-posts">{post.content}</span>
-
-            {!post.isSharedPost && <p></p>}
+            <p></p>
 
 
             {post.isSharedPost && (
