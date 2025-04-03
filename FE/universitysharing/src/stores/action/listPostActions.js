@@ -6,17 +6,28 @@ import "react-toastify/dist/ReactToastify.css";
 const token = localStorage.getItem("token");
 console.warn("Token khi bắt đầu đăng nhập 1 >>", token);
 //Lấy danh sách bài viết
-export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
-  const tokens = localStorage.getItem("token");
+export const fetchPosts = createAsyncThunk(
+  "posts/fetchPosts",
+  async (lastPostId = null, { rejectWithValue }) => {
+    try {
+      const tokens = localStorage.getItem("token");
+      const url = lastPostId
+        ? `https://localhost:7053/api/Post/getallpost?lastPostId=${lastPostId}`
+        : "https://localhost:7053/api/Post/getallpost";
 
-  const response = await axios.get(
-    "https://localhost:7053/api/Post/getallpost?pageSize=10",
-    {
-      headers: { Authorization: `Bearer ${tokens}` },
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${tokens}` },
+      });
+
+      return {
+        posts: response.data.data.posts,
+        hasMore: response.data.data.nextCursor !== null,
+      };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Error fetching posts");
     }
-  );
-  return response.data.data.posts;
-});
+  }
+);
 
 //Like bài viết
 export const likePost = createAsyncThunk("posts/likePosts", async (postId) => {
@@ -283,6 +294,7 @@ export const replyComments = createAsyncThunk(
     }
   }
 );
+
 //listpostaction
 export const sharePost = createAsyncThunk(
   "post/sharePost",
@@ -339,6 +351,30 @@ export const sharePost = createAsyncThunk(
         message: errorMsg,
         code: error.response?.status,
       });
+
+// Lấy bài viết của người sở hữu (tự động lấy theo token)
+export const fetchPostsByOwner = createAsyncThunk(
+  "posts/fetchPostsByOwner",
+  async (lastPostId = null, { rejectWithValue }) => {
+    try {
+      const tokens = localStorage.getItem("token");
+      const url = lastPostId
+        ? `https://localhost:7053/api/Post/GetPostsByOwner?lastPostId=${lastPostId}`
+        : "https://localhost:7053/api/Post/GetPostsByOwner";
+
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${tokens}` },
+      });
+
+      return {
+        posts: response.data.data.posts,
+        hasMore: response.data.data.nextCursor !== null,
+      };
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Error fetching owner posts"
+      );
+
     }
   }
 );
