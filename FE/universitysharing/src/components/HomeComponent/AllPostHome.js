@@ -10,6 +10,7 @@ import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
 import imagePost from "../../assets/ImgDefault.png";
 import ShareModal from "../shareModal";
+import SharedPost from "./SharingPost";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchPosts,
@@ -143,38 +144,14 @@ const AllPosts = ({ usersProfile }) => {
 
             {/* Nội dung bài viết */}
             <span className="content-posts">{post.content}</span>
-            <p></p>
-            {/* <div
-              className="postImg"
-              onClick={() => handleOpenCommentModal(post)}
-            >
-              <img src={post.imageUrl || imagePost} alt="Post" />
-            </div> */}
 
-            {/* Đoạn này cho video lần hình ảnh xuất hiện  */}
-            {/* <div
-              className={`media-container ${
-                post.imageUrl && post.videoUrl ? "has-both" : ""
-              }`}
-            >
-              {post.imageUrl && (
-                <div
-                  className="postImg"
-                  onClick={() => handleOpenCommentModal(post)}
-                >
-                  <img src={post.imageUrl || imagePost} alt="Post" />
-                </div>
-              )}
+            {!post.isSharedPost && <p></p>}
 
-              {post.videoUrl && (
-                <div className="postVideo">
-                  <video controls>
-                    <source src={post.videoUrl} type="video/mp4" />
-                    Trình duyệt của bạn không hỗ trợ video.
-                  </video>
-                </div>
-              )}
-            </div> */}
+            {post.isSharedPost && (
+              <div className="Share-Post-origigin">
+                <SharedPost post={post}></SharedPost>
+              </div>
+            )}
 
             <div
               className={`media-container ${
@@ -246,14 +223,16 @@ const AllPosts = ({ usersProfile }) => {
         )}
 
       {/* Share Modal */}
-      {selectedPostToShare && (
-        <ShareModal
-          post={selectedPostToShare}
-          isOpen={isShareModalOpen}
-          onClose={() => dispatch(closeShareModal())}
-          usersProfile={usersProfile}
-        />
-      )}
+      {selectedPostToShare &&
+        (console.log("chia  se"),
+        (
+          <ShareModal
+            post={selectedPostToShare}
+            isOpen={isShareModalOpen}
+            onClose={() => dispatch(closeShareModal())}
+            usersProfile={usersProfile}
+          />
+        ))}
     </div>
   );
 };
