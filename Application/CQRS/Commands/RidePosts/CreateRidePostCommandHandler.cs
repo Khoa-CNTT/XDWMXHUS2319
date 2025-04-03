@@ -53,7 +53,7 @@ namespace Application.CQRS.Commands.RidePosts
                     return ResponseFactory.Fail<ResponseRidePostDto>("Invalid location format", 400);
 
                 // Tạo ride post
-                var ridePost = new RidePost(userId, request.Content, startLocation, endLocation, request.StartTime, request.PostType);
+                var ridePost = new RidePost(userId, request.Content, startLocation, endLocation, request.StartLocation, request.EndLocation, request.StartTime, request.PostType);
 
                 // Validate content
                 string contentToValidate = $"StartLocation: {startLocation} - EndLocation: {endLocation} - StartTime: {request.StartTime}";
@@ -88,6 +88,8 @@ namespace Application.CQRS.Commands.RidePosts
                         UserId = ridePost.UserId,
                         StartLocation = startLocation,
                         EndLocation = endLocation,
+                        LatLonStart = request.StartLocation,
+                        LatLonEnd = request.EndLocation,
                         StartTime = FormatUtcToLocal(ridePost.StartTime),
                         PostType = ridePost.PostType,
                         Status = ridePost.Status,

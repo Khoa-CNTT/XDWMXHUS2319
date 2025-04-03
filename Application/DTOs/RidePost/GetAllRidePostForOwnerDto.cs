@@ -20,6 +20,8 @@ namespace Application.DTOs.RidePost
             public string FullName { get; set; } = string.Empty;
             public string StartLocation { get; set; } = string.Empty;
             public string EndLocation { get; set; } = string.Empty;
+            public string? LatLonStart { get; set; }
+            public string? LatLonEnd { get; set; }
             public string StartTime { get; set; } = string.Empty;
             public string Status { get; set; } = string.Empty;
             public string CreatedAt { get; set; } = string.Empty;
