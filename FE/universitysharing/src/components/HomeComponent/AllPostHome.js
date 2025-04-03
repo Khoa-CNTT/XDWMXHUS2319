@@ -33,6 +33,7 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
 import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
+import Spinner from "../../utils/Spinner";
 
 const AllPosts = ({ usersProfile }) => {
   const dispatch = useDispatch();
@@ -49,6 +50,10 @@ const AllPosts = ({ usersProfile }) => {
     dispatch(fetchPosts());
   }, [dispatch]);
 
+  const loading = useSelector((state) => state.posts.loading);
+  const loadingCreatePost = useSelector(
+    (state) => state.posts.loadingCreatePost
+  );
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -106,7 +111,16 @@ const AllPosts = ({ usersProfile }) => {
 
   return (
     <div className="all-posts">
-      {Array.isArray(posts) && posts.length > 0 ? (
+      {loadingCreatePost && (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      )}
+      {loading ? (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      ) : Array.isArray(posts) && posts.length > 0 ? (
         posts.map((post) => (
           <div className="post" key={post.id}>
             {/* Header Post */}
@@ -144,37 +158,6 @@ const AllPosts = ({ usersProfile }) => {
             {/* Nội dung bài viết */}
             <span className="content-posts">{post.content}</span>
             <p></p>
-            {/* <div
-              className="postImg"
-              onClick={() => handleOpenCommentModal(post)}
-            >
-              <img src={post.imageUrl || imagePost} alt="Post" />
-            </div> */}
-
-            {/* Đoạn này cho video lần hình ảnh xuất hiện  */}
-            {/* <div
-              className={`media-container ${
-                post.imageUrl && post.videoUrl ? "has-both" : ""
-              }`}
-            >
-              {post.imageUrl && (
-                <div
-                  className="postImg"
-                  onClick={() => handleOpenCommentModal(post)}
-                >
-                  <img src={post.imageUrl || imagePost} alt="Post" />
-                </div>
-              )}
-
-              {post.videoUrl && (
-                <div className="postVideo">
-                  <video controls>
-                    <source src={post.videoUrl} type="video/mp4" />
-                    Trình duyệt của bạn không hỗ trợ video.
-                  </video>
-                </div>
-              )}
-            </div> */}
 
             <div
               className={`media-container ${
@@ -222,6 +205,7 @@ const AllPosts = ({ usersProfile }) => {
       ) : (
         <p>Không có bài viết nào.</p>
       )}
+
       {/* Post Options Modal */}
       {isPostOptionsOpen && selectedPostToOption && (
         <PostOptionsModal

@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const token = localStorage.getItem("token");
+// const token = localStorage.getItem("token");
 
 export const createPost = createAsyncThunk(
   "ride/createPost",
@@ -12,6 +12,7 @@ export const createPost = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
+      const token = localStorage.getItem("token");
       const config = {
         headers: {
           // "Content-Type": "application/json",
@@ -44,6 +45,8 @@ export const fetchRidePost = createAsyncThunk(
   "ride/fetchRidePost",
   async (_, { rejectWithValue }) => {
     try {
+      console.success("Đã gọi data");
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         "https://localhost:7053/api/RidePost/get-all",
         {

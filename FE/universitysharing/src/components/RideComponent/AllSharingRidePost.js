@@ -52,7 +52,7 @@ const AllSharingRide = () => {
   }, [showMap]);
 
   const fetchRoute = async () => {
-    const apiKey = process.env.REACT_APP_GRAPHHOPPER_API_KEY; // Thay thế bằng API Key của bạn
+    const apiKey = "hello"; //process.env.REACT_APP_GRAPHHOPPER_API_KEY; // Thay thế bằng API Key của bạn
     const url = `https://graphhopper.com/api/1/route?point=${startPosition[0]},${startPosition[1]}&point=${endPosition[0]},${endPosition[1]}&vehicle=car&locale=vi&key=${apiKey}&points_encoded=false`;
 
     try {

@@ -3,8 +3,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const token = localStorage.getItem("token");
-console.warn("Token khi bắt đầu đăng nhập 1 >>", token);
+// const token = localStorage.getItem("token");
+// console.warn("Token khi bắt đầu đăng nhập 1 >>", token);
 //Lấy danh sách bài viết
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
   const tokens = localStorage.getItem("token");
@@ -20,6 +20,7 @@ export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
 
 //Like bài viết
 export const likePost = createAsyncThunk("posts/likePosts", async (postId) => {
+  const token = localStorage.getItem("token");
   await axios.post(
     "https://localhost:7053/api/Like/like",
     { postId: postId },
@@ -34,12 +35,7 @@ export const likePost = createAsyncThunk("posts/likePosts", async (postId) => {
 export const commentPost = createAsyncThunk(
   "posts/commentPost",
   async (postId, { rejectWithValue }) => {
-    // console.log(
-    //   "postID nhận được load Comment",
-    //   postId,
-    //   "Loại:",
-    //   typeof postId
-    // );
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.get(
         `https://localhost:7053/api/Comment/GetCommentByPost?PostId=${postId}`,
@@ -61,6 +57,7 @@ export const addCommentPost = createAsyncThunk(
   "posts/addCommentPost",
   async ({ postId, content, userId }, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         "https://localhost:7053/api/Comment/CommentPost",
         {
@@ -88,6 +85,7 @@ export const addCommentPost = createAsyncThunk(
 export const likeComment = createAsyncThunk(
   "posts/likeComment",
   async (commentId, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
         `https://localhost:7053/api/CommentLike/like/${commentId}`,
@@ -110,6 +108,7 @@ export const createPost = createAsyncThunk(
   "post/createPost",
   async ({ formData, fullName, profilePicture }, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       // console.log("formData", formData);
       const response = await axios.post(
         "https://localhost:7053/api/Post/create",
@@ -151,6 +150,7 @@ export const updatePost = createAsyncThunk(
     { postId, formData, fullName, profilePicture, createdAt },
     { rejectWithValue }
   ) => {
+    const token = localStorage.getItem("token");
     try {
       console.log("FormData contents:");
       for (let pair of formData.entries()) {
@@ -193,6 +193,7 @@ export const deletePost = createAsyncThunk(
   async (postID, { rejectWithValue }) => {
     // console.log("postID nhận được:", postID, "Loại:", typeof postID);
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.delete(
         `https://localhost:7053/api/Post/delete?PostId=${postID}`,
         {
@@ -214,6 +215,7 @@ export const getReplyComment = createAsyncThunk(
   "post/getReplyComment",
   async (commentId, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         `https://localhost:7053/api/Comment/replies?ParentCommentId=${commentId}`,
         {
@@ -235,6 +237,7 @@ export const deleteComments = createAsyncThunk(
   "posts/deleteComments",
   async ({ postId, commentId }, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.patch(
         `https://localhost:7053/api/Comment/DeleteComment/${commentId}`,
         {},
@@ -256,10 +259,11 @@ export const deleteComments = createAsyncThunk(
 export const replyComments = createAsyncThunk(
   "post/replyComments",
   async ({ postId, parentId, content, userId }, { rejectWithValue }) => {
-    console.log("Id cha>>", parentId);
-    console.log("Id post>>", parentId);
-    console.log("Id content>>", parentId);
+    // console.log("Id cha>>", parentId);
+    // console.log("Id post>>", parentId);
+    // console.log("Id content>>", parentId);
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         "https://localhost:7053/api/Comment/ReplyComment",
         {
