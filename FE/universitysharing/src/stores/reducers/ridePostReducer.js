@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createPost } from "../../stores/action/ridePostAction"; // Import action
+import { createPost, fetchRidePost } from "../../stores/action/ridePostAction"; // Import action
 
 const ridePostSlice = createSlice({
-  name: "ridePosts",
+  name: "rides",
   initialState: {
     ridePosts: [], // Lưu data của post vừa tạo
     loading: false,
@@ -26,13 +26,16 @@ const ridePostSlice = createSlice({
       })
       .addCase(createPost.fulfilled, (state, action) => {
         state.loading = false;
-        state.ridePosts = action.payload.data; // Lưu data từ response
-        state.success = action.payload.success; // Lưu trạng thái success
+        state.ridePosts = action.payload; // Lưu data từ response
+        state.success = action.payload; // Lưu trạng thái success
       })
       .addCase(createPost.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload; // Lưu message lỗi từ rejectWithValue
         state.success = false;
+      })
+      .addCase(fetchRidePost.fulfilled, (state, action) => {
+        state.ridePosts = action.payload;
       });
   },
 });
