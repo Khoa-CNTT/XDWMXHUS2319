@@ -177,6 +177,8 @@ namespace Application.Services
                 UserId = x.UserId,
                 StartLocation = x.StartLocation,
                 EndLocation = x.EndLocation,
+                LatLonStart = x.LatLonStart,
+                LatLonEnd = x.LatLonEnd,
                 StartTime =FormatUtcToLocal(x.StartTime),
                 Status = x.Status,
                 CreatedAt =FormatUtcToLocal(x.CreatedAt)
@@ -209,6 +211,8 @@ namespace Application.Services
                 FullName = x.User?.FullName ?? "unknown",
                 StartLocation = x.StartLocation,
                 EndLocation = x.EndLocation,
+                LatLonStart = x.LatLonStart,
+                LatLonEnd = x.LatLonEnd,
                 StartTime = FormatUtcToLocal(x.StartTime),
                 Status = x.Status.ToString(),
                 CreatedAt = FormatUtcToLocal(x.CreatedAt),
