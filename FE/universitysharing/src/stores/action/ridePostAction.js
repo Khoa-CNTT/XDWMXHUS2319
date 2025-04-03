@@ -14,7 +14,7 @@ export const createPost = createAsyncThunk(
     try {
       const config = {
         headers: {
-          "Content-Type": "application/json",
+          // "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       };
@@ -22,10 +22,10 @@ export const createPost = createAsyncThunk(
       const response = await axios.post(
         "https://localhost:7053/api/ridepost/create",
         {
-          startLocation,
-          endLocation,
-          startTime,
-          postType,
+          startLocation: startLocation,
+          endLocation: endLocation,
+          startTime: startTime,
+          postType: postType,
         },
         config
       );
@@ -36,6 +36,23 @@ export const createPost = createAsyncThunk(
       const errorMessage = error.response?.data?.message || "Có lỗi xảy ra";
       toast.error(errorMessage);
       return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const fetchRidePost = createAsyncThunk(
+  "ride/fetchRidePost",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        "https://localhost:7053/api/RidePost/get-all",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      return response.data.data.responseRidePostDto; // Trả về dữ liệu cho Redux
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Lỗi không xác định");
     }
   }
 );

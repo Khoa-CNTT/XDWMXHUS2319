@@ -45,7 +45,7 @@ const ContentPostComment = ({ post, onClose }) => {
           </span>
         </div>
         <div className="more-options">
-          <img src={moreIcon} alt="More" />
+          {/* <img src={moreIcon} alt="More" /> */}
           <img src={closeIcon} alt="Close" onClick={onClose} />
         </div>
       </div>

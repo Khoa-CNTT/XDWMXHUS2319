@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ProfileHeader from "../components/ProfileUserComponent/ProfileHeader";
 import ProfilePhotos from "../components/ProfileUserComponent/ProfilePhotos";
 import ProfileFriends from "../components/ProfileUserComponent/ProfileFriends";
@@ -17,6 +17,18 @@ const ProfileUserView = () => {
   const usersState = useSelector((state) => state.users) || {};
   const { users } = usersState;
 
+  // Thêm state và ref
+  const [shouldFocusBio, setShouldFocusBio] = useState(false);
+  const profileHeaderRef = useRef();
+
+  const handleEditBioClick = () => {
+    setShouldFocusBio(true);
+    // Gọi hàm mở modal từ ProfileHeader
+    if (profileHeaderRef.current) {
+      profileHeaderRef.current.openModal();
+    }
+  };
+
   useEffect(() => {
     dispatch(userProfile()); // Lấy thông tin user
   }, [dispatch]);
@@ -24,11 +36,18 @@ const ProfileUserView = () => {
   return (
     <div className="profile-user-view">
       <Header className="header" usersProfile={users} />
-      <ProfileHeader usersProfile={users} />
+      <ProfileHeader
+        ref={profileHeaderRef}
+        shouldFocusBio={shouldFocusBio}
+        onModalOpened={() => setShouldFocusBio(false)}
+      />
       <div className="profile-user-view__content">
         <div className="left-sidebar-container">
           <div className="left-sidebar-content">
-            <ProfileIntro usersProfile={users} />
+            <ProfileIntro
+              usersProfile={users}
+              onEditBioClick={handleEditBioClick}
+            />
             <ProfilePhotos usersProfile={users} />
             <ProfileFriends usersProfile={users} />
           </div>

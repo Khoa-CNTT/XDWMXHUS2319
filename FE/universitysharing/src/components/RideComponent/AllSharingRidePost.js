@@ -20,6 +20,9 @@ import seeMapIcon from "../../assets/iconweb/seeMapIcon.svg";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { useDispatch, useSelector } from "react-redux";
+import { fetchRidePost } from "../../stores/action/ridePostAction";
+
 const defaultIcon = L.icon({
   iconUrl: markerIconPng,
   shadowUrl: markerShadowPng,
@@ -33,6 +36,14 @@ const AllSharingRide = () => {
 
   const startPosition = [10.7769, 106.7009]; // Điểm đi (TP.HCM)
   const endPosition = [10.762622, 106.660172]; // Điểm đến (Ví dụ: Quận 1, TP.HCM)
+
+  //Gọi data ride post
+  const dispatch = useDispatch();
+  const { ridePosts } = useSelector((state) => state.rides);
+  useEffect(() => {
+    dispatch(fetchRidePost());
+  }, [dispatch]);
+  //Gọi data ride post
 
   useEffect(() => {
     if (showMap && routePath.length === 0) {
@@ -60,7 +71,69 @@ const AllSharingRide = () => {
 
   return (
     <>
-      <div className="All-ride-post">
+      {Array.isArray(ridePosts) && ridePosts.length > 0 ? (
+        ridePosts.map((ridePost) => (
+          <div className="All-ride-post">
+            <div className="header-ride-post">
+              <div className="left-header-post">
+                <img className="Avata-user" src={avatarDefault} alt="Avatar" />
+                <strong className="Name-User">University Sharing </strong>
+                <span className="time-ridePost">12 hour ago</span>
+              </div>
+              <div className="right-header-post">
+                <img className="moreOption" src={moreIcon} alt="More options" />
+                <img className="HidePost" src={closerIcon} alt="Close" />
+              </div>
+            </div>
+            <span className="content-ride-post"> Cho mình quá giang nhé!</span>
+
+            {showMap && (
+              <div
+                className="map-ride-post"
+                style={{ height: "300px", width: "100%" }}
+              >
+                <MapContainer
+                  center={ridePost.StartLocation}
+                  zoom={13}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <Marker position={ridePost.StartLocation} icon={defaultIcon}>
+                    <Popup>Điểm đi</Popup>
+                  </Marker>
+                  <Marker position={ridePost.EndLocation} icon={defaultIcon}>
+                    <Popup>Điểm đến</Popup>
+                  </Marker>
+                  {routePath.length > 0 && (
+                    <Polyline positions={routePath} color="blue" />
+                  )}
+                </MapContainer>
+              </div>
+            )}
+
+            <div className="action-ride-post">
+              <div className="like-number-ride-post">
+                <img className="like-ride-Post" src={likeFillIcon} alt="Like" />
+                <span className="number-like-ride-post">12</span>
+              </div>
+              <div className="accept-ride-post">
+                <img className="check-ride-post" src={checkIcon} alt="Check" />
+                <span className="accept-ride">Chấp nhận</span>
+              </div>
+              <div
+                className="see-ride-map"
+                onClick={() => setShowMap(!showMap)}
+              >
+                <img src={seeMapIcon} className="see-map" alt="See map" />
+                <span className="see">{showMap ? "Ẩn map" : "Xem map"}</span>
+              </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p>Không có bài viết nào.</p>
+      )}
+      {/* <div className="All-ride-post">
         <div className="header-ride-post">
           <div className="left-header-post">
             <img className="Avata-user" src={avatarDefault} alt="Avatar" />
@@ -112,7 +185,7 @@ const AllSharingRide = () => {
             <span className="see">{showMap ? "Ẩn map" : "Xem map"}</span>
           </div>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

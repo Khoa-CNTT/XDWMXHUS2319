@@ -70,7 +70,7 @@ const listPostSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchPosts.fulfilled, (state, action) => {
-        console.log("Data về >> ", action.payload);
+        //console.log("Data về >> ", action.payload);
         state.posts = action.payload;
       })
       .addCase(likePost.fulfilled, (state, action) => {
