@@ -4,12 +4,15 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const token = localStorage.getItem("token");
+console.warn("Token khi bắt đầu đăng nhập 1 >>", token);
 //Lấy danh sách bài viết
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
+  const tokens = localStorage.getItem("token");
+
   const response = await axios.get(
     "https://localhost:7053/api/Post/getallpost?pageSize=10",
     {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${tokens}` },
     }
   );
   return response.data.data.posts;
