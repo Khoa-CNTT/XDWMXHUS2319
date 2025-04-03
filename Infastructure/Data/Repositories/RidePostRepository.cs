@@ -75,5 +75,19 @@ namespace Infrastructure.Data.Repositories
         {
             return _context.RidePosts.CountAsync(rp => rp.UserId == userId);
         }
+
+        public async Task<(string start, string end)> GetLatLonByRidePostIdAsync(Guid id)
+        {
+            var ridePost = await _context.RidePosts
+                .Where(rp => rp.Id == id)
+                .Select(rp => new { rp.LatLonStart, rp.LatLonEnd })
+                .FirstOrDefaultAsync();
+
+            if (ridePost == null)
+                return ("null","null");
+
+            return (ridePost.LatLonStart, ridePost.LatLonEnd);
+        }
+
     }
 }

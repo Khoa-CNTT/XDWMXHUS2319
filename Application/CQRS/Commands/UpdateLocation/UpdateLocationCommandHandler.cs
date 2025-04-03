@@ -58,14 +58,18 @@ namespace Application.CQRS.Commands.UpdateLocation
                 distance = await CalculateDistanceAsync(lastLocation.Latitude, lastLocation.Longitude, request.Latitude, request.Longitude);
                 if (distance == 0)
                 {
+                    await _notificationService.SendNotificationUpdateLocationAsync(ride.DriverId, ride.PassengerId, request.Latitude, request.Longitude, false);
                     return ResponseFactory.Fail<UpdateLocationDto>("Invalid coordinates", 400);
+
                 }
                 if (distance > 100)
                 {
+                    await _notificationService.SendNotificationUpdateLocationAsync(ride.DriverId, ride.PassengerId, request.Latitude, request.Longitude, false);
                     return ResponseFactory.Fail<UpdateLocationDto>("Driver has gone too far", 400);
                 }
                 if (distance < 0.01) // 10m threshold
                 {
+                    await _notificationService.SendNotificationUpdateLocationAsync(ride.DriverId, ride.PassengerId, request.Latitude, request.Longitude, false);
                     return ResponseFactory.Fail<UpdateLocationDto>("No significant movement detected", 200);
                 }
             }

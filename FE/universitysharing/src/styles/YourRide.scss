@@ -1,0 +1,71 @@
+.your-ride-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  
+    h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+  
+    .ride-item {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+  
+      .ride-info {
+        margin-bottom: 10px;
+      }
+  
+      .notifications {
+        margin-top: 10px;
+  
+        h4 {
+          font-size: 16px;
+          margin-bottom: 5px;
+        }
+  
+        ul {
+          list-style: none;
+          padding: 0;
+  
+          li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+          }
+        }
+      }
+    }
+  
+    .history-button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+  
+      &:hover {
+        background-color: #0056b3;
+      }
+    }
+  
+    .ride-history {
+      margin-top: 20px;
+  
+      h3 {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+  
+      .history-item {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+    }
+  }

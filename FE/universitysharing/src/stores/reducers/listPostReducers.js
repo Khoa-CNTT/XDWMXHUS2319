@@ -3,6 +3,7 @@ import {
   addCommentPost,
   commentPost,
   fetchPosts,
+  fetchPostsByOwner, // Add this import
   likePost,
   likeComment,
   createPost,
@@ -11,6 +12,7 @@ import {
   deleteComments,
   replyComments,
   updatePost,
+  sharePost,
 } from "../action/listPostActions";
 import { da } from "date-fns/locale";
 
@@ -18,6 +20,8 @@ const listPostSlice = createSlice({
   name: "posts",
   initialState: {
     posts: [],
+    hasMoreAllPosts: true,
+    hasMoreOwnerPosts: true,
     comments: {},
     selectedPost: null,
     isShareModalOpen: false,
@@ -75,9 +79,37 @@ const listPostSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
+
         //console.log("Data về >> ", action.payload);
         state.loading = false;
         state.posts = action.payload;
+
+        if (action.meta.arg) {
+          // Append for pagination
+          state.posts = [...state.posts, ...action.payload.posts];
+        } else {
+          // Replace for initial load
+          state.posts = action.payload.posts;
+        }
+        state.hasMoreAllPosts = action.payload.hasMore;
+      })
+      .addCase(fetchPostsByOwner.fulfilled, (state, action) => {
+        // Only append new posts if lastPostId was provided (pagination)
+        if (action.meta.arg) {
+          // Filter out duplicates before adding new posts
+          const newPosts = action.payload.posts.filter(
+            (newPost) =>
+              !state.posts.some(
+                (existingPost) => existingPost.id === newPost.id
+              )
+          );
+          state.posts = [...state.posts, ...newPosts];
+        } else {
+          // First load - replace all posts
+          state.posts = action.payload.posts;
+        }
+        state.hasMoreOwnerPosts = action.payload.hasMore; // Corrected this line
+
       })
       .addCase(likePost.fulfilled, (state, action) => {
         const postId = action.payload;
@@ -331,7 +363,29 @@ const listPostSlice = createSlice({
         if (postIndex !== -1) {
           state.posts[postIndex].commentCount += 1;
         }
-      });
+      })
+      //listpostReduucers
+      .addCase(sharePost.fulfilled, (state, action) => {
+        console.log("chia se")
+        const newPost = {
+          ...action.payload,
+          // Đảm bảo cấu trúc phù hợp với hệ thống hiện tại
+          hasLiked: false,
+          likeCount: 0,
+          commentCount: 0,
+          shareCount: 0,
+          postType: 1 // Loại shared post
+        };
+        
+        // Thêm vào đầu danh sách
+        state.posts.unshift(newPost);
+        
+        // Tăng shareCount cho bài gốc nếu có
+        if (newPost.originalPost?.postId) {
+          const originalPost = state.posts.find(p => p.id === newPost.originalPost.postId);
+          if (originalPost) originalPost.shareCount += 1;
+        }
+      })
   },
 });
 

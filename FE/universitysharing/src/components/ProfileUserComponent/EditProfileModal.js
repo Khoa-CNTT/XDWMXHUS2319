@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -7,6 +6,8 @@ import {
 } from "../../stores/action/profileActions";
 import iconCamera from "../../assets/iconweb/iconCamera.svg";
 import "../../styles/ProfileUserView/EditProfileModal.scss";
+import avatarDefaut from "../../assets/AvatarDefaultFill.png";
+import logoWeb from "../../assets/Logo.png";
 
 const EditProfileModal = ({
   isOpen,
@@ -138,7 +139,7 @@ const EditProfileModal = ({
               src={
                 formData.backgroundImagePreview ||
                 formData.backgroundImage ||
-                "default-background.jpg"
+                logoWeb
               }
               alt="Background"
               className="edit-profile-modal__background-image"
@@ -172,7 +173,7 @@ const EditProfileModal = ({
               src={
                 formData.profileImagePreview ||
                 formData.profileImage ||
-                "default-avatar.jpg"
+                avatarDefaut
               }
               alt="Avatar"
             />
