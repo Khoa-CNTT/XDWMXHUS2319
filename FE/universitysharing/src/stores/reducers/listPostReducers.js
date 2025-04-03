@@ -74,15 +74,14 @@ const listPostSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchPosts.pending, (state, action) => {
+      .addCase(fetchPosts.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
-
         //console.log("Data về >> ", action.payload);
         state.loading = false;
-        state.posts = action.payload;
+        // state.posts = action.payload;
 
         if (action.meta.arg) {
           // Append for pagination
@@ -109,7 +108,6 @@ const listPostSlice = createSlice({
           state.posts = action.payload.posts;
         }
         state.hasMoreOwnerPosts = action.payload.hasMore; // Corrected this line
-
       })
       .addCase(likePost.fulfilled, (state, action) => {
         const postId = action.payload;
@@ -366,7 +364,7 @@ const listPostSlice = createSlice({
       })
       //listpostReduucers
       .addCase(sharePost.fulfilled, (state, action) => {
-        console.log("chia se")
+        console.log("chia se");
         const newPost = {
           ...action.payload,
           // Đảm bảo cấu trúc phù hợp với hệ thống hiện tại
@@ -374,18 +372,20 @@ const listPostSlice = createSlice({
           likeCount: 0,
           commentCount: 0,
           shareCount: 0,
-          postType: 1 // Loại shared post
+          postType: 1, // Loại shared post
         };
-        
+
         // Thêm vào đầu danh sách
         state.posts.unshift(newPost);
-        
+
         // Tăng shareCount cho bài gốc nếu có
         if (newPost.originalPost?.postId) {
-          const originalPost = state.posts.find(p => p.id === newPost.originalPost.postId);
+          const originalPost = state.posts.find(
+            (p) => p.id === newPost.originalPost.postId
+          );
           if (originalPost) originalPost.shareCount += 1;
         }
-      })
+      });
   },
 });
 
