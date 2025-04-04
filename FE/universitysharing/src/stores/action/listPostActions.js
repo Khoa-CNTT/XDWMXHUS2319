@@ -20,6 +20,14 @@ export const fetchPosts = createAsyncThunk(
         headers: { Authorization: `Bearer ${tokens}` },
       });
 
+      // Handle case when no more posts are available
+      if (response.data.message === "Không còn bài viết nào để load") {
+        return {
+          posts: [],
+          hasMore: false,
+        };
+      }
+
       return {
         posts: response.data.data.posts,
         hasMore: response.data.data.nextCursor !== null,
@@ -379,7 +387,13 @@ export const fetchPostsByOwner = createAsyncThunk(
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${tokens}` },
       });
-
+      // Handle case when no more posts are available
+      if (response.data.message === "Không còn bài viết nào để load") {
+        return {
+          posts: [],
+          hasMore: false,
+        };
+      }
       return {
         posts: response.data.data.posts,
         hasMore: response.data.data.nextCursor !== null,
