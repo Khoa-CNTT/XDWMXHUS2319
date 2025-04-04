@@ -46,24 +46,30 @@ export const likePost = createAsyncThunk("posts/likePosts", async (postId) => {
 //Load Comment All Comment
 export const commentPost = createAsyncThunk(
   "posts/commentPost",
-  async (postId, { rejectWithValue }) => {
+  async ({ postId, lastCommentId = null }, { rejectWithValue }) => {
     const token = localStorage.getItem("token");
     try {
-      const response = await axios.get(
-        `https://localhost:7053/api/Comment/GetCommentByPost?PostId=${postId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return { postId, comments: response.data.data.comments }; // Trả về danh sách comments
+      const url = lastCommentId
+        ? `https://localhost:7053/api/Comment/GetCommentByPost?PostId=${postId}&lastCommentId=${lastCommentId}`
+        : `https://localhost:7053/api/Comment/GetCommentByPost?PostId=${postId}`;
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return {
+        postId,
+        comments: response.data.data.comments,
+        hasMore: response.data.data.lastCommentId !== null,
+        isInitialLoad: !lastCommentId,
+      };
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi không xác định");
     }
   }
 );
-
 //AddComment post
 export const addCommentPost = createAsyncThunk(
   "posts/addCommentPost",

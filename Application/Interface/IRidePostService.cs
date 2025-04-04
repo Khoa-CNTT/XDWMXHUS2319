@@ -28,7 +28,7 @@ namespace Application.Interface
         Task<double> CalculateDistanceToDestinationAsync(double currentLat, double currentLng, string destinationAddress);
         Task<GetAllRidePostDto> GetAllRidePostAsync(Guid? lastPostId, int pageSize);
         Task<GetAllRidePostForOwnerDto> GetAllRidePostForOwnerAsync(Guid? lastPostId, int pageSize, Guid ownerId);
-        Task<GetAllRidePostDto> GetRidePostsByDriverIdAsync(Guid driverId, Guid? lastPostId, int pageSize);
+        Task<GetAllRideResponseDto> GetRidePostsByDriverIdAsync(Guid driverId, Guid? lastPostId, int pageSize);
         Task<GetAllRideResponseDto> GetRidePostsByPassengerIdAsync(Guid passengerId, Guid? lastPostId, int pageSize);
     }
 }
