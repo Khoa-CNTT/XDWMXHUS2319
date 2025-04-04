@@ -16,12 +16,16 @@ import ForgotPass from "./views/ForgotPassword";
 import ResetForgotPassword from "./views/ResetForgotPassword";
 import Homeview from "./views/HomeView";
 
+
 import SharingRideView from "./views/SharingRideView";
 import YourRideView from "./views/YourRideView";
 
 import MessageView from "./views/MessageView";
 import ProfileUserView from "./views/ProfileUserView";
 import AccountVerified from "../src/components/AccountVerified";
+
+
+import Notifications from "./views/Notifications";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -39,6 +43,7 @@ function App() {
     <>
       <Router>
         <Routes>
+
           {!token ? (
             <>
               <Route path="/" element={<Login />} />
@@ -58,8 +63,14 @@ function App() {
               <Route path="/MessageView" element={<MessageView />} />
               <Route path="/ProfileUserView" element={<ProfileUserView />} />
               <Route path="*" element={<Navigate to="/home" replace />} />
+              <Route path="/notify" element={<Notifications />} />
             </>
           )}
+
+          
+         
+      
+
         </Routes>
       </Router>
       <ToastContainer></ToastContainer>
