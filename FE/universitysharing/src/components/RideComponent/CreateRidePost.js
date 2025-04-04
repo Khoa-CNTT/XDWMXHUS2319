@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { createPost } from "../../stores/action/ridePostAction"; // Import action
 import { resetPostState } from "../../stores/reducers/ridePostReducer"; // Import reducer action
 //
-const CreateRidePost = ({ onClose }) => {
+const CreateRidePost = ({ onClose, usersProfile }) => {
   const [selectedTime, setSelectedTime] = useState("");
   const [startLocation, setStartLocation] = useState([0, 0]);
   const [endLocation, setEndLocation] = useState([16.0497517, 108.1603569]);
@@ -26,10 +26,10 @@ const CreateRidePost = ({ onClose }) => {
   );
   const [isUserInteracted, setIsUserInteracted] = useState(false);
   const [minDateTime, setMinDateTime] = useState("");
-// Thêm Redux hooks để lấy state và dispatch action huy làm
-const dispatch = useDispatch();
-const { loading, error, success } = useSelector((state) => state.rides);
-//
+  // Thêm Redux hooks để lấy state và dispatch action huy làm
+  const dispatch = useDispatch();
+  const { loading, error, success } = useSelector((state) => state.rides);
+  //
   useEffect(() => {
     const now = new Date();
     const localISOTime = now.toISOString().slice(0, 16); // Lấy định dạng 'YYYY-MM-DDTHH:MM'
@@ -67,7 +67,7 @@ const { loading, error, success } = useSelector((state) => state.rides);
   // Gửi request API lấy đường đi
   const getRoute = async () => {
     try {
-      const apiKey = process.env.REACT_APP_GRAPHHOPPER_API_KEY; // Thay bằng API Key của bạn
+      const apiKey = "xin chào"; //process.env.REACT_APP_GRAPHHOPPER_API_KEY; // Thay bằng API Key của bạn
       const url = `https://graphhopper.com/api/1/route?point=${startLocation[0]},${startLocation[1]}&point=${endLocation[0]},${endLocation[1]}&profile=car&locale=vi&points_encoded=false&key=${apiKey}`;
 
       const response = await fetch(url);
@@ -162,10 +162,12 @@ const { loading, error, success } = useSelector((state) => state.rides);
         <div className="user-Create-ride">
           <img
             className="Avatar-user-Create"
-            src={avatarDefault}
+            src={usersProfile.profilePicture || avatarDefault}
             alt="Avatar"
           />
-          <strong className="user-name-Create">University Sharing</strong>
+          <strong className="user-name-Create">
+            {usersProfile.fullName || "University Sharing"}
+          </strong>
         </div>
         <div className="create-ride">
           <div className="startLocation">
