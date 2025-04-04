@@ -39,6 +39,7 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
 import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
+import Spinner from "../../utils/Spinner";
 
 const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
   const dispatch = useDispatch();
@@ -67,6 +68,10 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     }
   }, [dispatch, showOwnerPosts]);
 
+  const loading = useSelector((state) => state.posts.loading);
+  const loadingCreatePost = useSelector(
+    (state) => state.posts.loadingCreatePost
+  );
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -167,6 +172,16 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
 
   return (
     <div className="all-posts">
+      {loadingCreatePost && (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      )}
+      {/* {loading ? (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      ) :  */}
       {Array.isArray(posts) && posts.length > 0 ? (
         <>
           {posts.map((post) => (
@@ -203,18 +218,15 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                 </p>
               </div>
 
+              {/* Nội dung bài viết */}
+              <span className="content-posts">{post.content}</span>
+              <p></p>
 
-            {/* Nội dung bài viết */}
-            <span className="content-posts">{post.content}</span>
-
-            {!post.isSharedPost && <p></p>}
-
-
-            {post.isSharedPost && (
-              <div className="Share-Post-origigin">
-                <SharedPost post={post}></SharedPost>
-              </div>
-            )}
+              {post.isSharedPost && (
+                <div className="Share-Post-origigin">
+                  <SharedPost post={post}></SharedPost>
+                </div>
+              )}
 
               <div
                 className={`media-container ${

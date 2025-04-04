@@ -29,6 +29,7 @@ const listPostSlice = createSlice({
     selectedPostToOption: null,
     isPostOptionsOpen: false, // 🆕 Thêm trạng thái modal options
     loading: false,
+    loadingCreatePost: false,
     // selectedCommentTOption: null,
     // isCommentOptionOpen: false,
     openCommentOptionId: null, // ID comment nào đang mở option
@@ -73,7 +74,15 @@ const listPostSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchPosts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchPosts.fulfilled, (state, action) => {
+        //console.log("Data về >> ", action.payload);
+        state.loading = false;
+        // state.posts = action.payload;
+
         if (action.meta.arg) {
           // Append for pagination
           state.posts = [...state.posts, ...action.payload.posts];
@@ -165,42 +174,6 @@ const listPostSlice = createSlice({
         state.comments[postId] = comments;
       }) //Lấy bình luận thuần kiểu có gì nhận nấy
 
-      //Đưa các bình luận cấp 3+ lên trên cấp 2
-      // .addCase(commentPost.fulfilled, (state, action) => {
-      //   const { postId, comments } = action.payload;
-
-      //   let newComments = [];
-
-      //   comments.forEach((comment) => {
-      //     // Tạo một bản sao bình luận cấp 1, nhưng xóa replies để tự xử lý lại
-      //     let parentComment = { ...comment, replies: [] };
-
-      //     let level2Replies = []; // Lưu danh sách cấp 2
-
-      //     comment.replies.forEach((reply) => {
-      //       // Nếu reply có replies con (cấp 3+), đẩy chúng ra cùng cấp 2
-      //       let extractedReplies = reply.replies.map((subReply) => ({
-      //         ...subReply,
-      //         parentCommentId: comment.id, // Đưa lên thành cấp 2
-      //       }));
-
-      //       // Tạo bình luận cấp 2, xóa replies vì đã tách riêng
-      //       let childComment = { ...reply, replies: [] };
-
-      //       level2Replies.push(childComment, ...extractedReplies);
-      //     });
-
-      //     // Gán lại danh sách replies (chỉ có cấp 2)
-      //     parentComment.replies = level2Replies;
-
-      //     // Đưa bình luận cấp 1 vào danh sách chính
-      //     newComments.push(parentComment);
-      //   });
-
-      //   // Cập nhật state
-      //   state.comments[postId] = newComments;
-      // })
-
       .addCase(addCommentPost.fulfilled, (state, action) => {
         // console.log("🔥 Payload nhận được:", action.payload);
         const { postId, data, userId } = action.payload;
@@ -234,8 +207,13 @@ const listPostSlice = createSlice({
           state.posts[postIndex].commentCount += 1;
         }
       })
+
+      .addCase(createPost.pending, (state) => {
+        state.loadingCreatePost = true;
+        state.error = null;
+      })
       .addCase(createPost.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingCreatePost = false;
         state.posts.unshift(action.payload);
       })
       .addCase(updatePost.fulfilled, (state, action) => {
@@ -386,7 +364,7 @@ const listPostSlice = createSlice({
       })
       //listpostReduucers
       .addCase(sharePost.fulfilled, (state, action) => {
-        console.log("chia se")
+        console.log("chia se");
         const newPost = {
           ...action.payload,
           // Đảm bảo cấu trúc phù hợp với hệ thống hiện tại
@@ -394,18 +372,20 @@ const listPostSlice = createSlice({
           likeCount: 0,
           commentCount: 0,
           shareCount: 0,
-          postType: 1 // Loại shared post
+          postType: 1, // Loại shared post
         };
-        
+
         // Thêm vào đầu danh sách
         state.posts.unshift(newPost);
-        
+
         // Tăng shareCount cho bài gốc nếu có
         if (newPost.originalPost?.postId) {
-          const originalPost = state.posts.find(p => p.id === newPost.originalPost.postId);
+          const originalPost = state.posts.find(
+            (p) => p.id === newPost.originalPost.postId
+          );
           if (originalPost) originalPost.shareCount += 1;
         }
-      })
+      });
   },
 });
 
