@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import avatarDefaut from "../assets/AvatarDefault.png";
 import "../styles/SettingModal.scss";
-const SettingModal = ({ isOpen, onClose, users, UserProfile }) => {
+const SettingModal = ({ isOpen, onClose, users, UserProfile, logout }) => {
   const modalRef = useRef(null);
 
   const handleClickOutside = useCallback(
@@ -39,7 +39,9 @@ const SettingModal = ({ isOpen, onClose, users, UserProfile }) => {
       <div className="setting">
         <span className="btn-changeProfile">Sửa thông tin cá nhân</span>
         <span className="btn-yourScore">Điểm uy tín</span>
-        <span className="btn-logout">Đăng xuất</span>
+        <span className="btn-logout" onClick={logout}>
+          Đăng xuất
+        </span>
       </div>
     </div>
   );
