@@ -1,4 +1,5 @@
-﻿using Application.DTOs.RidePost;
+﻿using Application.DTOs.Ride;
+using Application.DTOs.RidePost;
 using Application.Interface.ContextSerivce;
 using Domain.Entities;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.RIdePost
 {
-   public class GetRidePostsByDriverIdQueryHandle : IRequestHandler<GetRidePostsByDriverIdQuery, ResponseModel<GetAllRidePostDto>>
+   public class GetRidePostsByDriverIdQueryHandle : IRequestHandler<GetRidePostsByDriverIdQuery, ResponseModel<GetAllRideResponseDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
@@ -20,7 +21,7 @@ namespace Application.CQRS.Queries.RIdePost
             _userContextService = userContextService;
             _ridePostService = ridePostService;
         }
-        public async Task<ResponseModel<GetAllRidePostDto>> Handle(GetRidePostsByDriverIdQuery request, CancellationToken cancellationToken)
+        public async Task<ResponseModel<GetAllRideResponseDto>> Handle(GetRidePostsByDriverIdQuery request, CancellationToken cancellationToken)
         {
             var driverId = _userContextService.UserId();
             var ridePosts = await _ridePostService.GetRidePostsByDriverIdAsync(driverId, request.NextCursor, request.PageSize ?? 10);
