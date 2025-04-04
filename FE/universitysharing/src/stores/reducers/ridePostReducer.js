@@ -1,5 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createPost, fetchRidePost, createRide, fetchPassengerRides } from "../../stores/action/ridePostAction";
+import {
+  createPost,
+  fetchRidePost,
+  createRide,
+  fetchPassengerRides,
+} from "../../stores/action/ridePostAction";
 
 const ridePostSlice = createSlice({
   name: "rides",
@@ -31,6 +36,7 @@ const ridePostSlice = createSlice({
       .addCase(createPost.fulfilled, (state, action) => {
         state.loading = false;
         state.ridePosts.push(action.payload.data);
+        console.log(">>", action.payload.data);
         state.success = true;
       })
       .addCase(createPost.rejected, (state, action) => {

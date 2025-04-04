@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "../../styles/headerHome.scss";
 import shareIcon from "../../assets/iconweb/shareIcon.svg";
 import likeIcon from "../../assets/iconweb/likeIcon.svg";
@@ -10,11 +10,17 @@ import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
 import imagePost from "../../assets/ImgDefault.png";
 import ShareModal from "../shareModal";
+
+import SharedPost from "./SharingPost";
+
+import logoWeb from "../../assets/Logo.png";
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchPosts,
   likePost,
   deletePost,
+  fetchPostsByOwner,
 } from "../../stores/action/listPostActions";
 import {
   hidePost,
@@ -33,24 +39,84 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
 import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
+import Spinner from "../../utils/Spinner";
 
-const AllPosts = ({ usersProfile }) => {
+const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
   const dispatch = useDispatch();
+  const [lastPostId, setLastPostId] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const postsEndRef = useRef(null);
   //lấy các trạng thái khai báo từ Redux
   const {
     posts,
+    hasMoreAllPosts, // Add this to your selector
+    hasMoreOwnerPosts,
     selectedPost,
     isShareModalOpen,
     selectedPostToShare,
     selectedPostToOption,
     isPostOptionsOpen,
   } = useSelector((state) => state.posts);
+  const hasMorePosts = showOwnerPosts ? hasMoreOwnerPosts : hasMoreAllPosts;
   useEffect(() => {
-    dispatch(fetchPosts());
-  }, [dispatch]);
+    // Reset state when switching between all posts and owner posts
+    setLastPostId(null);
+    if (showOwnerPosts) {
+      dispatch(fetchPostsByOwner());
+    } else {
+      dispatch(fetchPosts());
+    }
+  }, [dispatch, showOwnerPosts]);
 
+  const loading = useSelector((state) => state.posts.loading);
+  const loadingCreatePost = useSelector(
+    (state) => state.posts.loadingCreatePost
+  );
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Function to load more posts
+  const loadMorePosts = useCallback(() => {
+    if (loadingMore || !hasMorePosts || !lastPostId) return;
+
+    setLoadingMore(true);
+    const fetchAction = showOwnerPosts ? fetchPostsByOwner : fetchPosts;
+    dispatch(fetchAction(lastPostId))
+      .unwrap() // Use unwrap() to properly handle promises
+      .catch(() => {
+        // Handle error if needed
+      })
+      .finally(() => setLoadingMore(false));
+  }, [dispatch, lastPostId, loadingMore, showOwnerPosts, hasMorePosts]);
+
+  // Update lastPostId when posts change
+  useEffect(() => {
+    if (posts.length > 0) {
+      setLastPostId(posts[posts.length - 1].id);
+    }
+  }, [posts]);
+
+  // Cuộn scroll tới bài cuối sẽ load thêm
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMorePosts();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (postsEndRef.current) {
+      observer.observe(postsEndRef.current);
+    }
+
+    return () => {
+      if (postsEndRef.current) {
+        observer.unobserve(postsEndRef.current);
+      }
+    };
+  }, [loadMorePosts]);
 
   // Mở modal và cập nhật URL
   const handleOpenCommentModal = (post) => {
@@ -106,122 +172,117 @@ const AllPosts = ({ usersProfile }) => {
 
   return (
     <div className="all-posts">
+      {loadingCreatePost && (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      )}
+      {/* {loading ? (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      ) :  */}
       {Array.isArray(posts) && posts.length > 0 ? (
-        posts.map((post) => (
-          <div className="post" key={post.id}>
-            {/* Header Post */}
-            <div className="header-post">
-              <p className="AvaName">
-                <img
-                  className="avtardefaut"
-                  src={post.profilePicture || avatarWeb}
-                  alt="Avatar"
-                />
-                <strong>{post.fullName}</strong>
-                <span className="timePost">
-                  {formatDistanceToNow(new Date(post.createdAt), {
-                    addSuffix: true,
-                    locale: vi,
-                  })}
-                </span>
-              </p>
-              <p className="closemore">
-                <img
-                  className="btn-edit"
-                  src={moreIcon}
-                  alt="More"
-                  onClick={(event) => handleOpenPostOptions(event, post)}
-                />
-                <img
-                  className="btn-close"
-                  src={closeIcon}
-                  alt="Close"
-                  onClick={() => dispatch(hidePost(post.id))}
-                />
-              </p>
-            </div>
-
-            {/* Nội dung bài viết */}
-            <span className="content-posts">{post.content}</span>
-            <p></p>
-            {/* <div
-              className="postImg"
-              onClick={() => handleOpenCommentModal(post)}
-            >
-              <img src={post.imageUrl || imagePost} alt="Post" />
-            </div> */}
-
-            {/* Đoạn này cho video lần hình ảnh xuất hiện  */}
-            {/* <div
-              className={`media-container ${
-                post.imageUrl && post.videoUrl ? "has-both" : ""
-              }`}
-            >
-              {post.imageUrl && (
-                <div
-                  className="postImg"
-                  onClick={() => handleOpenCommentModal(post)}
-                >
-                  <img src={post.imageUrl || imagePost} alt="Post" />
-                </div>
-              )}
-
-              {post.videoUrl && (
-                <div className="postVideo">
-                  <video controls>
-                    <source src={post.videoUrl} type="video/mp4" />
-                    Trình duyệt của bạn không hỗ trợ video.
-                  </video>
-                </div>
-              )}
-            </div> */}
-
-            <div
-              className={`media-container ${
-                post.imageUrl && post.videoUrl ? "has-both" : ""
-              }`}
-            >
-              {post.imageUrl && (
-                <div className="postImg">
+        <>
+          {posts.map((post) => (
+            <div className="post" key={post.id}>
+              {/* Header Post */}
+              <div className="header-post">
+                <p className="AvaName">
                   <img
-                    src={post.imageUrl}
-                    alt="Post"
-                    onClick={() => handleOpenCommentModal(post)}
+                    className="avtardefaut"
+                    src={post.profilePicture || avatarWeb}
+                    alt="Avatar"
                   />
+                  <strong>{post.fullName}</strong>
+                  <span className="timePost">
+                    {formatDistanceToNow(new Date(post.createdAt), {
+                      addSuffix: true,
+                      locale: vi,
+                    })}
+                  </span>
+                </p>
+                <p className="closemore">
+                  <img
+                    className="btn-edit"
+                    src={moreIcon}
+                    alt="More"
+                    onClick={(event) => handleOpenPostOptions(event, post)}
+                  />
+                  <img
+                    className="btn-close"
+                    src={closeIcon}
+                    alt="Close"
+                    onClick={() => dispatch(hidePost(post.id))}
+                  />
+                </p>
+              </div>
+
+              {/* Nội dung bài viết */}
+              <span className="content-posts">{post.content}</span>
+              <p></p>
+
+              {post.isSharedPost && (
+                <div className="Share-Post-origigin">
+                  <SharedPost post={post}></SharedPost>
                 </div>
               )}
 
-              {post.videoUrl && (
-                <div className="postVideo">
-                  <video controls onClick={() => handleOpenCommentModal(post)}>
-                    <source src={post.videoUrl} type="video/mp4" />
-                    Trình duyệt của bạn không hỗ trợ video.
-                  </video>
-                </div>
-              )}
-            </div>
+              <div
+                className={`media-container ${
+                  post.imageUrl && post.videoUrl ? "has-both" : ""
+                }`}
+              >
+                {post.imageUrl && (
+                  <div className="postImg">
+                    <img
+                      src={post.imageUrl || avatarWeb}
+                      alt="Post"
+                      onClick={() => handleOpenCommentModal(post)}
+                    />
+                  </div>
+                )}
 
-            {/* Actions */}
-            <div className="actions">
-              <span onClick={() => handleLikePost(post.id)}>
-                <img src={post.hasLiked ? likeFill : likeIcon} alt="Like" />
+                {post.videoUrl && (
+                  <div className="postVideo">
+                    <video
+                      controls
+                      onClick={() => handleOpenCommentModal(post)}
+                    >
+                      <source src={post.videoUrl} type="video/mp4" />
+                      Trình duyệt của bạn không hỗ trợ video.
+                    </video>
+                  </div>
+                )}
+              </div>
 
-                <span>{post.likeCount}</span>
-              </span>
-              <span onClick={() => handleOpenCommentModal(post)}>
-                <img src={commentIcon} alt="Comment" />
-                <span>{post.commentCount}</span>
-              </span>
-              <span onClick={() => dispatch(openShareModal(post))}>
-                <img src={shareIcon} alt="Share" />
-                <span>{post.shareCount}</span>
-              </span>
+              {/* Actions */}
+              <div className="actions">
+                <span onClick={() => handleLikePost(post.id)}>
+                  <img src={post.hasLiked ? likeFill : likeIcon} alt="Like" />
+
+                  <span>{post.likeCount}</span>
+                </span>
+                <span onClick={() => handleOpenCommentModal(post)}>
+                  <img src={commentIcon} alt="Comment" />
+                  <span>{post.commentCount}</span>
+                </span>
+                <span onClick={() => dispatch(openShareModal(post))}>
+                  <img src={shareIcon} alt="Share" />
+                  <span>{post.shareCount}</span>
+                </span>
+              </div>
             </div>
+          ))}
+          {/* Loading indicator and sentinel element */}
+          <div ref={postsEndRef} style={{ height: "20px" }}>
+            {loadingMore && <p>Đang tải thêm bài viết...</p>}
           </div>
-        ))
+        </>
       ) : (
         <p>Không có bài viết nào.</p>
       )}
+
       {/* Post Options Modal */}
       {isPostOptionsOpen && selectedPostToOption && (
         <PostOptionsModal
@@ -246,14 +307,16 @@ const AllPosts = ({ usersProfile }) => {
         )}
 
       {/* Share Modal */}
-      {selectedPostToShare && (
-        <ShareModal
-          post={selectedPostToShare}
-          isOpen={isShareModalOpen}
-          onClose={() => dispatch(closeShareModal())}
-          usersProfile={usersProfile}
-        />
-      )}
+      {selectedPostToShare &&
+        (console.log("chia  se"),
+        (
+          <ShareModal
+            post={selectedPostToShare}
+            isOpen={isShareModalOpen}
+            onClose={() => dispatch(closeShareModal())}
+            usersProfile={usersProfile}
+          />
+        ))}
     </div>
   );
 };

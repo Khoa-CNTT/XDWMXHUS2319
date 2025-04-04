@@ -68,6 +68,7 @@ const AllSharingRide = () => {
     }
   }, [success, currentRide, error, dispatch]);
 
+
   const fetchRoute = async (ridePostId, startLatLon, endLatLon) => {
     const apiKey = process.env.REACT_APP_GRAPHHOPPER_API_KEY;
     const url = `https://graphhopper.com/api/1/route?point=${startLatLon[0]},${startLatLon[1]}&point=${endLatLon[0]},${endLatLon[1]}&vehicle=car&locale=vi&key=${apiKey}&points_encoded=false`;
