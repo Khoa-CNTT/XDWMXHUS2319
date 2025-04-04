@@ -10,6 +10,7 @@ export const fetchPosts = createAsyncThunk(
   "posts/fetchPosts",
   async (lastPostId = null, { rejectWithValue }) => {
     try {
+      console.log("Dang chay");
       const tokens = localStorage.getItem("token");
       const url = lastPostId
         ? `https://localhost:7053/api/Post/getallpost?lastPostId=${lastPostId}`
