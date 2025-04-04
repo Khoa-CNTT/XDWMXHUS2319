@@ -3,8 +3,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const token = localStorage.getItem("token");
-console.warn("Token khi bắt đầu đăng nhập 1 >>", token);
+// const token = localStorage.getItem("token");
+// console.warn("Token khi bắt đầu đăng nhập 1 >>", token);
 //Lấy danh sách bài viết
 export const fetchPosts = createAsyncThunk(
   "posts/fetchPosts",
@@ -15,7 +15,7 @@ export const fetchPosts = createAsyncThunk(
       const url = lastPostId
         ? `https://localhost:7053/api/Post/getallpost?lastPostId=${lastPostId}`
         : "https://localhost:7053/api/Post/getallpost";
-
+      // console.log("Đang chạy", url);
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${tokens}` },
       });
@@ -32,6 +32,7 @@ export const fetchPosts = createAsyncThunk(
 
 //Like bài viết
 export const likePost = createAsyncThunk("posts/likePosts", async (postId) => {
+  const token = localStorage.getItem("token");
   await axios.post(
     "https://localhost:7053/api/Like/like",
     { postId: postId },
@@ -46,12 +47,7 @@ export const likePost = createAsyncThunk("posts/likePosts", async (postId) => {
 export const commentPost = createAsyncThunk(
   "posts/commentPost",
   async (postId, { rejectWithValue }) => {
-    // console.log(
-    //   "postID nhận được load Comment",
-    //   postId,
-    //   "Loại:",
-    //   typeof postId
-    // );
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.get(
         `https://localhost:7053/api/Comment/GetCommentByPost?PostId=${postId}`,
@@ -73,6 +69,7 @@ export const addCommentPost = createAsyncThunk(
   "posts/addCommentPost",
   async ({ postId, content, userId }, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         "https://localhost:7053/api/Comment/CommentPost",
         {
@@ -100,6 +97,7 @@ export const addCommentPost = createAsyncThunk(
 export const likeComment = createAsyncThunk(
   "posts/likeComment",
   async (commentId, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
         `https://localhost:7053/api/CommentLike/like/${commentId}`,
@@ -122,6 +120,7 @@ export const createPost = createAsyncThunk(
   "post/createPost",
   async ({ formData, fullName, profilePicture }, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       // console.log("formData", formData);
       const response = await axios.post(
         "https://localhost:7053/api/Post/create",
@@ -163,6 +162,7 @@ export const updatePost = createAsyncThunk(
     { postId, formData, fullName, profilePicture, createdAt },
     { rejectWithValue }
   ) => {
+    const token = localStorage.getItem("token");
     try {
       console.log("FormData contents:");
       for (let pair of formData.entries()) {
@@ -205,6 +205,7 @@ export const deletePost = createAsyncThunk(
   async (postID, { rejectWithValue }) => {
     // console.log("postID nhận được:", postID, "Loại:", typeof postID);
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.delete(
         `https://localhost:7053/api/Post/delete?PostId=${postID}`,
         {
@@ -226,6 +227,7 @@ export const getReplyComment = createAsyncThunk(
   "post/getReplyComment",
   async (commentId, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         `https://localhost:7053/api/Comment/replies?ParentCommentId=${commentId}`,
         {
@@ -247,6 +249,7 @@ export const deleteComments = createAsyncThunk(
   "posts/deleteComments",
   async ({ postId, commentId }, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.patch(
         `https://localhost:7053/api/Comment/DeleteComment/${commentId}`,
         {},
@@ -268,10 +271,11 @@ export const deleteComments = createAsyncThunk(
 export const replyComments = createAsyncThunk(
   "post/replyComments",
   async ({ postId, parentId, content, userId }, { rejectWithValue }) => {
-    console.log("Id cha>>", parentId);
-    console.log("Id post>>", parentId);
-    console.log("Id content>>", parentId);
+    // console.log("Id cha>>", parentId);
+    // console.log("Id post>>", parentId);
+    // console.log("Id content>>", parentId);
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         "https://localhost:7053/api/Comment/ReplyComment",
         {
@@ -292,6 +296,66 @@ export const replyComments = createAsyncThunk(
       return { postId, data: response.data.data, userId };
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+//listpostaction
+export const sharePost = createAsyncThunk(
+  "post/sharePost",
+
+  async ({ postId, content }, { rejectWithValue }) => {
+    console.log("sharePost action started", { postId, content }); // Thêm dòng này
+    try {
+      const token = localStorage.getItem("token");
+      // if (!token) throw new Error('Vui lòng đăng nhập');
+
+      const response = await axios.post(
+        "https://localhost:7053/api/Share/SharePost",
+        { postId, content },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Chia sẻ thất bại");
+      }
+      console.log("chia se");
+      // Format dữ liệu theo chuẩn BE trả về
+      const formatSharedPost = (apiData) => ({
+        id: apiData.id,
+        userId: apiData.userId,
+        fullName: apiData.fullName,
+        profilePicture: apiData.profilePicture,
+        content: apiData.content,
+        createdAt: apiData.createdAt,
+        isSharedPost: true,
+        originalPost: {
+          postId: apiData.originalPostId,
+          content: apiData.originalPost.content,
+          author: apiData.originalPost.author,
+          createAt: apiData.originalPost.createAt,
+        },
+        stats: {
+          likes: 0,
+          comments: 0,
+          shares: 0,
+        },
+      });
+
+      toast.success(response.data.message);
+      return formatSharedPost(response.data.data);
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || error.message;
+      toast.error(errorMsg);
+      return rejectWithValue({
+        message: errorMsg,
+        code: error.response?.status,
+      });
     }
   }
 );

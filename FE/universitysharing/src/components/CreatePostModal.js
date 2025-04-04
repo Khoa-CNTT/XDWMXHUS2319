@@ -9,13 +9,15 @@ import "animate.css";
 import { useDispatch, useSelector } from "react-redux";
 import { createPost } from "../stores/action/listPostActions"; // Import action từ Redux
 
+import Spinner from "../utils/Spinner";
+
 const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
   const [mediaFiles, setMediaFile] = useState([]);
   const dispatch = useDispatch();
   const [content, setContent] = useState("");
   const [postType, setPostType] = useState(4);
   const [scope, setScope] = useState(0);
-  const loading = useSelector((state) => state.posts.loading); // Lấy trạng thái loading từ Redux
+  const loading = useSelector((state) => state.posts.loadingCreatePost); // Lấy trạng thái loading từ Redux
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -177,9 +179,16 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
           onClick={handleSubmit}
           disabled={loading}
         >
-          {loading ? "Đang đăng..." : "Đăng bài"}
+          {/* {loading ? "Đang đăng..." : "Đăng bài"} */}
+          {loading ? <Spinner size={20} color="#fff" /> : "Đăng bài"}
         </button>
       </div>
+
+      {loading && (
+        <div className="loading-overlay">
+          <Spinner size={50} />
+        </div>
+      )}
     </>
   );
 };

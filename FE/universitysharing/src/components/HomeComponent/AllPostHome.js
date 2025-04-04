@@ -10,7 +10,11 @@ import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
 import imagePost from "../../assets/ImgDefault.png";
 import ShareModal from "../shareModal";
+
+import SharedPost from "./SharingPost";
+
 import logoWeb from "../../assets/Logo.png";
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchPosts,
@@ -35,6 +39,7 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
 import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
+import Spinner from "../../utils/Spinner";
 
 const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
   const dispatch = useDispatch();
@@ -63,6 +68,10 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     }
   }, [dispatch, showOwnerPosts]);
 
+  const loading = useSelector((state) => state.posts.loading);
+  const loadingCreatePost = useSelector(
+    (state) => state.posts.loadingCreatePost
+  );
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -163,6 +172,16 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
 
   return (
     <div className="all-posts">
+      {loadingCreatePost && (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      )}
+      {/* {loading ? (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      ) :  */}
       {Array.isArray(posts) && posts.length > 0 ? (
         <>
           {posts.map((post) => (
@@ -202,37 +221,12 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
               {/* Nội dung bài viết */}
               <span className="content-posts">{post.content}</span>
               <p></p>
-              {/* <div
-              className="postImg"
-              onClick={() => handleOpenCommentModal(post)}
-            >
-              <img src={post.imageUrl || imagePost} alt="Post" />
-            </div> */}
 
-              {/* Đoạn này cho video lần hình ảnh xuất hiện  */}
-              {/* <div
-              className={`media-container ${
-                post.imageUrl && post.videoUrl ? "has-both" : ""
-              }`}
-            >
-              {post.imageUrl && (
-                <div
-                  className="postImg"
-                  onClick={() => handleOpenCommentModal(post)}
-                >
-                  <img src={post.imageUrl || imagePost} alt="Post" />
+              {post.isSharedPost && (
+                <div className="Share-Post-origigin">
+                  <SharedPost post={post}></SharedPost>
                 </div>
               )}
-
-              {post.videoUrl && (
-                <div className="postVideo">
-                  <video controls>
-                    <source src={post.videoUrl} type="video/mp4" />
-                    Trình duyệt của bạn không hỗ trợ video.
-                  </video>
-                </div>
-              )}
-            </div> */}
 
               <div
                 className={`media-container ${
@@ -313,14 +307,16 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
         )}
 
       {/* Share Modal */}
-      {selectedPostToShare && (
-        <ShareModal
-          post={selectedPostToShare}
-          isOpen={isShareModalOpen}
-          onClose={() => dispatch(closeShareModal())}
-          usersProfile={usersProfile}
-        />
-      )}
+      {selectedPostToShare &&
+        (console.log("chia  se"),
+        (
+          <ShareModal
+            post={selectedPostToShare}
+            isOpen={isShareModalOpen}
+            onClose={() => dispatch(closeShareModal())}
+            usersProfile={usersProfile}
+          />
+        ))}
     </div>
   );
 };
