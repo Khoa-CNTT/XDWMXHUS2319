@@ -31,6 +31,10 @@ const LeftSidebar = () => {
           <img src={sharebikeIcon}></img>
           <span>Chia sẻ xe</span>
         </li>
+        <li onClick={() => navigate("/your-ride")}>
+          <img src={sharebikeIcon}></img>
+          <span>Chuyến đi của bạn</span>
+        </li>
       </ul>
     </aside>
   );

@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Header from "../components/HomeComponent/Header";
-import Footer from "../components/HomeComponent/FooterHome";
 import LeftSidebar from "../components/HomeComponent/LeftSideBarHome";
 import RightSidebar from "../components/HomeComponent/RightSideBarHome";
-import InputCreateRide from "../components/RideComponent/InputCreateRide";
-import AllSharingRide from "../components/RideComponent/AllSharingRidePost";
+import FooterHome from "../components/HomeComponent/FooterHome";
 import "../styles/HomeView.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { userProfile } from "../stores/action/profileActions";
-const SharingRideView = () => {
+import SearchComponent from "../components/SearchComponent/SearchComponent";
+const HomeView = () => {
   const dispatch = useDispatch();
   const usersState = useSelector((state) => state.users) || {};
   const { users } = usersState;
@@ -23,11 +22,10 @@ const SharingRideView = () => {
       <div className="main-content">
         <div className="left-sidebar">
           <LeftSidebar />
-          <Footer className="footer" />
+          <FooterHome className="footer" /> {/* Footer chuyển vào đây */}
         </div>
         <div className="center-content">
-          <InputCreateRide className="post-input" usersProfile={users} />
-          <AllSharingRide className="all-posts" />
+          <SearchComponent></SearchComponent>
         </div>
         <RightSidebar className="right-sidebar" />
       </div>
@@ -35,4 +33,4 @@ const SharingRideView = () => {
   );
 };
 
-export default SharingRideView;
+export default HomeView;
