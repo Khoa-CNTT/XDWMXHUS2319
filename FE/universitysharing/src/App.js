@@ -8,7 +8,7 @@ import Register from "./views/Register";
 import ForgotPass from "./views/ForgotPassword";
 import ResetForgotPassword from "./views/ResetForgotPassword";
 import Homeview from "./views/HomeView";
-
+import Notifications from "./views/Notifications";
 function App() {
   return (
     <>
@@ -18,6 +18,8 @@ function App() {
           <Route path="/home" element={<Homeview />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgotpassword" element={<ForgotPass />} />
+          <Route path="/notify" element={<Notifications />} />
+          
           <Route path="/resetFP" element={<ResetForgotPassword />} />
           <Route path="*" element={<Login />} />
         </Routes>
