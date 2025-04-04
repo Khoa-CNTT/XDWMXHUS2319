@@ -27,7 +27,7 @@ const SharedPost = ({ post }) => {
               {post.originalPost.author.userName || "University Sharing"}
             </strong>
             <span className="timePost-share">
-              {formatDistanceToNow(new Date(post.createdAt), {
+              {formatDistanceToNow(new Date(post.originalPost.createAt), {
                 addSuffix: true,
                 locale: vi,
               })}

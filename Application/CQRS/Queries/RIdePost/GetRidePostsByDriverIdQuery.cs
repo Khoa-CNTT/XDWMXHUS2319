@@ -1,4 +1,5 @@
-﻿using Application.DTOs.RidePost;
+﻿using Application.DTOs.Ride;
+using Application.DTOs.RidePost;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.RIdePost
 {
-    public class GetRidePostsByDriverIdQuery : IRequest<ResponseModel<GetAllRidePostDto>>
+    public class GetRidePostsByDriverIdQuery : IRequest<ResponseModel<GetAllRideResponseDto>>
     {
         public Guid? NextCursor { get; set; }
         public int? PageSize { get; set; }

@@ -170,9 +170,23 @@ const listPostSlice = createSlice({
       })
 
       .addCase(commentPost.fulfilled, (state, action) => {
-        const { postId, comments } = action.payload;
-        state.comments[postId] = comments;
-      }) //Lấy bình luận thuần kiểu có gì nhận nấy
+        const { postId, comments, hasMore, isInitialLoad } = action.payload;
+
+        if (isInitialLoad) {
+          // Replace comments for initial load
+          state.comments[postId] = comments;
+        } else {
+          // Append comments for pagination
+          state.comments[postId] = [
+            ...(state.comments[postId] || []),
+            ...comments,
+          ];
+        }
+
+        // Store hasMore status for each post's comments
+        state.commentsHasMore = state.commentsHasMore || {};
+        state.commentsHasMore[postId] = hasMore;
+      })
 
       .addCase(addCommentPost.fulfilled, (state, action) => {
         // console.log("🔥 Payload nhận được:", action.payload);
