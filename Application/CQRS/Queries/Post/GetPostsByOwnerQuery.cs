@@ -10,6 +10,6 @@ namespace Application.CQRS.Queries.Post
     public class GetPostsByOwnerQuery : IRequest<ResponseModel<GetPostsResponse>>
     {
         public Guid? LastPostId { get; set; }
-        public int PageSize { get; set; }
+        public int PageSize { get;private set; }
     }
 }
