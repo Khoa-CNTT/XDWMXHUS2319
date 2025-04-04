@@ -220,7 +220,8 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
 
               {/* Nội dung bài viết */}
               <span className="content-posts">{post.content}</span>
-              <p></p>
+
+              {!post.isSharedPost && <p></p>}
 
               {post.isSharedPost && (
                 <div className="Share-Post-origigin">

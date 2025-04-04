@@ -11,16 +11,29 @@ import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
 import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
 
+import { useDispatch } from "react-redux";
+
+// import { resetApp } from "../../stores/stores";
+
 const Header = () => {
+  const dispatch = useDispatch();
   // console.log("Data User truyền xuống: ", usersProfile);
   const usersProfile = useSelector((state) => state.users.usersProfile);
   const navigate = useNavigate();
   //chuyển hướng
   const UserProfile = () => {
-    navigate("/ProfileUserView");
+    // navigate("/ProfileUserView");
+    window.location.href = "/ProfileUserView";
   };
   const handleHomeView = () => {
     navigate("/home");
+  };
+
+  //Đăng xuất
+  const handleLogout = () => {
+    // dispatch(resetApp());
+    localStorage.removeItem("token");
+    window.location.href = "/";
   };
   const [modalState, setModalState] = useState({
     notify: false,
@@ -84,6 +97,7 @@ const Header = () => {
           onClose={() => toggleModal("setting")}
           users={usersProfile}
           UserProfile={UserProfile}
+          logout={handleLogout}
         />
       )}
     </>

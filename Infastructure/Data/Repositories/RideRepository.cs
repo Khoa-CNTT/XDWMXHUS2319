@@ -53,15 +53,13 @@ namespace Infrastructure.Data.Repositories
             return await query.OrderByDescending(x => x.CreatedAt).Take(pageSize).ToListAsync();
         }
 
-        public async Task<List<RidePost>> GetRidePostsByDriverIdAsync(Guid driverId, Guid? lastPostId, int pageSize)
+        public async Task<List<Ride>> GetRidePostsByDriverIdAsync(Guid driverId, Guid? lastPostId, int pageSize)
         {
             const int MAX_PAGE_SIZE = 50;
             pageSize = Math.Min(pageSize, MAX_PAGE_SIZE);
 
             var query = _context.Rides
                 .Where(r => r.DriverId == driverId)
-                .Include(r => r.RidePost)
-                .Select(r => r.RidePost!)
                 .AsQueryable();
 
             if (lastPostId.HasValue)

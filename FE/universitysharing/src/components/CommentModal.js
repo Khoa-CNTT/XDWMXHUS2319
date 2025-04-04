@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import logoweb from "../assets/Logo.png";
 import avatarDefaut from "../assets/AvatarDefault.png";
 import "../styles/CommentOverlay.scss";
@@ -21,6 +21,9 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
   const commentTextRef = useRef("");
   const commentEndRef = useRef(null); // Thêm ref để scroll
   const comments = useSelector((state) => state.posts.comments[post.id] || []);
+  const [lastCommentId, setLastCommentId] = useState(null);
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false);
+  const [hasMoreComments, setHasMoreComments] = useState(true);
   //console.log("Data bài viết được lưạ chọn>> ", post);
   useEffect(() => {
     const handleKeyClose = (event) => {
@@ -34,12 +37,59 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
     };
   }, [onClose]);
 
+  // Load initial comments
   useEffect(() => {
     if (post?.id) {
-      dispatch(commentPost(post.id));
+      dispatch(commentPost({ postId: post.id }));
     }
   }, [dispatch, post?.id]);
 
+  // Load more comments function
+  const loadMoreComments = useCallback(() => {
+    if (loadingMoreComments || !hasMoreComments || !lastCommentId) return;
+
+    setLoadingMoreComments(true);
+    dispatch(
+      commentPost({
+        postId: post.id,
+        lastCommentId,
+      })
+    )
+      .unwrap()
+      .then((response) => {
+        setHasMoreComments(response.hasMore);
+      })
+      .finally(() => setLoadingMoreComments(false));
+  }, [post.id, lastCommentId, loadingMoreComments, hasMoreComments]);
+
+  // Set up intersection observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreComments) {
+          loadMoreComments();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (commentEndRef.current) {
+      observer.observe(commentEndRef.current);
+    }
+
+    return () => {
+      if (commentEndRef.current) {
+        observer.unobserve(commentEndRef.current);
+      }
+    };
+  }, [loadMoreComments, hasMoreComments]);
+
+  // Update lastCommentId when comments change
+  useEffect(() => {
+    if (comments.length > 0) {
+      setLastCommentId(comments[comments.length - 1].id);
+    }
+  }, [comments]);
   //Để gõ text
   const handleInputChange = (e) => {
     commentTextRef.current = e.target.value;
@@ -91,6 +141,9 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
             comment={comments}
             commentEndRef={commentEndRef}
             handleLikeComment={handleLikeComment}
+            onLoadMore={loadMoreComments}
+            isLoadingMore={loadingMoreComments}
+            hasMoreComments={hasMoreComments}
           />
         </div>
 

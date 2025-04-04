@@ -66,5 +66,5 @@ const listUser = createSlice({
       });
   },
 });
-export const { setUserProfile } = listUser.actions;
+// export const { setUserProfile } = listUser.actions;
 export default listUser.reducer;
