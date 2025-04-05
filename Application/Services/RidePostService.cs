@@ -191,25 +191,35 @@ namespace Application.Services
                 NextCursor = nextCursor
             };
         }
-        public async Task<GetAllRidePostDto> GetRidePostsByDriverIdAsync(Guid driverId, Guid? lastPostId, int pageSize)
+        public async Task<GetAllRideResponseDto> GetRidePostsByDriverIdAsync(Guid driverId, Guid? lastPostId, int pageSize)
         {
             var ridePosts = await _unitOfWork.RideRepository.GetRidePostsByDriverIdAsync(driverId, lastPostId, pageSize);
-            var result = ridePosts.Select(x => new ResponseRidePostDto
+            var result = new List<GetAllRideDto>();
+
+            foreach (var ride in ridePosts)
             {
-                Id = x.Id,
-                UserId = x.UserId,
-                StartLocation = x.StartLocation,
-                EndLocation = x.EndLocation,
-                LatLonStart = x.LatLonStart,
-                LatLonEnd = x.LatLonEnd,
-                StartTime = FormatUtcToLocal(x.StartTime),
-                Status = x.Status,
-                CreatedAt = FormatUtcToLocal(x.CreatedAt)
-            }).ToList();
-            var nextCursor = result.Count > 0 ? (Guid?)result.Last().Id : null;
-            return new GetAllRidePostDto
+                var (start, end) = await _unitOfWork.RidePostRepository.GetLatLonByRidePostIdAsync(ride.RidePostId);
+
+                result.Add(new GetAllRideDto
+                {
+                    RidePostId = ride.RidePostId,
+                    PassengerId = ride.PassengerId,
+                    DriverId = ride.DriverId,
+                    RideId = ride.Id,
+                    StartTime = FormatUtcToLocal(ride.StartTime ?? DateTime.UtcNow),
+                    EndTime = FormatUtcToLocal(ride.EndTime ?? DateTime.UtcNow),
+                    LatLonStart = start,
+                    LatLonEnd = end,
+                    CreateAt = FormatUtcToLocal(ride.CreatedAt),
+                    EstimatedDuration = ride.EstimatedDuration,
+                    Status = ride.Status.ToString(),
+                    IsSafe = ride.IsSafetyTrackingEnabled
+                });
+            }
+            var nextCursor = result.Count > 0 ? (Guid?)result.Last().RideId : null;
+            return new GetAllRideResponseDto
             {
-                ResponseRidePostDto = result,
+                RideList = result,
                 NextCursor = nextCursor
             };
         }

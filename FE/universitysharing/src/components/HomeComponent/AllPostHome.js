@@ -245,10 +245,14 @@ const convertUTCToVNTime = (utcDate) => {
                   />
                 </div>
               </div>
+
   
               {/* Post content */}
               <div className="content-posts">{post.content}</div>
-  
+ 
+              {!post.isSharedPost && <p></p>}
+
+
               {post.isSharedPost && (
                 <div className="Share-Post-origigin">
                   <SharedPost post={post} />
