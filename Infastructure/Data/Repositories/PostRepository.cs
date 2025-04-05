@@ -158,11 +158,9 @@ namespace Infrastructure.Data.Repositories
             var query = _context.Posts
          .Include(p => p.User)
          .Include(p => p.Comments.Where(c => !c.IsDeleted))
-             .ThenInclude(c => c.User)
          .Include(p => p.Likes.Where(l => l.IsLike)) // Sửa lỗi chỗ này
-             .ThenInclude(l => l.User)
+                .ThenInclude(l => l.User)
          .Include(p => p.Shares.Where(s => !s.IsDeleted))
-             .ThenInclude(s => s.User)
         .Where(p => p.Content.Contains(keyword) || p.User != null && p.User.FullName.Contains(keyword));
 
             if (fromDate.HasValue)

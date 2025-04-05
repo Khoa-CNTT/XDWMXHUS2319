@@ -1,4 +1,5 @@
-﻿using static Domain.Common.Enums;
+﻿using Microsoft.EntityFrameworkCore;
+using static Domain.Common.Enums;
 
 namespace Infrastructure.Data.Repositories
 {
@@ -72,6 +73,15 @@ namespace Infrastructure.Data.Repositories
             }
 
             return await query.OrderByDescending(x => x.CreatedAt).Take(pageSize).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Ride>> GetActiveRidesByPassengerIdAsync(Guid passengerId)
+        {
+            return await _context.Rides
+                .Where(r => r.PassengerId == passengerId &&
+                            r.Status == StatusRideEnum.Accepted &&
+                            (!r.EndTime.HasValue || r.EndTime > DateTime.UtcNow))
+                .ToListAsync();
         }
     }
 }

@@ -12,6 +12,8 @@ namespace Application.DTOs.Ride
         public Guid RideId { get; set; }
         public Guid PassengerId { get; set; }
         public Guid DriverId { get; set; }
+        public string StartLocation { get; set; } = string.Empty;
+        public string EndLocation { get; set; } = string.Empty;
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
         public string LatLonStart { get; set; } = string.Empty;

@@ -3,7 +3,6 @@ using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using Application.Interface.Hubs;
 using Application.Model.Events;
-
 using static Domain.Common.Helper;
 
 
@@ -73,26 +72,37 @@ namespace Application.Services
             }
 
         }
-        public async Task SendNotificationUpdateLocationAsync(Guid driverId,Guid passengerId, double lat, double lng,bool isEnd)
+        public async Task SendNotificationUpdateLocationAsync(Guid driverId, Guid passengerId, float lat, float lng, string location, bool isEnd)
         {
             var driver = await _unitOfWork.UserRepository.GetByIdAsync(driverId);
             var passenger = await _unitOfWork.UserRepository.GetByIdAsync(passengerId);
             if (driver == null || passenger == null) return;
-            var location = await _mapService.GetAddressFromCoordinatesAsync(lat,lng);
+
             if (isEnd)
             {
-                await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, $"Chuyến đi đã kết thúc tại: {location}"));
-                await _emailService.SendEmailAsync(driver.Email, "Thông báo!!", $"Chuyến đi đã kết thúc!! vào lúc {FormatUtcToLocal(DateTime.UtcNow)} - Hãy nhắc nhở hành khách đánh giá bạn nhé!!");
-                await _emailService.SendEmailAsync(passenger.Email, "Thông báo!!", $"Chuyến đi đã kết thúc!! vào lúc {FormatUtcToLocal(DateTime.UtcNow)} - Bạn có cảm thấy hài lòng về tài xế này không??");
+                string endMessage = $"Chuyến đi đã kết thúc tại: {location}";
+                await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, endMessage));
+                //await _signalRNotificationService.SendNotificationUpdateLocationSignalR(driverId, passengerId, endMessage); // Gọi SignalR
+                await _emailService.SendEmailAsync(
+                    driver.Email,
+                    "Thông báo!!",
+                    $"Chuyến đi đã kết thúc!! vào lúc {FormatUtcToLocal(DateTime.UtcNow)} - Hãy nhắc nhở hành khách đánh giá bạn nhé!!"
+                );
+                await _emailService.SendEmailAsync(
+                    passenger.Email,
+                    "Thông báo!!",
+                    $"Chuyến đi đã kết thúc!! vào lúc {FormatUtcToLocal(DateTime.UtcNow)} - Bạn có cảm thấy hài lòng về tài xế này không??"
+                );
             }
             else
             {
-                // 🔥 Đẩy event sang IPublisher
-                await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, $"Bạn đang ở: {location}"));
+                string locationMessage = $"Bạn đang ở: {location}";
+                await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, locationMessage));
+                //await _signalRNotificationService.SendNotificationUpdateLocationSignalR(driverId, passengerId, locationMessage); // Gọi SignalR
             }
-
         }
 
+        
         public async Task SendReplyNotificationAsync(Guid postId, Guid commentId, Guid responderId, string responderName)
         {
             var commentOwnerId = await _commentService.GetCommentOwnerId(commentId);

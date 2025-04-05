@@ -1,71 +1,272 @@
-.your-ride-container {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-  
+.your-rides-container {
+  width: 600px;
+
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+
+  .rides-header {
+    margin-bottom: 20px;
+    
     h2 {
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 24px;
-      margin-bottom: 20px;
+      margin: 0;
     }
-  
-    .ride-item {
-      border: 1px solid #ccc;
+  }
+
+  .ride-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    overflow: hidden;
+
+    .ride-summary {
       padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 5px;
-  
-      .ride-info {
-        margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #f8f9fa;
       }
-  
-      .notifications {
-        margin-top: 10px;
-  
-        h4 {
-          font-size: 16px;
-          margin-bottom: 5px;
+
+      .ride-info {
+        h3 {
+          margin: 0 0 5px 0;
+          font-size: 18px;
+          color: #2c3e50;
         }
-  
-        ul {
-          list-style: none;
-          padding: 0;
-  
-          li {
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
+
+        .ride-meta {
+          display: flex;
+          gap: 15px;
+          font-size: 14px;
+
+          .ride-time {
+            color: #7f8c8d;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          }
+
+          .ride-status {
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 13px;
+
+            &.accepted {
+              background: #e8f5e9;
+              color: #27ae60;
+            }
+          }
+        }
+      }
+
+      .expand-icon {
+        color: #7f8c8d;
+      }
+    }
+
+    .ride-details {
+      padding: 0 15px 15px;
+
+      .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+        padding: 15px 0;
+        border-bottom: 1px solid #ecf0f1;
+
+        .detail-item {
+          label {
+            display: block;
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-bottom: 3px;
+          }
+
+          span {
+            font-weight: 500;
+
+            &.safe {
+              color: #27ae60;
+            }
+
+            &.unsafe {
+              color: #e74c3c;
+            }
+          }
+        }
+      }
+
+      .map-notification-container {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+
+        .map-container {
+          flex: 2;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .notifications-section {
+          flex: 1;
+          background: #f8f9fa;
+          border-radius: 8px;
+          padding: 15px;
+          max-height: 300px;
+          overflow-y: auto;
+
+          h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .notifications-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+              padding: 10px 0;
+              border-bottom: 1px solid #e0e0e0;
+
+              .notification-message {
+                font-size: 14px;
+                margin-bottom: 3px;
+              }
+
+              .notification-time {
+                font-size: 12px;
+                color: #7f8c8d;
+              }
+            }
+          }
+
+          .no-notifications {
+            color: #7f8c8d;
+            font-style: italic;
+            text-align: center;
+            margin-top: 20px;
           }
         }
       }
     }
-  
-    .history-button {
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 20px;
-  
-      &:hover {
-        background-color: #0056b3;
-      }
+  }
+
+  .no-rides-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #7f8c8d;
+
+    img {
+      max-width: 200px;
+      opacity: 0.7;
+      margin-bottom: 20px;
     }
-  
-    .ride-history {
-      margin-top: 20px;
-  
-      h3 {
-        font-size: 20px;
-        margin-bottom: 10px;
-      }
-  
-      .history-item {
-        border: 1px solid #ddd;
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-        background-color: #f9f9f9;
+  }
+
+  .history-toggle-container {
+    text-align: center;
+    margin: 20px 0;
+
+    .toggle-history-btn {
+      background: none;
+      border: none;
+      color: #3498db;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      padding: 8px 15px;
+      border-radius: 20px;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #f1f9fe;
       }
     }
   }
+
+  .rides-history {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ecf0f1;
+
+    h3 {
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .history-list {
+      margin-top: 15px;
+
+      .history-item {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+        .history-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+
+          .route {
+            font-weight: 500;
+          }
+
+          .status {
+            font-size: 13px;
+            padding: 3px 10px;
+            border-radius: 15px;
+
+            &.completed {
+              background: #e8f5e9;
+              color: #27ae60;
+            }
+          }
+        }
+
+        .history-details {
+          display: flex;
+          gap: 15px;
+          font-size: 13px;
+          color: #7f8c8d;
+
+          .safe {
+            color: #27ae60;
+          }
+
+          .unsafe {
+            color: #e74c3c;
+          }
+        }
+      }
+    }
+
+    .no-history-message {
+      text-align: center;
+      color: #7f8c8d;
+      padding: 20px;
+    }
+  }
+}

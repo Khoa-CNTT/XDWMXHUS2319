@@ -4,7 +4,7 @@ import Footer from "../components/HomeComponent/FooterHome";
 import LeftSidebar from "../components/HomeComponent/LeftSideBarHome";
 import RightSidebar from "../components/HomeComponent/RightSideBarHome";
 import InputCreateRide from "../components/RideComponent/InputCreateRide";
-import YourRide from "../components/RideComponent/YourRIde";
+import YourRide from "../components/RideComponent/YourRide";
 import "../styles/HomeView.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { userProfile } from "../stores/action/profileActions";

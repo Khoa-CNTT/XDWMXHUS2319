@@ -1,89 +1,83 @@
-import React, { useState, useEffect, useRef } from "react";
-import imagePost from "../../assets/ImgDefault.png";
+import React, { useState, useEffect } from "react";
 import "../../styles/CommentOverlay.scss";
-import backICon from "../../assets/iconweb/backIcon.svg";
-import nextIcon from "../../assets/iconweb/nextIcon.svg";
-// const ImagePostComment = ({ post }) => {
-//   console.log("Data video", post);
-//   return (
-//     <div className="image-Post animate__animated animate__fadeInLeft animate_faster">
-//       {post.videoUrl && post.imageUrl && (
-//         <>
-//           <div className="back-icon">
-//             {" "}
-//             <img src={backICon}></img>
-//           </div>
-//           <div className="next-icon">
-//             {" "}
-//             <img src={nextIcon}></img>
-//           </div>
-//         </>
-//       )}
-
-//       <img
-//         className="post-image"
-//         src={post.imageUrl || imagePost}
-//         alt="Bài viết"
-//       />
-//     </div>
-//   );
-// };
-// export default ImagePostComment;
+import imagePost from "../../assets/ImgDefault.png";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi"; // Sử dụng icon từ react-icons
 
 const ImagePostComment = ({ post }) => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [isVideo, setIsVideo] = useState(false);
 
   // Tạo mảng media chứa cả ảnh và video (nếu có)
   const mediaArray = [
-    { type: "image", url: post.imageUrl },
+    ...(post.imageUrl ? [{ type: "image", url: post.imageUrl }] : []),
     ...(post.videoUrl ? [{ type: "video", url: post.videoUrl }] : []),
   ];
 
+  // Kiểm tra nếu media hiện tại là video
+  const isVideo = mediaArray[currentMediaIndex]?.type === "video";
+
+  // Xử lý khi nhấn nút Next
   const handleNext = () => {
     setCurrentMediaIndex((prevIndex) => (prevIndex + 1) % mediaArray.length);
-    setIsVideo(
-      mediaArray[(currentMediaIndex + 1) % mediaArray.length].type === "video"
-    );
   };
 
+  // Xử lý khi nhấn nút Previous
   const handlePrev = () => {
     setCurrentMediaIndex(
       (prevIndex) => (prevIndex - 1 + mediaArray.length) % mediaArray.length
     );
-    setIsVideo(
-      mediaArray[
-        (currentMediaIndex - 1 + mediaArray.length) % mediaArray.length
-      ].type === "video"
-    );
   };
 
-  return (
-    <div className="image-Post animate__animated animate__fadeInLeft animate_faster">
-      {mediaArray.length > 1 && (
-        <>
-          <div className="back-icon" onClick={handlePrev}>
-            <img src={backICon} alt="Previous" />
-          </div>
-          <div className="next-icon" onClick={handleNext}>
-            <img src={nextIcon} alt="Next" />
-          </div>
-        </>
-      )}
+  // Nếu không có media nào, hiển thị ảnh mặc định
+  if (!mediaArray.length) {
+    return (
+      <div className="image-Post">
+        <img className="post-media" src={imagePost} alt="Bài viết" />
+      </div>
+    );
+  }
 
+  return (
+    <div className="image-Post">
       {isVideo ? (
-        <video
-          className="post-media"
-          controls
-          autoPlay
-          src={mediaArray[currentMediaIndex].url}
-        />
+        <div className="media-container">
+          {mediaArray.length > 1 && (
+            <>
+              <button className="nav-button prev-button" onClick={handlePrev}>
+                <FiChevronLeft size={30} />
+              </button>
+              <button className="nav-button next-button" onClick={handleNext}>
+                <FiChevronRight size={30} />
+              </button>
+            </>
+          )}
+          <video
+            className="post-media"
+            controls
+            autoPlay
+            src={mediaArray[currentMediaIndex].url}
+          >
+            <source src={mediaArray[currentMediaIndex].url} type="video/mp4" />
+            Trình duyệt của bạn không hỗ trợ video.
+          </video>
+        </div>
       ) : (
-        <img
-          className="post-media"
-          src={mediaArray[currentMediaIndex].url || imagePost}
-          alt="Bài viết"
-        />
+        <div className="media-container">
+          {mediaArray.length > 1 && (
+            <>
+              <button className="nav-button prev-button" onClick={handlePrev}>
+                <FiChevronLeft size={30} />
+              </button>
+              <button className="nav-button next-button" onClick={handleNext}>
+                <FiChevronRight size={30} />
+              </button>
+            </>
+          )}
+          <img
+            className="post-media"
+            src={mediaArray[currentMediaIndex].url || imagePost}
+            alt="Bài viết"
+          />
+        </div>
       )}
     </div>
   );
