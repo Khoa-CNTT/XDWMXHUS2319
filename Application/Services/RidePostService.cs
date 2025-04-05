@@ -221,7 +221,7 @@ namespace Application.Services
 
             foreach (var ride in ridePosts)
             {
-                var (start, end) = await _unitOfWork.RidePostRepository.GetLatLonByRidePostIdAsync(ride.RidePostId);
+                var (start, end,startL,EndL) = await _unitOfWork.RidePostRepository.GetLatLonByRidePostIdAsync(ride.RidePostId);
 
                 result.Add(new GetAllRideDto
                 {
@@ -229,6 +229,8 @@ namespace Application.Services
                     PassengerId = ride.PassengerId,
                     DriverId = ride.DriverId,
                     RideId = ride.Id,
+                    StartLocation = startL,
+                    EndLocation = EndL,
                     StartTime = FormatUtcToLocal(ride.StartTime ?? DateTime.UtcNow),
                     EndTime = FormatUtcToLocal(ride.EndTime ?? DateTime.UtcNow),
                     LatLonStart = start,

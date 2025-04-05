@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import logoweb from "../assets/Logo.png";
 import avatarDefaut from "../assets/AvatarDefault.png";
 import "../styles/CommentOverlay.scss";
@@ -6,22 +6,24 @@ import ImagePostComment from "./CommentModel_Component/imagePost";
 import ContentPostComment from "./CommentModel_Component/ContenPostComment";
 import CommentList from "./CommentModel_Component/CommentList";
 import { useDispatch, useSelector } from "react-redux";
+
+
 import {
   commentPost,
   addCommentPost,
   likeComment,
 } from "../stores/action/listPostActions";
 import getUserIdFromToken from "../utils/JwtDecode";
-import { debounce } from "lodash";
+import { FiSend } from "react-icons/fi"; // Thêm icon gửi
 
 const CommentModal = ({ post, onClose, usersProfile }) => {
-  console.log("selectedPost", post);
   const userId = getUserIdFromToken();
   const dispatch = useDispatch();
   const commentTextRef = useRef("");
-  const commentEndRef = useRef(null); // Thêm ref để scroll
+  const commentEndRef = useRef(null);
   const comments = useSelector((state) => state.posts.comments[post.id] || []);
-  //console.log("Data bài viết được lưạ chọn>> ", post);
+  const [isSending, setIsSending] = useState(false); // Thêm trạng thái loading khi gửi
+
   useEffect(() => {
     const handleKeyClose = (event) => {
       if (event.key === "Escape") {
@@ -40,52 +42,58 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
     }
   }, [dispatch, post?.id]);
 
-  //Để gõ text
   const handleInputChange = (e) => {
     commentTextRef.current = e.target.value;
   };
-  //Để like comment
-  const handleLikeComment = debounce((commentId) => {
+
+  const handleLikeComment = (commentId) => {
     dispatch(likeComment(commentId));
-  }, 1000);
+  };
 
-  //Thêm Comment
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     const text = commentTextRef.current.trim();
-    if (!text) return;
+    if (!text || isSending) return;
 
-    dispatch(
-      addCommentPost({
-        postId: post.id,
-        content: text,
-        userId: userId,
-      })
-    ).then(() => {
+    setIsSending(true);
+    try {
+      await dispatch(
+        addCommentPost({
+          postId: post.id,
+          content: text,
+          userId: userId,
+        })
+      );
       commentTextRef.current = "";
       document.querySelector("textarea").value = "";
-
-      setTimeout(() => {
-        if (commentEndRef.current) {
+      if (commentEndRef.current) {
+        setTimeout(() => {
           commentEndRef.current.scrollIntoView({
             behavior: "smooth",
             block: "end",
           });
-        }
-      }, 1000);
-    });
+        }, 100);
+      }
+    } finally {
+      setIsSending(false);
+    }
   };
 
   if (!post) return null;
   return (
-    <div className="comment-modal-overlay ">
+    <div className="comment-modal-overlay">
+      {/* Thêm nút đóng modal */}
+    
+      
       <div className="logowebsite">
         <img className="logoUS" src={logoweb} alt="Logo" />
       </div>
+      
       <div className="post-overlay">
         <ImagePostComment post={post} />
 
-        <div className="content-post animate__animated animate__fadeInRight animate_faster">
+        <div className="content-post">
           <ContentPostComment post={post} onClose={onClose} />
+          
           <CommentList
             post={post}
             comment={comments}
@@ -94,7 +102,7 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
           />
         </div>
 
-        <div className="comment-input animate__animated animate__fadeInUp animate_faster">
+        <div className="comment-input">
           <img
             className="avatar"
             src={usersProfile.profilePicture || avatarDefaut}
@@ -102,11 +110,20 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
           />
           <textarea
             type="text"
-            placeholder="Nhập vào bình luận"
+            placeholder="Viết bình luận..."
             onChange={handleInputChange}
+            onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
           />
-          <button type="submit" onClick={handleAddComment}>
-            Đăng
+          <button 
+            type="submit" 
+            onClick={handleAddComment}
+            disabled={isSending}
+          >
+            {isSending ? (
+              <div className="spinner"></div>
+            ) : (
+              <FiSend size={20} />
+            )}
           </button>
         </div>
       </div>
