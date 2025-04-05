@@ -22,6 +22,8 @@ import YourRideView from "./views/YourRideView";
 import MessageView from "./views/MessageView";
 import ProfileUserView from "./views/ProfileUserView";
 import AccountVerified from "../src/components/AccountVerified";
+import SearchView from "./views/SearchView";
+import ResultSearchView from "./views/ResultSearchView";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -52,12 +54,14 @@ function App() {
           ) : (
             <>
               <Route path="/home" element={<Homeview />} />
+              <Route path="/search" element={<SearchView />} />
               <Route path="/sharing-ride" element={<SharingRideView />} />
               <Route path="/your-ride" element={<YourRideView />} />
               <Route path="/post/:id" element={<Homeview />} />
               <Route path="/MessageView" element={<MessageView />} />
               <Route path="/ProfileUserView" element={<ProfileUserView />} />
               <Route path="*" element={<Navigate to="/home" replace />} />
+              <Route path="/ResultSearchView" element={<ResultSearchView />} />
             </>
           )}
         </Routes>

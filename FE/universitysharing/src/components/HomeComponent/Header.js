@@ -10,15 +10,15 @@ import NotifyModal from "../NotifyModal";
 import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
 import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
-
+import { searchPost } from "../../stores/action/searchAction";
 import { useDispatch } from "react-redux";
 
 // import { resetApp } from "../../stores/stores";
 
-const Header = () => {
+const Header = ({ usersProfile }) => {
   const dispatch = useDispatch();
   // console.log("Data User truyền xuống: ", usersProfile);
-  const usersProfile = useSelector((state) => state.users.usersProfile);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const navigate = useNavigate();
   //chuyển hướng
   const UserProfile = () => {
@@ -27,6 +27,16 @@ const Header = () => {
   };
   const handleHomeView = () => {
     navigate("/home");
+  };
+  //search cua thanh
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchKeyword.trim()) {
+      dispatch(searchPost(searchKeyword));
+      navigate(`/ResultSearchView?q=${encodeURIComponent(searchKeyword)}`);
+      // Clear the search input after submission if needed
+      setSearchKeyword("");
+    }
   };
 
   //Đăng xuất
@@ -57,8 +67,18 @@ const Header = () => {
           <img className="logowebsite" src={logoweb} alt="University Sharing" />
         </div>
         <div className="search">
-          <input type="text" placeholder="Tìm kiếm" />
-          <img src={searchIcon} alt="Search Icon" />
+          <form onSubmit={handleSearch} className="search-form">
+            <input
+              type="text"
+              placeholder="Tìm kiếm"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="search-input"
+            />
+            <button type="submit" className="search-button">
+              <img src={searchIcon} alt="Search Icon" className="search-icon" />
+            </button>
+          </form>
         </div>
         <div className="rightHeader">
           <span onClick={() => toggleModal("messenger")}>

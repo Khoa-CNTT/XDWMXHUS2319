@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React from "react";
 import "../../styles/headerHome.scss";
 import shareIcon from "../../assets/iconweb/shareIcon.svg";
 import likeIcon from "../../assets/iconweb/likeIcon.svg";
@@ -8,20 +8,10 @@ import closeIcon from "../../assets/iconweb/closeIcon.svg";
 import moreIcon from "../../assets/iconweb/moreIcon.svg";
 import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
-import imagePost from "../../assets/ImgDefault.png";
 import ShareModal from "../shareModal";
-
-import SharedPost from "./SharingPost";
-
-import logoWeb from "../../assets/Logo.png";
-
+import SharedPost from "../../components/HomeComponent/SharingPost";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchPosts,
-  likePost,
-  deletePost,
-  fetchPostsByOwner,
-} from "../../stores/action/listPostActions";
+import { likePost, deletePost } from "../../stores/action/listPostActions";
 import {
   hidePost,
   openCommentModal,
@@ -32,91 +22,28 @@ import {
   closePostOptionModal,
 } from "../../stores/reducers/listPostReducers";
 import { debounce } from "lodash";
-import PostOptionsModal from "./PostOptionModal";
+import PostOptionsModal from "../../components/HomeComponent/PostOptionModal";
 import getUserIdFromToken from "../../utils/JwtDecode";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale"; // Tiếng Việt
-import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
-import Spinner from "../../utils/Spinner";
+import { vi } from "date-fns/locale";
+import { useLocation, useNavigate } from "react-router-dom";
 
-const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
+const ListPost = ({ posts = [], usersProfile }) => {
   const dispatch = useDispatch();
-  const [lastPostId, setLastPostId] = useState(null);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const postsEndRef = useRef(null);
-  //lấy các trạng thái khai báo từ Redux
+  const navigate = useNavigate();
+  const location = useLocation();
+  //   const userId = getUserIdFromToken();
+
+  // Lấy các trạng thái modal từ Redux
   const {
-    posts,
-    hasMoreAllPosts, // Add this to your selector
-    hasMoreOwnerPosts,
     selectedPost,
     isShareModalOpen,
     selectedPostToShare,
     selectedPostToOption,
     isPostOptionsOpen,
   } = useSelector((state) => state.posts);
-  const hasMorePosts = showOwnerPosts ? hasMoreOwnerPosts : hasMoreAllPosts;
-  useEffect(() => {
-    // Reset state when switching between all posts and owner posts
-    setLastPostId(null);
-    if (showOwnerPosts) {
-      dispatch(fetchPostsByOwner());
-    } else {
-      dispatch(fetchPosts());
-    }
-  }, [dispatch, showOwnerPosts]);
-
-  const loading = useSelector((state) => state.posts.loading);
-  const loadingCreatePost = useSelector(
-    (state) => state.posts.loadingCreatePost
-  );
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Function to load more posts
-  const loadMorePosts = useCallback(() => {
-    if (loadingMore || !hasMorePosts || !lastPostId) return;
-
-    setLoadingMore(true);
-    const fetchAction = showOwnerPosts ? fetchPostsByOwner : fetchPosts;
-    dispatch(fetchAction(lastPostId))
-      .unwrap() // Use unwrap() to properly handle promises
-      .catch(() => {
-        // Handle error if needed
-      })
-      .finally(() => setLoadingMore(false));
-  }, [dispatch, lastPostId, loadingMore, showOwnerPosts, hasMorePosts]);
-
-  // Update lastPostId when posts change
-  useEffect(() => {
-    if (posts.length > 0) {
-      setLastPostId(posts[posts.length - 1].id);
-    }
-  }, [posts]);
-
-  // Cuộn scroll tới bài cuối sẽ load thêm
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMorePosts();
-        }
-      },
-      { threshold: 1.0 }
-    );
-
-    if (postsEndRef.current) {
-      observer.observe(postsEndRef.current);
-    }
-
-    return () => {
-      if (postsEndRef.current) {
-        observer.unobserve(postsEndRef.current);
-      }
-    };
-  }, [loadMorePosts]);
 
   // Mở modal và cập nhật URL
   const handleOpenCommentModal = (post) => {
@@ -165,6 +92,13 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     });
   };
 
+  const formatTime = (dateString) => {
+    if (!dateString) return "Không xác định";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Không xác định";
+    return formatDistanceToNow(date, { addSuffix: true, locale: vi });
+  };
+
   //Like bài viết
   const handleLikePost = debounce((postId) => {
     dispatch(likePost(postId));
@@ -172,21 +106,13 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
 
   return (
     <div className="all-posts">
-      {loadingCreatePost && (
-        <div className="loading-overlay">
-          <Spinner size={70} />
-        </div>
-      )}
-      {/* {loading ? (
-        <div className="loading-overlay">
-          <Spinner size={70} />
-        </div>
-      ) :  */}
       {Array.isArray(posts) && posts.length > 0 ? (
-        <>
-          {posts.map((post) => (
+        posts.map((post) => {
+          if (!post || typeof post !== "object" || post === null) {
+            return null;
+          }
+          return (
             <div className="post" key={post.id}>
-              {/* Header Post */}
               <div className="header-post">
                 <p className="AvaName">
                   <img
@@ -195,12 +121,7 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                     alt="Avatar"
                   />
                   <strong>{post.fullName}</strong>
-                  <span className="timePost">
-                    {formatDistanceToNow(new Date(post.createdAt), {
-                      addSuffix: true,
-                      locale: vi,
-                    })}
-                  </span>
+                  <span className="timePost">{formatTime(post.createdAt)}</span>
                 </p>
                 <p className="closemore">
                   <img
@@ -217,18 +138,12 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                   />
                 </p>
               </div>
-
-              {/* Nội dung bài viết */}
               <span className="content-posts">{post.content}</span>
-
-              {!post.isSharedPost && <p></p>}
-
               {post.isSharedPost && (
                 <div className="Share-Post-origigin">
-                  <SharedPost post={post}></SharedPost>
+                  <SharedPost post={post} />
                 </div>
               )}
-
               <div
                 className={`media-container ${
                   post.imageUrl && post.videoUrl ? "has-both" : ""
@@ -237,13 +152,12 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                 {post.imageUrl && (
                   <div className="postImg">
                     <img
-                      src={post.imageUrl || avatarWeb}
+                      src={post.imageUrl}
                       alt="Post"
                       onClick={() => handleOpenCommentModal(post)}
                     />
                   </div>
                 )}
-
                 {post.videoUrl && (
                   <div className="postVideo">
                     <video
@@ -256,12 +170,9 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                   </div>
                 )}
               </div>
-
-              {/* Actions */}
               <div className="actions">
                 <span onClick={() => handleLikePost(post.id)}>
                   <img src={post.hasLiked ? likeFill : likeIcon} alt="Like" />
-
                   <span>{post.likeCount}</span>
                 </span>
                 <span onClick={() => handleOpenCommentModal(post)}>
@@ -274,17 +185,11 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                 </span>
               </div>
             </div>
-          ))}
-          {/* Loading indicator and sentinel element */}
-          <div ref={postsEndRef} style={{ height: "20px" }}>
-            {loadingMore && <p>Đang tải thêm bài viết...</p>}
-          </div>
-        </>
+          );
+        })
       ) : (
-        <p>Không có bài viết nào.</p>
+        <p>Không có bài viết nào được tìm thấy.</p>
       )}
-
-      {/* Post Options Modal */}
       {isPostOptionsOpen && selectedPostToOption && (
         <PostOptionsModal
           isOwner={userId === selectedPostToOption.post.userId}
@@ -295,8 +200,6 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
           post={selectedPostToOption.post}
         />
       )}
-
-      {/* Comment Modal */}
       {selectedPost &&
         location.pathname.includes(`/post/${selectedPost.id}`) && (
           <CommentModal
@@ -307,19 +210,16 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
           />
         )}
 
-      {/* Share Modal */}
-      {selectedPostToShare &&
-        (console.log("chia  se"),
-        (
-          <ShareModal
-            post={selectedPostToShare}
-            isOpen={isShareModalOpen}
-            onClose={() => dispatch(closeShareModal())}
-            usersProfile={usersProfile}
-          />
-        ))}
+      {selectedPostToShare && (
+        <ShareModal
+          post={selectedPostToShare}
+          isOpen={isShareModalOpen}
+          onClose={() => dispatch(closeShareModal())}
+          usersProfile={usersProfile}
+        />
+      )}
     </div>
   );
 };
 
-export default AllPosts;
+export default ListPost;

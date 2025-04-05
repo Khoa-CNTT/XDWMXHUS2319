@@ -10,12 +10,26 @@ import shareIcon from "../../assets/iconweb/shareIcon.svg";
 
 import { useDispatch, useSelector } from "react-redux";
 import { likePost } from "../../stores/action/listPostActions";
+import { sharePost } from "../../stores/action/listPostActions";
 import { debounce } from "lodash";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
+import ShareModal from "../shareModal"; // Add this import
+import {
+  openShareModal,
+  closeShareModal,
+} from "../../stores/reducers/listPostReducers"; // Add these imports
 
 const ContentPostComment = ({ post, onClose }) => {
   const dispatch = useDispatch();
+
+  // Get Redux state for share modal
+  const { isShareModalOpen, selectedPostToShare } = useSelector(
+    (state) => state.posts
+  );
+
+  // Get usersProfile from Redux if needed
+  const usersProfile = useSelector((state) => state.usersProfile); // Adjust according to your actual state structure
 
   const posts = useSelector((state) =>
     state.posts.posts.find((p) => p.id === post.id)
@@ -24,7 +38,9 @@ const ContentPostComment = ({ post, onClose }) => {
   const handleLikePost = debounce((postId) => {
     dispatch(likePost(postId));
   }, 1000);
+
   if (!posts) return null; // Tránh lỗi nếu post chưa được truyền xuống
+
   return (
     <>
       <div className="avatar-and-option">
@@ -45,7 +61,6 @@ const ContentPostComment = ({ post, onClose }) => {
           </span>
         </div>
         <div className="more-options">
-          {/* <img src={moreIcon} alt="More" /> */}
           <img src={closeIcon} alt="Close" onClick={onClose} />
         </div>
       </div>
@@ -64,11 +79,16 @@ const ContentPostComment = ({ post, onClose }) => {
           <span>{posts.commentCount}</span>
         </div>
         <div className="shares">
-          <img src={shareIcon} alt="Share" />
+          <img
+            src={shareIcon}
+            alt="Share"
+            onClick={() => dispatch(openShareModal(posts))}
+          />
           <span>{posts.shareCount}</span>
         </div>
       </div>
     </>
   );
 };
+
 export default ContentPostComment;
