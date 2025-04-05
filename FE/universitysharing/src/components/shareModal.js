@@ -33,10 +33,12 @@ const ShareModal = ({ isOpen, onClose, usersProfile, post }) => {
   };
 
   if (!isOpen) return null;
+
   const userProfileData = usersProfile || {
     profilePicture: avatarDefaut,
     fullName: "University Sharing",
   };
+
   return (
     <div className="share-Overlay animate__animated animate__fadeIn ">
       <div className="share-Modal ">

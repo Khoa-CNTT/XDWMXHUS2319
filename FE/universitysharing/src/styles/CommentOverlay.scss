@@ -32,52 +32,76 @@
     width: 60%;
     height: 100vh;
     background-color: black;
-    .post-media {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  
+    .media-container {
+      position: relative;
       width: 100%;
-      height: 100vh;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  
+    .post-media {
+      max-width: 100%;
+      max-height: 100vh;
       object-fit: contain;
     }
-    .back-icon {
-      width: 30px;
-      height: 100vh;
-      background-color: #2c2c2c29;
+  
+    .nav-button {
       position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      background-color: rgba(44, 44, 44, 0.3);
+      border: none;
+      border-radius: 50%;
       display: flex;
+      justify-content: center;
       align-items: center;
+      cursor: pointer;
       z-index: 10;
+      color: white;
+      transition: background-color 0.2s ease;
+  
       &:hover {
-        background-color: #8a8a8ab2;
+        background-color: rgba(138, 138, 138, 0.7);
       }
-    }
-    .next-icon {
-      background-color: #2c2c2c29;
-      width: 30px;
-      height: 100vh;
-      position: absolute;
-      right: 0;
-      display: flex;
-      align-items: center;
-      z-index: 10;
-      &:hover {
-        background-color: #8a8a8ab2;
+  
+      &.prev-button {
+        left: 10px;
+      }
+  
+      &.next-button {
+        right: 10px;
       }
     }
   }
 
   .content-post {
     width: 40%;
-    border-left: 1px solid lightgray;
     display: flex;
     flex-direction: column;
     padding: 16px;
-    overflow: hidden; // Đảm bảo nội dung không bị tràn ra ngoài
+    overflow: hidden; // Sửa: Chỉ ẩn tràn ở cấp cao nhất
+
+    &.full-width {
+      width: 100%; // Chiếm toàn bộ chiều rộng khi không có media
+    }
   }
 
   .avatar-and-option {
     display: flex;
     justify-content: space-between;
     align-items: center;
-
+    .more-options{
+      cursor: pointer;
+    }
     .avatar-and-name {
       display: flex;
       align-items: center;
@@ -123,63 +147,66 @@
       }
     }
   }
-
-  .comments-section {
-    position: relative;
-    flex: 1;
-    margin: 10px 0px;
-    overflow-y: auto;
-    max-height: calc(84vh - 200px);
-    max-width: 100%; // Đảm bảo không vượt quá content-post
-
-    .comment {
-      display: flex;
-      align-items: center;
-      margin-top: 10px;
-
-      .avatar {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        margin-right: 10px;
-      }
-
-      .comment-content {
-        background: #f0f0f0;
-        padding: 8px;
-        border-radius: 12px;
-        //flex: 1;
-        max-width: 80%; // Đảm bảo không bị tràn ra ngoài
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: pre-wrap;
-        .comment-username {
-          font-weight: bold;
-        }
-      }
-    }
-    .comment-actions {
-      display: flex;
-      align-items: center;
-      // margin-left: 100px;
-      cursor: pointer;
-      margin: 0px 70px;
-
-      .like-icon {
-        width: 20px;
-        height: 20px;
-        margin: 0px 10px;
-      }
-      span {
-        margin: 10px;
-      }
-    }
-    .more-reply-comment {
-      cursor: pointer;
-      font-weight: bold;
-      margin: 0px 80px;
-    }
+  .comments-section{
+overflow:auto;
+padding-bottom: 70px;
   }
+  // .comments-section {
+  //   position: relative;
+  //   flex: 1;
+  //   margin: 10px 0px;
+  //   overflow-y: auto;
+  //   max-height: calc(84vh - 200px);
+  //   max-width: 100%; // Đảm bảo không vượt quá content-post
+
+  //   .comment {
+  //     display: flex;
+  //     align-items: center;
+  //     margin-top: 10px;
+
+  //     .avatar {
+  //       width: 60px;
+  //       height: 60px;
+  //       border-radius: 50%;
+  //       margin-right: 10px;
+  //     }
+
+  //     .comment-content {
+  //       background: #f0f0f0;
+  //       padding: 8px;
+  //       border-radius: 12px;
+  //       //flex: 1;
+  //       max-width: 80%; // Đảm bảo không bị tràn ra ngoài
+  //       word-wrap: break-word;
+  //       overflow-wrap: break-word;
+  //       white-space: pre-wrap;
+  //       .comment-username {
+  //         font-weight: bold;
+  //       }
+  //     }
+  //   }
+  //   .comment-actions {
+  //     display: flex;
+  //     align-items: center;
+  //     // margin-left: 100px;
+  //     cursor: pointer;
+  //     margin: 0px 0px;
+
+  //     .like-icon {
+  //       width: 20px;
+  //       height: 20px;
+  //       margin: 0px 10px;
+  //     }
+  //     span {
+  //       margin: 10px;
+  //     }
+  //   }
+  //   .more-reply-comment {
+  //     cursor: pointer;
+  //     font-weight: bold;
+  //     margin: 0px 80px;
+  //   }
+  // }
 
   .comment-input {
     display: flex;
@@ -309,3 +336,313 @@
     border-radius: 10px;
   }
 }
+.actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px solid #e4e6eb;
+  border-bottom: 1px solid #e4e6eb;
+  margin: 0 16px;
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #65676b;
+    font-size: 15px;
+    font-weight: 600;
+    flex: 1;
+    justify-content: center;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    &.liked {
+      color: #f3425f;
+
+      .like-icon {
+        animation: likeAnimation 0.4s ease;
+      }
+    }
+
+    .like-icon,
+    .comment-icon,
+    .share-icon {
+      margin-right: 6px;
+      transition: transform 0.2s;
+    }
+
+    &:hover .like-icon,
+    &:hover .comment-icon,
+    &:hover .share-icon {
+      transform: scale(1.1);
+    }
+
+    .action-count {
+      margin-left: 4px;
+    }
+  }
+}
+
+@keyframes likeAnimation {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.comment-item {
+
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f2f5;
+
+  .comment-main, .reply-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .comment-avatar, .reply-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .comment-body, .reply-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .comment-header, .reply-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+
+  .comment-author, .reply-author {
+    font-weight: 600;
+    font-size: 15px;
+    color: #050505;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .comment-more-btn, .reply-more-btn {
+    background: none;
+    border: none;
+    color: #65676b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    margin-left: auto;
+    flex-shrink: 0;
+    
+    &:hover {
+      background: #f0f2f5;
+    }
+  }
+
+  .comment-content, .reply-content {
+    font-size: 15px;
+    line-height: 1.4;
+    color: #050505;
+    margin: 4px 0;
+    word-break: break-word;
+  }
+
+  .comment-actions, .reply-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 4px;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: #65676b;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 2px 0;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &.liked {
+      color: #f3425f;
+    }
+  }
+
+  .action-count {
+    font-size: 13px;
+  }
+
+  .replies-container {
+    margin-left: 44px;
+    padding-left: 12px;
+    border-left: 2px solid #e4e6eb;
+    max-height: 300px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #bcc0c4;
+      border-radius: 3px;
+    }
+  }
+
+  .view-more-replies {
+    background: none;
+    border: none;
+    color: #65676b;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 0 8px 44px;
+    margin: 4px 0;
+    display: block;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .reply-input-container {
+    display: flex;
+    gap: 12px;
+    margin: 8px 0 8px 44px;
+    padding: 0;
+    align-items: flex-start;
+    
+    .reply-input-avatar {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      
+      img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+    }
+  
+    .reply-input-wrapper {
+      flex: 1;
+      position: relative;
+      
+      .input-box {
+        background: #F0F2F5;
+        border-radius: 18px;
+        padding: 8px 12px;
+        transition: all 0.2s ease;
+        
+        &:focus-within {
+          background: #E4E6EB;
+        }
+      }
+      
+      textarea {
+        width: 100%;
+        border: none;
+        background: transparent;
+        resize: none;
+        outline: none;
+        font-size: 15px;
+        line-height: 1.4;
+        color: #050505;
+        max-height: 120px;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        min-height: 20px;
+        
+        &::placeholder {
+          color: #65676B;
+        }
+      }
+      
+      .input-actions {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        display: flex;
+        align-items: center;
+        
+        .send-reply-btn {
+          background: none;
+          border: none;
+          padding: 4px;
+          cursor: pointer;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          
+          &:not(.disabled):hover {
+            background: rgba(0, 0, 0, 0.05);
+          }
+          
+          &.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+          }
+          
+          svg {
+            width: 20px;
+            height: 20px;
+          }
+        }
+      }
+    }
+  }
+
+  .comment-options-container {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 10;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .toggle-replies-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: #65676b;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 0 8px 44px;
+    margin: 4px 0;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+    
+    svg {
+      margin-right: 4px;
+    }
+  }}

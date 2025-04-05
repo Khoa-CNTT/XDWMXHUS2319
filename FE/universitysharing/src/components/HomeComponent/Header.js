@@ -3,24 +3,33 @@ import { useSelector } from "react-redux";
 import "../../styles/headerHome.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
-import searchIcon from "../../assets/iconweb/searchIcon.svg";
-import notifyIcon from "../../assets/iconweb/notificationsIcon.svg";
-import messengerIcon from "../../assets/iconweb/MessIcon.png";
+import { useNavigate } from "react-router-dom";
+import {
+  FiSearch,
+  FiBell,
+  FiMessageSquare,
+  FiChevronDown,
+  FiX,
+} from "react-icons/fi";
 import NotifyModal from "../NotifyModal";
 import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
+
 import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
 import { searchPost } from "../../stores/action/searchAction";
+
 import { useDispatch } from "react-redux";
 
 // import { resetApp } from "../../stores/stores";
+
 
 const Header = ({ usersProfile }) => {
   const dispatch = useDispatch();
   // console.log("Data User truyền xuống: ", usersProfile);
   const [searchKeyword, setSearchKeyword] = useState("");
+
   const navigate = useNavigate();
-  //chuyển hướng
+
   const UserProfile = () => {
     // navigate("/ProfileUserView");
     window.location.href = "/ProfileUserView";
@@ -39,12 +48,14 @@ const Header = ({ usersProfile }) => {
     }
   };
 
+
   //Đăng xuất
   const handleLogout = () => {
     // dispatch(resetApp());
     localStorage.removeItem("token");
     window.location.href = "/";
   };
+
   const [modalState, setModalState] = useState({
     notify: false,
     messenger: false,
@@ -56,7 +67,7 @@ const Header = ({ usersProfile }) => {
       notify: false,
       messenger: false,
       setting: false,
-      [modalName]: !prev[modalName], // Chỉ mở modal được click
+      [modalName]: !prev[modalName],
     }));
   };
 
@@ -67,6 +78,7 @@ const Header = ({ usersProfile }) => {
           <img className="logowebsite" src={logoweb} alt="University Sharing" />
         </div>
         <div className="search">
+
           <form onSubmit={handleSearch} className="search-form">
             <input
               type="text"
@@ -76,16 +88,17 @@ const Header = ({ usersProfile }) => {
               className="search-input"
             />
             <button type="submit" className="search-button">
-              <img src={searchIcon} alt="Search Icon" className="search-icon" />
+              <FiSearch src={searchIcon} alt="Search Icon" className="search-icon" />
             </button>
           </form>
+
         </div>
         <div className="rightHeader">
           <span onClick={() => toggleModal("messenger")}>
-            <img src={messengerIcon} alt="Messenger" />
+            <FiMessageSquare className="icon" />
           </span>
           <span onClick={() => toggleModal("notify")}>
-            <img src={notifyIcon} alt="Notifications" />
+            <FiBell className="icon" />
           </span>
           <span onClick={() => toggleModal("setting")}>
             <img
@@ -97,7 +110,6 @@ const Header = ({ usersProfile }) => {
         </div>
       </div>
 
-      {/* Modals */}
       {modalState.notify && (
         <NotifyModal
           isOpen={modalState.notify}

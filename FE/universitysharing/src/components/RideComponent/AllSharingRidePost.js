@@ -11,11 +11,14 @@ import closerIcon from "../../assets/iconweb/closeIcon.svg";
 import checkIcon from "../../assets/iconweb/checkIcon.svg";
 import likeFillIcon from "../../assets/iconweb/likefillIcon.svg";
 import seeMapIcon from "../../assets/iconweb/seeMapIcon.svg";
+import { PiDotsThreeLight } from "react-icons/pi";
+import { FaMapLocationDot } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchRidePost, createRide } from "../../stores/action/ridePostAction";
+import { fetchRidePost, createRide, deletePost, updatePost } from "../../stores/action/ridePostAction";
 import { resetPostState } from "../../stores/reducers/ridePostReducer";
+import { jwtDecode } from "jwt-decode";
 
 const defaultIcon = L.icon({
   iconUrl: markerIconPng,
@@ -24,17 +27,66 @@ const defaultIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
+const formatTimeAgo = (utcTime) => {
+  const serverTime = new Date(utcTime);
+  const vietnamTime = serverTime.getTime() + 7 * 60 * 60 * 1000; // UTC+7
+  const now = new Date().getTime();
+  const diffMs = vietnamTime - now;
+  const absDiff = Math.abs(diffMs);
+
+  const diffSec = Math.floor(absDiff / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+  const diffWeek = Math.floor(diffDay / 7);
+  const diffMonth = Math.floor(diffDay / 30);
+  const diffYear = Math.floor(diffDay / 365);
+
+  if (diffMs > 0) {
+    if (diffSec < 60) return `${diffSec} giây nữa`;
+    if (diffMin < 60) return `${diffMin} phút nữa`;
+    if (diffHour < 24) return `${diffHour} giờ nữa`;
+    if (diffDay === 1) return "Ngày mai";
+    if (diffDay < 7) return `${diffDay} ngày nữa`;
+    return new Date(vietnamTime).toLocaleDateString("vi-VN");
+  }
+
+  if (diffSec < 60) return `${diffSec} giây trước`;
+  if (diffMin < 60) return `${diffMin} phút trước`;
+  if (diffHour < 24) return `${diffHour} giờ trước`;
+  if (diffDay === 1) return "Hôm qua";
+  if (diffDay < 7) return `${diffDay} ngày trước`;
+  if (diffWeek < 4) return `${diffWeek} tuần trước`;
+  if (diffMonth < 12) return `${diffMonth} tháng trước`;
+  if (diffYear === 1) return "1 năm trước";
+  if (diffYear > 1) return `${diffYear} năm trước`;
+
+  return new Date(vietnamTime).toLocaleDateString("vi-VN");
+};
+
 const AllSharingRide = () => {
   const [showMap, setShowMap] = useState({});
   const [routePaths, setRoutePaths] = useState({});
   const [shortestPaths, setShortestPaths] = useState({});
   const [showSafetyModal, setShowSafetyModal] = useState(false);
-  const [selectedRidePost, setSelectedRidePost] = useState(null); // Lưu ridePost được chọn
+  const [selectedRidePost, setSelectedRidePost] = useState(null);
+  const [showOptions, setShowOptions] = useState(null);
+  const [editPost, setEditPost] = useState(null);
 
   const dispatch = useDispatch();
-  const { ridePosts, loading, error, success, currentRide } = useSelector(
-    (state) => state.rides
-  );
+  const { ridePosts, loading, error, success, currentRide } = useSelector((state) => state.rides);
+  const token = localStorage.getItem("token");
+  let username = "Người dùng";
+  let currentUserId = "null";
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      username = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "Người dùng";
+      currentUserId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || "null";
+    } catch (err) {
+      console.error("Lỗi khi decode token:", err);
+    }
+  }
 
   useEffect(() => {
     dispatch(fetchRidePost());
@@ -56,23 +108,21 @@ const AllSharingRide = () => {
     });
   }, [showMap, ridePosts, routePaths]);
 
-  // Xử lý khi tạo ride thành công
+  // Xử lý thông báo thành công, không phụ thuộc vào đóng modal
   useEffect(() => {
     if (success && currentRide) {
       toast.success("Đã tạo ride thành công!");
+      dispatch(fetchRidePost()); // Cập nhật lại danh sách bài đăng
       dispatch(resetPostState()); // Reset state sau khi thành công
-      setShowSafetyModal(false);
     }
     if (error) {
       toast.error(`Lỗi: ${error}`);
     }
   }, [success, currentRide, error, dispatch]);
 
-
   const fetchRoute = async (ridePostId, startLatLon, endLatLon) => {
     const apiKey = process.env.REACT_APP_GRAPHHOPPER_API_KEY;
     const url = `https://graphhopper.com/api/1/route?point=${startLatLon[0]},${startLatLon[1]}&point=${endLatLon[0]},${endLatLon[1]}&vehicle=car&locale=vi&key=${apiKey}&points_encoded=false`;
-
     try {
       const response = await fetch(url);
       const data = await response.json();
@@ -90,7 +140,6 @@ const AllSharingRide = () => {
   const fetchShortestRoute = async (ridePostId, startLatLon, endLatLon) => {
     const apiKey = process.env.REACT_APP_GRAPHHOPPER_API_KEY;
     const url = `https://graphhopper.com/api/1/route?point=${startLatLon[0]},${startLatLon[1]}&point=${endLatLon[0]},${endLatLon[1]}&vehicle=car&locale=vi&key=${apiKey}&points_encoded=false&optimize=true`;
-
     try {
       const response = await fetch(url);
       const data = await response.json();
@@ -106,7 +155,7 @@ const AllSharingRide = () => {
   };
 
   const parseLatLon = (latLonString) => {
-    if (latLonString === "0") return null;
+    if (!latLonString || latLonString === "0") return null;
     const [lat, lon] = latLonString.split(",").map(Number);
     return [lat, lon];
   };
@@ -116,45 +165,82 @@ const AllSharingRide = () => {
     setShowMap((prev) => ({ ...prev, [ridePost.id]: newShowMap }));
   };
 
-  // Sửa handleAcceptClick để lưu ridePost được chọn
   const handleAcceptClick = (ridePost) => {
-    setSelectedRidePost(ridePost); // Lưu ridePost để dùng trong modal
+    setSelectedRidePost(ridePost);
     setShowSafetyModal(true);
   };
 
-  // Hàm xử lý tiếp tục với chế độ an toàn
   const handleSafeMode = () => {
     if (selectedRidePost) {
       const rideData = {
-        driverId: selectedRidePost.userId, // Lấy từ ridePost
-        RidePostId: selectedRidePost.id,   // Lấy từ ridePost
-        EstimatedDuration: 8,              // Giá trị mặc định
-        isSafe: true,                      // Chế độ an toàn
-        Fare: null,                        // Để null
+        driverId: selectedRidePost.userId,
+        RidePostId: selectedRidePost.id,
+        EstimatedDuration: 8,
+        isSafe: true,
+        Fare: null,
       };
-      dispatch(createRide(rideData));
+      dispatch(createRide(rideData))
+        .unwrap()
+        .then(() => {
+          setShowSafetyModal(false); // Đóng modal ngay sau khi thành công
+          setSelectedRidePost(null);
+          dispatch(fetchRidePost()); // Cập nhật danh sách bài đăng
+        })
+        .catch((err) => {
+          toast.error(`Lỗi khi tạo ride: ${err}`);
+        });
     }
   };
 
-  // Hàm xử lý tiếp tục với chế độ không an toàn
   const handleUnsafeMode = () => {
     if (selectedRidePost) {
       const rideData = {
         driverId: selectedRidePost.userId,
         RidePostId: selectedRidePost.id,
         EstimatedDuration: 8,
-        isSafe: false,                     // Chế độ không an toàn
+        isSafe: false,
         Fare: null,
       };
-      dispatch(createRide(rideData));
+      dispatch(createRide(rideData))
+        .unwrap()
+        .then(() => {
+          setShowSafetyModal(false); // Đóng modal ngay sau khi thành công
+          setSelectedRidePost(null);
+          dispatch(fetchRidePost()); // Cập nhật danh sách bài đăng
+        })
+        .catch((err) => {
+          toast.error(`Lỗi khi tạo ride: ${err}`);
+        });
     }
   };
 
-  // Hàm hủy (không chấp nhận đi)
   const handleCancel = () => {
     setShowSafetyModal(false);
     setSelectedRidePost(null);
     toast.info("Bạn đã hủy chấp nhận chuyến đi.");
+  };
+
+  const handleDeletePost = (postId) => {
+    dispatch(deletePost(postId));
+    setShowOptions(null);
+  };
+
+  const handleEditPost = (ridePost) => {
+    setEditPost(ridePost);
+    setShowOptions(null);
+  };
+
+  const handleUpdatePost = () => {
+    if (editPost) {
+      dispatch(updatePost({
+        postId: editPost.id,
+        startLocation: editPost.startLocation,
+        endLocation: editPost.endLocation,
+        startTime: editPost.startTime,
+        postType: editPost.postType,
+      }));
+      setEditPost(null);
+    }
   };
 
   if (loading) return <p>Đang tải dữ liệu...</p>;
@@ -164,42 +250,64 @@ const AllSharingRide = () => {
     <>
       {Array.isArray(ridePosts) && ridePosts.length > 0 ? (
         ridePosts.map((ridePost) => {
-          if(!ridePost) return null;
-           // Thêm kiểm tra tồn tại các thuộc tính cần thiết
-        const startLatLon = ridePost.latLonStart ? parseLatLon(ridePost.latLonStart) : null;
-        const endLatLon = ridePost.latLonEnd ? parseLatLon(ridePost.latLonEnd) : null;
-
+          if (!ridePost) return null;
+          const startLatLon = ridePost.latLonStart ? parseLatLon(ridePost.latLonStart) : null;
+          const endLatLon = ridePost.latLonEnd ? parseLatLon(ridePost.latLonEnd) : null;
+          const isOwner = ridePost.userId === currentUserId;
 
           return (
             <div className="All-ride-post" key={ridePost.id}>
               <div className="header-ride-post">
                 <div className="left-header-post">
                   <img className="Avata-user" src={avatarDefault} alt="Avatar" />
-                  <strong className="Name-User">University Sharing</strong>
-                  <span className="time-ridePost">
-                    {new Date(ridePost.createdAt).toLocaleString()}
-                  </span>
+                  <strong className="Name-User">{username}</strong>
+                  <span className="time-ridePost">{formatTimeAgo(ridePost.createdAt)}</span>
                 </div>
                 <div className="right-header-post">
-                  <img className="moreOption" src={moreIcon} alt="More options" />
-                  <img className="HidePost" src={closerIcon} alt="Close" />
+                  {isOwner && (
+                    <div className="post-options">
+                      <PiDotsThreeLight
+                        className="moreOption"
+                        onClick={() => setShowOptions(ridePost.id === showOptions ? null : ridePost.id)}
+                      />
+                      {showOptions === ridePost.id && (
+                        <div className="options-menu">
+                          <button onClick={() => handleEditPost(ridePost)}>Sửa bài</button>
+                          <button onClick={() => handleDeletePost(ridePost.id)}>Xóa bài</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-              <span className="content-ride-post">
-                Đi từ {ridePost.startLocation} đến {ridePost.endLocation} vào{" "}
-                {new Date(ridePost.startTime).toLocaleString()}
-              </span>
+              {editPost && editPost.id === ridePost.id ? (
+                <div className="edit-post-form">
+                  <input
+                    value={editPost.startLocation}
+                    onChange={(e) => setEditPost({ ...editPost, startLocation: e.target.value })}
+                  />
+                  <input
+                    value={editPost.endLocation}
+                    onChange={(e) => setEditPost({ ...editPost, endLocation: e.target.value })}
+                  />
+                  <input
+                    type="datetime-local"
+                    value={editPost.startTime.slice(0, 16)}
+                    onChange={(e) => setEditPost({ ...editPost, startTime: e.target.value })}
+                  />
+                  <button onClick={handleUpdatePost}>Lưu</button>
+                  <button onClick={() => setEditPost(null)}>Hủy</button>
+                </div>
+              ) : (
+                <span className="content-ride-post">
+                  Đi từ {ridePost.startLocation} đến {ridePost.endLocation} vào{" "}
+                  {new Date(ridePost.startTime).toLocaleString("vi-VN")}
+                </span>
+              )}
 
               {showMap[ridePost.id] && startLatLon && endLatLon && (
-                <div
-                  className="map-ride-post"
-                  style={{ height: "300px", width: "100%" }}
-                >
-                  <MapContainer
-                    center={startLatLon}
-                    zoom={13}
-                    style={{ height: "100%", width: "100%" }}
-                  >
+                <div className="map-ride-post" style={{ height: "300px", width: "100%" }}>
+                  <MapContainer center={startLatLon} zoom={13} style={{ height: "100%", width: "100%" }}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     <Marker position={startLatLon} icon={defaultIcon}>
                       <Popup>Điểm đi</Popup>
@@ -207,12 +315,8 @@ const AllSharingRide = () => {
                     <Marker position={endLatLon} icon={defaultIcon}>
                       <Popup>Điểm đến</Popup>
                     </Marker>
-                    {routePaths[ridePost.id] && (
-                      <Polyline positions={routePaths[ridePost.id]} color="blue" />
-                    )}
-                    {shortestPaths[ridePost.id] && (
-                      <Polyline positions={shortestPaths[ridePost.id]} color="red" />
-                    )}
+                    {routePaths[ridePost.id] && <Polyline positions={routePaths[ridePost.id]} color="blue" />}
+                    {shortestPaths[ridePost.id] && <Polyline positions={shortestPaths[ridePost.id]} color="red" />}
                   </MapContainer>
                 </div>
               )}
@@ -222,22 +326,15 @@ const AllSharingRide = () => {
                   <img className="like-ride-Post" src={likeFillIcon} alt="Like" />
                   <span className="number-like-ride-post">12</span>
                 </div>
-                {/* Truyền ridePost vào handleAcceptClick */}
-                <div
-                  className="accept-ride-post"
-                  onClick={() => handleAcceptClick(ridePost)}
-                >
-                  <img className="check-ride-post" src={checkIcon} alt="Check" />
-                  <span className="accept-ride">Chấp nhận</span>
-                </div>
-                <div
-                  className="see-ride-map"
-                  onClick={() => handleSeeMapClick(ridePost)}
-                >
-                  <img src={seeMapIcon} className="see-map" alt="See map" />
-                  <span className="see">
-                    {showMap[ridePost.id] ? "Ẩn map" : "Xem map"}
-                  </span>
+                {!isOwner && (
+                  <div className="accept-ride-post" onClick={() => handleAcceptClick(ridePost)}>
+                    <img className="check-ride-post" src={checkIcon} alt="Check" />
+                    <span className="accept-ride">Chấp nhận</span>
+                  </div>
+                )}
+                <div className="see-ride-map" onClick={() => handleSeeMapClick(ridePost)}>
+                  <FaMapLocationDot className="see-map" alt="See map" />
+                  <span className="see">{showMap[ridePost.id] ? "Ẩn map" : "Xem map"}</span>
                 </div>
               </div>
             </div>
@@ -247,7 +344,6 @@ const AllSharingRide = () => {
         <p>Không có bài viết nào.</p>
       )}
 
-      {/* Sửa modal với 3 nút */}
       {showSafetyModal && (
         <>
           <div className="safety-modal-overlay" onClick={handleCancel}></div>
@@ -266,56 +362,3 @@ const AllSharingRide = () => {
 };
 
 export default AllSharingRide;
-      {/* <div className="All-ride-post">
-        <div className="header-ride-post">
-          <div className="left-header-post">
-            <img className="Avata-user" src={avatarDefault} alt="Avatar" />
-            <strong className="Name-User">University Sharing </strong>
-            <span className="time-ridePost">12 hour ago</span>
-          </div>
-          <div className="right-header-post">
-            <img className="moreOption" src={moreIcon} alt="More options" />
-            <img className="HidePost" src={closerIcon} alt="Close" />
-          </div>
-        </div>
-        <span className="content-ride-post"> Cho mình quá giang nhé!</span>
-
-        {showMap && (
-          <div
-            className="map-ride-post"
-            style={{ height: "300px", width: "100%" }}
-          >
-            <MapContainer
-              center={startPosition}
-              zoom={13}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker position={startPosition} icon={defaultIcon}>
-                <Popup>Điểm đi</Popup>
-              </Marker>
-              <Marker position={endPosition} icon={defaultIcon}>
-                <Popup>Điểm đến</Popup>
-              </Marker>
-              {routePath.length > 0 && (
-                <Polyline positions={routePath} color="blue" />
-              )}
-            </MapContainer>
-          </div>
-        )}
-
-        <div className="action-ride-post">
-          <div className="like-number-ride-post">
-            <img className="like-ride-Post" src={likeFillIcon} alt="Like" />
-            <span className="number-like-ride-post">12</span>
-          </div>
-          <div className="accept-ride-post">
-            <img className="check-ride-post" src={checkIcon} alt="Check" />
-            <span className="accept-ride">Chấp nhận</span>
-          </div>
-          <div className="see-ride-map" onClick={() => setShowMap(!showMap)}>
-            <img src={seeMapIcon} className="see-map" alt="See map" />
-            <span className="see">{showMap ? "Ẩn map" : "Xem map"}</span>
-          </div>
-        </div>
-      </div> */}

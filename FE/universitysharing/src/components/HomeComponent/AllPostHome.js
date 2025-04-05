@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import "../../styles/headerHome.scss";
-import shareIcon from "../../assets/iconweb/shareIcon.svg";
-import likeIcon from "../../assets/iconweb/likeIcon.svg";
-import likeFill from "../../assets/iconweb/likefillIcon.svg";
-import commentIcon from "../../assets/iconweb/commentIcon.svg";
-import closeIcon from "../../assets/iconweb/closeIcon.svg";
-import moreIcon from "../../assets/iconweb/moreIcon.svg";
+
+import { 
+  FiMoreHorizontal, 
+  FiX, 
+  FiHeart, 
+  FiMessageSquare, 
+  FiShare2,
+  FiClock,
+} from 'react-icons/fi';
+import { FaHeart } from 'react-icons/fa';
 import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
 import imagePost from "../../assets/ImgDefault.png";
 import ShareModal from "../shareModal";
-
 import SharedPost from "./SharingPost";
-
 import logoWeb from "../../assets/Logo.png";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -166,9 +168,19 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
   };
 
   //Like bài viết
-  const handleLikePost = debounce((postId) => {
-    dispatch(likePost(postId));
-  }, 100);
+
+// Like bài viết
+// Like bài viết
+const handleLikePost = (postId) => {
+  dispatch(likePost(postId)); // Dispatch action ngay lập tức, không delay
+};
+// Hàm chuyển đổi UTC sang giờ Việt Nam (UTC+7)
+const convertUTCToVNTime = (utcDate) => {
+  const date = new Date(utcDate);
+  // Thêm 7 giờ để chuyển từ UTC sang giờ Việt Nam
+  date.setHours(date.getHours() + 7);
+  return date;
+};
 
   return (
     <div className="all-posts">
@@ -177,65 +189,81 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
           <Spinner size={70} />
         </div>
       )}
-      {/* {loading ? (
-        <div className="loading-overlay">
-          <Spinner size={70} />
-        </div>
-      ) :  */}
+      
       {Array.isArray(posts) && posts.length > 0 ? (
         <>
           {posts.map((post) => (
             <div className="post" key={post.id}>
               {/* Header Post */}
               <div className="header-post">
-                <p className="AvaName">
+                <div className="AvaName">
                   <img
                     className="avtardefaut"
                     src={post.profilePicture || avatarWeb}
                     alt="Avatar"
                   />
-                  <strong>{post.fullName}</strong>
-                  <span className="timePost">
-                    {formatDistanceToNow(new Date(post.createdAt), {
-                      addSuffix: true,
-                      locale: vi,
-                    })}
-                  </span>
-                </p>
-                <p className="closemore">
-                  <img
-                    className="btn-edit"
-                    src={moreIcon}
-                    alt="More"
+                  <div className="user-info">
+                    <strong>{post.fullName}</strong>
+ 
+                    <span className="timePost">
+  <FiClock size={12} style={{ marginRight: 4 }} />
+  {formatDistanceToNow(convertUTCToVNTime(post.createdAt), {
+    addSuffix: true,
+    locale: {
+      ...vi,
+      formatDistance: (token, count) => {
+        switch (token) {
+          case 'lessThanXSeconds': return 'vài giây trước';
+          case 'xSeconds': return `${count} giây trước`;
+          case 'halfAMinute': return '30 giây trước';
+          case 'lessThanXMinutes': return `${count} phút trước`;
+          case 'xMinutes': return `${count} phút trước`;
+          case 'aboutXHours': return `${count} giờ trước`;
+          case 'xHours': return `${count} giờ trước`;
+          case 'xDays': return `${count} ngày trước`;
+          case 'aboutXMonths': return `${count} tháng trước`;
+          case 'xMonths': return `${count} tháng trước`;
+          case 'aboutXYears': return `${count} năm trước`;
+          case 'xYears': return `${count} năm trước`;
+          default: return '';
+        }
+      }
+    },
+    includeSeconds: true
+  })}
+</span>
+                  </div>
+                </div>
+                <div className="post-actions">
+                  <FiMoreHorizontal 
+                    className="btn-edit" 
+                    size={20}
                     onClick={(event) => handleOpenPostOptions(event, post)}
                   />
-                  <img
-                    className="btn-close"
-                    src={closeIcon}
-                    alt="Close"
+                  <FiX 
+                    className="btn-close" 
+                    size={20}
                     onClick={() => dispatch(hidePost(post.id))}
                   />
-                </p>
+                </div>
               </div>
 
-              {/* Nội dung bài viết */}
-              <span className="content-posts">{post.content}</span>
-
+  
+              {/* Post content */}
+              <div className="content-posts">{post.content}</div>
+ 
               {!post.isSharedPost && <p></p>}
+
 
               {post.isSharedPost && (
                 <div className="Share-Post-origigin">
-                  <SharedPost post={post}></SharedPost>
+                  <SharedPost post={post} />
                 </div>
               )}
-
-              <div
-                className={`media-container ${
-                  post.imageUrl && post.videoUrl ? "has-both" : ""
-                }`}
-              >
+  
+              <div className={`media-container ${post.imageUrl && post.videoUrl ? "has-both" : ""}`}>
                 {post.imageUrl && (
-                  <div className="postImg">
+                  <div className="post-media">
                     <img
                       src={post.imageUrl || avatarWeb}
                       alt="Post"
@@ -243,9 +271,9 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                     />
                   </div>
                 )}
-
+  
                 {post.videoUrl && (
-                  <div className="postVideo">
+                  <div className="post-media">
                     <video
                       controls
                       onClick={() => handleOpenCommentModal(post)}
@@ -256,68 +284,79 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                   </div>
                 )}
               </div>
-
+  
               {/* Actions */}
               <div className="actions">
-                <span onClick={() => handleLikePost(post.id)}>
-                  <img src={post.hasLiked ? likeFill : likeIcon} alt="Like" />
-
-                  <span>{post.likeCount}</span>
-                </span>
-                <span onClick={() => handleOpenCommentModal(post)}>
-                  <img src={commentIcon} alt="Comment" />
-                  <span>{post.commentCount}</span>
-                </span>
-                <span onClick={() => dispatch(openShareModal(post))}>
-                  <img src={shareIcon} alt="Share" />
-                  <span>{post.shareCount}</span>
-                </span>
-              </div>
+  <button 
+    className={`action-btn ${post.hasLiked ? 'liked' : ''}`}
+    onClick={() => handleLikePost(post.id)}
+    disabled={post.isLiking}
+  >
+    {post.hasLiked ? (
+      <FaHeart className="like-icon" size={18} />
+    ) : (
+      <FiHeart className="like-icon" size={18} />
+    )}
+    <span className="action-count">{post.likeCount}</span>
+  </button>
+  
+  <button 
+    className="action-btn"
+    onClick={() => handleOpenCommentModal(post)}
+  >
+    <FiMessageSquare className="comment-icon" size={18} />
+    <span className="action-count">{post.commentCount}</span>
+  </button>
+  
+  <button 
+    className="action-btn"
+    onClick={() => dispatch(openShareModal(post))}
+  >
+    <FiShare2 className="share-icon" size={18} />
+    <span className="action-count">{post.shareCount}</span>
+  </button>
+</div>
             </div>
           ))}
-          {/* Loading indicator and sentinel element */}
-          <div ref={postsEndRef} style={{ height: "20px" }}>
+          
+          <div ref={postsEndRef} className="load-more-indicator">
             {loadingMore && <p>Đang tải thêm bài viết...</p>}
           </div>
         </>
       ) : (
-        <p>Không có bài viết nào.</p>
+        <div className="no-posts">
+          <p>Không có bài viết nào.</p>
+        </div>
       )}
-
-      {/* Post Options Modal */}
+  
+      {/* Modals remain the same */}
       {isPostOptionsOpen && selectedPostToOption && (
         <PostOptionsModal
           isOwner={userId === selectedPostToOption.post.userId}
           onClose={() => dispatch(closePostOptionModal())}
-          position={selectedPostToOption.position} // Truyền vị trí vào modal
+          position={selectedPostToOption.position}
           postId={selectedPostToOption.post.id}
           handleDeletePost={confirmDelete}
           post={selectedPostToOption.post}
         />
       )}
-
-      {/* Comment Modal */}
-      {selectedPost &&
-        location.pathname.includes(`/post/${selectedPost.id}`) && (
-          <CommentModal
-            post={selectedPost}
-            //isOpen={true}
-            onClose={handleCloseCommentModal}
-            usersProfile={usersProfile}
-          />
-        )}
-
-      {/* Share Modal */}
-      {selectedPostToShare &&
-        (console.log("chia  se"),
-        (
-          <ShareModal
-            post={selectedPostToShare}
-            isOpen={isShareModalOpen}
-            onClose={() => dispatch(closeShareModal())}
-            usersProfile={usersProfile}
-          />
-        ))}
+  
+      {selectedPost && location.pathname.includes(`/post/${selectedPost.id}`) && (
+        <CommentModal
+          post={selectedPost}
+          onClose={handleCloseCommentModal}
+          usersProfile={usersProfile}
+        />
+      )}
+  
+      {selectedPostToShare && (
+        <ShareModal
+          post={selectedPostToShare}
+          isOpen={isShareModalOpen}
+          onClose={() => dispatch(closeShareModal())}
+          usersProfile={usersProfile}
+        />
+      )}
     </div>
   );
 };

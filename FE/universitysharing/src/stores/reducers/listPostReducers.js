@@ -79,10 +79,7 @@ const listPostSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
-        //console.log("Data về >> ", action.payload);
         state.loading = false;
-        // state.posts = action.payload;
-
         if (action.meta.arg) {
           // Append for pagination
           state.posts = [...state.posts, ...action.payload.posts];
@@ -93,9 +90,7 @@ const listPostSlice = createSlice({
         state.hasMoreAllPosts = action.payload.hasMore;
       })
       .addCase(fetchPostsByOwner.fulfilled, (state, action) => {
-        // Only append new posts if lastPostId was provided (pagination)
         if (action.meta.arg) {
-          // Filter out duplicates before adding new posts
           const newPosts = action.payload.posts.filter(
             (newPost) =>
               !state.posts.some(
@@ -104,10 +99,23 @@ const listPostSlice = createSlice({
           );
           state.posts = [...state.posts, ...newPosts];
         } else {
-          // First load - replace all posts
           state.posts = action.payload.posts;
         }
-        state.hasMoreOwnerPosts = action.payload.hasMore; // Corrected this line
+        state.hasMoreOwnerPosts = action.payload.hasMore;
+      })
+      // Sửa phần likePost để hỗ trợ optimistic update
+      .addCase(likePost.pending, (state, action) => {
+        const postId = action.meta.arg; // Lấy postId từ argument của action
+        state.posts = state.posts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                hasLiked: !post.hasLiked, // Cập nhật ngay lập tức (optimistic)
+                likeCount: post.hasLiked ? post.likeCount - 1 : post.likeCount + 1,
+                isLiking: true, // Thêm trạng thái để disable nút khi đang gửi request
+              }
+            : post
+        );
       })
       .addCase(likePost.fulfilled, (state, action) => {
         const postId = action.payload;
@@ -115,10 +123,20 @@ const listPostSlice = createSlice({
           post.id === postId
             ? {
                 ...post,
-                hasLiked: !post.hasLiked,
-                likeCount: post.hasLiked
-                  ? post.likeCount - 1
-                  : post.likeCount + 1,
+                isLiking: false, // Reset trạng thái sau khi request thành công
+              }
+            : post
+        );
+      })
+      .addCase(likePost.rejected, (state, action) => {
+        const postId = action.meta.arg;
+        state.posts = state.posts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                hasLiked: !post.hasLiked, // Hoàn nguyên nếu request thất bại
+                likeCount: post.hasLiked ? post.likeCount - 1 : post.likeCount + 1,
+                isLiking: false, // Reset trạng thái
               }
             : post
         );
