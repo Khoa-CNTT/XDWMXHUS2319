@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import "../../styles/headerHome.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
-import { useNavigate } from "react-router-dom";
+
 import {
   FiSearch,
   FiBell,
@@ -21,7 +21,6 @@ import { searchPost } from "../../stores/action/searchAction";
 import { useDispatch } from "react-redux";
 
 // import { resetApp } from "../../stores/stores";
-
 
 const Header = ({ usersProfile }) => {
   const dispatch = useDispatch();
@@ -47,7 +46,6 @@ const Header = ({ usersProfile }) => {
       setSearchKeyword("");
     }
   };
-
 
   //Đăng xuất
   const handleLogout = () => {
@@ -77,21 +75,20 @@ const Header = ({ usersProfile }) => {
         <div className="logoWeb" onClick={handleHomeView}>
           <img className="logowebsite" src={logoweb} alt="University Sharing" />
         </div>
+
         <div className="search">
-
           <form onSubmit={handleSearch} className="search-form">
-            <input
-              type="text"
-              placeholder="Tìm kiếm"
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              className="search-input"
-            />
-            <button type="submit" className="search-button">
-              <FiSearch src={searchIcon} alt="Search Icon" className="search-icon" />
-            </button>
+            <div className="search-container">
+              <FiSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                className="search-input"
+              />
+            </div>
           </form>
-
         </div>
         <div className="rightHeader">
           <span onClick={() => toggleModal("messenger")}>
