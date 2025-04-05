@@ -2,9 +2,15 @@ import React from "react";
 import "../../styles/CommentOverlay.scss";
 import avatarDefaut from "../../assets/AvatarDefault.png";
 import { useDispatch, useSelector } from "react-redux";
-import { likePost } from "../../stores/action/listPostActions";
+import { likePost, sharePost } from "../../stores/action/listPostActions";
 import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale"; // Tiếng Việt
+import { vi } from "date-fns/locale";
+import ShareModal from "../shareModal";
+import {
+  openShareModal,
+  closeShareModal,
+} from "../../stores/reducers/listPostReducers";
+
 import {
   FiMoreHorizontal,
   FiX,
@@ -13,16 +19,22 @@ import {
   FiShare2,
   FiClock,
 } from "react-icons/fi";
-import { FaHeart } from "react-icons/fa"; // Icon trái tim đầy cho trạng thái đã like
+import { FaHeart } from "react-icons/fa";
 
 const ContentPostComment = ({ post, onClose }) => {
   const dispatch = useDispatch();
+
+  const { isShareModalOpen, selectedPostToShare } = useSelector(
+    (state) => state.posts
+  );
+
+  const usersProfile = useSelector((state) => state.usersProfile);
 
   const posts = useSelector((state) =>
     state.posts.posts.find((p) => p.id === post.id)
   );
 
-  // Like bài viết: bỏ debounce, dispatch trực tiếp
+  // Like bài viết: dispatch trực tiếp
   const handleLikePost = (postId) => {
     dispatch(likePost(postId));
   };
@@ -30,11 +42,11 @@ const ContentPostComment = ({ post, onClose }) => {
   // Hàm chuyển đổi UTC sang giờ Việt Nam (UTC+7)
   const convertUTCToVNTime = (utcDate) => {
     const date = new Date(utcDate);
-    date.setHours(date.getHours() + 7); // Chuyển sang giờ Việt Nam
+    date.setHours(date.getHours() + 7);
     return date;
   };
 
-  if (!posts) return null; // Tránh lỗi nếu post chưa được truyền xuống
+  if (!posts) return null;
 
   return (
     <div className="content-post-comment">
@@ -97,38 +109,36 @@ const ContentPostComment = ({ post, onClose }) => {
 
       <span className="post-content">{posts.content}</span>
 
-      <div className="actions">
-  {/* Nút Like */}
-  <button
-    className={`action-btn ${posts.hasLiked ? 'liked' : ''}`}
-    onClick={() => handleLikePost(posts.id)}
-    disabled={posts.isLiking}
-  >
-    {posts.hasLiked ? (
-      <FaHeart size={18} className="like-icon" />
-    ) : (
-      <FiHeart size={18} className="like-icon" />
-    )}
-    <span className="action-count">{posts.likeCount}</span>
-  </button>
+      <div className="interactions">
+        {/* Nút Like */}
+        <button
+          className={`action-btn ${posts.hasLiked ? "liked" : ""}`}
+          onClick={() => handleLikePost(posts.id)}
+          disabled={posts.isLiking}
+        >
+          {posts.hasLiked ? (
+            <FaHeart size={18} className="like-icon" />
+          ) : (
+            <FiHeart size={18} className="like-icon" />
+          )}
+          <span className="action-count">{posts.likeCount}</span>
+        </button>
 
-  {/* Nút Comment */}
-  <button
-    className="action-btn"
-  >
-    <FiMessageSquare size={18} className="comment-icon" />
-    <span className="action-count">{posts.commentCount}</span>
-  </button>
+        {/* Nút Comment */}
+        <div className="comments">
+          <FiMessageSquare size={18} className="comment-icon" />
+          <span className="action-count">{posts.commentCount}</span>
+        </div>
 
-  {/* Nút Share */}
-  <button
-    className="action-btn"
-  
-  >
-    <FiShare2 size={18} className="share-icon" />
-    <span className="action-count">{posts.shareCount}</span>
-  </button>
-</div>
+        {/* Nút Share */}
+        <button
+          className="action-btn"
+          onClick={() => dispatch(openShareModal(posts))}
+        >
+          <FiShare2 size={18} className="share-icon" />
+          <span className="action-count">{posts.shareCount}</span>
+        </button>
+      </div>
     </div>
   );
 };

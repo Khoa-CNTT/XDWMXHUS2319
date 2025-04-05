@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { searchPost } from "../action/searchAction";
+import { searchPost } from "../../stores/action/searchAction";
 import "../../styles/headerHome.scss";
 import searchIcon from "../../assets/iconweb/searchIcon.svg";
 
@@ -61,20 +61,20 @@ const SearchComponent = () => {
                 {item.type === "User" ? (
                   <>
                     <img
-                      src={item.data.profilePicture || "/default-avatar.png"}
-                      alt={item.data.fullName}
+                      src={item.profilePicture || "/default-avatar.png"}
+                      alt={item.fullName}
                       className="result-avatar"
                     />
                     <div className="result-info">
-                      <h4>{item.data.fullName}</h4>
+                      <h4>{item.fullName}</h4>
                       <p>Người dùng</p>
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="result-info">
-                      <h4>{item.data.fullName}</h4>
-                      <p className="post-content">{item.data.content}</p>
+                      <h4>{item.fullName}</h4>
+                      <p className="post-content">{item.content}</p>
                       <p>Bài viết</p>
                     </div>
                   </>

@@ -34,6 +34,11 @@ const ShareModal = ({ isOpen, onClose, usersProfile, post }) => {
 
   if (!isOpen) return null;
 
+  const userProfileData = usersProfile || {
+    profilePicture: avatarDefaut,
+    fullName: "University Sharing",
+  };
+
   return (
     <div className="share-Overlay animate__animated animate__fadeIn ">
       <div className="share-Modal ">
@@ -47,9 +52,12 @@ const ShareModal = ({ isOpen, onClose, usersProfile, post }) => {
           />
         </div>
         <div className="Avar-name-share">
-          <img src={usersProfile.profilePicture || avatarDefaut} alt="Avatar" />
+          <img
+            src={userProfileData.profilePicture || avatarDefaut}
+            alt="Avatar"
+          />
           <span className="userName-share">
-            {usersProfile.fullName || "University Sharing"}
+            {userProfileData.fullName || "University Sharing"}
           </span>
         </div>
 

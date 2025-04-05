@@ -21,21 +21,56 @@
     padding: 5px 10px;
     width: 31.25rem;
     height: 30px;
+
     margin: 0 auto;
+    background: white;
+    position: relative; // For absolute positioning of icon
+
+    form {
+      display: flex;
+      width: 100%;
+      align-items: center;
+    }
+
+
+
 
     input[type="text"] {
       border: none;
       outline: none;
       flex-grow: 1;
       margin-left: 10px;
+
       font-size: 1rem;
+      background: transparent;
+      padding-right: 30px; // Space for the icon
+
+      &::placeholder {
+        color: #999;
+        font-style: italic;
+      }
+
     }
+    button {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+
+
+      img {
+        height: 20px;
+        width: 20px;
+      }
 
     .icon {
       width: 1.5rem;
       height: 1.5rem;
       margin-right: 5px;
       flex-shrink: 0;
+
     }
   }
   .search-container {
@@ -333,6 +368,7 @@ $transition: all 0.2s ease;
   gap: 16px;
 
   .post {
+    margin-top: 10px;
     background: #fff;
     border-radius: $border-radius;
     box-shadow: $shadow;
