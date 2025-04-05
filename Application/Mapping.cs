@@ -312,7 +312,7 @@ namespace Application
                 PostType = p.PostType,
                 CommentCount = p.Comments?.Count ?? 0,
                 LikeCount = p.Likes?.Count ?? 0,
-                ShareCount = p.Shares?.Count ?? 0,
+                ShareCount = p.Shares?.Count(s => !s.IsDeleted) ?? 0,
                 HasLiked = validLikes.Any(l => l.UserId == userId) ? 1 : 0,
                 IsSharedPost = p.IsSharedPost,
                 OriginalPostId = p.OriginalPostId,
