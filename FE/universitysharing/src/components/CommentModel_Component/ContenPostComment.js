@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import "../../styles/CommentOverlay.scss";
 import avatarDefaut from "../../assets/AvatarDefault.png";
-import likeIcon from "../../assets/iconweb/likeIcon.svg";
-import likeIconFill from "../../assets/iconweb/likefillIcon.svg";
-import commentIcon from "../../assets/iconweb/commentIcon.svg";
-import moreIcon from "../../assets/iconweb/moreIcon.svg";
-import closeIcon from "../../assets/iconweb/closeIcon.svg";
-import shareIcon from "../../assets/iconweb/shareIcon.svg";
-
 import { useDispatch, useSelector } from "react-redux";
 import { likePost } from "../../stores/action/listPostActions";
-import { debounce } from "lodash";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
+import {
+  FiMoreHorizontal,
+  FiX,
+  FiHeart,
+  FiMessageSquare,
+  FiShare2,
+  FiClock,
+} from "react-icons/fi";
+import { FaHeart } from "react-icons/fa"; // Icon trái tim đầy cho trạng thái đã like
 
 const ContentPostComment = ({ post, onClose }) => {
   const dispatch = useDispatch();
@@ -20,13 +21,23 @@ const ContentPostComment = ({ post, onClose }) => {
   const posts = useSelector((state) =>
     state.posts.posts.find((p) => p.id === post.id)
   );
-  //Like bài viết
-  const handleLikePost = debounce((postId) => {
+
+  // Like bài viết: bỏ debounce, dispatch trực tiếp
+  const handleLikePost = (postId) => {
     dispatch(likePost(postId));
-  }, 1000);
+  };
+
+  // Hàm chuyển đổi UTC sang giờ Việt Nam (UTC+7)
+  const convertUTCToVNTime = (utcDate) => {
+    const date = new Date(utcDate);
+    date.setHours(date.getHours() + 7); // Chuyển sang giờ Việt Nam
+    return date;
+  };
+
   if (!posts) return null; // Tránh lỗi nếu post chưa được truyền xuống
+
   return (
-    <>
+    <div className="content-post-comment">
       <div className="avatar-and-option">
         <div className="avatar-and-name">
           <img
@@ -34,41 +45,92 @@ const ContentPostComment = ({ post, onClose }) => {
             src={posts.profilePicture || avatarDefaut}
             alt="Avatar"
           />
-          <span className="username">{posts.fullName}</span>
-
-          <span className="Time-post-Comments-Modal">
-            {" "}
-            {formatDistanceToNow(new Date(posts.createdAt), {
-              addSuffix: true,
-              locale: vi,
-            })}
-          </span>
+          <div className="user-info">
+            <span className="username">{posts.fullName}</span>
+            <span className="Time-post-Comments-Modal">
+              <FiClock size={12} style={{ marginRight: 4 }} />
+              {formatDistanceToNow(convertUTCToVNTime(posts.createdAt), {
+                addSuffix: true,
+                locale: {
+                  ...vi,
+                  formatDistance: (token, count) => {
+                    switch (token) {
+                      case "lessThanXSeconds":
+                        return "vài giây trước";
+                      case "xSeconds":
+                        return `${count} giây trước`;
+                      case "halfAMinute":
+                        return "30 giây trước";
+                      case "lessThanXMinutes":
+                        return `${count} phút trước`;
+                      case "xMinutes":
+                        return `${count} phút trước`;
+                      case "aboutXHours":
+                        return `${count} giờ trước`;
+                      case "xHours":
+                        return `${count} giờ trước`;
+                      case "xDays":
+                        return `${count} ngày trước`;
+                      case "aboutXMonths":
+                        return `${count} tháng trước`;
+                      case "xMonths":
+                        return `${count} tháng trước`;
+                      case "aboutXYears":
+                        return `${count} năm trước`;
+                      case "xYears":
+                        return `${count} năm trước`;
+                      default:
+                        return "";
+                    }
+                  },
+                },
+                includeSeconds: true,
+              })}
+            </span>
+          </div>
         </div>
         <div className="more-options">
-          {/* <img src={moreIcon} alt="More" /> */}
-          <img src={closeIcon} alt="Close" onClick={onClose} />
+          <FiMoreHorizontal size={20} className="more-icon" />
+          <FiX size={20} className="close-icon" onClick={onClose} />
         </div>
       </div>
+
       <span className="post-content">{posts.content}</span>
-      <div className="interactions">
-        <div className="likes">
-          <img
-            src={posts.hasLiked ? likeIconFill : likeIcon}
-            alt="Like"
-            onClick={() => handleLikePost(post.id)}
-          />
-          <span>{posts.likeCount}</span>
-        </div>
-        <div className="comments">
-          <img src={commentIcon} alt="Comment" />
-          <span>{posts.commentCount}</span>
-        </div>
-        <div className="shares">
-          <img src={shareIcon} alt="Share" />
-          <span>{posts.shareCount}</span>
-        </div>
-      </div>
-    </>
+
+      <div className="actions">
+  {/* Nút Like */}
+  <button
+    className={`action-btn ${posts.hasLiked ? 'liked' : ''}`}
+    onClick={() => handleLikePost(posts.id)}
+    disabled={posts.isLiking}
+  >
+    {posts.hasLiked ? (
+      <FaHeart size={18} className="like-icon" />
+    ) : (
+      <FiHeart size={18} className="like-icon" />
+    )}
+    <span className="action-count">{posts.likeCount}</span>
+  </button>
+
+  {/* Nút Comment */}
+  <button
+    className="action-btn"
+  >
+    <FiMessageSquare size={18} className="comment-icon" />
+    <span className="action-count">{posts.commentCount}</span>
+  </button>
+
+  {/* Nút Share */}
+  <button
+    className="action-btn"
+  
+  >
+    <FiShare2 size={18} className="share-icon" />
+    <span className="action-count">{posts.shareCount}</span>
+  </button>
+</div>
+    </div>
   );
 };
+
 export default ContentPostComment;

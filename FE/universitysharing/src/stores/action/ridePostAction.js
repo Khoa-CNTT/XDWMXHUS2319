@@ -1,16 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
-// const token = localStorage.getItem("token");
-
+// Tạo bài đăng
 export const createPost = createAsyncThunk(
   "ride/createPost",
-  async (
-    { startLocation, endLocation, startTime, postType },
-    { rejectWithValue }
-  ) => {
+  async ({ startLocation, endLocation, startTime, postType }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
       const config = {
@@ -19,63 +14,83 @@ export const createPost = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       };
-
       const response = await axios.post(
         "https://localhost:7053/api/ridepost/create",
-        {
-          startLocation: startLocation,
-          endLocation: endLocation,
-          startTime: startTime,
-          postType: postType,
-        },
+        { startLocation, endLocation, startTime, postType },
         config
       );
-
       toast.success(response.data.message || "Tạo bài đăng thành công!");
-      return response.data.data; // Trả về toàn bộ response để reducer xử lý
+      return response.data.data;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra";
-      console.log(error.response?.data?.message);
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(error.response?.data?.message || "Có lỗi xảy ra");
     }
   }
 );
 
+// Xóa bài đăng
+export const deletePost = createAsyncThunk(
+  "ride/deletePost",
+  async (postId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.delete(
+        `https://localhost:7053/api/ridepost/${postId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success("Xóa bài đăng thành công!");
+      return postId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Lỗi khi xóa bài");
+    }
+  }
+);
+
+// Sửa bài đăng
+export const updatePost = createAsyncThunk(
+  "ride/updatePost",
+  async ({ postId, startLocation, endLocation, startTime, postType }, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `https://localhost:7053/api/ridepost/${postId}`,
+        { startLocation, endLocation, startTime, postType },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success("Cập nhật bài đăng thành công!");
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Lỗi khi sửa bài");
+    }
+  }
+);
+
+// Fetch danh sách bài đăng
 export const fetchRidePost = createAsyncThunk(
   "ride/fetchRidePost",
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-
-      if (!token) {
-        return rejectWithValue("Token không tồn tại hoặc chưa đăng nhập");
-      }
-
-      const response = await axios.get(
-        "https://localhost:7053/api/RidePost/get-all",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
+      const response = await axios.get("https://localhost:7053/api/RidePost/get-all", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       return response.data?.data?.responseRidePostDto || [];
     } catch (error) {
-      console.error("Lỗi API:", error);
-      return rejectWithValue(
-        error.response?.data || error.message || "Lỗi không xác định"
-      );
+      return rejectWithValue(error.response?.data || "Lỗi không xác định");
     }
   }
 );
-// Action để tạo ride
+
+// Tạo ride
 export const createRide = createAsyncThunk(
   "ride/createRide",
   async (rideData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token"); // Giả sử token lưu trong localStorage
+      console.log("rideData", rideData);
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         "https://localhost:7053/api/ride/create",
         rideData,
@@ -83,13 +98,14 @@ export const createRide = createAsyncThunk(
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      return response.data.data; // Trả về dữ liệu từ response
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi không xác định");
     }
   }
 );
-// Lấy danh sách ride của khách hàng
+
+// Fetch danh sách ride của khách hàng
 export const fetchPassengerRides = createAsyncThunk(
   "ride/fetchPassengerRides",
   async (_, { rejectWithValue }) => {
@@ -101,7 +117,8 @@ export const fetchPassengerRides = createAsyncThunk(
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      return response.data.data.rideList; // Lấy rideList thay vì responseRidePostDto
+      console.log("response.data.data.rideList", response.data.data.rideList);
+      return response.data.data.rideList;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi không xác định");
     }

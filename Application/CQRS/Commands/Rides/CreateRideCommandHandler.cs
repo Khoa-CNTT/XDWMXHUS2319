@@ -24,6 +24,7 @@ namespace Application.CQRS.Commands.Rides
                 return ResponseFactory.Fail<ResponseRideDto>("User not found", 404);
 
             var ridePost = await _unitOfWork.RidePostRepository.GetByIdAsync(request.RidePostId);
+            
             if (userId == request.DriverId)
             {
                 return ResponseFactory.Fail<ResponseRideDto>("Driver and Passenger can't be the same", 400);
@@ -32,6 +33,18 @@ namespace Application.CQRS.Commands.Rides
             {
                 return ResponseFactory.Fail<ResponseRideDto>("Post doen't exists or it is matched", 404);
             }
+            // Kiểm tra các chuyến đi đang active của hành khách
+            var activeRides = await _unitOfWork.RideRepository.GetActiveRidesByPassengerIdAsync(userId);
+
+            if (activeRides.Any())
+            {
+                return ResponseFactory.Fail<ResponseRideDto>("You already have an active ride. Please complete it before registering a new one.", 400);
+            }
+
+          
+
+
+
             (double distanceKm, int durationMinutes) = await _ridePostService.CalculateKmDurationAsync(ridePost.StartLocation, ridePost.EndLocation);
             if (distanceKm == 0 && durationMinutes == 0)
             {

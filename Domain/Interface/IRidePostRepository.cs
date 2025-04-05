@@ -13,7 +13,8 @@ namespace Domain.Interface
         Task<List<RidePost>> GetAllRidePostForOwnerAsync(Guid? lastPostId, int pageSize,Guid ownerId);
         Task<List<RidePost>> GetAllRidePostForSearchAI();
         Task<int> GetRidePostCountAsync(Guid userId);
-        Task<(string start, string end)> GetLatLonByRidePostIdAsync(Guid id);
+        Task<(string start, string end, string startL, string EndL)> GetLatLonByRidePostIdAsync(Guid id);
+
 
     }
 }
