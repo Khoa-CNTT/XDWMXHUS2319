@@ -2,15 +2,9 @@ import React from "react";
 import "../../styles/CommentOverlay.scss";
 import avatarDefaut from "../../assets/AvatarDefault.png";
 import { useDispatch, useSelector } from "react-redux";
-import { likePost, sharePost } from "../../stores/action/listPostActions";
+import { likePost } from "../../stores/action/listPostActions";
 import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
-import ShareModal from "../shareModal";
-import {
-  openShareModal,
-  closeShareModal,
-} from "../../stores/reducers/listPostReducers";
-
+import { vi } from "date-fns/locale"; // Tiếng Việt
 import {
   FiMoreHorizontal,
   FiX,
@@ -19,22 +13,20 @@ import {
   FiShare2,
   FiClock,
 } from "react-icons/fi";
-import { FaHeart } from "react-icons/fa";
+import {
+  openShareModal,
+  closeShareModal,
+} from "../../stores/reducers/listPostReducers";
+import { FaHeart } from "react-icons/fa"; // Icon trái tim đầy cho trạng thái đã like
 
 const ContentPostComment = ({ post, onClose }) => {
   const dispatch = useDispatch();
-
-  const { isShareModalOpen, selectedPostToShare } = useSelector(
-    (state) => state.posts
-  );
-
-  const usersProfile = useSelector((state) => state.usersProfile);
 
   const posts = useSelector((state) =>
     state.posts.posts.find((p) => p.id === post.id)
   );
 
-  // Like bài viết: dispatch trực tiếp
+  // Like bài viết: bỏ debounce, dispatch trực tiếp
   const handleLikePost = (postId) => {
     dispatch(likePost(postId));
   };
@@ -42,11 +34,11 @@ const ContentPostComment = ({ post, onClose }) => {
   // Hàm chuyển đổi UTC sang giờ Việt Nam (UTC+7)
   const convertUTCToVNTime = (utcDate) => {
     const date = new Date(utcDate);
-    date.setHours(date.getHours() + 7);
+    date.setHours(date.getHours() + 7); // Chuyển sang giờ Việt Nam
     return date;
   };
 
-  if (!posts) return null;
+  if (!posts) return null; // Tránh lỗi nếu post chưa được truyền xuống
 
   return (
     <div className="content-post-comment">
@@ -109,7 +101,7 @@ const ContentPostComment = ({ post, onClose }) => {
 
       <span className="post-content">{posts.content}</span>
 
-      <div className="interactions">
+      <div className="actions">
         {/* Nút Like */}
         <button
           className={`action-btn ${posts.hasLiked ? "liked" : ""}`}
@@ -125,10 +117,10 @@ const ContentPostComment = ({ post, onClose }) => {
         </button>
 
         {/* Nút Comment */}
-        <div className="comments">
+        <button className="action-btn">
           <FiMessageSquare size={18} className="comment-icon" />
           <span className="action-count">{posts.commentCount}</span>
-        </div>
+        </button>
 
         {/* Nút Share */}
         <button

@@ -21,151 +21,24 @@
     padding: 5px 10px;
     width: 31.25rem;
     height: 30px;
-
     margin: 0 auto;
-    background: white;
-    position: relative; // For absolute positioning of icon
-
-    form {
-      display: flex;
-      width: 100%;
-      align-items: center;
-    }
-
-
-
 
     input[type="text"] {
       border: none;
       outline: none;
       flex-grow: 1;
       margin-left: 10px;
-
       font-size: 1rem;
-      background: transparent;
-      padding-right: 30px; // Space for the icon
-
-      &::placeholder {
-        color: #999;
-        font-style: italic;
-      }
-
     }
-    button {
-      position: absolute;
-      right: 10px;
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-
-
-      img {
-        height: 20px;
-        width: 20px;
-      }
 
     .icon {
       width: 1.5rem;
       height: 1.5rem;
       margin-right: 5px;
       flex-shrink: 0;
-
     }
   }
-  .search-container {
-    position: relative;
-    width: 500pt;
-    margin: 0 20px;
 
-    .search {
-      display: flex;
-      align-items: center;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      padding: 5px 10px;
-      height: 30px;
-      background: white;
-
-      input {
-        border: none;
-        outline: none;
-        flex-grow: 1;
-        margin-left: 10px;
-        font-size: 14px;
-      }
-
-      img {
-        height: 20px;
-        cursor: pointer;
-      }
-    }
-
-    .search-results {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border-radius: 0 0 8px 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      max-height: 400px;
-      overflow-y: auto;
-      z-index: 1000;
-      margin-top: 5px;
-
-      .result-item {
-        padding: 10px 15px;
-        display: flex;
-        align-items: center;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
-
-        &:hover {
-          background-color: #f9f9f9;
-        }
-
-        .result-avatar {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          margin-right: 10px;
-          object-fit: cover;
-        }
-
-        .result-info {
-          flex: 1;
-
-          h4 {
-            margin: 0;
-            font-size: 14px;
-            color: #333;
-          }
-
-          p {
-            margin: 3px 0 0;
-            font-size: 13px;
-            color: #666;
-
-            &.post-content {
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              max-width: 300px;
-            }
-          }
-        }
-      }
-
-      .search-loading,
-      .no-results {
-        padding: 15px;
-        text-align: center;
-        color: #666;
-        font-size: 14px;
-      }
-    }
-  }
   .rightHeader {
     display: flex;
     align-items: center;
@@ -182,7 +55,8 @@
         height: 1.5rem;
       }
 
-      &.user-info { // Style cho phần tên người dùng và avatar
+      &.user-info {
+        // Style cho phần tên người dùng và avatar
         display: flex;
         align-items: center;
         gap: 8px; // Khoảng cách giữa avatar và tên
@@ -238,8 +112,8 @@
 
       // Icon từ react-icons (FiHome, FiUser, v.v.)
       .sidebar-icon {
-        width: 1.40rem; // Tăng từ kích thước mặc định lên 28px (28/16 = 1.75rem)
-        height: 1.40rem;
+        width: 1.4rem; // Tăng từ kích thước mặc định lên 28px (28/16 = 1.75rem)
+        height: 1.4rem;
         margin-right: 12px;
       }
 
@@ -311,7 +185,8 @@
         background: #f0f0f0; // Giữ giống left-sidebar
       }
 
-      &.active { // Thêm trạng thái active để đồng bộ (nếu cần)
+      &.active {
+        // Thêm trạng thái active để đồng bộ (nếu cần)
         background: #e7f3ff;
         span {
           color: #1877f2;
@@ -368,13 +243,12 @@ $transition: all 0.2s ease;
   gap: 16px;
 
   .post {
-    margin-top: 10px;
     background: #fff;
     border-radius: $border-radius;
     box-shadow: $shadow;
     overflow: hidden;
     transition: $transition;
-    
+
     &:hover {
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     }
@@ -385,7 +259,7 @@ $transition: all 0.2s ease;
       align-items: center;
       padding: 12px 16px;
       position: relative;
-      .post-actions{
+      .post-actions {
         cursor: pointer;
       }
       .AvaName {
@@ -436,7 +310,8 @@ $transition: all 0.2s ease;
         align-items: center;
         gap: 8px;
 
-        .btn-more, .btn-close {
+        .btn-more,
+        .btn-close {
           width: 32px;
           height: 32px;
           display: flex;
@@ -483,7 +358,8 @@ $transition: all 0.2s ease;
         align-items: center;
         overflow: hidden;
 
-        img, video {
+        img,
+        video {
           max-width: 100%;
           max-height: 100%;
           object-fit: contain;
@@ -558,12 +434,12 @@ $transition: all 0.2s ease;
 @media (max-width: 768px) {
   .all-posts {
     padding: 0 8px;
-    
+
     .post {
       .media-container {
         &.has-both {
           flex-direction: column;
-          
+
           .post-media {
             width: 100%;
             height: auto;
