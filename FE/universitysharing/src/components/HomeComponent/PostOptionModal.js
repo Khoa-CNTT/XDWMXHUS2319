@@ -67,12 +67,12 @@ const PostOptionsModal = ({
     <>
       {!isHidden && (
         <div
-          className="modal-overlay"
+          className="modal-postOption-overlay"
           onClick={onClose}
           style={{ top: `${position.top}px`, left: `${position.left}px` }}
         >
           <div
-            className="modal-content"
+            className="modal-postOption-content"
             onClick={(e) => e.stopPropagation()}
             ref={modalRef}
           >
