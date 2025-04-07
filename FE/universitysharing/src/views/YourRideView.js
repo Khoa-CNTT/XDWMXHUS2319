@@ -4,7 +4,7 @@ import Footer from "../components/HomeComponent/FooterHome";
 import LeftSidebar from "../components/HomeComponent/LeftSideBarHome";
 import RightSidebar from "../components/HomeComponent/RightSideBarHome";
 import InputCreateRide from "../components/RideComponent/InputCreateRide";
-import YourRide from "../components/RideComponent/YourRide";
+import YourRide from "../components/RideComponent/YourRIde";
 import "../styles/HomeView.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { userProfile } from "../stores/action/profileActions";
@@ -22,7 +22,7 @@ const SharingRideView = () => {
       <Header className="header" usersProfile={users} />
       <div className="main-content">
         <div className="left-sidebar">
-          <LeftSidebar />
+          <LeftSidebar usersProfile={users} />
           <Footer className="footer" />
         </div>
         <div className="center-content">
