@@ -1,5 +1,7 @@
 ﻿
 
+using static Domain.Common.Enums;
+
 namespace Infrastructure.Data.Repositories
 {
     public class RidePostRepository : BaseRepository<RidePost>, IRidePostRepository
@@ -18,7 +20,9 @@ namespace Infrastructure.Data.Repositories
             // Giới hạn số lượng bài viết tối đa cho mỗi request (tránh bị lạm dụng)
             const int MAX_PAGE_SIZE = 50;
             pageSize = Math.Min(pageSize, MAX_PAGE_SIZE);
-            var query = _context.RidePosts.AsQueryable();
+            var query = _context.RidePosts
+                .Where(x=>x.Status == RidePostStatusEnum.open) // Chỉ lấy bài viết đang mở
+                .AsQueryable();
             if (lastPostId.HasValue)
             {
                 var lastPost =await _context.RidePosts.FindAsync(lastPostId);
@@ -76,17 +80,17 @@ namespace Infrastructure.Data.Repositories
             return _context.RidePosts.CountAsync(rp => rp.UserId == userId);
         }
 
-        public async Task<(string start, string end)> GetLatLonByRidePostIdAsync(Guid id)
+        public async Task<(string start, string end,string startL,string EndL)> GetLatLonByRidePostIdAsync(Guid id)
         {
             var ridePost = await _context.RidePosts
                 .Where(rp => rp.Id == id)
-                .Select(rp => new { rp.LatLonStart, rp.LatLonEnd })
+                .Select(rp => new { rp.LatLonStart, rp.LatLonEnd ,rp.StartLocation,rp.EndLocation})
                 .FirstOrDefaultAsync();
 
             if (ridePost == null)
-                return ("null","null");
+                return ("null","null","","");
 
-            return (ridePost.LatLonStart, ridePost.LatLonEnd);
+            return (ridePost.LatLonStart, ridePost.LatLonEnd,ridePost.StartLocation,ridePost.EndLocation);
         }
 
     }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static Domain.Common.Enums;
+using static Domain.Common.Helper;
 
 namespace Domain.Entities
 {
@@ -15,7 +16,7 @@ namespace Domain.Entities
         public string? ImageUrl { get; private set; }
         public string? VideoUrl { get; private set; }
         public PostTypeEnum PostType { get; private set; }
-        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; private set; }
         public DateTime? UpdateAt { get; private set; }
         public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
         public double? Score { get; private set; } = 0;
@@ -48,6 +49,7 @@ namespace Domain.Entities
             UserId = userId;
             Content = content;
             PostType = postType;
+            CreatedAt =DateTime.UtcNow;
             Scope = scope;
             ImageUrl = imageUrl;
             VideoUrl = videoUrl;

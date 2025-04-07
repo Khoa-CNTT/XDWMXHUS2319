@@ -80,6 +80,7 @@ namespace Application
                 Id = user?.Id,
                 FullName = user?.FullName,
                 Email = user?.Email,
+                CreatedAt = user?.CreatedAt ?? DateTime.MinValue, // ✅ Cung cấp giá trị mặc định
                 ProfilePicture = user?.ProfilePicture != null ? $"{Constaint.baseUrl}{user?.ProfilePicture}" : null,
             };
         }
