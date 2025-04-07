@@ -32,21 +32,21 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
     const files = Array.from(event.target.files);
     if (!files.length) return;
 
-    const newMediaFiles = files.map(file => ({
+    const newMediaFiles = files.map((file) => ({
       url: URL.createObjectURL(file),
       type: file.type.startsWith("video") ? "video" : "image",
       file: file,
     }));
 
-    setMediaFiles(prev => {
+    setMediaFiles((prev) => {
       // Lấy danh sách ảnh hiện tại
-      const currentImages = prev.filter(media => media.type === "image");
+      const currentImages = prev.filter((media) => media.type === "image");
       // Kiểm tra có video trong file mới upload không
-      const hasNewVideo = newMediaFiles.some(media => media.type === "video");
+      const hasNewVideo = newMediaFiles.some((media) => media.type === "video");
       // Lấy video mới (nếu có)
-      const newVideo = newMediaFiles.find(media => media.type === "video");
+      const newVideo = newMediaFiles.find((media) => media.type === "video");
       // Lấy tất cả ảnh mới
-      const newImages = newMediaFiles.filter(media => media.type === "image");
+      const newImages = newMediaFiles.filter((media) => media.type === "image");
 
       if (hasNewVideo) {
         // Nếu có video mới, thay thế video cũ (nếu có) và giữ lại các ảnh hiện tại
@@ -59,7 +59,7 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
   };
 
   const handleRemoveMedia = (index) => {
-    setMediaFiles(prev => prev.filter((_, i) => i !== index));
+    setMediaFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -74,13 +74,13 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
     formData.append("Scope", scope);
 
     if (mediaFiles.length > 0) {
-      const videoFile = mediaFiles.find(media => media.type === "video");
-      const imageFiles = mediaFiles.filter(media => media.type === "image");
+      const videoFile = mediaFiles.find((media) => media.type === "video");
+      const imageFiles = mediaFiles.filter((media) => media.type === "image");
 
       if (videoFile) {
         formData.append("Video", videoFile.file);
       }
-      
+
       imageFiles.forEach((image, index) => {
         formData.append(`Image`, image.file);
       });
@@ -101,13 +101,10 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
 
   return (
     <>
-      <div
-        className="create-post-overlay animate__animated animate__fadeIn animate_faster"
-        onClick={onClose}
-      ></div>
-      <div className="create-post-modal animate__animated animate__fadeIn animate_faster">
+      <div className="create-post-overlay" onClick={onClose}></div>
+      <div className="create-post-modal">
         <div className="header-post-modal">
-          <span>Đăng bài </span>
+          <span>Đăng bài</span>
           <img
             src={closeIcon}
             alt="Close"
@@ -115,6 +112,7 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
             className="close-icon"
           />
         </div>
+        {/* Rest of your JSX remains the same */}
         <div className="user-create-post">
           <img
             src={usersProfile.profilePicture || avatarDeafault}
@@ -184,8 +182,9 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
             onChange={(e) => setPostType(Number(e.target.value))}
           >
             <option value="4">Thảo luận</option>
-            <option value="4">Tư liệu học tập</option>
-            <option value="4">Trao đổi</option>
+            <option value="5">Tư liệu học tập</option>{" "}
+            {/* Sửa value để khác nhau */}
+            <option value="6">Trao đổi</option> {/* Sửa value để khác nhau */}
           </select>
         </div>
         <button
@@ -196,12 +195,6 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
           {loading ? <Spinner size={20} color="#fff" /> : "Đăng bài"}
         </button>
       </div>
-
-      {loading && (
-        <div className="loading-overlay">
-          <Spinner size={50} />
-        </div>
-      )}
     </>
   );
 };

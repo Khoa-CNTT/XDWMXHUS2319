@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import "../../styles/headerHome.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
-import { useNavigate } from "react-router-dom";
+
 import {
   FiSearch,
   FiBell,
@@ -15,16 +15,18 @@ import NotifyModal from "../NotifyModal";
 import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
 
+import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
+import { searchPost } from "../../stores/action/searchAction";
+
 import { useDispatch } from "react-redux";
 
 // import { resetApp } from "../../stores/stores";
 
-const Header = () => {
-
+const Header = ({ usersProfile }) => {
   const dispatch = useDispatch();
   // console.log("Data User truyền xuống: ", usersProfile);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
-  const usersProfile = useSelector((state) => state.users.usersProfile);
   const navigate = useNavigate();
 
   const UserProfile = () => {
@@ -34,7 +36,16 @@ const Header = () => {
   const handleHomeView = () => {
     navigate("/home");
   };
-
+  //search cua thanh
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchKeyword.trim()) {
+      dispatch(searchPost(searchKeyword));
+      navigate(`/ResultSearchView?q=${encodeURIComponent(searchKeyword)}`);
+      // Clear the search input after submission if needed
+      setSearchKeyword("");
+    }
+  };
 
   //Đăng xuất
   const handleLogout = () => {
@@ -64,9 +75,20 @@ const Header = () => {
         <div className="logoWeb" onClick={handleHomeView}>
           <img className="logowebsite" src={logoweb} alt="University Sharing" />
         </div>
+
         <div className="search">
-          <input type="text" placeholder="Tìm kiếm" />
-          <FiSearch className="icon" />
+          <form onSubmit={handleSearch} className="search-form">
+            <div className="search-container">
+              <FiSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                className="search-input"
+              />
+            </div>
+          </form>
         </div>
         <div className="rightHeader">
           <span onClick={() => toggleModal("messenger")}>

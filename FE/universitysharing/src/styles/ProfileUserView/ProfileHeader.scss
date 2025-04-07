@@ -18,9 +18,9 @@
   &__background-image {
     width: 100%;
     height: 100%;
-    object-fit: cover; // Đảm bảo hình phủ kín khung
-    object-position: center center; // Căn giữa cả chiều ngang và dọc
-    display: block; // Loại bỏ khoảng trống dưới ảnh
+    object-fit: cover; // Quan trọng: giúp ảnh phủ kín mà không bị méo
+    object-position: center; // Giữ ảnh ở chính giữa (cả ngang và dọc)
+    display: block;
   }
 
   &__info {

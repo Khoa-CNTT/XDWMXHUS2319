@@ -13,6 +13,10 @@ import {
   FiShare2,
   FiClock,
 } from "react-icons/fi";
+import {
+  openShareModal,
+  closeShareModal,
+} from "../../stores/reducers/listPostReducers";
 import { FaHeart } from "react-icons/fa"; // Icon trái tim đầy cho trạng thái đã like
 
 const ContentPostComment = ({ post, onClose }) => {
@@ -98,37 +102,35 @@ const ContentPostComment = ({ post, onClose }) => {
       <span className="post-content">{posts.content}</span>
 
       <div className="actions">
-  {/* Nút Like */}
-  <button
-    className={`action-btn ${posts.hasLiked ? 'liked' : ''}`}
-    onClick={() => handleLikePost(posts.id)}
-    disabled={posts.isLiking}
-  >
-    {posts.hasLiked ? (
-      <FaHeart size={18} className="like-icon" />
-    ) : (
-      <FiHeart size={18} className="like-icon" />
-    )}
-    <span className="action-count">{posts.likeCount}</span>
-  </button>
+        {/* Nút Like */}
+        <button
+          className={`action-btn ${posts.hasLiked ? "liked" : ""}`}
+          onClick={() => handleLikePost(posts.id)}
+          disabled={posts.isLiking}
+        >
+          {posts.hasLiked ? (
+            <FaHeart size={18} className="like-icon" />
+          ) : (
+            <FiHeart size={18} className="like-icon" />
+          )}
+          <span className="action-count">{posts.likeCount}</span>
+        </button>
 
-  {/* Nút Comment */}
-  <button
-    className="action-btn"
-  >
-    <FiMessageSquare size={18} className="comment-icon" />
-    <span className="action-count">{posts.commentCount}</span>
-  </button>
+        {/* Nút Comment */}
+        <button className="action-btn">
+          <FiMessageSquare size={18} className="comment-icon" />
+          <span className="action-count">{posts.commentCount}</span>
+        </button>
 
-  {/* Nút Share */}
-  <button
-    className="action-btn"
-  
-  >
-    <FiShare2 size={18} className="share-icon" />
-    <span className="action-count">{posts.shareCount}</span>
-  </button>
-</div>
+        {/* Nút Share */}
+        <button
+          className="action-btn"
+          onClick={() => dispatch(openShareModal(posts))}
+        >
+          <FiShare2 size={18} className="share-icon" />
+          <span className="action-count">{posts.shareCount}</span>
+        </button>
+      </div>
     </div>
   );
 };

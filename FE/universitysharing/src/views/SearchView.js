@@ -7,7 +7,7 @@ import "../styles/HomeView.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { userProfile } from "../stores/action/profileActions";
 import SearchComponent from "../components/SearchComponent/SearchComponent";
-const HomeView = () => {
+const SearchView = () => {
   const dispatch = useDispatch();
   const usersState = useSelector((state) => state.users) || {};
   const { users } = usersState;
@@ -33,4 +33,4 @@ const HomeView = () => {
   );
 };
 
-export default HomeView;
+export default SearchView;

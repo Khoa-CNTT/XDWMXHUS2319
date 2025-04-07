@@ -168,6 +168,7 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
   };
 
   //Like bài viết
+
 // Like bài viết
 // Like bài viết
 const handleLikePost = (postId) => {
@@ -180,6 +181,7 @@ const convertUTCToVNTime = (utcDate) => {
   date.setHours(date.getHours() + 7);
   return date;
 };
+
   return (
     <div className="all-posts">
       {loadingCreatePost && (
