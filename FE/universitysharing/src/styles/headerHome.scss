@@ -383,8 +383,6 @@ $transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
       gap: 1px;
-      border-top: 1px solid #e4e6eb;
-      border-bottom: 1px solid #e4e6eb;
 
       .post-media {
         width: 100%;
@@ -487,7 +485,96 @@ $transition: all 0.2s ease;
     }
   }
 }
+.post-actions-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 14px;
+  color: $secondary-color;
+  margin: 8px 0px;
 
+  .reactions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .like-icon {
+      color: #f3425f;
+
+      &.liked {
+        animation: pop 0.3s ease;
+      }
+    }
+    span {
+      font-size: 14px;
+      font-weight: 500;
+      color: $secondary-color;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .comments-shares {
+    display: flex;
+    gap: 16px;
+    span {
+      font-size: 14px;
+      font-weight: 500;
+      color: $secondary-color;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.post-actions {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: $border-radius;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: $transition;
+    font-size: 15px;
+    font-weight: 500;
+    color: $secondary-color;
+
+    &:hover {
+      background: $hover-bg;
+    }
+
+    &.liked {
+      color: #f91880;
+    }
+
+    svg {
+      font-size: 18px;
+    }
+  }
+}
+
+// Hiệu ứng icon
+@keyframes pop {
+  0% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 // scss footer
 .footer {
   text-align: center;
