@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Likes;
+﻿using Application.Common;
+using Application.DTOs.Likes;
 using Application.DTOs.Post;
 using Application.DTOs.User;
 using Application.Model.Events;
@@ -21,8 +22,7 @@ namespace Application.Services
         }
         public async Task<GetLikeWithCursorResponse> GetLikesByPostIdWithCursorAsync(Guid postId, Guid? lastUserId)
         {
-            const string baseUrl = "https://localhost:7053";
-            int pageSize = 2; // 📌 Set cứng lấy 2 người mỗi lần
+            int pageSize = 10; // 📌 Set cứng lấy 2 người mỗi lần
 
             var (likes, nextCursor) = await _unitOfWork.LikeRepository.GetLikesByPostIdWithCursorAsync(postId, lastUserId, pageSize);
             int likeCount = await _unitOfWork.LikeRepository.CountLikesByPostIdAsync(postId);
@@ -32,7 +32,7 @@ namespace Application.Services
                 {
                     UserId = l.User!.Id,
                     UserName = l.User.FullName,
-                    ProfilePicture = l.User.ProfilePicture != null ? $"{baseUrl}{l.User.ProfilePicture}" : null, // ✅ Thêm Base URL
+                    ProfilePicture = l.User.ProfilePicture != null ? $"{Constaint.baseUrl}{l.User.ProfilePicture}" : null, // ✅ Thêm Base URL
                 }).ToList();
 
             return new GetLikeWithCursorResponse
