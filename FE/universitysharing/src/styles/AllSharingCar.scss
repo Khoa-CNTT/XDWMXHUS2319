@@ -51,9 +51,32 @@
 
   .content-ride-post {
     display: block;
-    margin: 10px 0;
+    margin: 20px 0; // Thêm khoảng cách để nội dung không quá sát nhau
     font-size: 14px;
+    color: #333; // Màu chữ chính cho nội dung
+    line-height: 1.5; // Cải thiện khoảng cách dòng giúp đọc dễ dàng hơn
+    border-left: 4px solid #4CAF50; // Đánh dấu bài viết bằng viền bên trái
+    padding-left: 15px; // Khoảng cách cho văn bản khỏi viền
+    background-color: #f9f9f9; // Nền nhạt giúp bài viết dễ nhìn
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Thêm bóng nhẹ cho phần nội dung
+    border-radius: 8px; // Bo góc nhẹ để mềm mại hơn
   }
+  
+  .post-content {
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: bold; // Làm cho nội dung bài viết nổi bật hơn
+    color: #333; // Màu chữ chính
+  }
+  
+  .location-time {
+    display: block;
+    font-size: 14px;
+    color: #777; // Màu nhạt cho thông tin địa điểm và thời gian
+    margin-top: 5px; // Thêm khoảng cách trên giữa nội dung và thông tin địa điểm
+    font-style: italic; // Chữ nghiêng giúp phân biệt với phần nội dung chính
+  }
+  
 
   .map-ride-post {
     margin-top: 10px;

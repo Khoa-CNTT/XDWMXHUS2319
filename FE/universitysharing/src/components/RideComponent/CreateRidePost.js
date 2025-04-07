@@ -1,269 +1,354 @@
-import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Polyline } from "react-leaflet";
+import React, { useState, useEffect, useCallback } from "react";
+import { MapContainer, TileLayer, Marker, Polyline, useMap, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import positionIcon from "../../assets/iconweb/my_locationIcon.svg";
-import closeIcon from "../../assets/iconweb/closeIcon.svg";
+import { Icon } from "leaflet";
+import { FaTimes, FaSearchLocation, FaClock, FaPaperPlane } from "react-icons/fa";
+import { MdMyLocation } from "react-icons/md";
 import avatarDefault from "../../assets/AvatarDefault.png";
 import "../../styles/CreateRideModal.scss";
-import pingIcon from "../../assets/iconweb/location_pingIcon.svg";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { SetCenterMap, SetCenterMapEnd } from "../../utils/setCenterMap";
-import LocationSearch from "./LocationSreach";
-// Thêm import từ Redux huy làm
+import LocationSearch from "./LocationSreach"; // Đảm bảo tên file đúng
 import { useDispatch, useSelector } from "react-redux";
-import { createPost } from "../../stores/action/ridePostAction"; // Import action
-import { resetPostState } from "../../stores/reducers/ridePostReducer"; // Import reducer action
-//
+import { createPost } from "../../stores/action/ridePostAction";
+import { resetPostState } from "../../stores/reducers/ridePostReducer";
+
+// Custom hook để kiểm soát bản đồ
+const useMapControl = (center, bounds) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, 13);
+    }
+    if (bounds) {
+      map.setMaxBounds(bounds);
+      map.setMinZoom(12);
+      map.setMaxZoom(18);
+    }
+  }, [center, map, bounds]);
+};
+
+// Giới hạn phạm vi Đà Nẵng
+const daNangBounds = L.latLngBounds(
+  L.latLng(15.975, 108.05), // Tây Nam Đà Nẵng
+  L.latLng(16.15, 108.35)   // Đông Bắc Đà Nẵng
+);
+
+const HERE_API_KEY = process.env.REACT_APP_HERE_API_KEY;
+
 const CreateRidePost = ({ onClose, usersProfile }) => {
   const [selectedTime, setSelectedTime] = useState("");
-  const [startLocation, setStartLocation] = useState([0, 0]);
-  const [endLocation, setEndLocation] = useState([16.0497517, 108.1603569]);
-  const [route, setRoute] = useState([]); // Lưu tuyến đường
-  const [startAddress, setStartAddress] = useState(
-    "Vị trí của bạn(Thiết bị sẽ tự động dò)"
-  );
+  const [startLocation, setStartLocation] = useState([16.054407, 108.202167]); // Trung tâm Đà Nẵng
+  const [endLocation, setEndLocation] = useState(null);
+  const [route, setRoute] = useState([]);
+  const [startLabel, setStartLabel] = useState("Vị trí của bạn"); // Chỉ hiển thị trên client
+  const [endLabel, setEndLabel] = useState(""); // Chỉ hiển thị trên client
   const [isUserInteracted, setIsUserInteracted] = useState(false);
   const [minDateTime, setMinDateTime] = useState("");
-  // Thêm Redux hooks để lấy state và dispatch action huy làm
+  const [content, setContent] = useState(""); // Thêm state cho nội dung bài viết
+
   const dispatch = useDispatch();
   const { loading, error, success } = useSelector((state) => state.rides);
-  //
+
+  const startIcon = new Icon({
+    iconUrl: require("leaflet/dist/images/marker-icon.png"),
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+  });
+
+  const endIcon = new Icon({
+    iconUrl: require("leaflet/dist/images/marker-icon.png"),
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    className: "destination-marker",
+  });
+
   useEffect(() => {
     const now = new Date();
-    const localISOTime = now.toISOString().slice(0, 16); // Lấy định dạng 'YYYY-MM-DDTHH:MM'
+    const localISOTime = now.toISOString().slice(0, 16);
     setMinDateTime(localISOTime);
   }, []);
-  // Lấy tọa độ hiện tại
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
+
+  const getCurrentLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      toast.error("Trình duyệt không hỗ trợ định vị!");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-        setStartLocation([lat, lng]);
-
-        try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-          );
-          const data = (await response).json;
-          if (data.display_name) {
-            setStartAddress(data.display_name);
-          } else {
-            setStartAddress(`${lat}, ${lng}`);
-            //setStartAddress("Vị trí của bạn đã được cập nhật!");
-          }
-        } catch (error) {
-          console.error("Lỗi khi lấy địa chỉ:", error);
-          setStartAddress(`${lat}, ${lng}`); // Hiển thị tọa độ nếu lỗi
+        if (!daNangBounds.contains([lat, lng])) {
+          toast.warning("Vị trí của bạn ngoài phạm vi Đà Nẵng!");
+          return;
         }
-      });
-    } else {
-      alert("Trình duyệt của bạn không hỗ trợ định vị!");
-    }
-  };
+        setStartLocation([lat, lng]);
+        await fetchAddress(lat, lng, setStartLabel);
+      },
+      (error) => {
+        toast.error("Không thể lấy vị trí hiện tại!");
+        console.error("Lỗi định vị:", error);
+      }
+    );
+  }, []);
 
-  // Gửi request API lấy đường đi
-  const getRoute = async () => {
+  const fetchAddress = async (lat, lng, setLabel) => {
     try {
-      const apiKey = "xin chào"; //process.env.REACT_APP_GRAPHHOPPER_API_KEY; // Thay bằng API Key của bạn
-      const url = `https://graphhopper.com/api/1/route?point=${startLocation[0]},${startLocation[1]}&point=${endLocation[0]},${endLocation[1]}&profile=car&locale=vi&points_encoded=false&key=${apiKey}`;
-
-      const response = await fetch(url);
+      const response = await fetch(
+        `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat},${lng}&lang=vi&apiKey=${HERE_API_KEY}`
+      );
       const data = await response.json();
-      console.log("GraphHopper API Response:", data); // Debug API response
-
-      if (data.paths && data.paths.length > 0) {
-        // setRoute(data.paths[0].points.coordinates); // Lưu tuyến đường
-        // console.log("Tọa độ nhận được:", coordinates); // Debug tọa độ
-        toast.warning("Bạn đã request tuyến đường!");
-
-        const coordinates = data.paths[0].points.coordinates;
-        // console.log("Tọa độ nhận được:", coordinates); // Debug tọa độ
-
-        setRoute(coordinates);
+      if (data.items && data.items.length > 0) {
+        setLabel(data.items[0]?.title || `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
       } else {
-        console.warn("Không tìm thấy tuyến đường!");
-        setRoute([]); // Xóa tuyến đường cũ nếu API không trả về kết quả
+        setLabel(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
       }
     } catch (error) {
-      console.error("Lỗi lấy đường đi:", error);
+      console.error("Lỗi lấy địa chỉ:", error);
+      setLabel(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
     }
   };
 
-  // Khi chọn điểm đến, gọi API để lấy tuyến đường
-  const handleLocationChange = (event) => {
-    const value = event.target.value.split(",").map(Number);
-    // console.log("Tọa độ điểm đến:", value);
-    setEndLocation(value);
-    setIsUserInteracted(true); // Đánh dấu rằng người dùng đã chọn điểm đến
-  }; //Sau sài cho Select
+  const getRoute = useCallback(async () => {
+    if (!startLocation || !endLocation) return;
+    try {
+      const url = `https://router.hereapi.com/v8/routes?transportMode=car&origin=${startLocation[0]},${startLocation[1]}&destination=${endLocation[0]},${endLocation[1]}&return=polyline&apiKey=${HERE_API_KEY}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.routes?.[0]?.sections?.[0]?.polyline) {
+        const polyline = data.routes[0].sections[0].polyline;
+        const coords = decodePolyline(polyline);
+        setRoute(coords);
+      } else {
+        toast.warning("Không tìm thấy tuyến đường!");
+        setRoute([]);
+      }
+    } catch (error) {
+      console.error("Lỗi lấy tuyến đường:", error);
+      toast.error("Không thể tải tuyến đường!");
+    }
+  }, [startLocation, endLocation]);
 
-  const updateEndLocation = (location) => {
-    // Xử lý trường hợp từ <LocationSearch>
-    // console.log("Cập nhật từ LocationSearch:", location);
-    setEndLocation(location);
-    setIsUserInteracted(true); // Đánh dấu rằng người dùng đã chọn điểm đến
+  const decodePolyline = (encoded) => {
+    const coords = [];
+    let index = 0;
+    let lat = 0;
+    let lng = 0;
+
+    while (index < encoded.length) {
+      let shift = 0;
+      let result = 0;
+      let byte;
+
+      do {
+        byte = encoded.charCodeAt(index++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20);
+
+      const deltaLat = (result & 1) ? ~(result >> 1) : (result >> 1);
+      lat += deltaLat;
+
+      shift = 0;
+      result = 0;
+      do {
+        byte = encoded.charCodeAt(index++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20);
+
+      const deltaLng = (result & 1) ? ~(result >> 1) : (result >> 1);
+      lng += deltaLng;
+
+      coords.push([lat / 1e5, lng / 1e5]);
+    }
+    return coords;
   };
+
+  const updateLocation = useCallback((location, label, setLocation, setLabel, type) => {
+    if (!daNangBounds.contains(location)) {
+      toast.warning(`Điểm ${type} phải trong phạm vi Đà Nẵng!`);
+      return;
+    }
+    setLocation(location);
+    setLabel(label); // Chỉ cập nhật label để hiển thị trên client
+    setIsUserInteracted(true);
+  }, []);
 
   useEffect(() => {
-    if (isUserInteracted && endLocation) {
-      //console.log("endLocation đã cập nhật, gọi getRoute()");
+    if (isUserInteracted && startLocation && endLocation) {
       getRoute();
     }
-  }, [endLocation]); // Chỉ chạy khi endLocation thay đổi và đã có tương tác của user
+  }, [startLocation, endLocation, isUserInteracted, getRoute]);
 
-  // Thêm useEffect để xử lý sau khi tạo post thành công huy làm
   useEffect(() => {
     if (success) {
       toast.success("Đăng bài thành công!");
       setTimeout(() => {
-        dispatch(resetPostState()); // Reset state sau khi thành công
-        onClose(); // Đóng modal
+        dispatch(resetPostState());
+        onClose();
       }, 2000);
-    }
-    if (error) {
-      toast.error(error); // Hiển thị lỗi nếu có
+    } else if (error) {
+      toast.error(error);
     }
   }, [success, error, dispatch, onClose]);
 
-  // Hàm xử lý khi nhấn nút "Đăng bài"
   const handleCreatePost = () => {
-    if (!startAddress || !endLocation || !selectedTime) {
+    if (!startLocation || !endLocation || !selectedTime) {
       toast.error("Vui lòng điền đầy đủ thông tin!");
       return;
     }
-
-    // Chuẩn bị dữ liệu gửi lên BE
     const postData = {
-      startLocation: startAddress, // Dùng địa chỉ thay vì tọa độ
-      endLocation: `${endLocation[0]}, ${endLocation[1]}`, // Chuyển tọa độ thành chuỗi
-      startTime: selectedTime, // Thời gian đã chọn từ input
-      postType: 0, // Giá trị mặc định theo mẫu JSON của bạn
+      content: content || null, // Nội dung bài viết (có thể null)
+      startLocation: `${startLocation[0]},${startLocation[1]}`, // Tọa độ dạng chuỗi: "lat,lng"
+      endLocation: `${endLocation[0]},${endLocation[1]}`, // Tọa độ dạng chuỗi: "lat,lng"
+      startTime: selectedTime,
+      postType: 0,
     };
-
-    dispatch(createPost(postData)); // Dispatch action để tạo post
+    dispatch(createPost(postData));
   };
-  //
+
   return (
     <>
-      <div className="Create-Ride-Post-overlay" onClick={onClose}></div>
-      <div className="Create-Ride-Post-Modal">
-        <div className="header-create-ride">
-          <span>Đăng bài</span>
-          <img
-            className="close-create-ride"
-            src={closeIcon}
-            alt="Close"
-            onClick={onClose}
-          />
-        </div>
-        <div className="user-Create-ride">
-          <img
-            className="Avatar-user-Create"
-            src={usersProfile.profilePicture || avatarDefault}
-            alt="Avatar"
-          />
-          <strong className="user-name-Create">
-            {usersProfile.fullName || "University Sharing"}
-          </strong>
-        </div>
-        <div className="create-ride">
-          <div className="startLocation">
-            <span>Điểm đi</span>
-            <input
-              readOnly
-              value={startAddress}
-              placeholder="Vị trí của bạn(Thiết bị sẽ tự động dò) "
-            ></input>
-            <img
-              src={positionIcon}
-              alt="Location"
-              onClick={getCurrentLocation}
-            />
+      <div className="modal-overlay" onClick={onClose}></div>
+      <div className="modal-container">
+        <div className="modal-header">
+          <div className="header-content">
+            <h2>Chia sẻ chuyến đi</h2>
+            <p>Tìm người đi chung dễ dàng</p>
           </div>
-          <div className="endLocation">
-            <span>Điểm đến</span>
-            {/* <select onChange={handleLocationChange}>
-              <option value="16.0497517,108.1603569">
-                Đại Học Duy Tân - Hòa Khánh Nam
-              </option>
-              <option value="16.0600602,108.209513">
-                Đại Học Duy Tân - Nguyễn Văn Linh
-              </option>
-              <option value="16.0745184,108.2226759">
-                Đại Học Duy Tân - Quang Trung
-              </option>
-              <option value="16.0164504,108.2069124">
-                Đại Học Duy Tân - Phan Văn Trị
-              </option>
-            </select> */}
-            {/* <input placeholder="Nhập vào điểm đến!"></input> */}
-            {/* <LocationSearch onSelect={setEndLocation} /> */}
-            <LocationSearch onSelect={updateEndLocation} />
+          <button className="close-btn" onClick={onClose}>
+            <FaTimes />
+          </button>
+        </div>
 
-            <img src={pingIcon}></img>
+        <div className="user-section">
+          <div className="user-avatar">
+            <img src={usersProfile.profilePicture || avatarDefault} alt="Avatar" />
+          </div>
+          <div className="user-info">
+            <span className="user-name">{usersProfile.fullName || "Người dùng"}</span>
+            <span className="post-time">Bây giờ</span>
           </div>
         </div>
 
-        <div className="time-start">
-          <label>Thời gian khởi hành:</label>
-          <input
-            required
-            type="datetime-local"
-            min={minDateTime}
-            value={selectedTime}
-            onChange={(e) => setSelectedTime(e.target.value)}
-          />
+        <div className="form-content">
+          <div className="form-group">
+            <div className="floating-textarea">
+              <textarea
+                rows="4"
+                maxLength="200"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                required
+                className="input-field"
+              />
+              <label htmlFor="post-content">Nội dung bài viết</label>
+              <span className="char-counter">{content.length}/200</span>
+            </div>
+          </div>
+
+          <div className="location-group">
+            <div className="form-group">
+              <div className="floating-input with-icon">
+                <LocationSearch
+                  onSelect={(location, label) =>
+                    updateLocation(location, label, setStartLocation, setStartLabel, "đi")
+                  }
+                  bounds={daNangBounds}
+                  placeholder="Nhập điểm đi"
+                  value={startLabel}
+                />
+                <button className="input-action" onClick={getCurrentLocation}>
+                  <MdMyLocation />
+                </button>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <div className="floating-input with-icon">
+                <LocationSearch
+                  onSelect={(location, label) =>
+                    updateLocation(location, label, setEndLocation, setEndLabel, "đến")
+                  }
+                  bounds={daNangBounds}
+                  placeholder="Nhập điểm đến"
+                  value={endLabel}
+                />
+                <span className="input-action">
+                  <FaSearchLocation />
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <div className="floating-input">
+              <input
+                type="datetime-local"
+                min={minDateTime}
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                required
+                className="input-field"
+              />
+              <label htmlFor="start-time">
+                <FaClock className="icon" /> Thời gian khởi hành
+              </label>
+            </div>
+          </div>
         </div>
 
-        <div className="review-map">
+        <div className="map-preview">
           <MapContainer
             center={startLocation}
             zoom={13}
-            className="map-container"
+            className="map-view"
+            maxBounds={daNangBounds}
+            maxBoundsViscosity={1.0}
           >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {/* Điều khiển bản đồ cập nhật vị trí */}
-            <SetCenterMap center={startLocation} />
-
-            {/* Marker điểm đi */}
-            <Marker
-              position={startLocation}
-              icon={L.icon({ iconUrl: positionIcon, iconSize: [30, 30] })}
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             />
-            {/* <SetCenterMapEnd endLocation={endLocation} /> */}
-            {/* Marker điểm đến */}
-            <Marker
-              position={endLocation}
-              icon={L.icon({
-                iconUrl: pingIcon, // Thay bằng icon mong muốn
-                iconSize: [30, 30],
-              })}
-            />
+            <MapControl center={startLocation || endLocation} bounds={daNangBounds} />
 
-            {/* Vẽ tuyến đường */}
+            <Marker position={startLocation} icon={startIcon}>
+              <Popup>Điểm đi: {startLabel}</Popup>
+            </Marker>
+
+            {endLocation && (
+              <Marker position={endLocation} icon={endIcon}>
+                <Popup>Điểm đến: {endLabel}</Popup>
+              </Marker>
+            )}
+
             {route.length > 0 && (
-              <Polyline
-                positions={route.map((point) => [point[1], point[0]])}
-                color="blue"
-              />
+              <Polyline positions={route} color="var(--primary-color)" weight={4} />
             )}
           </MapContainer>
         </div>
 
-        {/* Cập nhật nút "Đăng bài" để gọi handleCreatePost huy làm */}
-        <button
-          className="btn-create-ride"
-          onClick={handleCreatePost}
-          disabled={loading} // Vô hiệu hóa nút khi đang loading
-        >
-          {loading ? "Đang đăng..." : "Đăng bài"}
+        <button className="submit-btn" onClick={handleCreatePost} disabled={loading}>
+          {loading ? (
+            <>
+              <span className="spinner"></span> Đang đăng...
+            </>
+          ) : (
+            <>
+              <FaPaperPlane className="icon" /> Đăng bài
+            </>
+          )}
         </button>
       </div>
     </>
   );
+};
+
+const MapControl = ({ center, bounds }) => {
+  useMapControl(center, bounds);
+  return null;
 };
 
 export default CreateRidePost;

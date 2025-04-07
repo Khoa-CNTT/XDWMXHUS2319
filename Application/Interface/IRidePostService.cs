@@ -30,5 +30,6 @@ namespace Application.Interface
         Task<GetAllRidePostForOwnerDto> GetAllRidePostForOwnerAsync(Guid? lastPostId, int pageSize, Guid ownerId);
         Task<GetAllRideResponseDto> GetRidePostsByDriverIdAsync(Guid driverId, Guid? lastPostId, int pageSize);
         Task<GetAllRideResponseDto> GetRidePostsByPassengerIdAsync(Guid passengerId, Guid? lastPostId, int pageSize);
+        Task<GetAllRideResponseDto> GetRidesByUserIdAsync(Guid userId, Guid? lastPostId, int pageSize);
     }
 }

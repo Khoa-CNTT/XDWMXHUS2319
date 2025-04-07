@@ -1,18 +1,91 @@
 import React, { useState, useEffect, useRef } from "react";
-import "../../styles/YourRide.scss";
-import { FiNavigation, FiChevronUp, FiChevronDown, FiMapPin, FiClock, 
-  FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
-import { MapContainer, TileLayer, Marker, Polyline, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import { useDispatch, useSelector } from "react-redux";
+import { motion } from "framer-motion";
+import axios from "axios";
+import * as signalR from "@microsoft/signalr";
+import { jwtDecode } from "jwt-decode";
+import { toast } from "react-toastify";
+import { TbMoodEmptyFilled } from "react-icons/tb";
+
 import L from "leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  Popup,
+} from "react-leaflet";
+
+// Icons
+import {
+  FiNavigation,
+  FiChevronUp,
+  FiChevronDown,
+  FiMapPin,
+  FiClock,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiUser,
+  FiArrowRight,
+  FiCalendar,
+  FiShield,
+  FiAlertTriangle,
+  FiMap,
+  FiBell,
+  FiRefreshCw,
+  FiInbox,
+  FiSearch,
+  FiArchive,
+} from "react-icons/fi";
+import { FaCar } from "react-icons/fa6";
+
+// Leaflet assets
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
 import markerShadowPng from "leaflet/dist/images/marker-shadow.png";
-import { toast } from "react-toastify";
+
+// Styles
+import "leaflet/dist/leaflet.css";
 import "react-toastify/dist/ReactToastify.css";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchPassengerRides } from "../../stores/action/ridePostAction";
-import * as signalR from "@microsoft/signalr";
-import axios from "axios";
+import "../../styles/YourRide.scss";
+
+// Redux actions
+import { fetchRidesByUserId } from "../../stores/action/ridePostAction";
+
+// Placeholder animation for empty state
+const emptyRideAnimation = {
+  v: "5.5.2",
+  fr: 60,
+  ip: 0,
+  op: 60,
+  w: 500,
+  h: 500,
+  nm: "Empty Animation",
+  ddd: 0,
+  assets: [],
+  layers: [],
+};
+
+// Custom Leaflet marker icons
+const startIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
+const endIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
+const movingCarIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
 
 const defaultIcon = L.icon({
   iconUrl: markerIconPng,
@@ -21,29 +94,82 @@ const defaultIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
+// Main component for managing user rides
 const YourRide = () => {
-  const [showHistory, setShowHistory] = useState(false);
-  const [routePaths, setRoutePaths] = useState({});
-  const [notifications, setNotifications] = useState([]);
-  const [currentPosition, setCurrentPosition] = useState(null);
-  const [lastSentPosition, setLastSentPosition] = useState(null);
-  const [lastNotifiedPosition, setLastNotifiedPosition] = useState(null);
-  const [expandedRide, setExpandedRide] = useState(null);
-  
-  const intervalRef = useRef(null);
-  const watchIdRef = useRef(null);
-  const signalRConnectionRef = useRef(null);
+  // State declarations
+  const [showHistory, setShowHistory] = useState(false); // Toggle ride history visibility
+  const [routePaths, setRoutePaths] = useState({}); // Store route coordinates for each ride
+  const [notifications, setNotifications] = useState([]); // Store location update notifications
+  const [currentPosition, setCurrentPosition] = useState(null); // Current geolocation
+  const [lastSentPosition, setLastSentPosition] = useState(null); // Last position sent to server
+  const [lastNotifiedPosition, setLastNotifiedPosition] = useState(null); // Last position for notification
+  const [expandedRide, setExpandedRide] = useState(null); // ID of expanded ride card
+  const [userId, setUserId] = useState(null); // User ID from JWT
+  const [smoothedProgress, setSmoothedProgress] = useState(0); // Smoothed ride progress percentage
+  const [isFollowing, setIsFollowing] = useState(true); // Whether map follows current position
+  const [mapBounds, setMapBounds] = useState(null); // Map bounds for current ride
 
+  // Refs for managing intervals and connections
+  const mapRef = useRef(null); // Reference to Leaflet map instance
+  const intervalRef = useRef(null); // Interval for sending location updates
+  const watchIdRef = useRef(null); // Geolocation watch ID
+  const signalRConnectionRef = useRef(null); // SignalR connection reference
+
+  // Redux hooks
   const dispatch = useDispatch();
-  const { passengerRides, loading, error } = useSelector((state) => state.rides);
+  const { driverRides, passengerRides, loading, error } = useSelector(
+    (state) => state.rides
+  );
 
-  // Fetch rides on mount
+  // Initialize user ID and fetch ride data on mount
   useEffect(() => {
-    dispatch(fetchPassengerRides());
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setUserId(
+        decodedToken[
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        ]
+      );
+    }
+    dispatch(fetchRidesByUserId());
   }, [dispatch]);
 
-// SignalR: Nhận thông báo từ server
-useEffect(() => {
+  // Update map bounds when current ride or position changes
+  useEffect(() => {
+    const currentRide = getCurrentRide();
+    if (currentRide && currentPosition) {
+      const start = parseLatLon(currentRide.latLonStart);
+      const end = parseLatLon(currentRide.latLonEnd);
+      if (start && end) {
+        const bounds = L.latLngBounds([
+          start,
+          end,
+          [currentPosition.lat, currentPosition.lon],
+        ]).pad(0.2);
+        setMapBounds(bounds);
+        if (mapRef.current) {
+          mapRef.current.flyToBounds(bounds, { maxZoom: 16, duration: 1 });
+        }
+      }
+    }
+  }, [currentPosition]);
+
+  // Center map on current position when following
+  useEffect(() => {
+    if (isFollowing && mapRef.current && currentPosition) {
+      const newCenter = [currentPosition.lat, currentPosition.lon];
+      const currentZoom = mapRef.current.getZoom();
+      mapRef.current.flyTo(
+        newCenter,
+        currentZoom >= 12 && currentZoom <= 16 ? currentZoom : 14,
+        { duration: 0.5 }
+      );
+    }
+  }, [currentPosition, isFollowing]);
+
+  // Setup SignalR connection for real-time notifications
+  useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:7053/notificationHub", {
         accessTokenFactory: () => localStorage.getItem("token"),
@@ -56,12 +182,12 @@ useEffect(() => {
 
     connection.on("ReceiveNotificationUpdateLocation", (message) => {
       const notification = {
-        message: message,
+        message,
         timestamp: new Date().toISOString(),
+        isNew: true,
       };
       setNotifications((prev) => [...prev, notification]);
       toast.info(message);
-      console.log("Received notification:", notification);
     });
 
     const startConnection = async () => {
@@ -75,31 +201,28 @@ useEffect(() => {
 
     startConnection();
 
-    connection.onclose(async () => {
-      console.log("SignalR Disconnected, attempting to reconnect...");
-      await startConnection();
-    });
-
     return () => {
       connection.stop().then(() => console.log("SignalR Disconnected"));
     };
   }, []);
 
-  // Haversine distance calculation
+  // Calculate distance between two points using Haversine formula (in km)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371e3;
-    const φ1 = lat1 * Math.PI / 180;
-    const φ2 = lat2 * Math.PI / 180;
-    const Δφ = (lat2 - lat1) * Math.PI / 180;
-    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+    return R * c / 1000; // Convert to kilometers
   };
-// Lấy địa chỉ từ tọa độ (sử dụng Nominatim API)
-const getAddressFromCoordinates = async (lat, lon) => {
+
+  // Fetch address from coordinates using OpenStreetMap Nominatim
+  const getAddressFromCoordinates = async (lat, lon) => {
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
@@ -108,11 +231,17 @@ const getAddressFromCoordinates = async (lat, lon) => {
       return data.display_name || `${lat}, ${lon}`;
     } catch (error) {
       console.error("Error fetching address:", error);
-      return `${lat}, ${lon}`; // Fallback nếu lỗi
+      return `${lat}, ${lon}`;
     }
   };
- // Gửi vị trí lên server
- const sendLocationToServer = async (rideId, latitude, longitude, isNearDestination = false) => {
+
+  // Send current location to server
+  const sendLocationToServer = async (
+    rideId,
+    latitude,
+    longitude,
+    isNearDestination = false
+  ) => {
     try {
       const location = await getAddressFromCoordinates(latitude, longitude);
       const token = localStorage.getItem("token");
@@ -122,36 +251,41 @@ const getAddressFromCoordinates = async (lat, lon) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setLastSentPosition({ lat: latitude, lon: longitude });
-      console.log("Location sent successfully:", location);
     } catch (error) {
       console.error("Error sending location:", error);
-      toast.error("Gửi vị trí thất bại");
+      toast.error("Failed to send location");
     }
   };
 
-  // Watch geolocation
+  // Track current position using geolocation
   useEffect(() => {
     if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by your device!");
+      toast.error("Device does not support geolocation!");
       return;
     }
 
     const handlePositionError = (err) => {
       const errorMessages = {
-        1: "Vui lòng cho phép truy cập vị trí trong trình duyệt!",
-        2: "Không thể xác định vị trí hiện tại! Vui lòng kiểm tra GPS.",
-        3: "Hết thời gian lấy vị trí (20s), đang thử lại..."
+        1: "Please grant location access!",
+        2: "Unable to determine position! Check GPS.",
+        3: "Timed out getting position, try again...",
       };
-      toast.error(errorMessages[err.code] || `Lỗi không xác định: ${err.message}`);
+      toast.error(errorMessages[err.code] || `Error: ${err.message}`);
     };
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       ({ coords: { latitude, longitude } }) => {
         const newPosition = { lat: latitude, lon: longitude };
         setCurrentPosition(newPosition);
-
-        if (!lastNotifiedPosition || 
-            calculateDistance(lastNotifiedPosition.lat, lastNotifiedPosition.lon, latitude, longitude) > 50) {
+        if (
+          !lastNotifiedPosition ||
+          calculateDistance(
+            lastNotifiedPosition.lat,
+            lastNotifiedPosition.lon,
+            latitude,
+            longitude
+          ) > 0.05
+        ) {
           setLastNotifiedPosition(newPosition);
         }
       },
@@ -160,50 +294,56 @@ const getAddressFromCoordinates = async (lat, lon) => {
     );
 
     return () => {
-      if (watchIdRef.current) {
+      if (watchIdRef.current)
         navigator.geolocation.clearWatch(watchIdRef.current);
-      }
     };
   }, [lastNotifiedPosition]);
 
-  // Periodic location updates
+  // Periodically send location for current ride
   useEffect(() => {
-    const acceptedRides = passengerRides.filter((ride) => ride.status === "Accepted");
-    if (!currentPosition || acceptedRides.length === 0) return;
+    const currentRide = getCurrentRide();
+    if (!currentPosition || !currentRide) return;
 
-    const ride = acceptedRides[0];
-    const rideId = ride.rideId;
-    const endLatLon = parseLatLon(ride.latLonEnd);
+    const rideId = currentRide.rideId;
+    const endLatLon = parseLatLon(currentRide.latLonEnd);
     const { lat, lon } = currentPosition;
 
     intervalRef.current = setInterval(() => {
-      if (lastSentPosition) {
-        const distanceMoved = calculateDistance(
-          lastSentPosition.lat, lastSentPosition.lon, lat, lon
-        ) * 1000; // Chuyển sang mét
+      if (
+        lastSentPosition &&
+        calculateDistance(lastSentPosition.lat, lastSentPosition.lon, lat, lon) <
+          0.05
+      )
+        return;
 
-        if (distanceMoved < 50) return; // Không gửi nếu < 50m
-      }
-
-      const distanceToEnd = endLatLon ? calculateDistance(lat, lon, endLatLon[0], endLatLon[1]) * 1000 : Infinity;
-      const isNearDestination = distanceToEnd <= 500;
+      const distanceToEnd = endLatLon
+        ? calculateDistance(lat, lon, endLatLon[0], endLatLon[1])
+        : Infinity;
+      const isNearDestination = distanceToEnd <= 0.5;
 
       sendLocationToServer(rideId, lat, lon, isNearDestination);
     }, 10000);
 
     return () => clearInterval(intervalRef.current);
-  }, [currentPosition, passengerRides, lastSentPosition]);
+  }, [currentPosition, driverRides, passengerRides, lastSentPosition]);
 
-  // Fetch route from GraphHopper
+  // Fetch route from GraphHopper API
   const fetchRoute = async (rideId, startLatLon, endLatLon) => {
     const apiKey = process.env.REACT_APP_GRAPHHOPPER_API_KEY;
-    const url = `https://graphhopper.com/api/1/route?point=${startLatLon.join(',')}&point=${endLatLon.join(',')}&vehicle=car&locale=vi&key=${apiKey}&points_encoded=false`;
+    const url = `https://graphhopper.com/api/1/route?point=${startLatLon.join(
+      ","
+    )}&point=${endLatLon.join(
+      ","
+    )}&vehicle=car&locale=vi&key=${apiKey}&points_encoded=false`;
 
     try {
       const response = await fetch(url);
       const data = await response.json();
       if (data.paths?.[0]?.points?.coordinates) {
-        const coordinates = data.paths[0].points.coordinates.map(([lon, lat]) => [lat, lon]);
+        const coordinates = data.paths[0].points.coordinates.map(([lon, lat]) => [
+          lat,
+          lon,
+        ]);
         setRoutePaths((prev) => ({ ...prev, [rideId]: coordinates }));
       }
     } catch (error) {
@@ -211,221 +351,498 @@ const getAddressFromCoordinates = async (lat, lon) => {
     }
   };
 
-  // Parse coordinates
+  // Parse latitude and longitude from string
   const parseLatLon = (latLonString) => {
     if (!latLonString || latLonString === "0") return null;
     return latLonString.split(",").map(Number);
   };
 
-  // Calculate routes for accepted rides
+  // Fetch route for current ride
   useEffect(() => {
-    passengerRides
-      .filter((ride) => ride.status === "Accepted")
-      .forEach((ride) => {
-        const startLatLon = parseLatLon(ride.latLonStart);
-        const endLatLon = parseLatLon(ride.latLonEnd);
-        if (startLatLon && endLatLon && !routePaths[ride.rideId]) {
-          fetchRoute(ride.rideId, startLatLon, endLatLon);
-        }
-      });
-  }, [passengerRides, routePaths]);
+    const currentRide = getCurrentRide();
+    if (currentRide) {
+      const startLatLon = parseLatLon(currentRide.latLonStart);
+      const endLatLon = parseLatLon(currentRide.latLonEnd);
+      if (startLatLon && endLatLon && !routePaths[currentRide.rideId]) {
+        fetchRoute(currentRide.rideId, startLatLon, endLatLon);
+      }
+    }
+  }, [driverRides, passengerRides, routePaths]);
 
+  // Calculate ride progress percentage
+  const calculateProgress = (ride, currentPosition) => {
+    if (!ride || !currentPosition) return 0;
+    const startLatLon = parseLatLon(ride.latLonStart);
+    const endLatLon = parseLatLon(ride.latLonEnd);
+    if (!startLatLon || !endLatLon) return 0;
+
+    const totalDistance = calculateDistance(
+      startLatLon[0],
+      startLatLon[1],
+      endLatLon[0],
+      endLatLon[1]
+    );
+    const traveledDistance = calculateDistance(
+      startLatLon[0],
+      startLatLon[1],
+      currentPosition.lat,
+      currentPosition.lon
+    );
+    const distanceToEnd = calculateDistance(
+      currentPosition.lat,
+      currentPosition.lon,
+      endLatLon[0],
+      endLatLon[1]
+    );
+
+    if (distanceToEnd < 0.05) return 100;
+    return Math.min((traveledDistance / totalDistance) * 100, 100);
+  };
+
+  // Calculate remaining distance to destination
+  const calculateRemainingDistance = (ride, currentPosition) => {
+    if (!ride || !currentPosition || !ride.latLonEnd) return 0;
+    const endLatLon = parseLatLon(ride.latLonEnd);
+    if (!endLatLon) return 0;
+    return calculateDistance(
+      currentPosition.lat,
+      currentPosition.lon,
+      endLatLon[0],
+      endLatLon[1]
+    );
+  };
+
+  // Helper function to get current ride
+  const getCurrentRide = () =>
+    (Array.isArray(driverRides)
+      ? driverRides.find((ride) => ride.status === "Accepted")
+      : null) ||
+    (Array.isArray(passengerRides)
+      ? passengerRides.find((ride) => ride.status === "Accepted")
+      : null);
+
+  // Smooth progress animation
+  const currentRide = getCurrentRide();
+  const progress = calculateProgress(currentRide, currentPosition);
+  useEffect(() => {
+    const timer = setTimeout(() => setSmoothedProgress(progress), 500);
+    return () => clearTimeout(timer);
+  }, [progress]);
+
+  // Toggle ride card expansion
   const toggleRideExpansion = (rideId) => {
     setExpandedRide(expandedRide === rideId ? null : rideId);
   };
 
-  if (loading) return <p>Đang tải dữ liệu...</p>;
-  if (error) return <p>Lỗi: {error}</p>;
-
-  const acceptedRides = passengerRides.filter((ride) => ride.status === "Accepted");
-
-  // Hàm format thời gian thông báo
+  // Format timestamp to "time ago" string
   const formatTimeAgo = (timestamp) => {
     const now = new Date();
     const diffInSeconds = Math.floor((now - new Date(timestamp)) / 1000);
-    
-    if (diffInSeconds < 60) return 'Vừa xong';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
-    return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
+    if (diffInSeconds < 60) return "Just now";
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
-  const calculateBounds = (start, current, end) => {
-    const points = [];
-    
-    if (start) points.push([start[0], start[1]]);
-    if (current) points.push([current.lat, current.lon]);
-    if (end) points.push([end[0], end[1]]);
-    
-    // Nếu không có đủ 3 điểm, tạo bounds mặc định
-    if (points.length === 0) return L.latLngBounds([[0, 0], [0, 0]]);
-    
-    return L.latLngBounds(points).pad(0.2); // pad thêm 20% khoảng trống xung quanh
+
+  // Center map on current location
+  const handleBackToCurrentLocation = () => {
+    if (mapRef.current && currentPosition) {
+      const newBounds = L.latLngBounds(
+        [currentPosition.lat, currentPosition.lon],
+        [currentPosition.lat, currentPosition.lon]
+      ).pad(0.5);
+      mapRef.current.flyToBounds(newBounds, { maxZoom: 16, duration: 1 });
+      setIsFollowing(true);
+    }
   };
+
+  // Loading and error states
+  if (loading) return <p className="loading">Loading data...</p>;
+  if (error) return <p className="error">Error: {error.message || error}</p>;
+
+  const isDriver = currentRide && currentRide.driverId === userId;
+  const completedRides = [
+    ...(Array.isArray(driverRides)
+      ? driverRides.filter((ride) => ride.status === "Completed")
+      : []),
+    ...(Array.isArray(passengerRides)
+      ? passengerRides.filter((ride) => ride.status === "Completed")
+      : []),
+  ];
+  const remainingDistance = currentRide
+    ? calculateRemainingDistance(currentRide, currentPosition)
+    : 0;
+
+  // Define city bounds for map restriction (Da Nang area)
+  const cityBounds = L.latLngBounds(
+    L.latLng(15.9, 107.9), // Southwest
+    L.latLng(16.2, 108.4) // Northeast
+  );
+
   return (
-    <div className="your-rides-container">
+    <div className="rides-app">
+      {/* Header */}
       <div className="rides-header">
-        <h2><FiNavigation /> Chuyến đi của bạn</h2>
+        <h2>
+          <FiNavigation className="header-icon" /> Chuyến đi của bạn
+        </h2>
+        <div className="header-gradient"></div>
       </div>
-  
-      <div className="rides-list">
-        {acceptedRides.length > 0 ? (
-          acceptedRides.map((ride) => {
-            const startLatLon = parseLatLon(ride.latLonStart);
-            const endLatLon = parseLatLon(ride.latLonEnd);
-            const isExpanded = expandedRide === ride.rideId;
-  
-            return (
-              <div className={`ride-card ${isExpanded ? "expanded" : ""}`} key={ride.rideId}>
-                <div className="ride-summary" onClick={() => toggleRideExpansion(ride.rideId)}>
-                  <div className="ride-info">
-                    <h3><FiMapPin />Từ: {ride.startLocation} → {ride.endLocation}</h3>
-                    <div className="ride-meta">
-                      <span className="ride-time">
-                        <FiClock /> {new Date(ride.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </span>
-                      <span className={`ride-status ${ride.status.toLowerCase()}`}>
-                        {ride.status === "Accepted" ? <FiCheckCircle /> : <FiAlertCircle />}
-                        {ride.status === "Accepted" ? "Đang di chuyển" : ride.status}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="expand-icon">
-                    {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
-                  </div>
-                </div>
-  
-                {isExpanded && (
-                  <div className="ride-details">
-                    <div className="details-grid">
-                      <div className="detail-item">
-                        <label>Thời gian bắt đầu:</label>
-                        <span>{new Date(ride.startTime).toLocaleString()}</span>
-                      </div>
-                      <div className="detail-item">
-                        <label>Thời gian kết thúc:</label>
-                        <span>{new Date(ride.endTime).toLocaleString()}</span>
-                      </div>
-                      <div className="detail-item">
-                        <label>Thời gian dự kiến:</label>
-                        <span>{ride.estimatedDuration} phút</span>
-                      </div>
-                      <div className="detail-item">
-                        <label>Độ an toàn:</label>
-                        <span className={ride.isSafe ? "safe" : "unsafe"}>
-                          {ride.isSafe ? "An toàn" : "Không an toàn"}
-                        </span>
-                      </div>
-                    </div>
-  
-                    <div className="map-notification-container">
-                      <div className="map-container">
-                        {startLatLon && endLatLon && (
-                          <MapContainer
-                          bounds={calculateBounds(startLatLon, currentPosition, endLatLon)}
-                          style={{ height: "300px", width: "100%" }}
-                          zoomControl={false}
-                          dragging={false}
-                          doubleClickZoom={false}
-                          scrollWheelZoom={false}
-                          touchZoom={false}
-                          boxZoom={false}
-                          keyboard={false}
-                          >
-                            <TileLayer
-                              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            />
-                            <Marker position={startLatLon} icon={defaultIcon}>
-                              <Popup>Điểm đón</Popup>
-                            </Marker>
-                            <Marker position={endLatLon} icon={defaultIcon}>
-                              <Popup>Điểm đến</Popup>
-                            </Marker>
-                            {currentPosition && (
-                              <Marker position={[currentPosition.lat, currentPosition.lon]} icon={defaultIcon}>
-                                <Popup>Vị trí hiện tại</Popup>
-                              </Marker>
-                            )}
-                            {routePaths[ride.rideId] && (
-                              <Polyline 
-                                positions={routePaths[ride.rideId]} 
-                                color="#3a86ff" 
-                                weight={4}
-                              />
-                            )}
-                          </MapContainer>
-                        )}
-                      </div>
-  
-                      <div className="notifications-section">
-                        <h4><FiAlertCircle /> Cập nhật vị trí</h4>
-                        {notifications.length > 0 ? (
-                          <ul className="notifications-list">
-                            {notifications.map((notification, idx) => (
-                              <li key={idx}>
-                                <div className="notification-message">{notification.message}</div>
-                                <div className="notification-time">
-                                  {formatTimeAgo(notification.timestamp)}
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="no-notifications">Chưa có cập nhật nào</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })
-        ) : (
-          <div className="no-rides-message">
-            <img src="/images/no-rides.svg" alt="No rides" />
-            <p>Hiện không có chuyến đi nào</p>
-          </div>
-        )}
-      </div>
-  
-      <div className="history-toggle-container">
-        <button 
-          className="toggle-history-btn"
-          onClick={() => setShowHistory(!showHistory)}
+
+     
+
+      {/* Current Ride Section */}
+      {currentRide ? (
+        <motion.div
+          className={`ride-card ${
+            expandedRide === currentRide.rideId ? "expanded" : ""
+          } ${isDriver ? "driver-ride" : "passenger-ride"}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          {showHistory ? <><FiChevronUp /> Ẩn lịch sử</> : <><FiChevronDown /> Xem lịch sử chuyến đi</>}
+          <div
+            className="ride-summary"
+            onClick={() => toggleRideExpansion(currentRide.rideId)}
+          >
+            <div className="ride-info">
+              <div className="ride-badge">
+                {isDriver ? (
+                  <FaCar className="ride-icon" />
+                ) : (
+                  <FiUser className="ride-icon" />
+                )}
+                <span className="badge-text">
+                  {isDriver ? "Tài xế" : "Hành khách"}
+                </span>
+              </div>
+              <div className="route-info">
+                <h3>
+                  <span className="from-to">Điểm đi: </span>
+                  <span className="location">{currentRide.startLocation}</span>
+                  <FiArrowRight className="route-arrow" />
+                  <span className="from-to">Điểm đến: </span>
+                  <span className="location">{currentRide.endLocation}</span>
+                </h3>
+                <div className="progress-container">
+                  <div className="progress-bar">
+                    <motion.div
+                      className="progress-fill"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${smoothedProgress}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    >
+                      <div className="moving-indicator">
+                        <FaCar className="car-icon" />
+                      </div>
+                    </motion.div>
+                  </div>
+                  <span className="progress-text">
+                    Đã đi {Math.round(smoothedProgress)}% (
+                    Còn lại {remainingDistance.toFixed(1)} km)
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="ride-meta">
+              <span className="ride-time">
+                <FiClock className="meta-icon" />{" "}
+                {new Date(currentRide.startTime).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+              <span className="ride-status active">
+                <div className="pulse-dot"></div> Đang di chuyển
+              </span>
+            </div>
+            <div className="expand-icon">
+              {expandedRide === currentRide.rideId ? (
+                <FiChevronUp />
+              ) : (
+                <FiChevronDown />
+              )}
+            </div>
+          </div>
+
+          {/* Expanded Ride Details */}
+          {expandedRide === currentRide.rideId && (
+            <motion.div
+              className="ride-details"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="details-grid">
+                <div className="detail-item">
+                  <label>
+                    <FiCalendar /> Bắt đầu:
+                  </label>
+                  <span>{new Date(currentRide.startTime).toLocaleString()}</span>
+                </div>
+                <div className="detail-item">
+                  <label>
+                    <FiCalendar /> Kết thúc:
+                  </label>
+                  <span>{new Date(currentRide.endTime).toLocaleString()}</span>
+                </div>
+                <div className="detail-item">
+                  <label>
+                    <FiClock /> Thời gian dự kiến:
+                  </label>
+                  <span>{currentRide.estimatedDuration} phút</span>
+                </div>
+                <div className="detail-item">
+                  <label>
+                    <FiShield /> An toàn:
+                  </label>
+                  <span
+                    className={`safety-badge ${
+                      currentRide.isSafe ? "safe" : "unsafe"
+                    }`}
+                  >
+                    {currentRide.isSafe ? (
+                      <>
+                        <FiCheckCircle /> An toàn
+                      </>
+                    ) : (
+                      <>
+                        <FiAlertTriangle /> Cảnh báo
+                      </>
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div className="interactive-section">
+                <div className="map-container">
+                   {/* Map controls - Đã di chuyển nút về phía bên phải */}
+      <div className="map-controls" >
+        <button
+          className={`location-button ${isFollowing ? "active" : ""}`}
+          onClick={handleBackToCurrentLocation}
+          title="Về vị trí hiện tại"
+        >
+          <FiNavigation />
+          {isFollowing && <span className="pulse-dot"></span>}
         </button>
       </div>
-  
-      {showHistory && (
-        <div className="rides-history">
-          <h3><FiClock /> Lịch sử chuyến đi</h3>
-          {passengerRides.length > 0 ? (
-            <div className="history-list">
-              {passengerRides.map((ride) => (
-                <div className="history-item" key={ride.rideId}>
-                  <div className="history-header">
-                    <span className="route">Đi từ: {ride.startLocation} → {ride.endLocation}</span>
-                    <span className={`status ${ride.status.toLowerCase()}`}>
-                      Trạng thái: {ride.status === "Completed" ? "Hoàn thành" : ride.status}
-                    </span>
+                  <div className="map-header">
+                    <h4>
+                      <FiMap /> Hành trình
+                    </h4>
+                    <div className="distance-display">
+                      <FiNavigation /> Còn {remainingDistance.toFixed(1)} km
+                    </div>
                   </div>
-                  <div className="history-details">
-                    <span>{new Date(ride.startTime).toLocaleDateString()}</span>
-                    <span>Thời gian ước tính: {ride.estimatedDuration} phút</span>
-                    <span className={ride.isSafe ? "safe" : "unsafe"}>
-                      {ride.isSafe ? "An toàn" : "Không an toàn"}
-                    </span>
-                  </div>
+                  {parseLatLon(currentRide.latLonStart) &&
+                    parseLatLon(currentRide.latLonEnd) && (
+                      <MapContainer
+                        ref={mapRef}
+                        bounds={mapBounds}
+                        style={{ height: "300px", width: "100%" }}
+                        minZoom={12}
+                        maxBounds={cityBounds}
+                        whenCreated={(map) => {
+                          mapRef.current = map;
+                          map.on("zoomstart", () => setIsFollowing(false));
+                          map.on("dragstart", () => setIsFollowing(false));
+                          map.on("drag", () => {
+                            if (!map.getBounds().intersects(cityBounds)) {
+                              map.fitBounds(cityBounds);
+                            }
+                          });
+                        }}
+                      >
+                        <TileLayer
+                          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                          attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        <Marker
+                          position={parseLatLon(currentRide.latLonStart)}
+                          icon={startIcon}
+                        >
+                          <Popup>Điểm đón</Popup>
+                        </Marker>
+                        <Marker
+                          position={parseLatLon(currentRide.latLonEnd)}
+                          icon={endIcon}
+                        >
+                          <Popup>Điểm đến</Popup>
+                        </Marker>
+                        {currentPosition && (
+                          <Marker
+                            position={[currentPosition.lat, currentPosition.lon]}
+                            icon={movingCarIcon}
+                          >
+                            <Popup>Vị trí hiện tại</Popup>
+                          </Marker>
+                        )}
+                        {routePaths[currentRide.rideId] && (
+                          <Polyline
+                            positions={routePaths[currentRide.rideId]}
+                            color={isDriver ? "#3a86ff" : "#28a745"}
+                            weight={4}
+                            dashArray="5, 5"
+                          />
+                        )}
+                      </MapContainer>
+                    )}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="no-history-message">
-              <p>Chưa có lịch sử chuyến đi</p>
-            </div>
+
+                <div className="notifications-section">
+                  <div className="notifications-header">
+                    <h4>
+                      <FiBell /> Cập nhật vị trí
+                    </h4>
+                    <button
+                      className="refresh-btn"
+                      onClick={() => setNotifications([])}
+                    >
+                      <FiRefreshCw /> Xóa
+                    </button>
+                  </div>
+                  {notifications.length > 0 ? (
+                    <div className="notifications-list">
+                      {notifications.slice(0, 5).map((notification, idx) => (
+                        <motion.div
+                          key={idx}
+                          className="notification-item"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: idx * 0.1 }}
+                        >
+                          <div className="notification-badge">
+                            <FiMapPin />
+                          </div>
+                          <div className="notification-content">
+                            <div className="notification-message">
+                              {notification.message}
+                            </div>
+                            <div className="notification-meta">
+                              <span className="notification-time">
+                                {formatTimeAgo(notification.timestamp)}
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="no-notifications">
+                      <FiInbox className="empty-icon" />
+                      <p>Chưa có cập nhật</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          className="empty-state"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+         <div className="empty-animation">
+  <TbMoodEmptyFilled style={{ fontSize: 100, color: "#aaa" }} />
+</div>
+          <h3>Không có chuyến đi hiện tại</h3>
+          <p>Bắt đầu chuyến đi mới để bắt đầu!</p>
+          <button className="find-ride-btn">
+            <FiSearch /> Tìm chuyến đi
+          </button>
+        </motion.div>
       )}
+
+      {/* Ride History Section */}
+      <div className="history-section">
+        <motion.button
+          className="history-toggle"
+          onClick={() => setShowHistory(!showHistory)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {showHistory ? (
+            <>
+              <FiChevronUp /> Ẩn lịch sử
+            </>
+          ) : (
+            <>
+              <FiChevronDown /> Xem lịch sử chuyến đi
+            </>
+          )}
+        </motion.button>
+
+        {showHistory && (
+          <motion.div
+            className="history-content"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.3 }}
+          >
+            <h3 className="history-title">
+              <FiClock /> Lịch sử chuyến đi
+            </h3>
+            {completedRides.length > 0 ? (
+              <div className="history-list">
+                {completedRides.map((ride) => {
+                  const isDriverHistory = ride.driverId === userId;
+                  return (
+                    <motion.div
+                      className={`history-item ${
+                        isDriverHistory ? "driver-history" : "passenger-history"
+                      }`}
+                      key={ride.rideId}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="history-icon">
+                        {isDriverHistory ? <FaCar /> : <FiUser />}
+                      </div>
+                      <div className="history-details">
+                        <div className="history-route">
+                          <span className="location">{ride.startLocation}</span>
+                          <FiArrowRight className="route-arrow" />
+                          <span className="location">{ride.endLocation}</span>
+                        </div>
+                        <div className="history-meta">
+                          <span className="date">
+                            {new Date(ride.startTime).toLocaleDateString()}
+                          </span>
+                          <span className="duration">
+                            {ride.estimatedDuration} phút
+                          </span>
+                          <span
+                            className={`safety ${
+                              ride.isSafe ? "safe" : "unsafe"
+                            }`}
+                          >
+                            {ride.isSafe ? "An toàn" : "Cảnh báo"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="history-status completed">
+                        <FiCheckCircle /> Hoàn thành
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="empty-history">
+                <FiArchive className="empty-icon" />
+                <p>Chưa có lịch sử chuyến đi</p>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 };
