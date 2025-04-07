@@ -1,11 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createPost, fetchRidePost, createRide, fetchPassengerRides, deletePost, updatePost } from "../../stores/action/ridePostAction";
+import { createPost, fetchRidePost, createRide, deletePost, updatePost,fetchRidesByUserId } from "../../stores/action/ridePostAction";
 
 const ridePostSlice = createSlice({
   name: "rides",
   initialState: {
     ridePosts: [],
-    passengerRides: [],
+    driverRides: [], // Đảm bảo là mảng rỗng
+    passengerRides: [], // Đảm bảo là mảng rỗng
+    driverNextCursor: null,
+    passengerNextCursor: null,
     currentRide: null,
     loading: false,
     error: null,
@@ -50,16 +53,20 @@ const ridePostSlice = createSlice({
         const index = state.ridePosts.findIndex(post => post.id === action.payload.id);
         if (index !== -1) state.ridePosts[index] = action.payload;
       })
-      // fetchPassengerRides
-      .addCase(fetchPassengerRides.pending, (state) => {
+      
+      // fetchRidesByUserId
+      .addCase(fetchRidesByUserId.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchPassengerRides.fulfilled, (state, action) => {
+      .addCase(fetchRidesByUserId.fulfilled, (state, action) => {
         state.loading = false;
-        state.passengerRides = action.payload;
+        state.driverRides = action.payload.driverRides;
+        state.passengerRides = action.payload.passengerRides;
+        state.driverNextCursor = action.payload.driverNextCursor;
+        state.passengerNextCursor = action.payload.passengerNextCursor;
       })
-      .addCase(fetchPassengerRides.rejected, (state, action) => {
+      .addCase(fetchRidesByUserId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
