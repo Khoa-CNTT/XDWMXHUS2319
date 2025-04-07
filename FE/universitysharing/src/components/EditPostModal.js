@@ -68,56 +68,6 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
     setMediaFile((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // // Sửa bài viết
-  // const handleSubmit = async () => {
-  //   if (!content.trim()) {
-  //     alert("Vui lòng nhập nội dung bài viết!");
-  //     return;
-  //   }
-
-  //   const formData = new FormData();
-  //   formData.append("PostId", postId);
-  //   formData.append("Content", content);
-  //   formData.append("Scope", scope);
-
-  //   // let hasMedia = false;
-
-  //   mediaFiles.forEach(({ file }) => {
-  //     if (file && file.type) {
-  //       //  hasMedia = true;
-  //       if (file.type.startsWith("video")) {
-  //         formData.append("Video", file);
-  //       } else {
-  //         formData.append("Image", file);
-  //       }
-  //     }
-  //   });
-  //   console.log("mediaFiles trước khi check hasMedia:", mediaFiles);
-  //   let hasMedia = mediaFiles.some((media) => media.type);
-
-  //   console.log("hasmedia>>", hasMedia);
-
-  //   // Nếu không có media nào (đã xóa hết ảnh/video), gửi giá trị null về server
-  //   if (!hasMedia) {
-  //     // formData.append("Video", "null");
-  //     // formData.append("Image", "null");
-  //     formData.append("IsDeleteVideo", true);
-  //     formData.append("IsDeleteImage", true);
-  //   }
-
-  //   dispatch(
-  //     updatePost({
-  //       postId: postId,
-  //       formData,
-  //       fullName: post.fullName || "University Sharing",
-  //       profilePicture: post.profilePicture || avatarDeafault,
-  //       createdAt: post.createdAt,
-  //     })
-  //   );
-
-  //   onClose(); // Đóng modal sau khi gửi bài
-  // };
-
   // Sửa bài viết
 
   const handleSubmit = async () => {
@@ -159,12 +109,6 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
     }
     console.log("lengMedia", mediaFiles);
 
-    // Nếu không có media nào (tất cả đã bị xóa), gửi yêu cầu xóa
-    // if (mediaFiles.length === 0) {
-    //   formData.append("IsDeleteVideo", true);
-    //   formData.append("IsDeleteImage", true);
-    // }
-
     dispatch(
       updatePost({
         postId: postId,
@@ -183,13 +127,13 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
   return (
     <>
       <div
-        className="create-post-overlay animate__animated animate__fadeIn animate_faster"
+        className="create-post-overlay "
         onClick={(e) => {
           e.stopPropagation(); // Ngăn chặn sự kiện lan ra ngoài
           onClose();
         }}
       ></div>
-      <div className="create-post-modal  animate__animated animate__fadeIn animate_faster">
+      <div className="create-post-modal  ">
         <div className="header-post-modal">
           <span>Sửa bài đăng </span>
           <img

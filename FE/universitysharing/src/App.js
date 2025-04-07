@@ -16,7 +16,6 @@ import ForgotPass from "./views/ForgotPassword";
 import ResetForgotPassword from "./views/ResetForgotPassword";
 import Homeview from "./views/HomeView";
 
-
 import SharingRideView from "./views/SharingRideView";
 import YourRideView from "./views/YourRideView";
 
@@ -26,15 +25,29 @@ import AccountVerified from "../src/components/AccountVerified";
 import SearchView from "./views/SearchView";
 import ResultSearchView from "./views/ResultSearchView";
 
-
 import Notifications from "./views/Notifications";
+
+import getUserIdFromToken from "./utils/JwtDecode";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
 
+  // Kiểm tra token khi người dùng truy cập ứng dụng
   useEffect(() => {
+    const checkTokenValidity = () => {
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        setToken(null); // Nếu token không hợp lệ hoặc hết hạn, set token là null
+      } else {
+        setToken(localStorage.getItem("token")); // Token hợp lệ
+      }
+    };
+
+    checkTokenValidity(); // Gọi hàm kiểm tra token khi vừa vào ứng dụng
+
+    // Cập nhật token khi localStorage thay đổi
     const checkToken = () => {
-      setToken(localStorage.getItem("token"));
+      checkTokenValidity();
     };
 
     window.addEventListener("storage", checkToken);
@@ -45,7 +58,6 @@ function App() {
     <>
       <Router>
         <Routes>
-
           {!token ? (
             <>
               <Route path="/" element={<Login />} />
@@ -70,14 +82,8 @@ function App() {
               <Route path="/ResultSearchView" element={<ResultSearchView />} />
 
               <Route path="/notify" element={<Notifications />} />
-
             </>
           )}
-
-          
-         
-      
-
         </Routes>
       </Router>
       <ToastContainer></ToastContainer>

@@ -11,6 +11,7 @@ namespace Application.DTOs.RidePost
     {
         public Guid Id { get;  set; }
         public Guid UserId { get;  set; }
+        public string? Content { get;  set; }
         public required string StartLocation { get;  set; }
         public required string EndLocation { get;  set; }
         public string? LatLonStart { get;  set; }
