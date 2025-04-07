@@ -6,11 +6,8 @@ import L from "leaflet";
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
 import markerShadowPng from "leaflet/dist/images/marker-shadow.png";
 import avatarDefault from "../../assets/AvatarDefault.png";
-import moreIcon from "../../assets/iconweb/moreIcon.svg";
-import closerIcon from "../../assets/iconweb/closeIcon.svg";
 import checkIcon from "../../assets/iconweb/checkIcon.svg";
 import likeFillIcon from "../../assets/iconweb/likefillIcon.svg";
-import seeMapIcon from "../../assets/iconweb/seeMapIcon.svg";
 import { PiDotsThreeLight } from "react-icons/pi";
 import { FaMapLocationDot } from "react-icons/fa6";
 import { toast } from "react-toastify";
@@ -254,7 +251,7 @@ const AllSharingRide = () => {
           const startLatLon = ridePost.latLonStart ? parseLatLon(ridePost.latLonStart) : null;
           const endLatLon = ridePost.latLonEnd ? parseLatLon(ridePost.latLonEnd) : null;
           const isOwner = ridePost.userId === currentUserId;
-
+  
           return (
             <div className="All-ride-post" key={ridePost.id}>
               <div className="header-ride-post">
@@ -282,6 +279,13 @@ const AllSharingRide = () => {
               </div>
               {editPost && editPost.id === ridePost.id ? (
                 <div className="edit-post-form">
+                  <textarea
+                    value={editPost.content || ""}
+                    onChange={(e) => setEditPost({ ...editPost, content: e.target.value })}
+                    placeholder="Nội dung bài viết"
+                    rows="4"
+                    maxLength="200"
+                  />
                   <input
                     value={editPost.startLocation}
                     onChange={(e) => setEditPost({ ...editPost, startLocation: e.target.value })}
@@ -299,12 +303,15 @@ const AllSharingRide = () => {
                   <button onClick={() => setEditPost(null)}>Hủy</button>
                 </div>
               ) : (
-                <span className="content-ride-post">
-                  Đi từ {ridePost.startLocation} đến {ridePost.endLocation} vào{" "}
-                  {new Date(ridePost.startTime).toLocaleString("vi-VN")}
-                </span>
+                <div className="content-ride-post">
+                  {ridePost.content && <p className="post-content">{ridePost.content}</p>}
+                  <span className="location-time">
+                    Đi từ {ridePost.startLocation} đến {ridePost.endLocation} vào{" "}
+                    {new Date(ridePost.startTime).toLocaleString("vi-VN")}
+                  </span>
+                </div>
               )}
-
+  
               {showMap[ridePost.id] && startLatLon && endLatLon && (
                 <div className="map-ride-post" style={{ height: "300px", width: "100%" }}>
                   <MapContainer center={startLatLon} zoom={13} style={{ height: "100%", width: "100%" }}>
@@ -320,7 +327,7 @@ const AllSharingRide = () => {
                   </MapContainer>
                 </div>
               )}
-
+  
               <div className="action-ride-post">
                 <div className="like-number-ride-post">
                   <img className="like-ride-Post" src={likeFillIcon} alt="Like" />
@@ -343,7 +350,7 @@ const AllSharingRide = () => {
       ) : (
         <p>Không có bài viết nào.</p>
       )}
-
+  
       {showSafetyModal && (
         <>
           <div className="safety-modal-overlay" onClick={handleCancel}></div>

@@ -70,5 +70,14 @@ namespace DuyTanSharingSystem.Controllers
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+        [HttpGet("user/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetRidesByUserId(Guid userId, [FromQuery] Guid? nextCursor = null, [FromQuery] int? pageSize = null)
+        {
+            var query = new GetRidesByUserIdQueries(userId, nextCursor, pageSize);
+            var result = await _mediator.Send(query);
+
+            return Ok(result); // ResponseModel đã có format bạn cần
+        }
     }
 }
