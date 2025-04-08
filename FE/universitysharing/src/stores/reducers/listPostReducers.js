@@ -52,7 +52,11 @@ const listPostSlice = createSlice({
       state.posts = state.posts.filter((post) => post.id !== action.payload);
     },
     openCommentModal: (state, action) => {
-      state.selectedPost = action.payload;
+      // action.payload giờ chứa cả post và initialMediaIndex
+      state.selectedPost = {
+        ...action.payload, // Sao chép toàn bộ thông tin post
+        initialMediaIndex: action.payload.initialMediaIndex || 0, // Lưu index media được chọn
+      };
     },
     closeCommentModal: (state) => {
       state.selectedPost = null;
