@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import "../styles/CommentOverlay.scss";
 import logoweb from "../assets/Logo.png";
 import avatarDefaut from "../assets/AvatarDefault.png";
+import defaultPostImage from "../assets/ImgDefault.png"; // Thêm ảnh default vào assets
 import ContentPostComment from "./CommentModel_Component/ContenPostComment";
 import CommentList from "./CommentModel_Component/CommentList";
 import { useDispatch, useSelector } from "react-redux";
@@ -143,26 +144,32 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
 
   if (!post) return null;
 
-// Trong CommentModal
-return (
-  <div className="comment-modal-overlay">
-    <div className="logowebsite">
-      <img className="logoUS" src={logoweb} alt="Logo" />
-    </div>
+  return (
+    <div className="comment-modal-overlay">
+      <div className="logowebsite">
+        <img className="logoUS" src={logoweb} alt="Logo" />
+      </div>
 
-    <div className="post-overlay">
-      {mediaItems.length > 0 && (
+      <div className="post-overlay">
         <div className="image-Post">
           <div className="media-container">
-            {mediaItems[currentIndex].endsWith(".mp4") ? (
-              <video className="post-media" controls>
-                <source src={mediaItems[currentIndex]} type="video/mp4" />
-              </video>
+            {mediaItems.length > 0 ? (
+              mediaItems[currentIndex].endsWith(".mp4") ? (
+                <video className="post-media" controls>
+                  <source src={mediaItems[currentIndex]} type="video/mp4" />
+                </video>
+              ) : (
+                <img
+                  className="post-media"
+                  src={mediaItems[currentIndex]}
+                  alt={`Media ${currentIndex}`}
+                />
+              )
             ) : (
               <img
-                className="post-media"
-                src={mediaItems[currentIndex]}
-                alt={`Media ${currentIndex}`}
+                className="post-media default-media"
+                src={defaultPostImage}
+                alt="Default Post Image"
               />
             )}
             {mediaItems.length > 1 && (
@@ -177,40 +184,39 @@ return (
             )}
           </div>
         </div>
-      )}
 
-      <div className="content-post">
-        <ContentPostComment post={post} onClose={onClose} />
-        <CommentList
-          post={post}
-          comment={comments}
-          commentEndRef={commentEndRef}
-          handleLikeComment={handleLikeComment}
-          onLoadMore={loadMoreComments}
-          isLoadingMore={loadingMoreComments}
-          hasMoreComments={hasMoreComments}
-        />
-      </div>
+        <div className="content-post">
+          <ContentPostComment post={post} onClose={onClose} />
+          <CommentList
+            post={post}
+            comment={comments}
+            commentEndRef={commentEndRef}
+            handleLikeComment={handleLikeComment}
+            onLoadMore={loadMoreComments}
+            isLoadingMore={loadingMoreComments}
+            hasMoreComments={hasMoreComments}
+          />
+        </div>
 
-      <div className="comment-input">
-        <img
-          className="avatar"
-          src={usersProfile.profilePicture || avatarDefaut}
-          alt="Avatar"
-        />
-        <textarea
-          type="text"
-          placeholder="Viết bình luận..."
-          onChange={handleInputChange}
-          onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
-        />
-        <button type="submit" onClick={handleAddComment} disabled={isSending}>
-          {isSending ? <div className="spinner"></div> : <FiSend size={20} />}
-        </button>
+        <div className="comment-input">
+          <img
+            className="avatar"
+            src={usersProfile.profilePicture || avatarDefaut}
+            alt="Avatar"
+          />
+          <textarea
+            type="text"
+            placeholder="Viết bình luận..."
+            onChange={handleInputChange}
+            onKeyPress={(e) => e.key === "Enter" && handleAddComment()}
+          />
+          <button type="submit" onClick={handleAddComment} disabled={isSending}>
+            {isSending ? <div className="spinner"></div> : <FiSend size={20} />}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default CommentModal;

@@ -91,6 +91,10 @@
     flex-direction: column;
     padding: 16px;
     overflow: hidden;
+    // Khi không có .image-Post (không có media), .content-post chiếm toàn bộ chiều rộng
+    .post-overlay:not(:has(.image-Post)) & {
+      width: 100%;
+    }
   }
 
   .avatar-and-option {
@@ -161,7 +165,11 @@
     height: 100px;
     background: white;
     border-top: 1px solid #ddd;
-
+    // Điều chỉnh width của comment-input khi không có media
+    .post-overlay:not(:has(.image-Post)) & {
+      width: 100%;
+      right: auto; // Xóa right: 0 để căn giữa
+    }
     .avatar {
       width: 70px;
       height: 70px;
