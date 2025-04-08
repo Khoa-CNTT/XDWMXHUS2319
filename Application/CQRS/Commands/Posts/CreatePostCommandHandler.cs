@@ -33,18 +33,35 @@ namespace Application.CQRS.Commands.Posts
                 if (userId == Guid.Empty)
                     return ResponseFactory.Fail<ResponsePostDto>("User not found", 404);
 
-                // Kiểm tra và lưu ảnh
-                string? imageUrl = request.Image != null ?
-                    await _fileService.SaveFileAsync(request.Image, "images/posts", isImage: true) : null;
+                // Lưu ảnh
+                List<string> imageUrls = new();
+                if (request.Images != null && request.Images.Any())
+                {
+                    foreach (var image in request.Images)
+                    {
+                        var imageUrl = await _fileService.SaveFileAsync(image, "images/posts", isImage: true);
+                        if (!string.IsNullOrWhiteSpace(imageUrl))
+                        {
+                            imageUrls.Add(imageUrl);
+                        }
+                    }
+                }
 
-                // Kiểm tra và lưu video
-                string? videoUrl = request.Video != null ?
-                    await _fileService.SaveFileAsync(request.Video, "videos/posts", isImage: false) : null;
+                // Gộp chuỗi ảnh lại bằng dấu phẩy
+                string? imageUrlString = imageUrls.Any() ? string.Join(",", imageUrls) : null;
 
-                var post = new Post(userId, request.Content, request.PostType, ScopeEnum.Public, imageUrl, videoUrl);
-          
+                // Lưu video (nếu có)
+                string? videoUrl = null;
+                if (request.Video != null)
+                {
+                    videoUrl = await _fileService.SaveFileAsync(request.Video, "videos/posts", isImage: false);
+                }
+
+                // Tạo post
+                var post = new Post(userId, request.Content, request.PostType, request.Scope, imageUrlString, videoUrl);
+
                 //kiểm tra xem bài đăng có hợp lệ không bằng Genimi
-               var result = await _geminiService.ValidatePostContentAsync(post.Content);
+                var result = await _geminiService.ValidatePostContentAsync(post.Content);
                 if (!result)
                 {
                     post.RejectAI();
@@ -74,6 +91,7 @@ namespace Application.CQRS.Commands.Posts
                     ImageUrl = post.ImageUrl != null ? $"{Constaint.baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
                     VideoUrl = post.VideoUrl != null ? $"{Constaint.baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
                     PostType = post.PostType,
+                    Scope= post.Scope,
                     IsApproved = post.IsApproved,
                     CreatedAt =FormatUtcToLocal(post.CreatedAt),
                 };

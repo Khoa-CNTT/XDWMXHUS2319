@@ -1,11 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
-
+import {jwtDecode} from "jwt-decode";
 // Tạo bài đăng
 export const createPost = createAsyncThunk(
   "ride/createPost",
-  async ({ startLocation, endLocation, startTime, postType }, { rejectWithValue }) => {
+  async ({content, startLocation, endLocation, startTime, postType }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
       const config = {
@@ -16,13 +16,14 @@ export const createPost = createAsyncThunk(
       };
       const response = await axios.post(
         "https://localhost:7053/api/ridepost/create",
-        { startLocation, endLocation, startTime, postType },
+        { content,startLocation, endLocation, startTime, postType },
         config
       );
-      toast.success(response.data.message || "Tạo bài đăng thành công!");
+      toast.success(response.data.data.message || "Tạo bài đăng thành công!");
+      console.log("response.data.data", response.data.data.message);
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Có lỗi xảy ra");
+      return rejectWithValue(error.response?.data?.data?.message || "Có lỗi xảy ra");
     }
   }
 );
@@ -79,7 +80,7 @@ export const fetchRidePost = createAsyncThunk(
       });
       return response.data?.data?.responseRidePostDto || [];
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi không xác định");
+      return rejectWithValue(error.response?.data.data || "Lỗi không xác định");
     }
   }
 );
@@ -105,20 +106,34 @@ export const createRide = createAsyncThunk(
   }
 );
 
-// Fetch danh sách ride của khách hàng
-export const fetchPassengerRides = createAsyncThunk(
-  "ride/fetchPassengerRides",
-  async (_, { rejectWithValue }) => {
+// Fetch rides theo userId từ API mới
+export const fetchRidesByUserId = createAsyncThunk(
+  "ride/fetchRidesByUserId",
+  async ({ nextCursor, pageSize } = {}, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+
       const response = await axios.get(
-        "https://localhost:7053/api/ridepost/passenger",
+        `https://localhost:7053/api/ridepost/user/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
+          params: {
+            nextCursor: nextCursor || undefined,
+            pageSize: pageSize || 10,
+          },
         }
       );
-      console.log("response.data.data.rideList", response.data.data.rideList);
-      return response.data.data.rideList;
+      console.log("Current Ride:", response);
+      return {
+        driverRides: response.data.data.driverRideList,
+        passengerRides: response.data.data.passengerRideList,
+        driverNextCursor: response.data.data.driverNextCursor,
+        passengerNextCursor: response.data.data.passengerNextCursor,
+      };
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi không xác định");
     }

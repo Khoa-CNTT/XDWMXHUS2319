@@ -14,6 +14,8 @@ import {
   updatePost,
   sharePost,
 } from "../action/listPostActions";
+import { fetchLikes } from "../action/likeAction";
+import { fetchShares } from "../action/shareAction";
 import { da } from "date-fns/locale";
 
 const listPostSlice = createSlice({
@@ -25,6 +27,11 @@ const listPostSlice = createSlice({
     comments: {},
     selectedPost: null,
     isShareModalOpen: false,
+    //chúp
+    isInteractorModalOpen: false,
+    isInteractorShareModalOpen: false,
+    selectedPostForInteractions: null,
+    //chúp
     selectedPostToShare: null,
     selectedPostToOption: null,
     isPostOptionsOpen: false, // 🆕 Thêm trạng thái modal options
@@ -33,13 +40,23 @@ const listPostSlice = createSlice({
     // selectedCommentTOption: null,
     // isCommentOptionOpen: false,
     openCommentOptionId: null, // ID comment nào đang mở option
+    likesLoading: false,
+    likesError: null,
+    postLikes: {}, // Stores likes data by postId
+    postShares: {}, // Thêm state mới cho shares
+    sharesLoading: false,
+    sharesError: null,
   },
   reducers: {
     hidePost: (state, action) => {
       state.posts = state.posts.filter((post) => post.id !== action.payload);
     },
     openCommentModal: (state, action) => {
-      state.selectedPost = action.payload;
+      // action.payload giờ chứa cả post và initialMediaIndex
+      state.selectedPost = {
+        ...action.payload, // Sao chép toàn bộ thông tin post
+        initialMediaIndex: action.payload.initialMediaIndex || 0, // Lưu index media được chọn
+      };
     },
     closeCommentModal: (state) => {
       state.selectedPost = null;
@@ -70,6 +87,26 @@ const listPostSlice = createSlice({
       // state.isCommentOptionOpen = false;
       // state.selectedCommentTOption = null;
       state.openCommentOptionId = null;
+    },
+    openInteractorModal: (state, action) => {
+      state.selectedPostForInteractions = action.payload;
+      state.isInteractorModalOpen = true;
+    },
+    closeInteractorModal: (state) => {
+      state.isInteractorModalOpen = false;
+      state.selectedPostForInteractions = null;
+    },
+    openInteractorShareModal: (state, action) => {
+      state.selectedPostForInteractions = action.payload;
+      state.isInteractorShareModalOpen = true;
+    },
+    closeInteractorShareModal: (state) => {
+      state.isInteractorShareModalOpen = false;
+      state.selectedPostForInteractions = null;
+    },
+    // Add new reducer to clear likes error
+    clearLikesError: (state) => {
+      state.likesError = null;
     },
   },
   extraReducers: (builder) => {
@@ -111,7 +148,9 @@ const listPostSlice = createSlice({
             ? {
                 ...post,
                 hasLiked: !post.hasLiked, // Cập nhật ngay lập tức (optimistic)
-                likeCount: post.hasLiked ? post.likeCount - 1 : post.likeCount + 1,
+                likeCount: post.hasLiked
+                  ? post.likeCount - 1
+                  : post.likeCount + 1,
                 isLiking: true, // Thêm trạng thái để disable nút khi đang gửi request
               }
             : post
@@ -135,7 +174,9 @@ const listPostSlice = createSlice({
             ? {
                 ...post,
                 hasLiked: !post.hasLiked, // Hoàn nguyên nếu request thất bại
-                likeCount: post.hasLiked ? post.likeCount - 1 : post.likeCount + 1,
+                likeCount: post.hasLiked
+                  ? post.likeCount - 1
+                  : post.likeCount + 1,
                 isLiking: false, // Reset trạng thái
               }
             : post
@@ -238,6 +279,57 @@ const listPostSlice = createSlice({
         if (postIndex !== -1) {
           state.posts[postIndex].commentCount += 1;
         }
+      })
+      .addCase(fetchLikes.pending, (state) => {
+        state.likesLoading = true;
+        state.likesError = null;
+      })
+      .addCase(fetchLikes.fulfilled, (state, action) => {
+        state.likesLoading = false;
+        const { postId, data } = action.payload;
+        const existingLikes = state.postLikes[postId] || {
+          likeCount: 0,
+          likedUsers: [],
+          nextCursor: null,
+        };
+
+        state.postLikes = {
+          ...state.postLikes,
+          [postId]: {
+            likeCount: data.likeCount,
+            likedUsers: [
+              ...existingLikes.likedUsers,
+              ...(data.likedUsers || []),
+            ],
+            nextCursor: data.nextCursor,
+          },
+        };
+      })
+      .addCase(fetchLikes.rejected, (state, action) => {
+        state.likesLoading = false;
+        state.likesError = action.payload;
+      })
+
+      .addCase(fetchShares.pending, (state) => {
+        state.sharesLoading = true;
+        state.sharesError = null;
+      })
+      .addCase(fetchShares.fulfilled, (state, action) => {
+        state.sharesLoading = false;
+        const { postId, data } = action.payload;
+
+        state.postShares = {
+          ...state.postShares,
+          [postId]: {
+            shareCount: data.shareCount,
+            sharedUsers: data.sharedUsers,
+            nextCursor: data.nextCursor,
+          },
+        };
+      })
+      .addCase(fetchShares.rejected, (state, action) => {
+        state.sharesLoading = false;
+        state.sharesError = action.payload;
       })
 
       .addCase(createPost.pending, (state) => {
@@ -431,6 +523,10 @@ export const {
   closePostOptionModal,
   openCommentOption,
   closeCommentOption,
+  openInteractorModal,
+  closeInteractorModal,
+  openInteractorShareModal,
+  closeInteractorShareModal,
 } = listPostSlice.actions;
 
 export default listPostSlice.reducer;

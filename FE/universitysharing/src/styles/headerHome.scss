@@ -89,16 +89,45 @@
   }
 }
 // Scss left-sidebar
+
 .left-sidebar {
   width: 200px;
   background: #fff;
   padding: 20px;
   border-right: 1px solid #ddd;
 
+  .user-profile-navigate {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    margin: 0 10px -20px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+
+    .profile-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 12px;
+    }
+
+    .User-Name {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    &:hover {
+      background: #f0f0f0;
+    }
+  }
+
   ul {
     list-style: none;
     padding: 0;
-    font-size: 1rem; // Giữ nguyên 1rem (16px) cho danh sách
+    font-size: 1rem;
     font-weight: bold;
 
     li {
@@ -108,36 +137,43 @@
       margin: 10px;
       cursor: pointer;
       border-radius: 8px;
-      transition: background 0.3s ease 0s; // Thêm transition cho hiệu ứng mượt mà
+      transition: background 0.3s ease;
+      position: relative;
 
-      // Icon từ react-icons (FiHome, FiUser, v.v.)
+      .menu-item-content {
+        display: flex;
+        align-items: center;
+        flex: 1;
+      }
+
       .sidebar-icon {
-        width: 1.4rem; // Tăng từ kích thước mặc định lên 28px (28/16 = 1.75rem)
+        width: 1.4rem;
         height: 1.4rem;
         margin-right: 12px;
       }
 
-      span {
-        flex: 1;
-        font-size: 1rem; // Giữ 1rem (16px) cho chữ
+      .menu-label {
+        font-size: 1rem;
       }
 
       &:hover {
-        background: #f0f0f0; // Hiệu ứng hover giữ nguyên
+        background: #f0f0f0;
       }
 
-      // Trạng thái active
       &.active {
-        background: #e7f3ff; // Màu nền khi active (giống Facebook)
-        span {
-          color: #1877f2; // Màu chữ khi active
+        background: #e7f3ff;
+        .menu-label {
+          color: #1877f2;
           font-weight: bold;
         }
+      }
+
+      .chevron-icon {
+        margin-left: auto;
       }
     }
   }
 }
-
 .right-sidebar {
   width: 250px;
   background: #fff;
@@ -234,7 +270,7 @@ $shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 $transition: all 0.2s ease;
 
 .all-posts {
-  max-width: 680px;
+  max-width: 620px;
   width: 100%;
   padding: 0 12px;
   margin: 0 auto;
@@ -344,45 +380,106 @@ $transition: all 0.2s ease;
     }
 
     .media-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      border-top: 1px solid #e4e6eb;
-      border-bottom: 1px solid #e4e6eb;
-
-      .post-media {
-        width: 100%;
-        max-height: 600px;
-        background: #f0f0f0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-
+      display: grid;
+      gap: 3px;
+      margin-top: 10px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    
+      .media-item {
+        position: relative;
+        background: #f0f2f5;
+    
         img,
         video {
-          max-width: 100%;
-          max-height: 100%;
-          object-fit: contain;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
           cursor: pointer;
         }
-
-        video {
+    
+        &.video-item {
           background: #000;
+          video {
+            max-height: 500px;
+          }
+        }
+    
+        .media-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.4);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 32px;
+          font-weight: 600;
+          cursor: pointer;
         }
       }
-
-      &.has-both {
-        flex-direction: row;
-        flex-wrap: wrap;
-
-        .post-media {
-          width: calc(50% - 0.5px);
+    
+      &.single-image {
+        .media-item {
+          max-height: 560px;
+          img {
+            max-height: 560px;
+            width: auto;
+            margin: 0 auto;
+          }
+        }
+      }
+    
+      &.single-video {
+        .media-item {
+          max-height: 560px;
+        }
+      }
+    
+      &.two-items {
+        grid-template-columns: 1fr 1fr;
+        height: 300px;
+    
+        &.has-video {
+          .media-item {
+            height: 300px;
+          }
+          .video-item {
+            height: 300px;
+          }
+        }
+      }
+    
+      &.multi-items {
+        grid-template-columns: 1fr 1fr;
+        height: 300px;
+    
+        .media-item {
           height: 300px;
+        }
+    
+        &.has-video {
+          grid-template-columns: 1fr 1fr; // Sửa từ 1fr thành 1fr 1fr để chia 2 cột
+          grid-template-rows: auto; // Xóa auto auto để không xếp dọc
+    
+          .media-item {
+            height: 300px;
+            &:first-child {
+              grid-column: 1; // Ảnh đầu tiên ở cột 1
+            }
+            &.video-item {
+              height: 300px;
+              grid-column: 2; // Video ở cột 2
+            }
+          }
         }
       }
     }
-
     // .actions {
     //   display: flex;
     //   justify-content: space-around;
@@ -451,7 +548,96 @@ $transition: all 0.2s ease;
     }
   }
 }
+.post-actions-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 14px;
+  color: $secondary-color;
+  margin: 8px 0px;
 
+  .reactions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .like-icon {
+      color: #f3425f;
+
+      &.liked {
+        animation: pop 0.3s ease;
+      }
+    }
+    span {
+      font-size: 14px;
+      font-weight: 500;
+      color: $secondary-color;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .comments-shares {
+    display: flex;
+    gap: 16px;
+    span {
+      font-size: 14px;
+      font-weight: 500;
+      color: $secondary-color;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.post-actions {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: $border-radius;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: $transition;
+    font-size: 15px;
+    font-weight: 500;
+    color: $secondary-color;
+
+    &:hover {
+      background: $hover-bg;
+    }
+
+    &.liked {
+      color: #f91880;
+    }
+
+    svg {
+      font-size: 18px;
+    }
+  }
+}
+
+// Hiệu ứng icon
+@keyframes pop {
+  0% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 // scss footer
 .footer {
   text-align: center;

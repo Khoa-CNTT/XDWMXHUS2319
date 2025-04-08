@@ -12,9 +12,9 @@ namespace Application.CQRS.Commands.Posts
     public class CreatePostCommand : IRequest<ResponseModel<ResponsePostDto>>
     {
         public required string Content { get;  set; }
-        public IFormFile? Image { get;  set; }
+        public List<IFormFile>? Images { get; set; } // ✅ hỗ trợ nhiều ảnh
         public IFormFile? Video { get;  set; }
         public PostTypeEnum PostType { get;  set; }
-        public ScopeEnum Scope { get;  set; } = ScopeEnum.Public;
+        public ScopeEnum Scope { get;  set; }
     }
 }

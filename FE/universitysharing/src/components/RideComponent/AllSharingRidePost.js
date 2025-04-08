@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/AllSharingCar.scss";
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline ,useMap} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
 import markerShadowPng from "leaflet/dist/images/marker-shadow.png";
 import avatarDefault from "../../assets/AvatarDefault.png";
-import moreIcon from "../../assets/iconweb/moreIcon.svg";
-import closerIcon from "../../assets/iconweb/closeIcon.svg";
 import checkIcon from "../../assets/iconweb/checkIcon.svg";
 import likeFillIcon from "../../assets/iconweb/likefillIcon.svg";
-import seeMapIcon from "../../assets/iconweb/seeMapIcon.svg";
 import { PiDotsThreeLight } from "react-icons/pi";
 import { FaMapLocationDot } from "react-icons/fa6";
 import { toast } from "react-toastify";
@@ -26,7 +23,11 @@ const defaultIcon = L.icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
-
+// Giới hạn phạm vi Đà Nẵng
+const daNangBounds = L.latLngBounds(
+  L.latLng(15.975, 108.05), // Tây Nam Đà Nẵng
+  L.latLng(16.15, 108.35)   // Đông Bắc Đà Nẵng
+);
 const formatTimeAgo = (utcTime) => {
   const serverTime = new Date(utcTime);
   const vietnamTime = serverTime.getTime() + 7 * 60 * 60 * 1000; // UTC+7
@@ -63,7 +64,25 @@ const formatTimeAgo = (utcTime) => {
 
   return new Date(vietnamTime).toLocaleDateString("vi-VN");
 };
-
+// Custom hook để kiểm soát bản đồ
+const convertUTCToVNTime = (utcDate) => {
+  const date = new Date(utcDate);
+  date.setHours(date.getHours() + 7);
+  return date;
+};
+const useMapControl = (center, bounds) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, 13);
+    }
+    if (bounds) {
+      map.setMaxBounds(bounds);
+      map.setMinZoom(12);
+      map.setMaxZoom(18);
+    }
+  }, [center, map, bounds]);
+};
 const AllSharingRide = () => {
   const [showMap, setShowMap] = useState({});
   const [routePaths, setRoutePaths] = useState({});
@@ -72,7 +91,8 @@ const AllSharingRide = () => {
   const [selectedRidePost, setSelectedRidePost] = useState(null);
   const [showOptions, setShowOptions] = useState(null);
   const [editPost, setEditPost] = useState(null);
-
+  const [startLocation, setStartLocation] = useState([16.054407, 108.202167]); // Trung tâm Đà Nẵng
+  const [endLocation, setEndLocation] = useState(null);
   const dispatch = useDispatch();
   const { ridePosts, loading, error, success, currentRide } = useSelector((state) => state.rides);
   const token = localStorage.getItem("token");
@@ -254,7 +274,7 @@ const AllSharingRide = () => {
           const startLatLon = ridePost.latLonStart ? parseLatLon(ridePost.latLonStart) : null;
           const endLatLon = ridePost.latLonEnd ? parseLatLon(ridePost.latLonEnd) : null;
           const isOwner = ridePost.userId === currentUserId;
-
+  
           return (
             <div className="All-ride-post" key={ridePost.id}>
               <div className="header-ride-post">
@@ -282,6 +302,13 @@ const AllSharingRide = () => {
               </div>
               {editPost && editPost.id === ridePost.id ? (
                 <div className="edit-post-form">
+                  <textarea
+                    value={editPost.content || ""}
+                    onChange={(e) => setEditPost({ ...editPost, content: e.target.value })}
+                    placeholder="Nội dung bài viết"
+                    rows="4"
+                    maxLength="200"
+                  />
                   <input
                     value={editPost.startLocation}
                     onChange={(e) => setEditPost({ ...editPost, startLocation: e.target.value })}
@@ -299,16 +326,23 @@ const AllSharingRide = () => {
                   <button onClick={() => setEditPost(null)}>Hủy</button>
                 </div>
               ) : (
-                <span className="content-ride-post">
-                  Đi từ {ridePost.startLocation} đến {ridePost.endLocation} vào{" "}
-                  {new Date(ridePost.startTime).toLocaleString("vi-VN")}
-                </span>
+                <div className="content-ride-post">
+                  {ridePost.content && <p className="post-content">{ridePost.content}</p>}
+                  <span className="location-time">
+                    Đi từ {ridePost.startLocation} đến {ridePost.endLocation} vào{" "}
+                    {new Date(ridePost.startTime).toLocaleString("vi-VN")}
+                  </span>
+                </div>
               )}
-
+  
               {showMap[ridePost.id] && startLatLon && endLatLon && (
                 <div className="map-ride-post" style={{ height: "300px", width: "100%" }}>
-                  <MapContainer center={startLatLon} zoom={13} style={{ height: "100%", width: "100%" }}>
+                  <MapContainer center={startLatLon} zoom={13}
+                    maxBounds={daNangBounds}
+                    maxBoundsViscosity={1.0}
+                  style={{ height: "100%", width: "100%" }}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <MapControl center={startLocation || endLocation} bounds={daNangBounds} />
                     <Marker position={startLatLon} icon={defaultIcon}>
                       <Popup>Điểm đi</Popup>
                     </Marker>
@@ -320,7 +354,7 @@ const AllSharingRide = () => {
                   </MapContainer>
                 </div>
               )}
-
+  
               <div className="action-ride-post">
                 <div className="like-number-ride-post">
                   <img className="like-ride-Post" src={likeFillIcon} alt="Like" />
@@ -343,7 +377,7 @@ const AllSharingRide = () => {
       ) : (
         <p>Không có bài viết nào.</p>
       )}
-
+  
       {showSafetyModal && (
         <>
           <div className="safety-modal-overlay" onClick={handleCancel}></div>
@@ -360,5 +394,8 @@ const AllSharingRide = () => {
     </>
   );
 };
-
+const MapControl = ({ center, bounds }) => {
+  useMapControl(center, bounds);
+  return null;
+};
 export default AllSharingRide;

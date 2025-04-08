@@ -70,7 +70,7 @@ namespace Infrastructure.Data.Repositories
                      .ThenInclude(s => s.User)
                  .Include(p => p.OriginalPost)
                      .ThenInclude(op => op.User)
-                 .Where(p => !p.IsDeleted && p.Scope == ScopeEnum.Public); // Chỉ lấy bài chưa bị xóa
+                 .Where(p => !p.IsDeleted && p.Scope == 0 && (p.IsApproved || p.ApprovalStatus == ApprovalStatusEnum.Approved)); // Chỉ lấy bài chưa bị xóa
 
 
             // Nếu có LastPostId, chỉ lấy bài viết cũ hơn nó
