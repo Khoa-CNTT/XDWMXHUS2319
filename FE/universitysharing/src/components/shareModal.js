@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import avatarDefaut from "../assets/AvatarDefault.png";
 import closeIcon from "../assets/iconweb/closeIcon.svg";
 import "../styles/ShareModal.scss";
@@ -39,7 +40,7 @@ const ShareModal = ({ isOpen, onClose, usersProfile, post }) => {
     fullName: "University Sharing",
   };
 
-  return (
+  return createPortal(
     <div className="share-Overlay animate__animated animate__fadeIn ">
       <div className="share-Modal ">
         <div className="head-Share-Modal">
@@ -75,7 +76,8 @@ const ShareModal = ({ isOpen, onClose, usersProfile, post }) => {
           Chia sẻ
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

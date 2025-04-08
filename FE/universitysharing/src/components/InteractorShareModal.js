@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import "../styles/InteractorShareModal.scss"; // Reuse the same SCSS file
 import { IoPersonAddOutline, IoShareSocialOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
@@ -55,7 +56,7 @@ const InteractorShareModal = ({
     return null;
   }
 
-  return (
+  return createPortal(
     <div className="modal-interactor-overlay">
       <div className="modal-interactor-content">
         <div className="modal-header">
@@ -104,7 +105,8 @@ const InteractorShareModal = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
