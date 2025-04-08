@@ -84,7 +84,7 @@
   height: calc(100vh - 80px);
   overflow-y: auto;
   width: 500px;
-  z-index: auto; // Thấp hơn các phần tử modal
+  z-index: 3; // Thấp hơn các phần tử modal
   &::-webkit-scrollbar {
     width: 6px;
   }

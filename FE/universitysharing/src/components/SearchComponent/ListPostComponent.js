@@ -1,11 +1,14 @@
 import React from "react";
 import "../../styles/headerHome.scss";
-import shareIcon from "../../assets/iconweb/shareIcon.svg";
-import likeIcon from "../../assets/iconweb/likeIcon.svg";
-import likeFill from "../../assets/iconweb/likefillIcon.svg";
-import commentIcon from "../../assets/iconweb/commentIcon.svg";
-import closeIcon from "../../assets/iconweb/closeIcon.svg";
-import moreIcon from "../../assets/iconweb/moreIcon.svg";
+import {
+  FiMoreHorizontal,
+  FiX,
+  FiHeart,
+  FiMessageSquare,
+  FiShare2,
+  FiClock,
+} from "react-icons/fi";
+import { FaHeart } from "react-icons/fa";
 import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
 import ShareModal from "../shareModal";
@@ -20,6 +23,10 @@ import {
   closeShareModal,
   openPostOptionModal,
   closePostOptionModal,
+  openInteractorModal,
+  closeInteractorModal,
+  openInteractorShareModal,
+  closeInteractorShareModal,
 } from "../../stores/reducers/listPostReducers";
 import { debounce } from "lodash";
 import PostOptionsModal from "../../components/HomeComponent/PostOptionModal";
@@ -29,182 +36,329 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import InteractorModal from "../InteractorModal";
+import InteractorShareModal from "../InteractorShareModal";
+import { fetchLikes } from "../../stores/action/likeAction";
+import { fetchShares } from "../../stores/action/shareAction";
 const ListPost = ({ posts = [], usersProfile }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  //   const userId = getUserIdFromToken();
 
-  // Lấy các trạng thái modal từ Redux
   const {
     selectedPost,
     isShareModalOpen,
     selectedPostToShare,
     selectedPostToOption,
     isPostOptionsOpen,
+    isInteractorModalOpen,
+    isInteractorShareModalOpen,
+    selectedPostForInteractions,
+    postLikes,
+    likesLoading,
+    likesError,
+    postShares,
+    sharesLoading,
+    sharesError,
   } = useSelector((state) => state.posts);
 
-  // Mở modal và cập nhật URL
-  const handleOpenCommentModal = (post) => {
-    dispatch(openCommentModal(post));
-    navigate(`/post/${post.id}`); // Cập nhật URL
+  const handleOpenCommentModal = (post, index) => {
+    dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
+    navigate(`/post/${post.id}`);
   };
 
-  // Đóng modal và quay lại trang trước
   const handleCloseCommentModal = () => {
     dispatch(closeCommentModal());
     navigate(-1);
   };
 
-  //Mở modal option
-  const userId = getUserIdFromToken(); // Lấy userId từ token
+  const userId = getUserIdFromToken();
+
   const handleOpenPostOptions = (event, post) => {
     event.stopPropagation();
     const rect = event.target.getBoundingClientRect();
     dispatch(
       openPostOptionModal({
         post,
-        position: { top: rect.bottom + 5, left: rect.left - 120 }, // Điều chỉnh vị trí
+        position: { top: rect.bottom + 5, left: rect.left - 120 },
       })
     );
   };
 
-  //Xóa bài viết
   const handleDeletePost = debounce((postId) => {
-    dispatch(deletePost(postId)); // Truyền trực tiếp ID (string)
+    dispatch(deletePost(postId));
   }, 300);
-  // Hiển thị confirm trước khi xóa
+
   const confirmDelete = (postId) => {
     confirmAlert({
       title: "Xác nhận xóa",
       message: "Bạn có chắc chắn muốn xóa bài viết này không?",
       buttons: [
-        {
-          label: "Có",
-          onClick: () => handleDeletePost(postId),
-        },
-        {
-          label: "Không",
-          onClick: () => console.log("Hủy xóa"),
-        },
+        { label: "Có", onClick: () => handleDeletePost(postId) },
+        { label: "Không", onClick: () => console.log("Hủy xóa") },
       ],
     });
   };
 
-  const formatTime = (dateString) => {
-    if (!dateString) return "Không xác định";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Không xác định";
-    return formatDistanceToNow(date, { addSuffix: true, locale: vi });
+  const handleLikePost = (postId) => {
+    dispatch(likePost(postId));
   };
 
-  //Like bài viết
-  const handleLikePost = debounce((postId) => {
-    dispatch(likePost(postId));
-  }, 100);
+  const handleOpenInteractorModal = async (post) => {
+    if (!postLikes[post.id]) {
+      await dispatch(fetchLikes({ postId: post.id }));
+    }
+    dispatch(openInteractorModal(post));
+  };
+
+  const handleCloseInteractorModal = () => {
+    dispatch(closeInteractorModal());
+  };
+
+  const handleOpenInteractorShareModal = async (post) => {
+    if (!postShares[post.id]) {
+      await dispatch(fetchShares({ postId: post.id }));
+    }
+    dispatch(openInteractorShareModal(post));
+  };
+
+  const handleCloseInteractorShareModal = () => {
+    dispatch(closeInteractorShareModal());
+  };
+
+  const convertUTCToVNTime = (utcDate) => {
+    const date = new Date(utcDate);
+    date.setHours(date.getHours() + 7);
+    return date;
+  };
+
+  const getMediaContainerClass = (post) => {
+    const imageCount = post.imageUrl ? post.imageUrl.split(",").length : 0;
+    const hasVideo = !!post.videoUrl;
+    const totalMedia = imageCount + (hasVideo ? 1 : 0);
+
+    let className = "media-container";
+    switch (totalMedia) {
+      case 1:
+        className += hasVideo ? " single-video" : " single-image";
+        break;
+      case 2:
+        className += " two-items";
+        if (hasVideo) className += " has-video";
+        break;
+      default:
+        if (totalMedia >= 3) {
+          className += " multi-items";
+          if (hasVideo) className += " has-video";
+        }
+    }
+    return className;
+  };
+
+  const renderMediaItems = (post) => {
+    const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
+    const hasVideo = !!post.videoUrl;
+    const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
+
+    return (
+      <div className={getMediaContainerClass(post)}>
+        {imageUrls.map((url, index) => {
+          const fullUrl = url.startsWith("http")
+            ? url.trim()
+            : `https://localhost:7053${url.trim()}`;
+          const showOverlay = totalMedia > 2 && index === (hasVideo ? 0 : 1);
+
+          if (totalMedia > 2 && index > (hasVideo ? 0 : 1)) return null;
+          if (hasVideo && index > 0) return null;
+
+          return (
+            <div className="media-item" key={index}>
+              <img
+                src={fullUrl}
+                alt={`Post media ${index}`}
+                onClick={() => handleOpenCommentModal(post, index)}
+              />
+              {showOverlay && (
+                <div
+                  className="media-overlay"
+                  onClick={() => handleOpenCommentModal(post, index)}
+                >
+                  +{totalMedia - (hasVideo ? 1 : 2)}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {hasVideo && (
+          <div className="media-item video-item">
+            <video
+              controls
+              onClick={() => handleOpenCommentModal(post, imageUrls.length)}
+            >
+              <source src={post.videoUrl} type="video/mp4" />
+            </video>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="all-posts">
       {Array.isArray(posts) && posts.length > 0 ? (
-        posts.map((post) => {
-          if (!post || typeof post !== "object" || post === null) {
-            return null;
-          }
-          return (
-            <div className="post" key={post.id}>
-              <div className="header-post">
-                <p className="AvaName">
-                  <img
-                    className="avtardefaut"
-                    src={post.profilePicture || avatarWeb}
-                    alt="Avatar"
-                  />
+        posts.map((post) => (
+          <div className="post" key={post.id}>
+            <div className="header-post">
+              <div className="AvaName">
+                <img
+                  className="avtardefaut"
+                  src={post.profilePicture || avatarWeb}
+                  alt="Avatar"
+                />
+                <div className="user-info">
                   <strong>{post.fullName}</strong>
-                  <span className="timePost">{formatTime(post.createdAt)}</span>
-                </p>
-                <p className="closemore">
-                  <img
-                    className="btn-edit"
-                    src={moreIcon}
-                    alt="More"
-                    onClick={(event) => handleOpenPostOptions(event, post)}
-                  />
-                  <img
-                    className="btn-close"
-                    src={closeIcon}
-                    alt="Close"
-                    onClick={() => dispatch(hidePost(post.id))}
-                  />
-                </p>
-              </div>
-              <span className="content-posts">{post.content}</span>
-              {post.isSharedPost && (
-                <div className="Share-Post-origigin">
-                  <SharedPost post={post} />
+                  <span className="timePost">
+                    <FiClock size={12} style={{ marginRight: 4 }} />
+                    {formatDistanceToNow(convertUTCToVNTime(post.createdAt), {
+                      addSuffix: true,
+                      locale: {
+                        ...vi,
+                        formatDistance: (token, count) => {
+                          switch (token) {
+                            case "lessThanXSeconds":
+                              return "vài giây trước";
+                            case "xSeconds":
+                              return `${count} giây trước`;
+                            case "halfAMinute":
+                              return "30 giây trước";
+                            case "lessThanXMinutes":
+                              return `${count} phút trước`;
+                            case "xMinutes":
+                              return `${count} phút trước`;
+                            case "aboutXHours":
+                              return `${count} giờ trước`;
+                            case "xHours":
+                              return `${count} giờ trước`;
+                            case "xDays":
+                              return `${count} ngày trước`;
+                            case "aboutXMonths":
+                              return `${count} tháng trước`;
+                            case "xMonths":
+                              return `${count} tháng trước`;
+                            case "aboutXYears":
+                              return `${count} năm trước`;
+                            case "xYears":
+                              return `${count} năm trước`;
+                            default:
+                              return "";
+                          }
+                        },
+                      },
+                      includeSeconds: true,
+                    })}
+                  </span>
                 </div>
-              )}
-              <div
-                className={`media-container ${
-                  post.imageUrl && post.videoUrl ? "has-both" : ""
-                }`}
-              >
-                {post.imageUrl && (
-                  <div className="postImg">
-                    <img
-                      src={post.imageUrl}
-                      alt="Post"
-                      onClick={() => handleOpenCommentModal(post)}
-                    />
-                  </div>
-                )}
-                {post.videoUrl && (
-                  <div className="postVideo">
-                    <video
-                      controls
-                      onClick={() => handleOpenCommentModal(post)}
-                    >
-                      <source src={post.videoUrl} type="video/mp4" />
-                      Trình duyệt của bạn không hỗ trợ video.
-                    </video>
-                  </div>
-                )}
               </div>
-              <div className="actions">
-                <span onClick={() => handleLikePost(post.id)}>
-                  <img src={post.hasLiked ? likeFill : likeIcon} alt="Like" />
-                  <span>{post.likeCount}</span>
+              <div className="post-actions">
+                <FiMoreHorizontal
+                  className="btn-edit"
+                  size={20}
+                  onClick={(event) => handleOpenPostOptions(event, post)}
+                />
+                <FiX
+                  className="btn-close"
+                  size={20}
+                  onClick={() => dispatch(hidePost(post.id))}
+                />
+              </div>
+            </div>
+
+            <div className="content-posts">{post.content}</div>
+
+            {post.isSharedPost && (
+              <div className="Share-Post-origigin">
+                <SharedPost post={post} />
+              </div>
+            )}
+
+            {renderMediaItems(post)}
+
+            <div className="post-actions-summary">
+              <div
+                className="reactions"
+                onClick={() => handleOpenInteractorModal(post)}
+                style={{ cursor: "pointer" }}
+              >
+                <FaHeart className="like-icon" size={16} />
+                <span>{post.likeCount}</span>
+              </div>
+              <div className="comments-shares">
+                <span
+                  onClick={() => handleOpenCommentModal(post, 0)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {post.commentCount} bình luận
                 </span>
-                <span onClick={() => handleOpenCommentModal(post)}>
-                  <img src={commentIcon} alt="Comment" />
-                  <span>{post.commentCount}</span>
-                </span>
-                <span onClick={() => dispatch(openShareModal(post))}>
-                  <img src={shareIcon} alt="Share" />
-                  <span>{post.shareCount}</span>
+                <span
+                  onClick={() => handleOpenInteractorShareModal(post)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {post.shareCount} lượt chia sẻ
                 </span>
               </div>
             </div>
-          );
-        })
+
+            <div className="actions">
+              <button
+                className={`action-btn ${post.hasLiked ? "liked" : ""}`}
+                onClick={() => handleLikePost(post.id)}
+                disabled={post.isLiking}
+              >
+                {post.hasLiked ? (
+                  <FaHeart className="like-icon" size={18} />
+                ) : (
+                  <FiHeart className="like-icon" size={18} />
+                )}
+                <span className="action-count">Thích</span>
+              </button>
+              <button
+                className="action-btn"
+                onClick={() => handleOpenCommentModal(post, 0)}
+              >
+                <FiMessageSquare className="comment-icon" size={18} />
+                <span className="action-count">Bình luận</span>
+              </button>
+              <button
+                className="action-btn"
+                onClick={() => dispatch(openShareModal(post))}
+              >
+                <FiShare2 className="share-icon" size={18} />
+                <span className="action-count">Chia sẻ</span>
+              </button>
+            </div>
+          </div>
+        ))
       ) : (
-        <p>Không có bài viết nào được tìm thấy.</p>
+        <div className="no-posts">
+          <p>Không có bài viết nào.</p>
+        </div>
       )}
+
       {isPostOptionsOpen && selectedPostToOption && (
         <PostOptionsModal
           isOwner={userId === selectedPostToOption.post.userId}
           onClose={() => dispatch(closePostOptionModal())}
-          position={selectedPostToOption.position} // Truyền vị trí vào modal
+          position={selectedPostToOption.position}
           postId={selectedPostToOption.post.id}
           handleDeletePost={confirmDelete}
           post={selectedPostToOption.post}
         />
       )}
+
       {selectedPost &&
         location.pathname.includes(`/post/${selectedPost.id}`) && (
           <CommentModal
             post={selectedPost}
-            //isOpen={true}
             onClose={handleCloseCommentModal}
             usersProfile={usersProfile}
           />
@@ -216,6 +370,28 @@ const ListPost = ({ posts = [], usersProfile }) => {
           isOpen={isShareModalOpen}
           onClose={() => dispatch(closeShareModal())}
           usersProfile={usersProfile}
+        />
+      )}
+
+      {isInteractorModalOpen && selectedPostForInteractions && (
+        <InteractorModal
+          isOpen={isInteractorModalOpen}
+          onClose={handleCloseInteractorModal}
+          likesData={postLikes[selectedPostForInteractions.id]}
+          isLoading={likesLoading}
+          error={likesError}
+          postId={selectedPostForInteractions.id}
+        />
+      )}
+
+      {isInteractorShareModalOpen && selectedPostForInteractions && (
+        <InteractorShareModal
+          isOpen={isInteractorShareModalOpen}
+          onClose={handleCloseInteractorShareModal}
+          sharesData={postShares[selectedPostForInteractions.id]}
+          isLoading={sharesLoading}
+          error={sharesError}
+          postId={selectedPostForInteractions.id}
         />
       )}
     </div>
