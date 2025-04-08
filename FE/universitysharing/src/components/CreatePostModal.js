@@ -17,7 +17,7 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
   const [content, setContent] = useState("");
   const [postType, setPostType] = useState(4);
   const [scope, setScope] = useState(0);
-  const loading = useSelector((state) => state.posts.loadingCreatePost);
+  const loading = useSelector((state) => state.posts.loading);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -68,25 +68,25 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
       alert("Vui lòng nhập nội dung bài viết!");
       return;
     }
-
+  
     const formData = new FormData();
     formData.append("Content", content);
     formData.append("PostType", postType);
     formData.append("Scope", scope);
-
+  
     if (mediaFiles.length > 0) {
       const videoFile = mediaFiles.find((media) => media.type === "video");
       const imageFiles = mediaFiles.filter((media) => media.type === "image");
-
+  
       if (videoFile) {
         formData.append("Video", videoFile.file);
       }
-
-      imageFiles.forEach((image, index) => {
-        formData.append(`Image`, image.file);
+  
+      imageFiles.forEach((image) => {
+        formData.append("Images", image.file); // 👈 quan trọng: sửa thành "Images"
       });
     }
-
+  
     dispatch(
       createPost({
         formData,
@@ -94,7 +94,7 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
         profilePicture: usersProfile.profilePicture || avatarDeafault,
       })
     );
-
+  
     onClose();
   };
 
@@ -176,6 +176,7 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
           >
             <option value="0">Công khai</option>
             <option value="1">Riêng tư</option>
+            <option value="2">Chỉ bạn bè</option>
           </select>
           <select
             className="type-post"

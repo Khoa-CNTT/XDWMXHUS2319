@@ -19,10 +19,11 @@ export const createPost = createAsyncThunk(
         { content,startLocation, endLocation, startTime, postType },
         config
       );
-      toast.success(response.data.message || "Tạo bài đăng thành công!");
+      toast.success(response.data.data.message || "Tạo bài đăng thành công!");
+      console.log("response.data.data", response.data.data.message);
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Có lỗi xảy ra");
+      return rejectWithValue(error.response?.data?.data?.message || "Có lỗi xảy ra");
     }
   }
 );
@@ -79,7 +80,7 @@ export const fetchRidePost = createAsyncThunk(
       });
       return response.data?.data?.responseRidePostDto || [];
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi không xác định");
+      return rejectWithValue(error.response?.data.data || "Lỗi không xác định");
     }
   }
 );
@@ -98,9 +99,14 @@ export const createRide = createAsyncThunk(
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      if(response.data.success) {
+        toast.success(response.data.message || "Tạo chuyến đi thành công!");
+      }else{
+        toast.error(response.data.message || "Có lỗi xảy ra");
+      }
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi không xác định");
+      return rejectWithValue(error.response?.data.message || "Lỗi không xác định");
     }
   }
 );

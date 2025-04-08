@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-
+import "../styles/CommentOverlay.scss";
 import logoweb from "../assets/Logo.png";
 import avatarDefaut from "../assets/AvatarDefault.png";
-import "../styles/CommentOverlay.scss";
-import ImagePostComment from "./CommentModel_Component/imagePost";
+import defaultPostImage from "../assets/ImgDefault.png"; // Thêm ảnh default vào assets
 import ContentPostComment from "./CommentModel_Component/ContenPostComment";
 import CommentList from "./CommentModel_Component/CommentList";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,7 +13,7 @@ import {
   likeComment,
 } from "../stores/action/listPostActions";
 import getUserIdFromToken from "../utils/JwtDecode";
-import { FiSend } from "react-icons/fi"; // Thêm icon gửi
+import { FiSend, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 const CommentModal = ({ post, onClose, usersProfile }) => {
   const userId = getUserIdFromToken();
@@ -23,12 +22,23 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
   const commentEndRef = useRef(null);
   const comments = useSelector((state) => state.posts.comments[post.id] || []);
 
+
   const [isSending, setIsSending] = useState(false); // Thêm trạng thái loading khi gửi
+
 
   const [lastCommentId, setLastCommentId] = useState(null);
   const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   const [hasMoreComments, setHasMoreComments] = useState(true);
-  //console.log("Data bài viết được lưạ chọn>> ", post);
+  const [currentIndex, setCurrentIndex] = useState(post.initialMediaIndex || 0);
+
+  const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
+  const hasVideo = !!post.videoUrl;
+  const mediaItems = [
+    ...imageUrls.map((url) =>
+      url.startsWith("http") ? url.trim() : `https://localhost:7053${url.trim()}`
+    ),
+    ...(hasVideo ? [post.videoUrl] : []),
+  ];
 
   useEffect(() => {
     const handleKeyClose = (event) => {
@@ -42,14 +52,13 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
     };
   }, [onClose]);
 
-  // Load initial comments
   useEffect(() => {
     if (post?.id) {
       dispatch(commentPost({ postId: post.id }));
     }
   }, [dispatch, post?.id]);
 
-  // Load more comments function
+
   const loadMoreComments = useCallback(() => {
     if (loadingMoreComments || !hasMoreComments || !lastCommentId) return;
 
@@ -67,7 +76,6 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
       .finally(() => setLoadingMoreComments(false));
   }, [post.id, lastCommentId, loadingMoreComments, hasMoreComments]);
 
-  // Set up intersection observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -89,13 +97,11 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
     };
   }, [loadMoreComments, hasMoreComments]);
 
-  // Update lastCommentId when comments change
   useEffect(() => {
     if (comments.length > 0) {
       setLastCommentId(comments[comments.length - 1].id);
     }
   }, [comments]);
-  //Để gõ text
 
   const handleInputChange = (e) => {
     commentTextRef.current = e.target.value;
@@ -133,17 +139,60 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
     }
   };
 
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : mediaItems.length - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev < mediaItems.length - 1 ? prev + 1 : 0));
+  };
+
   if (!post) return null;
+
   return (
     <div className="comment-modal-overlay">
+
       {/* Thêm nút đóng modal */}
+
 
       <div className="logowebsite">
         <img className="logoUS" src={logoweb} alt="Logo" />
       </div>
 
       <div className="post-overlay">
-        <ImagePostComment post={post} />
+        <div className="image-Post">
+          <div className="media-container">
+            {mediaItems.length > 0 ? (
+              mediaItems[currentIndex].endsWith(".mp4") ? (
+                <video className="post-media" controls>
+                  <source src={mediaItems[currentIndex]} type="video/mp4" />
+                </video>
+              ) : (
+                <img
+                  className="post-media"
+                  src={mediaItems[currentIndex]}
+                  alt={`Media ${currentIndex}`}
+                />
+              )
+            ) : (
+              <img
+                className="post-media default-media"
+                src={defaultPostImage}
+                alt="Default Post Image"
+              />
+            )}
+            {mediaItems.length > 1 && (
+              <>
+                <button className="nav-button prev-button" onClick={handlePrev}>
+                  <FiChevronLeft size={24} />
+                </button>
+                <button className="nav-button next-button" onClick={handleNext}>
+                  <FiChevronRight size={24} />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
 
         <div className="content-post">
           <ContentPostComment post={post} onClose={onClose} />
