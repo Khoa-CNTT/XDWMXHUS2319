@@ -24,24 +24,31 @@ namespace Application.CQRS.Commands.Rides
                 return ResponseFactory.Fail<ResponseRideDto>("User not found", 404);
 
             var ridePost = await _unitOfWork.RidePostRepository.GetByIdAsync(request.RidePostId);
-            
+
             if (userId == request.DriverId)
             {
                 return ResponseFactory.Fail<ResponseRideDto>("Driver and Passenger can't be the same", 400);
             }
+
             if (ridePost == null || ridePost.Status == RidePostStatusEnum.Matched)
             {
-                return ResponseFactory.Fail<ResponseRideDto>("Post doen't exists or it is matched", 404);
+                return ResponseFactory.Fail<ResponseRideDto>("Post doesn't exist or it is matched", 404);
             }
+
+            // ⚠️ Kiểm tra tài xế đang có chuyến đi active không?
+            var driverActiveRides = await _unitOfWork.RideRepository.GetActiveRidesByDriverIdAsync(request.DriverId);
+            if (driverActiveRides.Any())
+            {
+                return ResponseFactory.Fail<ResponseRideDto>("Driver already has an active ride. Please wait for it to complete.", 400);
+            }
+
             // Kiểm tra các chuyến đi đang active của hành khách
             var activeRides = await _unitOfWork.RideRepository.GetActiveRidesByPassengerIdAsync(userId);
-
             if (activeRides.Any())
             {
                 return ResponseFactory.Fail<ResponseRideDto>("You already have an active ride. Please complete it before registering a new one.", 400);
             }
 
-          
 
 
 

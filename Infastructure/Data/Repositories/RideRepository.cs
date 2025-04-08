@@ -83,5 +83,12 @@ namespace Infrastructure.Data.Repositories
                             (!r.EndTime.HasValue || r.EndTime > DateTime.UtcNow))
                 .ToListAsync();
         }
+        public async Task<List<Ride>> GetActiveRidesByDriverIdAsync(Guid driverId)
+        {
+            return await _context.Rides
+                .Where(r => r.DriverId == driverId && r.Status == StatusRideEnum.Accepted)
+                .ToListAsync();
+        }
+
     }
 }

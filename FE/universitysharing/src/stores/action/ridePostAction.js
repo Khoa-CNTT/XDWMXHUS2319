@@ -99,9 +99,14 @@ export const createRide = createAsyncThunk(
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      if(response.data.success) {
+        toast.success(response.data.message || "Tạo chuyến đi thành công!");
+      }else{
+        toast.error(response.data.message || "Có lỗi xảy ra");
+      }
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi không xác định");
+      return rejectWithValue(error.response?.data.message || "Lỗi không xác định");
     }
   }
 );
