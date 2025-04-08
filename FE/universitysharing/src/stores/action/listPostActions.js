@@ -10,7 +10,6 @@ export const fetchPosts = createAsyncThunk(
   "posts/fetchPosts",
   async (lastPostId = null, { rejectWithValue }) => {
     try {
-      console.log("Dang chay");
       const tokens = localStorage.getItem("token");
       const url = lastPostId
         ? `https://localhost:7053/api/Post/getallpost?lastPostId=${lastPostId}`
@@ -129,13 +128,14 @@ export const likeComment = createAsyncThunk(
   }
 );
 
-// //Đăng bài
+// Đăng bài
 export const createPost = createAsyncThunk(
   "post/createPost",
   async ({ formData, fullName, profilePicture }, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
+    const toastId = toast.loading("Đang đăng bài...");
+
     try {
-      const token = localStorage.getItem("token");
-      // console.log("formData", formData);
       const response = await axios.post(
         "https://localhost:7053/api/Post/create",
         formData,
@@ -145,14 +145,20 @@ export const createPost = createAsyncThunk(
           },
         }
       );
+
       if (response.data.success) {
-        // console.log("Đăng bài thành công ");
-        toast.success("Đăng bài thành công!");
+        toast.update(toastId, {
+          render: response.data.message || "Đăng bài thành công!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
+
         return {
           fullName,
           profilePicture,
           ...response.data.data,
-          updateAt: null, // API không trả về updateAt, nên thêm vào để đồng bộ
+          updateAt: null,
           commentCount: 0,
           likeCount: 0,
           shareCount: 0,
@@ -160,10 +166,22 @@ export const createPost = createAsyncThunk(
           isSharedPost: false,
         };
       } else {
-        toast.error("Đăng bài thất bại!");
+        toast.update(toastId, {
+          render: response.data.message || "Đăng bài thất bại!",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
         return rejectWithValue(response.data.errors);
       }
     } catch (error) {
+      toast.update(toastId, {
+        render: error.response?.data?.message || "Lỗi không xác định!",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+
       return rejectWithValue(error.response?.data || error.message);
     }
   }

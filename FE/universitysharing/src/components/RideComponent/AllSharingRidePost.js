@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/AllSharingCar.scss";
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline ,useMap} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
@@ -23,7 +23,11 @@ const defaultIcon = L.icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
-
+// Giới hạn phạm vi Đà Nẵng
+const daNangBounds = L.latLngBounds(
+  L.latLng(15.975, 108.05), // Tây Nam Đà Nẵng
+  L.latLng(16.15, 108.35)   // Đông Bắc Đà Nẵng
+);
 const formatTimeAgo = (utcTime) => {
   const serverTime = new Date(utcTime);
   const vietnamTime = serverTime.getTime() + 7 * 60 * 60 * 1000; // UTC+7
@@ -60,7 +64,25 @@ const formatTimeAgo = (utcTime) => {
 
   return new Date(vietnamTime).toLocaleDateString("vi-VN");
 };
-
+// Custom hook để kiểm soát bản đồ
+const convertUTCToVNTime = (utcDate) => {
+  const date = new Date(utcDate);
+  date.setHours(date.getHours() + 7);
+  return date;
+};
+const useMapControl = (center, bounds) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, 13);
+    }
+    if (bounds) {
+      map.setMaxBounds(bounds);
+      map.setMinZoom(12);
+      map.setMaxZoom(18);
+    }
+  }, [center, map, bounds]);
+};
 const AllSharingRide = () => {
   const [showMap, setShowMap] = useState({});
   const [routePaths, setRoutePaths] = useState({});
@@ -69,7 +91,8 @@ const AllSharingRide = () => {
   const [selectedRidePost, setSelectedRidePost] = useState(null);
   const [showOptions, setShowOptions] = useState(null);
   const [editPost, setEditPost] = useState(null);
-
+  const [startLocation, setStartLocation] = useState([16.054407, 108.202167]); // Trung tâm Đà Nẵng
+  const [endLocation, setEndLocation] = useState(null);
   const dispatch = useDispatch();
   const { ridePosts, loading, error, success, currentRide } = useSelector((state) => state.rides);
   const token = localStorage.getItem("token");
@@ -314,8 +337,12 @@ const AllSharingRide = () => {
   
               {showMap[ridePost.id] && startLatLon && endLatLon && (
                 <div className="map-ride-post" style={{ height: "300px", width: "100%" }}>
-                  <MapContainer center={startLatLon} zoom={13} style={{ height: "100%", width: "100%" }}>
+                  <MapContainer center={startLatLon} zoom={13}
+                    maxBounds={daNangBounds}
+                    maxBoundsViscosity={1.0}
+                  style={{ height: "100%", width: "100%" }}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <MapControl center={startLocation || endLocation} bounds={daNangBounds} />
                     <Marker position={startLatLon} icon={defaultIcon}>
                       <Popup>Điểm đi</Popup>
                     </Marker>
@@ -367,5 +394,8 @@ const AllSharingRide = () => {
     </>
   );
 };
-
+const MapControl = ({ center, bounds }) => {
+  useMapControl(center, bounds);
+  return null;
+};
 export default AllSharingRide;
