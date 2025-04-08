@@ -1,22 +1,22 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 
-import logoweb from "../assets/Logo.png";
-import avatarDefaut from "../assets/AvatarDefault.png";
-import "../styles/CommentOverlay.scss";
-import ImagePostComment from "./CommentModel_Component/imagePost";
-import ContentPostComment from "./CommentModel_Component/ContenPostComment";
-import CommentList from "./CommentModel_Component/CommentList";
+import logoweb from "../../assets/Logo.png";
+import avatarDefaut from "../../assets/AvatarDefault.png";
+// import "../../styles/CommentOverlay.scss";
+import "../../styles/CommentModalNoImg.scss";
+import ContentPostComment from "./ContenPostComment";
+import CommentList from "./CommentList";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
   commentPost,
   addCommentPost,
   likeComment,
-} from "../stores/action/listPostActions";
-import getUserIdFromToken from "../utils/JwtDecode";
+} from "../../stores/action/listPostActions";
+import getUserIdFromToken from "../../utils/JwtDecode";
 import { FiSend } from "react-icons/fi"; // Thêm icon gửi
 
-const CommentModal = ({ post, onClose, usersProfile }) => {
+const CommentModalNoImg = ({ post, onClose, usersProfile }) => {
   const userId = getUserIdFromToken();
   const dispatch = useDispatch();
   const commentTextRef = useRef("");
@@ -135,19 +135,16 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
 
   if (!post) return null;
   return (
-    <div className="comment-modal-overlay">
+    <div className="comment-modal-overlay-noImg">
       {/* Thêm nút đóng modal */}
 
-      <div className="logowebsite">
+      {/* <div className="logowebsite">
         <img className="logoUS" src={logoweb} alt="Logo" />
-      </div>
+      </div> */}
 
       <div className="post-overlay">
-        <ImagePostComment post={post} />
-
         <div className="content-post">
           <ContentPostComment post={post} onClose={onClose} />
-
           <CommentList
             post={post}
             comment={comments}
@@ -180,4 +177,4 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
   );
 };
 
-export default CommentModal;
+export default CommentModalNoImg;
