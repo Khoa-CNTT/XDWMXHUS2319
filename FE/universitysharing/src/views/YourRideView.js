@@ -29,7 +29,6 @@ const SharingRideView = () => {
           <Footer className="footer" />
         </div>
         <div className="center-content">
-        
           <YourRide className="all-posts" />
         </div>
         <RightSidebar className="right-sidebar" />

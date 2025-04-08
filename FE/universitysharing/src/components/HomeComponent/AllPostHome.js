@@ -17,6 +17,11 @@ import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
 import ShareModal from "../shareModal";
 import SharedPost from "./SharingPost";
+
+
+import CommentModalNoImg from "../CommentModal-NoImge/CommentNoImage";
+
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchPosts,
@@ -428,13 +433,21 @@ if (totalMedia === 0) return null;
         />
       )}
 
-      {selectedPost && location.pathname.includes(`/post/${selectedPost.id}`) && (
-        <CommentModal
-          post={selectedPost}
-          onClose={handleCloseCommentModal}
-          usersProfile={usersProfile}
-        />
-      )}
+{selectedPost && 
+  location.pathname.includes(`/post/${selectedPost.id}`) && 
+  (selectedPost.imageUrl ? (
+    <CommentModal
+      post={selectedPost}
+      onClose={handleCloseCommentModal}
+      usersProfile={usersProfile}
+    />
+  ) : (
+    <CommentModalNoImg
+      post={selectedPost}
+      onClose={handleCloseCommentModal}
+      usersProfile={usersProfile}
+    />
+  ))}
 
       {selectedPostToShare && (
         <ShareModal
