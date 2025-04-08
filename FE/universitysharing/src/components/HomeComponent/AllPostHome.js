@@ -17,6 +17,11 @@ import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
 import ShareModal from "../shareModal";
 import SharedPost from "./SharingPost";
+
+
+import CommentModalNoImg from "../CommentModal-NoImge/CommentNoImage";
+
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchPosts,
@@ -219,7 +224,8 @@ const renderMediaItems = (post) => {
   const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
   const hasVideo = !!post.videoUrl;
   const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
-
+// Nếu không có ảnh lẫn video, không render media-container
+if (totalMedia === 0) return null;
   return (
     <div className={getMediaContainerClass(post)}>
       {imageUrls.map((url, index) => {
@@ -427,13 +433,21 @@ const renderMediaItems = (post) => {
         />
       )}
 
-      {selectedPost && location.pathname.includes(`/post/${selectedPost.id}`) && (
-        <CommentModal
-          post={selectedPost}
-          onClose={handleCloseCommentModal}
-          usersProfile={usersProfile}
-        />
-      )}
+{selectedPost && 
+  location.pathname.includes(`/post/${selectedPost.id}`) && 
+  (selectedPost.imageUrl ? (
+    <CommentModal
+      post={selectedPost}
+      onClose={handleCloseCommentModal}
+      usersProfile={usersProfile}
+    />
+  ) : (
+    <CommentModalNoImg
+      post={selectedPost}
+      onClose={handleCloseCommentModal}
+      usersProfile={usersProfile}
+    />
+  ))}
 
       {selectedPostToShare && (
         <ShareModal
