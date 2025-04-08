@@ -66,10 +66,10 @@ namespace Infrastructure.Data.Repositories
         public async Task<(List<Like>, Guid?)> GetLikesByPostIdWithCursorAsync(Guid postId, Guid? lastUserId, int pageSize)
         {
             var query = _context.Likes
-       .Include(l => l.User)
-       .Where(l => l.PostId == postId && l.User != null)
-       .OrderBy(l => l.UserId) // 📌 Sắp xếp theo UserId để dùng cursor
-       .AsQueryable();
+               .Include(l => l.User)
+                .Where(l => l.PostId == postId && l.User != null && !l.IsDeleted && l.IsLike)
+               .OrderBy(l => l.UserId) // 📌 Sắp xếp theo UserId để dùng cursor
+               .AsQueryable();
 
             if (lastUserId.HasValue)
             {
