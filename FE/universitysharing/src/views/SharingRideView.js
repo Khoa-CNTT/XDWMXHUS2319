@@ -22,7 +22,7 @@ const SharingRideView = () => {
       <Header className="header" usersProfile={users} />
       <div className="main-content">
         <div className="left-sidebar">
-          <LeftSidebar />
+          <LeftSidebar usersProfile={users} />
           <Footer className="footer" />
         </div>
         <div className="center-content">

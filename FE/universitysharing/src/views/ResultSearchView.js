@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { searchPost } from "../stores/action/searchAction";
 import { userProfile } from "../stores/action/profileActions";
 import ListUser from "../components/SearchComponent/ListUserComponent";
-import AllPosts from "../components/HomeComponent/AllPostHome";
 import ListPost from "../components/SearchComponent/ListPostComponent";
 
 const SearchView = () => {
@@ -55,7 +54,7 @@ const SearchView = () => {
       <Header className="header" usersProfile={users} />
       <div className="main-content">
         <div className="left-sidebar">
-          <LeftSidebar />
+          <LeftSidebar usersProfile={users} />
           <FooterHome className="footer" />
         </div>
         <div className="center-content">

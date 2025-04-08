@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import avatarDeafault from "../assets/AvatarDefault.png";
 import closeIcon from "../assets/iconweb/closeIcon.svg";
 import imageIcon from "../assets/iconweb/imageIcon.svg";
@@ -99,7 +100,7 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
       <div className="create-post-overlay" onClick={onClose}></div>
       <div className="create-post-modal">
@@ -195,7 +196,8 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
           {loading ? <Spinner size={20} color="#fff" /> : "Đăng bài"}
         </button>
       </div>
-    </>
+    </>,
+    document.body // Render trực tiếp vào body
   );
 };
 

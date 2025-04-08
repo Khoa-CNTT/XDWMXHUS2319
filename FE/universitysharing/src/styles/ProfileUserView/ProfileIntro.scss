@@ -6,6 +6,8 @@
   margin-bottom: 3px;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 
   &__header {
     display: flex;
@@ -14,7 +16,9 @@
     margin-bottom: 10px;
   }
   &__edit-button {
-    z-index: 10;
+    position: relative;
+    z-index: 5; // Tăng cao hơn các phần tử xung quanh
+    transform: translateZ(0); // Tạo layer riêng
     font-size: 14px;
     color: #007bff;
     background: none;

@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { likePost } from "../../stores/action/listPostActions";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
+import { fetchLikes } from "../../stores/action/likeAction";
+import { fetchShares } from "../../stores/action/shareAction";
 import {
   FiMoreHorizontal,
   FiX,
@@ -15,7 +17,8 @@ import {
 } from "react-icons/fi";
 import {
   openShareModal,
-  closeShareModal,
+  openInteractorModal,
+  openInteractorShareModal,
 } from "../../stores/reducers/listPostReducers";
 import { FaHeart } from "react-icons/fa"; // Icon trái tim đầy cho trạng thái đã like
 
@@ -31,6 +34,22 @@ const ContentPostComment = ({ post, onClose }) => {
     dispatch(likePost(postId));
   };
 
+  const { postLikes, postShares } = useSelector((state) => state.posts);
+  // Open Likes Modal (InteractorModal)
+  const handleOpenInteractorModal = async (post) => {
+    if (!postLikes[post.id]) {
+      await dispatch(fetchLikes({ postId: post.id }));
+    }
+    dispatch(openInteractorModal(post));
+  };
+
+  // Open Shares Modal (InteractorShareModal)
+  const handleOpenInteractorShareModal = async (post) => {
+    if (!postShares[post.id]) {
+      await dispatch(fetchShares({ postId: post.id }));
+    }
+    dispatch(openInteractorShareModal(post));
+  };
   // Hàm chuyển đổi UTC sang giờ Việt Nam (UTC+7)
   const convertUTCToVNTime = (utcDate) => {
     const date = new Date(utcDate);
@@ -101,38 +120,59 @@ const ContentPostComment = ({ post, onClose }) => {
 
       <span className="post-content">{posts.content}</span>
 
+      {/* Post Actions Summary */}
+      <div className="post-actions-summary">
+        <div
+          className="reactions"
+          onClick={() => handleOpenInteractorModal(posts)}
+          style={{ cursor: "pointer" }}
+        >
+          <FaHeart className="like-icon" size={16} />
+          <span>{posts.likeCount}</span>
+        </div>
+        <div className="comments-shares">
+          <span>{posts.commentCount} bình luận</span>
+          <span
+            onClick={() => handleOpenInteractorShareModal(posts)}
+            style={{ cursor: "pointer" }}
+          >
+            {typeof posts.shareCount === "number"
+              ? posts.shareCount
+              : posts.shareCount?.shareCount || 0}{" "}
+            lượt chia sẻ
+          </span>
+        </div>
+      </div>
+
+      {/* Actions */}
       <div className="actions">
-        {/* Nút Like */}
         <button
           className={`action-btn ${posts.hasLiked ? "liked" : ""}`}
           onClick={() => handleLikePost(posts.id)}
           disabled={posts.isLiking}
         >
           {posts.hasLiked ? (
-            <FaHeart size={18} className="like-icon" />
+            <FaHeart className="like-icon" size={18} />
           ) : (
-            <FiHeart size={18} className="like-icon" />
+            <FiHeart className="like-icon" size={18} />
           )}
-          <span className="action-count">{posts.likeCount}</span>
+          <span className="action-count">Thích</span>
         </button>
 
-        {/* Nút Comment */}
         <button className="action-btn">
-          <FiMessageSquare size={18} className="comment-icon" />
-          <span className="action-count">{posts.commentCount}</span>
+          <FiMessageSquare className="comment-icon" size={18} />
+          <span className="action-count">Bình luận</span>
         </button>
 
-        {/* Nút Share */}
         <button
           className="action-btn"
           onClick={() => dispatch(openShareModal(posts))}
         >
-          <FiShare2 size={18} className="share-icon" />
-          <span className="action-count">{posts.shareCount}</span>
+          <FiShare2 className="share-icon" size={18} />
+          <span className="action-count">Chia sẻ</span>
         </button>
       </div>
     </div>
   );
 };
-
 export default ContentPostComment;

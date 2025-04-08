@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { searchPost } from "../../stores/action/searchAction";
 import "../../styles/headerHome.scss";
+import Spinner from "../../utils/Spinner";
 import searchIcon from "../../assets/iconweb/searchIcon.svg";
 
 const SearchComponent = () => {
@@ -50,7 +51,9 @@ const SearchComponent = () => {
       {showResults && (
         <div className="search-results">
           {loading ? (
-            <div className="search-loading">Đang tìm kiếm...</div>
+            <div className="search-loading">
+              <Spinner size={20} />
+            </div>
           ) : search?.length > 0 ? (
             search.map((item) => (
               <div
