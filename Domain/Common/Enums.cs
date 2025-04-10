@@ -87,5 +87,16 @@ namespace Domain.Common
             Delivered, // Đã nhận
             Seen       // Đã xem
         }
+        public enum NotificationType
+        {
+            PostLiked,
+            PostCommented,
+            PostShared,
+            NewMessage,
+            NewFriendRequest,
+            RideInvite,
+            SystemAlert
+        }
+
     }
 }

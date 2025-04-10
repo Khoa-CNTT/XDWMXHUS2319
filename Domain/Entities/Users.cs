@@ -51,6 +51,9 @@ namespace Domain.Entities
 
             // Navigation property cho Message
             public ICollection<Message> SentMessages { get; set; } = new List<Message>();
+            public ICollection<Notification> ReceivedNotifications { get; set; } = new List<Notification>();
+            public ICollection<Notification> SentNotifications { get; set; } = new List<Notification>();
+
         public User(string fullName, string email, string passwordHash)
             {
                 if (string.IsNullOrWhiteSpace(fullName)) throw new ArgumentException("Full name is required.");
