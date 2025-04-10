@@ -22,6 +22,7 @@ namespace Infrastructure
         public DbSet<EmailVerificationToken> emailVerificationTokens { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Conversation> Conversations { get; set; } // Thêm DbSet cho Conversation
+        public DbSet<Notification> Notifications { get; set; } // Thêm DbSet cho Notification
 
         //huy
         public DbSet<RidePost> RidePosts { get; set; }
@@ -54,6 +55,7 @@ namespace Infrastructure
             modelBuilder.Entity<Rating>().HasKey(r => r.Id);
             modelBuilder.Entity<Conversation>().HasKey(c => c.Id);
             modelBuilder.Entity<Message>().HasKey(c => c.Id);
+            modelBuilder.Entity<Notification>().HasKey(n => n.Id);
 
 
             //Dùng HasQueryFilter để tự động loại bỏ dữ liệu đã bị xóa mềm (IsDeleted = true) khi truy vấn.
@@ -299,6 +301,26 @@ namespace Infrastructure
             modelBuilder.Entity<Message>()
                 .Property(m => m.SenderId)
                 .HasColumnName("SenderId"); // Rõ ràng tên cột trong DB
+            //notification
+            modelBuilder.Entity<Notification>()
+                .HasKey(n => n.Id);
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Receiver)
+                .WithMany(u => u.ReceivedNotifications)
+                .HasForeignKey(n => n.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Sender)
+                .WithMany(u => u.SentNotifications)
+                .HasForeignKey(n => n.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+
+
         }
     }
 }
