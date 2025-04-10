@@ -31,7 +31,10 @@ namespace Infrastructure.Data.UnitOfWork
             IReportRepository reportRepository,
 
             IRideReportRepository rideReportRepository,
-            IRatingRepository ratingRepository
+            IRatingRepository ratingRepository,
+
+            IConversationRepository conversationRepository,
+            IMessageRepository messageRepository
 
 
             )
@@ -54,6 +57,9 @@ namespace Infrastructure.Data.UnitOfWork
             ReportRepository = reportRepository;
             RideReportRepository = rideReportRepository;
             RatingRepository = ratingRepository;
+
+            ConversationRepository = conversationRepository;
+            MessageRepository = messageRepository;
         }
         public IUserRepository UserRepository { get; }
         public IPostRepository PostRepository { get; }
@@ -72,6 +78,9 @@ namespace Infrastructure.Data.UnitOfWork
         public IReportRepository ReportRepository { get; }
         public IRideReportRepository RideReportRepository { get; }
         public IRatingRepository RatingRepository { get; }
+
+        public IConversationRepository ConversationRepository { get; }
+        public IMessageRepository MessageRepository { get; }
         public async Task<int> SaveChangesAsync()
         => await _context.SaveChangesAsync();
 
