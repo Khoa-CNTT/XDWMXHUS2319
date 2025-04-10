@@ -81,5 +81,22 @@ namespace Domain.Common
             Good,
             Excellent
         }
+        public enum MessageStatus
+        {
+            Sent,      // Đã gửi
+            Delivered, // Đã nhận
+            Seen       // Đã xem
+        }
+        public enum NotificationType
+        {
+            PostLiked,
+            PostCommented,
+            PostShared,
+            NewMessage,
+            NewFriendRequest,
+            RideInvite,
+            SystemAlert
+        }
+
     }
 }

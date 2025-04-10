@@ -47,7 +47,7 @@ namespace Application
 
             //background services
             //nếu ko làm việc liên quan đến like và LocationUpdate thì comment lại
-            services.AddHostedService<LikeEventProcessor>();
+            //services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
             //services.AddHostedService<GpsMonitorService>();
             //services.AddHostedService<LikeCommentEventProcessor>();
@@ -64,7 +64,7 @@ namespace Application
             //đăn kí các service của search AI
             // services.AddScoped<IDocumentEmbeddingService,EmbeddingService>();
             services.AddScoped<ISearchAIService, SearchAIService>();
-
+            services.AddScoped<IMessageService,MessageService >();
 
 
 

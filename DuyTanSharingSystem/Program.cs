@@ -93,6 +93,7 @@ app.UseAuthorization();
 //app.UseCors(); // ✅ Đặt trước SignalR
 
 app.MapHub<NotificationHub>("/notificationHub").RequireAuthorization(); // ✅ Chỉ ở tầng Web API
+app.MapHub<ChatHub>("/chatHub").RequireAuthorization(); // ✅ Chỉ ở tầng Web API
 
 app.MapControllers();
 app.Run();
