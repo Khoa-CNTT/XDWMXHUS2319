@@ -1,8 +1,4 @@
-﻿using Application.Interface;
-using Application.Interface.Hubs;
-using Application.Services;
-using Infrastructure.Email;
-using Infrastructure.Hubs;
+﻿
 using Microsoft.AspNetCore.SignalR;
 
 namespace Infrastructure.Service

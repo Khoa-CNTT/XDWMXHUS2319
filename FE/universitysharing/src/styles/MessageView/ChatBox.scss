@@ -1,0 +1,356 @@
+// ChatBox.scss
+.chat-box-container {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-end;
+    gap: 10px;
+    padding-right: 20px;
+    z-index: 1000;
+  }
+.chat-box {
+    position: fixed;
+    bottom: 0;
+    right: 300px;
+    width: 350px;
+    height: 450px;
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    margin-right: -9px;
+
+    &.minimized {
+      height: 50px;
+    }
+  
+    .chat-header {
+      padding: 10px 15px;
+      background: #0084ff;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 12px 12px 0 0;
+      cursor: pointer;
+  
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+  
+        img {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+        }
+  
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #31a24c;
+        }
+      }
+  
+      .header-actions {
+        display: flex;
+        gap: 5px;
+  
+        .action-btn {
+          background: none;
+          border: none;
+          color: white;
+          padding: 6px;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: background 0.2s;
+  
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+          }
+  
+          &.close-btn:hover {
+            background: rgba(255, 0, 0, 0.5);
+          }
+        }
+      }
+    }
+  
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #f0f2f5;
+      max-height: 400px;
+  
+      .message {
+        margin-bottom: 10px;
+        display: flex;
+        animation: slideIn 0.2s ease;
+  
+        &.me {
+          justify-content: flex-end;
+  
+          .message-content {
+            background: #0084ff;
+            color: white;
+            border-radius: 15px 15px 0 15px;
+          }
+  
+          &.typing .message-content {
+            background: white;
+            padding: 5px 10px;
+  
+            .typing-indicator span {
+              background: #999;
+            }
+          }
+        }
+  
+        &.them {
+          justify-content: flex-start;
+  
+          .message-content {
+            background: white;
+            color: #333;
+            border-radius: 15px 15px 15px 0;
+          }
+  
+          &.typing .message-content {
+            background: white;
+            padding: 5px 10px;
+  
+            .typing-indicator span {
+              background: #999;
+            }
+          }
+        }
+  
+        .message-content {
+          position: relative;
+          max-width: 70%;
+          padding: 8px 12px;
+          margin-bottom: 4px; // Reduced space since status is inline now
+        
+          p {
+            margin: 0;
+            word-break: break-word;
+            white-space: pre-wrap; // Preserve line breaks
+          }
+        
+          .message-time {
+            display: inline-block;
+            font-size: 11px;
+            color: rgba(0, 0, 0, 0.45);
+            margin-left: 8px;
+            vertical-align: bottom;
+          }
+        
+          // Status container - now inline with timestamp
+          .status {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+            font-size: 11px;
+            vertical-align: bottom;
+            line-height: 1;
+        
+            &.sent {
+              color: rgba(0, 0, 0, 0.45);
+            }
+        
+            &.delivered {
+              color: rgba(0, 0, 0, 0.45);
+            }
+        
+            &.seen {
+              color: #3578E5; // Facebook blue for seen checkmarks
+        
+              .seen-text {
+                color: rgba(0, 0, 0, 0.45);
+                margin-left: 2px;
+                font-style: normal;
+              }
+            }
+          }
+        }
+        
+        // Styles for your messages (sent messages)
+        .message.me .message-content {
+          background-color: #0084ff; // Facebook blue message bubble
+          color: white;
+          border-radius: 18px 18px 0 18px;
+          margin-left: auto;
+        
+          .message-time {
+            color: rgba(255, 255, 255, 0.7);
+          }
+        
+          .status {
+            &.sent, &.delivered {
+              color: rgba(255, 255, 255, 0.7);
+            }
+        
+            &.seen {
+              color: #aad2ff; // Lighter blue for seen in your messages
+              
+              .seen-text {
+                color: rgba(255, 255, 255, 0.7);
+              }
+            }
+          }
+        }
+        
+        // Styles for friend's messages (received messages)
+        .message.them .message-content {
+          background-color: #f0f0f0;
+          color: #050505;
+          border-radius: 18px 18px 18px 0;
+          margin-right: auto;
+        
+          .status {
+            // Only show status indicators on your own messages
+            display: none;
+          }
+        }
+        
+        // Additional styles for sent messages (current user)
+        .message-sent {
+          align-self: flex-end;
+          background-color: #007bff; // Blue bubble
+          color: white;
+          border-radius: 12px 12px 0 12px;
+        
+          .seen-status {
+            color: rgba(255, 255, 255, 0.7);
+          }
+        
+          .message-time {
+            color: rgba(255, 255, 255, 0.7);
+          }
+        }
+        
+        // Styles for received messages
+        .message-received {
+          align-self: flex-start;
+          background-color: #f1f1f1; // Light gray bubble
+          color: #333;
+          border-radius: 12px 12px 12px 0;
+        }
+      }
+    }
+  
+    .message-input {
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-top: 1px solid #eee;
+  
+      .input-tools {
+        display: flex;
+        gap: 5px;
+  
+        .tool-btn {
+          background: none;
+          border: none;
+          color: #666;
+          padding: 5px;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: all 0.2s;
+  
+          &:hover {
+            background: #f0f2f5;
+          }
+        }
+      }
+  
+      textarea {
+        flex: 1;
+        border: none;
+        background: #f0f2f5;
+        border-radius: 20px;
+        padding: 8px 12px;
+        resize: none;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.2s;
+  
+        &:focus {
+          background: #fff;
+          box-shadow: 0 0 0 1px #0084ff;
+        }
+      }
+  
+      .send-btn {
+        background: #f0f2f5;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+  
+        &.active {
+          background: #0084ff;
+          color: white;
+        }
+  
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+  
+      span {
+        width: 6px;
+        height: 6px;
+        background: #999;
+        border-radius: 50%;
+        animation: bounce 1.2s infinite;
+  
+        &:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+        &:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+      }
+    }
+  }
+  
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }

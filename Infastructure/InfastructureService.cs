@@ -1,27 +1,4 @@
-﻿using Application.Helper;
-using Application.Interface;
-using Application.Interface.Api;
-using Application.Interface.ContextSerivce;
-using Application.Interface.Hubs;
-using Application.Interface.SearchAI;
-using Application.Services;
-using Infrastructure.ApiPython;
-using Infrastructure.ApiPython.Model;
-using Infrastructure.Data.Repositories;
-using Infrastructure.Data.UnitOfWork;
-using Infrastructure.Email;
-using Infrastructure.Gemini;
-using Infrastructure.Hubs;
-using Infrastructure.Maps;
-using Infrastructure.Redis;
-using Infrastructure.Service;
-using Infrastructure.TogetherAi;
-using Infrastructure.TogetherAi.Model;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-
-
+﻿
 namespace Infrastructure
 {
     public static class InfastructureService
@@ -69,6 +46,8 @@ namespace Infrastructure
             services.AddScoped<IRideReportRepository, RideReportRepository>();
             services.AddScoped<IUserContextService, UserContextService>();
             services.AddScoped<IRatingRepository, RatingRepository>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
 
             services.AddScoped<IShareRepository, ShareRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
@@ -77,7 +56,8 @@ namespace Infrastructure
             services.AddScoped<IDataAIService, DataAIService>();
             services.AddScoped<IApiPythonService, ApiPythonService>();
             //services.AddScoped<ISearchAIService, ApiPythonService2>();
-
+            //đăng kí chat
+            services.AddScoped<IChatService, ChatService>();
 
 
             // ✅ Đăng ký HttpClient
