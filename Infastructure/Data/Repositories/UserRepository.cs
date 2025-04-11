@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static Domain.Common.Enums;
 
@@ -103,7 +104,9 @@ namespace Infrastructure.Data.Repositories
                 .ToListAsync();
         }
 
-
-
+        public async Task<bool> ExistUsersAsync(Guid userId)
+        {
+            return await _context.Users.AnyAsync(u => u.Id == userId);
+        }
     }
 }

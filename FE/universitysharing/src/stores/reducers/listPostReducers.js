@@ -16,7 +16,6 @@ import {
 } from "../action/listPostActions";
 import { fetchLikes } from "../action/likeAction";
 import { fetchShares } from "../action/shareAction";
-import { da } from "date-fns/locale";
 
 const listPostSlice = createSlice({
   name: "posts",

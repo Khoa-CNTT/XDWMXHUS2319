@@ -44,6 +44,13 @@ namespace Infrastructure.Hubs
             await Clients.User(userId.ToString()).SendAsync("ReceiveNotification", message);
         }
         /// <summary>
+        /// Gửi thông báo đến người mình gửi kết bạn
+        /// </summary>
+        public async Task SendFriendNotification(Guid friendId, string message)
+        {
+            await Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", message);
+        }
+        /// <summary>
         /// Gửi thông báo trong ứng dụng đến một tài xế cụ thể
         /// </summary>
         public async Task SendInAppNotificationToUser(Guid userId, string message)

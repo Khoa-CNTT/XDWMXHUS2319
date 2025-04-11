@@ -21,6 +21,7 @@ const CommentItem = ({
   handleLikeComment,
   post,
   handleReplyComment,
+  usersProfile,
 }) => {
   const dispatch = useDispatch();
   const [isReplying, setIsReplying] = useState(false);
@@ -286,7 +287,10 @@ const CommentItem = ({
       {isReplying && (
         <div className="reply-input-container" ref={replyInputRef}>
           <div className="reply-input-avatar">
-            <img src={userId.profilePicture || avatarDefaut} alt="Avatar" />
+            <img
+              src={usersProfile.profilePicture || avatarDefaut}
+              alt="Avatar"
+            />
           </div>
           <div className="reply-input-wrapper">
             <div className="input-box">

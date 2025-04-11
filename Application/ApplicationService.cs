@@ -1,5 +1,4 @@
-﻿
-namespace Application
+﻿namespace Application
 {
     public static class ApplicationService
     {
@@ -98,10 +97,10 @@ namespace Application
             // 🔹 Cấu hình Authorization
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(nameof(Enums.RoleEnum.User), policy 
-                    => policy.RequireRole(Enums.RoleEnum.User.ToString()));
-                options.AddPolicy(nameof(Enums.RoleEnum.Admin), policy
-                    => policy.RequireRole(Enums.RoleEnum.Admin.ToString()));
+                options.AddPolicy(nameof(RoleEnum.User), policy 
+                    => policy.RequireRole(RoleEnum.User.ToString()));
+                options.AddPolicy(nameof(RoleEnum.Admin), policy
+                    => policy.RequireRole(RoleEnum.Admin.ToString()));
             });
             return services;
         }
