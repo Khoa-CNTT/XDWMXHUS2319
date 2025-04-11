@@ -17,7 +17,9 @@ const RightSidebar = () => {
   const [onlineStatus, setOnlineStatus] = useState({});
   const token = localStorage.getItem("token");
   const userId = token
-    ? jwtDecode(token)["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]
+    ? jwtDecode(token)[
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+      ]
     : null;
 
   const friendIds = useMemo(() => friends.map((f) => f.friendId), [friends]);
@@ -27,14 +29,17 @@ const RightSidebar = () => {
     if (!friendIds.length || !token) return;
 
     try {
-      const response = await fetch("https/localhost:7053/api/Online/check-online", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(friendIds),
-      });
+      const response = await fetch(
+        "https/localhost:7053/api/Online/check-online",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(friendIds),
+        }
+      );
       const result = await response.json();
       if (result.success) {
         setOnlineStatus(result.data);
@@ -144,8 +149,6 @@ const RightSidebar = () => {
         </div>
 
         <div className="friends-list">
-          
-
           <ul>
             {friends.map((friend) => (
               <li
@@ -154,11 +157,20 @@ const RightSidebar = () => {
                 onClick={() => handleFriendClick(friend.friendId)}
               >
                 <div className="friend-info">
-                  <img src={friend.avatarFriend || avatarDefaut} alt="Avatar" />
+                  <img
+                    src={friend.avatarFriend || avatarDefault}
+                    alt="Avatar"
+                  />
                   <div className="name-status">
                     <div className="friend-name">{friend.fullNameFriend}</div>
-                    <div className={`status ${onlineStatus[friend.friendId] ? "online" : "offline"}`}>
-                      {onlineStatus[friend.friendId] ? "Online" : getLastSeenText(friend.lastSeen)}
+                    <div
+                      className={`status ${
+                        onlineStatus[friend.friendId] ? "online" : "offline"
+                      }`}
+                    >
+                      {onlineStatus[friend.friendId]
+                        ? "Online"
+                        : getLastSeenText(friend.lastSeen)}
                     </div>
                   </div>
                 </div>

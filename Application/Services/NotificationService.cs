@@ -1,7 +1,3 @@
-using Application.Interface.Api;
-
-
-
 namespace Application.Services
 {
     public class NotificationService : INotificationService

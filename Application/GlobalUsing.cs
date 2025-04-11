@@ -20,6 +20,8 @@ global using Application.Interface.Hubs;
 global using Application.Interface.SearchAI;
 global using Application.Model.Events;
 global using Microsoft.Extensions.Hosting;
+global using Application.Common;
+global using Application.Interface.Api;
 
 global using static Domain.Common.Enums;
 global using Application.DTOs.Message;
