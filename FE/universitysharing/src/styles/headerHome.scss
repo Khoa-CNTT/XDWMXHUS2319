@@ -13,6 +13,8 @@
   .logoWeb {
     cursor: pointer;
     .logowebsite {
+      max-width: 150px;
+
       height: 40px;
       object-fit: contain;
     }
@@ -23,39 +25,47 @@
     max-width: 600px;
     margin: 0 20px;
 
-    .search-form {
-      width: 100%;
-    }
+    input[type="text"] {
+      width: 29rem;
+      border: none;
+      outline: none;
+      flex-grow: 1;
+      margin-left: 10px;
+      font-size: 1rem;
 
-    .search-container {
-      position: relative;
-      display: flex;
-      align-items: center;
-
-      .search-icon {
-        position: absolute;
-        left: 12px;
-        color: #65676b;
+      .search-form {
+        width: 100%;
       }
 
-      .search-input {
-        width: 100%;
-        padding: 10px 12px 10px 40px;
-        border-radius: 20px;
-        border: none;
-        background-color: #f0f2f5;
-        font-size: 14px;
-        outline: none;
-        transition: all 0.3s ease;
+      .search-container {
+        position: relative;
+        display: flex;
+        align-items: center;
 
-        &:focus {
-          background-color: #e4e6eb;
-          box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+        .search-icon {
+          position: absolute;
+          left: 12px;
+          color: #65676b;
+        }
+
+        .search-input {
+          width: 100%;
+          padding: 10px 12px 10px 40px;
+          border-radius: 20px;
+          border: none;
+          background-color: #f0f2f5;
+          font-size: 14px;
+          outline: none;
+          transition: all 0.3s ease;
+
+          &:focus {
+            background-color: #e4e6eb;
+            box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+          }
         }
       }
     }
   }
-
   .rightHeader {
     display: flex;
     align-items: center;
@@ -81,7 +91,7 @@
 
       &.active {
         color: #1877f2;
-        
+
         .indicator {
           position: absolute;
           bottom: 4px;
@@ -262,7 +272,6 @@
   }
 }
 
-
 // scss postinput
 .post-input {
   display: flex;
@@ -315,9 +324,16 @@ $transition: all 0.2s ease;
     box-shadow: $shadow;
     overflow: hidden;
     transition: $transition;
+    position: relative;
 
     &:hover {
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    }
+    .Post-option-modal-Container {
+      position: absolute;
+      top: 50px;
+      right: 10px;
+      z-index: 10;
     }
 
     .header-post {
@@ -348,9 +364,21 @@ $transition: all 0.2s ease;
           display: flex;
           flex-direction: column;
           min-width: 0;
+          .status-time-post {
+            // width: 150px;
+            display: flex;
+            align-items: center;
+            // justify-content: space-between;
+            gap: 10px;
+            color: $secondary-color;
+            font-size: 12px;
 
+            span {
+              margin-top: 1px;
+            }
+          }
           strong {
-            font-size: 15px;
+            font-size: 18px;
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
@@ -360,7 +388,7 @@ $transition: all 0.2s ease;
           .timePost {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 1px;
             font-size: 12px;
             color: $secondary-color;
             margin-top: 2px;
@@ -414,13 +442,13 @@ $transition: all 0.2s ease;
       gap: 3px;
       margin-top: 10px;
       background: #fff;
-      border-radius: 8px;
+      // border-radius: 8px;
       overflow: hidden;
-    
+
       .media-item {
         position: relative;
         background: #f0f2f5;
-    
+
         img,
         video {
           width: 100%;
@@ -429,14 +457,14 @@ $transition: all 0.2s ease;
           display: block;
           cursor: pointer;
         }
-    
+
         &.video-item {
           background: #000;
           video {
             max-height: 500px;
           }
         }
-    
+
         .media-overlay {
           position: absolute;
           top: 0;
@@ -453,28 +481,28 @@ $transition: all 0.2s ease;
           cursor: pointer;
         }
       }
-    
+
       &.single-image {
         .media-item {
           max-height: 560px;
           img {
             max-height: 560px;
-            width: auto;
+            // width: auto;
             margin: 0 auto;
           }
         }
       }
-    
+
       &.single-video {
         .media-item {
           max-height: 560px;
         }
       }
-    
+
       &.two-items {
         grid-template-columns: 1fr 1fr;
         height: 300px;
-    
+
         &.has-video {
           .media-item {
             height: 300px;
@@ -484,19 +512,19 @@ $transition: all 0.2s ease;
           }
         }
       }
-    
+
       &.multi-items {
         grid-template-columns: 1fr 1fr;
         height: 300px;
-    
+
         .media-item {
           height: 300px;
         }
-    
+
         &.has-video {
           grid-template-columns: 1fr 1fr; // Sửa từ 1fr thành 1fr 1fr để chia 2 cột
           grid-template-rows: auto; // Xóa auto auto để không xếp dọc
-    
+
           .media-item {
             height: 300px;
             &:first-child {

@@ -153,6 +153,7 @@ const CommentModalNoImg = ({ post, onClose, usersProfile }) => {
             onLoadMore={loadMoreComments}
             isLoadingMore={loadingMoreComments}
             hasMoreComments={hasMoreComments}
+            usersProfile={usersProfile}
           />
         </div>
 
