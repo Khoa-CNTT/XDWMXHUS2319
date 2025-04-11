@@ -2,26 +2,31 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 15px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  height: 9%;
+  padding: 8px 16px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 56px;
 
   .logoWeb {
+    cursor: pointer;
     .logowebsite {
+
       max-width: 150px;
+
+      height: 40px;
+      object-fit: contain;
+
     }
   }
 
   .search {
-    display: flex;
-    align-items: center;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    padding: 5px 10px;
-    width: 31.25rem;
-    height: 30px;
-    margin: 0 auto;
+    flex: 1;
+    max-width: 600px;
+    margin: 0 20px;
+
 
     input[type="text"] {
       width: 29rem;
@@ -30,62 +35,157 @@
       flex-grow: 1;
       margin-left: 10px;
       font-size: 1rem;
+
+    .search-form {
+      width: 100%;
+
     }
 
-    .icon {
-      width: 1.5rem;
-      height: 1.5rem;
-      margin-right: 5px;
-      flex-shrink: 0;
+    .search-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      .search-icon {
+        position: absolute;
+        left: 12px;
+        color: #65676b;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 10px 12px 10px 40px;
+        border-radius: 20px;
+        border: none;
+        background-color: #f0f2f5;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.3s ease;
+
+        &:focus {
+          background-color: #e4e6eb;
+          box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+        }
+      }
     }
   }
 
   .rightHeader {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 12px;
 
-    span {
-      margin-left: 15px;
+    .icon-button {
+      position: relative;
+      background: none;
+      border: none;
+      padding: 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      color: #65676b;
       display: flex;
       align-items: center;
-      cursor: pointer;
+      justify-content: center;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: #f0f2f5;
+        color: #1877f2;
+      }
+
+      &.active {
+        color: #1877f2;
+        
+        .indicator {
+          position: absolute;
+          bottom: 4px;
+          right: 4px;
+          width: 8px;
+          height: 8px;
+          background-color: #1877f2;
+          border-radius: 50%;
+          border: 2px solid #fff;
+        }
+      }
 
       .icon {
-        width: 1.5rem;
-        height: 1.5rem;
+        font-size: 20px;
       }
 
-      &.user-info {
-        // Style cho phần tên người dùng và avatar
+      .badge {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        background-color: #fa3e3e;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
         display: flex;
         align-items: center;
-        gap: 8px; // Khoảng cách giữa avatar và tên
+        justify-content: center;
+        font-size: 10px;
+        font-weight: bold;
+      }
+    }
 
-        img.avatarweb {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-        }
+    .avatar-button {
+      position: relative;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
 
-        .username {
-          font-size: 1rem; // 16px, đồng bộ với left-sidebar
-          font-weight: bold;
-          color: #333; // Màu chữ tối giống Facebook
-          white-space: nowrap; // Không xuống dòng
-        }
+      .avatarweb {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #e4e6eb;
       }
 
-      img {
-        width: 50px;
-        height: 50px;
-
-        &.avatarweb {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-        }
+      .indicator {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        background-color: #31a24c;
+        border-radius: 50%;
+        border: 2px solid #fff;
       }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .header {
+    padding: 8px 12px;
+
+    .logoWeb {
+      .logowebsite {
+        height: 32px;
+      }
+    }
+
+    .search {
+      margin: 0 12px;
+    }
+
+    .rightHeader {
+      gap: 8px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    .search {
+      display: none;
     }
   }
 }
@@ -175,64 +275,7 @@
     }
   }
 }
-.right-sidebar {
-  width: 250px;
-  background: #fff;
-  padding: 20px;
-  border-left: 1px solid #ddd;
 
-  h3 {
-    margin-bottom: 15px;
-    font-size: 1rem; // Giữ 1rem (16px) như left-sidebar
-    font-weight: bold;
-    color: #333;
-  }
-
-  ul {
-    list-style: none;
-    padding: 0;
-    font-size: 1rem; // Đồng bộ với left-sidebar (16px)
-    font-weight: bold;
-
-    li {
-      display: flex;
-      align-items: center;
-      padding: 12px; // Đồng bộ với left-sidebar
-      margin: 10px; // Đồng bộ với left-sidebar
-      cursor: pointer;
-      border-radius: 8px;
-      transition: background 0.3s ease; // Giữ hiệu ứng giống left-sidebar
-
-      img {
-        width: 1.75rem; // Tăng từ 40px lên 28px (1.75rem) để đồng bộ với icon của left-sidebar
-        height: 1.75rem;
-        border-radius: 50%;
-        margin-right: 12px;
-        object-fit: cover;
-      }
-
-      span {
-        flex: 1; // Thêm flex: 1 để đồng bộ cách bố trí với left-sidebar
-        font-size: 1rem; // Tăng từ 0.9375rem (15px) lên 1rem (16px) để đồng bộ
-        font-weight: bold;
-        color: #555;
-      }
-
-      &:hover {
-        background: #f0f0f0; // Giữ giống left-sidebar
-      }
-
-      &.active {
-        // Thêm trạng thái active để đồng bộ (nếu cần)
-        background: #e7f3ff;
-        span {
-          color: #1877f2;
-          font-weight: bold;
-        }
-      }
-    }
-  }
-}
 
 // scss postinput
 .post-input {

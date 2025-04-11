@@ -1,11 +1,4 @@
-﻿using Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿
 
 namespace Infrastructure
 {
@@ -28,6 +21,9 @@ namespace Infrastructure
         public DbSet<StudyMaterial> StudyMaterials { get; set; }
         public DbSet<EmailVerificationToken> emailVerificationTokens { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Conversation> Conversations { get; set; } // Thêm DbSet cho Conversation
+        public DbSet<Notification> Notifications { get; set; } // Thêm DbSet cho Notification
+
         //huy
         public DbSet<RidePost> RidePosts { get; set; }
         public DbSet<Ride> Rides { get; set; }
@@ -47,7 +43,6 @@ namespace Infrastructure
             modelBuilder.Entity<Friendship>().HasKey(f => f.Id);
             modelBuilder.Entity<Domain.Entities.Group>().HasKey(g => g.Id);
             modelBuilder.Entity<GroupMember>().HasKey(gm => gm.Id);
-            modelBuilder.Entity<Message>().HasKey(m => m.Id);
             modelBuilder.Entity<Report>().HasKey(r => r.Id);
             modelBuilder.Entity<StudyMaterial>().HasKey(sm => sm.Id);
             modelBuilder.Entity<EmailVerificationToken>().HasKey(e => e.Id);
@@ -58,6 +53,10 @@ namespace Infrastructure
             modelBuilder.Entity<LocationUpdate>().HasKey(lu => lu.Id);
             modelBuilder.Entity<RideReport>().HasKey(rr => rr.Id);
             modelBuilder.Entity<Rating>().HasKey(r => r.Id);
+            modelBuilder.Entity<Conversation>().HasKey(c => c.Id);
+            modelBuilder.Entity<Message>().HasKey(c => c.Id);
+            modelBuilder.Entity<Notification>().HasKey(n => n.Id);
+
 
             //Dùng HasQueryFilter để tự động loại bỏ dữ liệu đã bị xóa mềm (IsDeleted = true) khi truy vấn.
             //Nếu không sử dụng, cần phải thêm điều kiện IsDeleted = false trong mỗi truy vấn.
@@ -107,18 +106,6 @@ namespace Infrastructure
                 .WithMany(u => u.ReceivedFriendRequests)
                 .HasForeignKey(f => f.FriendId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Message>()
-                .HasOne<User>()
-                .WithMany(u => u.MessageSenders)
-                .HasForeignKey(m => m.SenderId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Message>()
-                .HasOne<User>()
-                .WithMany(u => u.MessageReceivers)
-                .HasForeignKey(m => m.ReceiverId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Report>()
                 .HasOne<User>()
@@ -258,6 +245,82 @@ namespace Infrastructure
                 .WithMany(r => r.LocationUpdates)
                 .HasForeignKey(l => l.RideId)
                 .OnDelete(DeleteBehavior.Cascade);
+            //message
+            // Cấu hình Conversation
+            modelBuilder.Entity<Conversation>()
+                .HasKey(c => c.Id);
+
+            modelBuilder.Entity<Conversation>()
+                .Property(c => c.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<Conversation>()
+                .HasIndex(c => new { c.User1Id, c.User2Id })
+                .IsUnique();
+
+            modelBuilder.Entity<Conversation>()
+                .HasOne(c => c.User1)
+                .WithMany(u => u.ConversationsAsUser1)
+                .HasForeignKey(c => c.User1Id) // Rõ ràng ánh xạ User1Id
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Conversation>()
+                .HasOne(c => c.User2)
+                .WithMany(u => u.ConversationsAsUser2)
+                .HasForeignKey(c => c.User2Id) // Rõ ràng ánh xạ User2Id
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Cấu hình Message
+            modelBuilder.Entity<Message>()
+                .HasKey(m => m.Id);
+
+            modelBuilder.Entity<Message>()
+                .Property(m => m.SentAt)
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<Message>()
+                .Property(m => m.IsSeen)
+                .HasDefaultValue(false);
+
+            modelBuilder.Entity<Message>()
+                .Property(m => m.SeenAt)
+                .HasColumnType("datetime2");
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Sender)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(m => m.SenderId) // Rõ ràng ánh xạ SenderId
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Message>()
+                .Property(m => m.SenderId)
+                .HasColumnName("SenderId"); // Rõ ràng tên cột trong DB
+            //notification
+            modelBuilder.Entity<Notification>()
+                .HasKey(n => n.Id);
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Receiver)
+                .WithMany(u => u.ReceivedNotifications)
+                .HasForeignKey(n => n.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Sender)
+                .WithMany(u => u.SentNotifications)
+                .HasForeignKey(n => n.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+
+
         }
     }
 }
