@@ -11,6 +11,7 @@ const CommentList = ({
   commentEndRef,
   handleLikeComment,
   post,
+  usersProfile,
   onLoadMore, // New prop for loading more comments
   isLoadingMore, // New prop to track loading state
   hasMoreComments, // New prop to check if more comments exist
@@ -40,6 +41,7 @@ const CommentList = ({
               handleLikeComment={handleLikeComment}
               post={post}
               handleReplyComment={handleReplyComment}
+              usersProfile={usersProfile}
             />
           ))}
 

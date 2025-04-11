@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import "../styles/CommentOverlay.scss";
-import logoweb from "../assets/Logo.png";
+// import logoweb from "../assets/Logo.png";
+import logoweb from "../assets/Logo white.png";
 import avatarDefaut from "../assets/AvatarDefault.png";
 import defaultPostImage from "../assets/ImgDefault.png"; // Thêm ảnh default vào assets
 import ContentPostComment from "./CommentModel_Component/ContenPostComment";
@@ -16,15 +17,15 @@ import getUserIdFromToken from "../utils/JwtDecode";
 import { FiSend, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 const CommentModal = ({ post, onClose, usersProfile }) => {
+  // console.log("UserProfile>>>>>>>>", usersProfile);
+  // console.log("post sercert box", post);
   const userId = getUserIdFromToken();
   const dispatch = useDispatch();
   const commentTextRef = useRef("");
   const commentEndRef = useRef(null);
   const comments = useSelector((state) => state.posts.comments[post.id] || []);
 
-
   const [isSending, setIsSending] = useState(false); // Thêm trạng thái loading khi gửi
-
 
   const [lastCommentId, setLastCommentId] = useState(null);
   const [loadingMoreComments, setLoadingMoreComments] = useState(false);
@@ -35,7 +36,9 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
   const hasVideo = !!post.videoUrl;
   const mediaItems = [
     ...imageUrls.map((url) =>
-      url.startsWith("http") ? url.trim() : `https://localhost:7053${url.trim()}`
+      url.startsWith("http")
+        ? url.trim()
+        : `https://localhost:7053${url.trim()}`
     ),
     ...(hasVideo ? [post.videoUrl] : []),
   ];
@@ -57,7 +60,6 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
       dispatch(commentPost({ postId: post.id }));
     }
   }, [dispatch, post?.id]);
-
 
   const loadMoreComments = useCallback(() => {
     if (loadingMoreComments || !hasMoreComments || !lastCommentId) return;
@@ -151,9 +153,7 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
 
   return (
     <div className="comment-modal-overlay">
-
       {/* Thêm nút đóng modal */}
-
 
       <div className="logowebsite">
         <img className="logoUS" src={logoweb} alt="Logo" />
@@ -205,6 +205,7 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
             onLoadMore={loadMoreComments}
             isLoadingMore={loadingMoreComments}
             hasMoreComments={hasMoreComments}
+            usersProfile={usersProfile}
           />
         </div>
 

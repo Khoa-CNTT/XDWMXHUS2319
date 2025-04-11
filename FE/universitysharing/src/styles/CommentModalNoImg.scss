@@ -152,62 +152,6 @@
     overflow: auto;
     padding-bottom: 70px;
   }
-  // .comments-section {
-  //   position: relative;
-  //   flex: 1;
-  //   margin: 10px 0px;
-  //   overflow-y: auto;
-  //   max-height: calc(84vh - 200px);
-  //   max-width: 100%; // Đảm bảo không vượt quá content-post
-
-  //   .comment {
-  //     display: flex;
-  //     align-items: center;
-  //     margin-top: 10px;
-
-  //     .avatar {
-  //       width: 60px;
-  //       height: 60px;
-  //       border-radius: 50%;
-  //       margin-right: 10px;
-  //     }
-
-  //     .comment-content {
-  //       background: #f0f0f0;
-  //       padding: 8px;
-  //       border-radius: 12px;
-  //       //flex: 1;
-  //       max-width: 80%; // Đảm bảo không bị tràn ra ngoài
-  //       word-wrap: break-word;
-  //       overflow-wrap: break-word;
-  //       white-space: pre-wrap;
-  //       .comment-username {
-  //         font-weight: bold;
-  //       }
-  //     }
-  //   }
-  //   .comment-actions {
-  //     display: flex;
-  //     align-items: center;
-  //     // margin-left: 100px;
-  //     cursor: pointer;
-  //     margin: 0px 0px;
-
-  //     .like-icon {
-  //       width: 20px;
-  //       height: 20px;
-  //       margin: 0px 10px;
-  //     }
-  //     span {
-  //       margin: 10px;
-  //     }
-  //   }
-  //   .more-reply-comment {
-  //     cursor: pointer;
-  //     font-weight: bold;
-  //     margin: 0px 80px;
-  //   }
-  // }
 
   .comment-input {
     display: flex;

@@ -30,8 +30,8 @@ const Header = ({ usersProfile }) => {
   const navigate = useNavigate();
 
   const UserProfile = () => {
-    // navigate("/ProfileUserView");
-    window.location.href = "/ProfileUserView";
+    navigate("/ProfileUserView");
+    // window.location.href = "/ProfileUserView";
   };
   const handleHomeView = () => {
     navigate("/home");

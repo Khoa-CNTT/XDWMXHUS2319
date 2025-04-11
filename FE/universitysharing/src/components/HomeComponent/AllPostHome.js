@@ -18,9 +18,7 @@ import CommentModal from "../CommentModal";
 import ShareModal from "../shareModal";
 import SharedPost from "./SharingPost";
 
-
 import CommentModalNoImg from "../CommentModal-NoImge/CommentNoImage";
-
 
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -82,6 +80,8 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     sharesError,
   } = useSelector((state) => state.posts);
 
+  // console.log("Selection sercert box>>", selectedPost);
+
   const hasMorePosts = showOwnerPosts ? hasMoreOwnerPosts : hasMoreAllPosts;
   const [lastPostId, setLastPostId] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -128,16 +128,13 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
 
   const userId = getUserIdFromToken();
 
-  const handleOpenCommentModal = (post, index) => {
+  //mở comment modal
+  const handleOpenCommentModal = (post, index = 0) => {
     dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
-    navigate(`/post/${post.id}`);
+    navigate(`/post/${post.id}`, { state: { background: location } });
   };
 
-  const handleCloseCommentModal = () => {
-    dispatch(closeCommentModal());
-    navigate(-1);
-  };
-
+  //mở option post ra
   const handleOpenPostOptions = (event, post) => {
     event.stopPropagation();
     const rect = event.target.getBoundingClientRect();
@@ -149,10 +146,12 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     );
   };
 
+  //xóa post
   const handleDeletePost = debounce((postId) => {
     dispatch(deletePost(postId));
   }, 300);
 
+  //Xác nhận xóa bài đăng
   const confirmDelete = (postId) => {
     confirmAlert({
       title: "Xác nhận xóa",
@@ -164,10 +163,12 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     });
   };
 
+  //thích bài viết
   const handleLikePost = (postId) => {
     dispatch(likePost(postId));
   };
 
+  //hiển thị modal người tương tác bài viết
   const handleOpenInteractorModal = async (post) => {
     if (!postLikes[post.id]) {
       await dispatch(fetchLikes({ postId: post.id }));
@@ -175,10 +176,12 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     dispatch(openInteractorModal(post));
   };
 
+  //tắt hiển thị modal tương tác bài viết
   const handleCloseInteractorModal = () => {
     dispatch(closeInteractorModal());
   };
 
+  //mở modal xem người shareshare
   const handleOpenInteractorShareModal = async (post) => {
     if (!postShares[post.id]) {
       await dispatch(fetchShares({ postId: post.id }));
@@ -186,21 +189,24 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     dispatch(openInteractorShareModal(post));
   };
 
+  //đóng modal xem người shareshare
   const handleCloseInteractorShareModal = () => {
     dispatch(closeInteractorShareModal());
   };
 
+  //chuyển đổi ngày sang UTC +77
   const convertUTCToVNTime = (utcDate) => {
     const date = new Date(utcDate);
     date.setHours(date.getHours() + 7);
     return date;
   };
 
+  //lấy thông hình ảnh và video set lên post nhiều hay 1 ảnh và 1 video
   const getMediaContainerClass = (post) => {
     const imageCount = post.imageUrl ? post.imageUrl.split(",").length : 0;
     const hasVideo = !!post.videoUrl;
     const totalMedia = imageCount + (hasVideo ? 1 : 0);
-  
+
     let className = "media-container";
     switch (totalMedia) {
       case 1:
@@ -219,53 +225,57 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     return className;
   };
 
-// Trong AllPosts
-const renderMediaItems = (post) => {
-  const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
-  const hasVideo = !!post.videoUrl;
-  const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
-// Nếu không có ảnh lẫn video, không render media-container
-if (totalMedia === 0) return null;
-  return (
-    <div className={getMediaContainerClass(post)}>
-      {imageUrls.map((url, index) => {
-        const fullUrl = url.startsWith("http")
-          ? url.trim()
-          : `https://localhost:7053${url.trim()}`;
-        // Hiển thị overlay trên ảnh thứ 2 nếu có > 2 media, hoặc trên ảnh đầu tiên nếu có video và > 1 ảnh
-        const showOverlay = totalMedia > 2 && index === (hasVideo ? 0 : 1);
+  // Trong AllPosts
+  const renderMediaItems = (post) => {
+    const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
+    const hasVideo = !!post.videoUrl;
+    const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
+    // Nếu không có ảnh lẫn video, không render media-container
+    if (totalMedia === 0) return null;
+    return (
+      <div className={getMediaContainerClass(post)}>
+        {imageUrls.map((url, index) => {
+          const fullUrl = url.startsWith("http")
+            ? url.trim()
+            : `https://localhost:7053${url.trim()}`;
+          // Hiển thị overlay trên ảnh thứ 2 nếu có > 2 media, hoặc trên ảnh đầu tiên nếu có video và > 1 ảnh
+          const showOverlay = totalMedia > 2 && index === (hasVideo ? 0 : 1);
 
-        // Hiển thị tối đa 1 ảnh nếu có video, hoặc 2 ảnh nếu không có video
-        if (totalMedia > 2 && index > (hasVideo ? 0 : 1)) return null;
-        if (hasVideo && index > 0) return null; // Chỉ hiển thị 1 ảnh nếu có video
+          // Hiển thị tối đa 1 ảnh nếu có video, hoặc 2 ảnh nếu không có video
+          if (totalMedia > 2 && index > (hasVideo ? 0 : 1)) return null;
+          if (hasVideo && index > 0) return null; // Chỉ hiển thị 1 ảnh nếu có video
 
-        return (
-          <div className="media-item" key={index}>
-            <img
-              src={fullUrl}
-              alt={`Post media ${index}`}
-              onClick={() => handleOpenCommentModal(post, index)}
-            />
-            {showOverlay && (
-              <div className="media-overlay" onClick={() => handleOpenCommentModal(post, index)}>+{totalMedia - (hasVideo ? 1 : 2)}</div>
-
-            )}
+          return (
+            <div className="media-item" key={index}>
+              <img
+                src={fullUrl}
+                alt={`Post media ${index}`}
+                onClick={() => handleOpenCommentModal(post, index)}
+              />
+              {showOverlay && (
+                <div
+                  className="media-overlay"
+                  onClick={() => handleOpenCommentModal(post, index)}
+                >
+                  +{totalMedia - (hasVideo ? 1 : 2)}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {hasVideo && (
+          <div className="media-item video-item">
+            <video
+              controls
+              onClick={() => handleOpenCommentModal(post, imageUrls.length)}
+            >
+              <source src={post.videoUrl} type="video/mp4" />
+            </video>
           </div>
-        );
-      })}
-      {hasVideo && (
-        <div className="media-item video-item">
-          <video
-            controls
-            onClick={() => handleOpenCommentModal(post, imageUrls.length)}
-          >
-            <source src={post.videoUrl} type="video/mp4" />
-          </video>
-        </div>
-      )}
-    </div>
-  );
-};
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="all-posts">
@@ -279,6 +289,22 @@ if (totalMedia === 0) return null;
         <>
           {posts.map((post) => (
             <div className="post" key={post.id}>
+              {isPostOptionsOpen &&
+                selectedPostToOption &&
+                selectedPostToOption.post.id === post.id && (
+                  <div className="Post-option-modal-Container">
+                    {" "}
+                    <PostOptionsModal
+                      isOwner={userId === selectedPostToOption.post.userId}
+                      onClose={() => dispatch(closePostOptionModal())}
+                      position={selectedPostToOption.position}
+                      postId={selectedPostToOption.post.id}
+                      handleDeletePost={confirmDelete}
+                      post={selectedPostToOption.post}
+                    />
+                  </div>
+                )}
+
               <div className="header-post">
                 <div className="AvaName">
                   <img
@@ -288,46 +314,52 @@ if (totalMedia === 0) return null;
                   />
                   <div className="user-info">
                     <strong>{post.fullName}</strong>
-                    <span className="timePost">
-                      <FiClock size={12} style={{ marginRight: 4 }} />
-                      {formatDistanceToNow(convertUTCToVNTime(post.createdAt), {
-                        addSuffix: true,
-                        locale: {
-                          ...vi,
-                          formatDistance: (token, count) => {
-                            switch (token) {
-                              case "lessThanXSeconds":
-                                return "vài giây trước";
-                              case "xSeconds":
-                                return `${count} giây trước`;
-                              case "halfAMinute":
-                                return "30 giây trước";
-                              case "lessThanXMinutes":
-                                return `${count} phút trước`;
-                              case "xMinutes":
-                                return `${count} phút trước`;
-                              case "aboutXHours":
-                                return `${count} giờ trước`;
-                              case "xHours":
-                                return `${count} giờ trước`;
-                              case "xDays":
-                                return `${count} ngày trước`;
-                              case "aboutXMonths":
-                                return `${count} tháng trước`;
-                              case "xMonths":
-                                return `${count} tháng trước`;
-                              case "aboutXYears":
-                                return `${count} năm trước`;
-                              case "xYears":
-                                return `${count} năm trước`;
-                              default:
-                                return "";
-                            }
-                          },
-                        },
-                        includeSeconds: true,
-                      })}
-                    </span>
+                    <div className="status-time-post">
+                      <span className="timePost">
+                        <FiClock size={12} style={{ marginRight: 4 }} />
+                        {formatDistanceToNow(
+                          convertUTCToVNTime(post.createdAt),
+                          {
+                            addSuffix: true,
+                            locale: {
+                              ...vi,
+                              formatDistance: (token, count) => {
+                                switch (token) {
+                                  case "lessThanXSeconds":
+                                    return "vài giây trước";
+                                  case "xSeconds":
+                                    return `${count} giây trước`;
+                                  case "halfAMinute":
+                                    return "30 giây trước";
+                                  case "lessThanXMinutes":
+                                    return `${count} phút trước`;
+                                  case "xMinutes":
+                                    return `${count} phút trước`;
+                                  case "aboutXHours":
+                                    return `${count} giờ trước`;
+                                  case "xHours":
+                                    return `${count} giờ trước`;
+                                  case "xDays":
+                                    return `${count} ngày trước`;
+                                  case "aboutXMonths":
+                                    return `${count} tháng trước`;
+                                  case "xMonths":
+                                    return `${count} tháng trước`;
+                                  case "aboutXYears":
+                                    return `${count} năm trước`;
+                                  case "xYears":
+                                    return `${count} năm trước`;
+                                  default:
+                                    return "";
+                                }
+                              },
+                            },
+                            includeSeconds: true,
+                          }
+                        )}
+                      </span>
+                      <span className="status-post">Công khai</span>
+                    </div>
                   </div>
                 </div>
                 <div className="post-actions">
@@ -422,33 +454,6 @@ if (totalMedia === 0) return null;
         </div>
       )}
 
-      {isPostOptionsOpen && selectedPostToOption && (
-        <PostOptionsModal
-          isOwner={userId === selectedPostToOption.post.userId}
-          onClose={() => dispatch(closePostOptionModal())}
-          position={selectedPostToOption.position}
-          postId={selectedPostToOption.post.id}
-          handleDeletePost={confirmDelete}
-          post={selectedPostToOption.post}
-        />
-      )}
-
-{selectedPost && 
-  location.pathname.includes(`/post/${selectedPost.id}`) && 
-  (selectedPost.imageUrl ? (
-    <CommentModal
-      post={selectedPost}
-      onClose={handleCloseCommentModal}
-      usersProfile={usersProfile}
-    />
-  ) : (
-    <CommentModalNoImg
-      post={selectedPost}
-      onClose={handleCloseCommentModal}
-      usersProfile={usersProfile}
-    />
-  ))}
-
       {selectedPostToShare && (
         <ShareModal
           post={selectedPostToShare}
@@ -482,7 +487,5 @@ if (totalMedia === 0) return null;
     </div>
   );
 };
-
-
 
 export default AllPosts;
