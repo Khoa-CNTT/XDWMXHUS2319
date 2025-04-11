@@ -19,6 +19,7 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
   const [scope, setScope] = useState(0);
   const loading = useSelector((state) => state.posts.loading); // Lấy trạng thái loading từ Redux
 
+  //Đưa ảnh lên modal edit
   useEffect(() => {
     if (post) {
       setContent(post.content || "");
@@ -37,6 +38,7 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
     }
   }, [post]);
 
+  //Đóng modal
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -47,6 +49,7 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
+  //Video hình ảnh
   const handleFileChange = (event) => {
     const file = event.target.files[0]; // Chỉ lấy file đầu tiên
     //Nếu muốn lấy nhiều ảnh và video thì // const files = Array.from(event.target.files);
@@ -69,7 +72,6 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
   };
 
   // Sửa bài viết
-
   const handleSubmit = async () => {
     if (!content.trim()) {
       alert("Vui lòng nhập nội dung bài viết!");

@@ -14,6 +14,10 @@ const Register = () => {
       toast.error("Mật khẩu nhập lại không khớp");
       return; // Dừng hàm tại đây, không gửi request lên API
     }
+    if (formData.password.length < 6) {
+      toast.error("Mật khẩu tối thiểu là 6 ký tự");
+      return;
+    }
     //console.log("Dữ liệu gửi lên API:", formData);
     NProgress.start(); // 🔥 Bắt đầu hiển thị loading bar
     try {

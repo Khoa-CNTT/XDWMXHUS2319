@@ -69,7 +69,7 @@ const PostOptionsModal = ({
         <div
           className="modal-postOption-overlay"
           onClick={onClose}
-          style={{ top: `${position.top}px`, left: `${position.left}px` }}
+          // style={{ top: `${position.top}px`, left: `${position.left}px` }}
         >
           <div
             className="modal-postOption-content"

@@ -26,7 +26,10 @@ const Header = ({ usersProfile }) => {
   const navigate = useNavigate();
   const [modalPosition, setModalPosition] = useState({});
   const UserProfile = () => {
-    window.location.href = "/ProfileUserView";
+
+    navigate("/ProfileUserView");
+    // window.location.href = "/ProfileUserView";
+
   };
 
   const handleHomeView = () => {

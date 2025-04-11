@@ -40,6 +40,7 @@ import InteractorModal from "../InteractorModal";
 import InteractorShareModal from "../InteractorShareModal";
 import { fetchLikes } from "../../stores/action/likeAction";
 import { fetchShares } from "../../stores/action/shareAction";
+import CommentModalNoImg from "../CommentModal-NoImge/CommentNoImage";
 const ListPost = ({ posts = [], usersProfile }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -62,14 +63,9 @@ const ListPost = ({ posts = [], usersProfile }) => {
     sharesError,
   } = useSelector((state) => state.posts);
 
-  const handleOpenCommentModal = (post, index) => {
+  const handleOpenCommentModal = (post, index = 0) => {
     dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
-    navigate(`/post/${post.id}`);
-  };
-
-  const handleCloseCommentModal = () => {
-    dispatch(closeCommentModal());
-    navigate(-1);
+    navigate(`/post/${post.id}`, { state: { background: location } });
   };
 
   const userId = getUserIdFromToken();
@@ -205,164 +201,186 @@ const ListPost = ({ posts = [], usersProfile }) => {
 
   return (
     <div className="all-posts">
+      {/* {loadingCreatePost && (
+        <div className="loading-overlay">
+          <Spinner size={70} />
+        </div>
+      )} */}
+
       {Array.isArray(posts) && posts.length > 0 ? (
-        posts.map((post) => (
-          <div className="post" key={post.id}>
-            <div className="header-post">
-              <div className="AvaName">
-                <img
-                  className="avtardefaut"
-                  src={post.profilePicture || avatarWeb}
-                  alt="Avatar"
-                />
-                <div className="user-info">
-                  <strong>{post.fullName}</strong>
-                  <span className="timePost">
-                    <FiClock size={12} style={{ marginRight: 4 }} />
-                    {formatDistanceToNow(convertUTCToVNTime(post.createdAt), {
-                      addSuffix: true,
-                      locale: {
-                        ...vi,
-                        formatDistance: (token, count) => {
-                          switch (token) {
-                            case "lessThanXSeconds":
-                              return "vài giây trước";
-                            case "xSeconds":
-                              return `${count} giây trước`;
-                            case "halfAMinute":
-                              return "30 giây trước";
-                            case "lessThanXMinutes":
-                              return `${count} phút trước`;
-                            case "xMinutes":
-                              return `${count} phút trước`;
-                            case "aboutXHours":
-                              return `${count} giờ trước`;
-                            case "xHours":
-                              return `${count} giờ trước`;
-                            case "xDays":
-                              return `${count} ngày trước`;
-                            case "aboutXMonths":
-                              return `${count} tháng trước`;
-                            case "xMonths":
-                              return `${count} tháng trước`;
-                            case "aboutXYears":
-                              return `${count} năm trước`;
-                            case "xYears":
-                              return `${count} năm trước`;
-                            default:
-                              return "";
-                          }
+        <>
+          {posts.map((post) => (
+            <div className="post" key={post.id}>
+              {isPostOptionsOpen &&
+                selectedPostToOption &&
+                selectedPostToOption.post.id === post.id && (
+                  <div className="Post-option-modal-Container">
+                    {" "}
+                    <PostOptionsModal
+                      isOwner={userId === selectedPostToOption.post.userId}
+                      onClose={() => dispatch(closePostOptionModal())}
+                      position={selectedPostToOption.position}
+                      postId={selectedPostToOption.post.id}
+                      handleDeletePost={confirmDelete}
+                      post={selectedPostToOption.post}
+                    />
+                  </div>
+                )}
+
+              <div className="header-post">
+                <div className="AvaName">
+                  <img
+                    className="avtardefaut"
+                    src={post.profilePicture || avatarWeb}
+                    alt="Avatar"
+                  />
+                  <div className="user-info">
+                    <strong>{post.fullName}</strong>
+                    <span className="timePost">
+                      <FiClock size={12} style={{ marginRight: 4 }} />
+                      {formatDistanceToNow(convertUTCToVNTime(post.createdAt), {
+                        addSuffix: true,
+                        locale: {
+                          ...vi,
+                          formatDistance: (token, count) => {
+                            switch (token) {
+                              case "lessThanXSeconds":
+                                return "vài giây trước";
+                              case "xSeconds":
+                                return `${count} giây trước`;
+                              case "halfAMinute":
+                                return "30 giây trước";
+                              case "lessThanXMinutes":
+                                return `${count} phút trước`;
+                              case "xMinutes":
+                                return `${count} phút trước`;
+                              case "aboutXHours":
+                                return `${count} giờ trước`;
+                              case "xHours":
+                                return `${count} giờ trước`;
+                              case "xDays":
+                                return `${count} ngày trước`;
+                              case "aboutXMonths":
+                                return `${count} tháng trước`;
+                              case "xMonths":
+                                return `${count} tháng trước`;
+                              case "aboutXYears":
+                                return `${count} năm trước`;
+                              case "xYears":
+                                return `${count} năm trước`;
+                              default:
+                                return "";
+                            }
+                          },
                         },
-                      },
-                      includeSeconds: true,
-                    })}
+                        includeSeconds: true,
+                      })}
+                    </span>
+                  </div>
+                </div>
+                <div className="post-actions">
+                  <FiMoreHorizontal
+                    className="btn-edit"
+                    size={20}
+                    onClick={(event) => handleOpenPostOptions(event, post)}
+                  />
+                  <FiX
+                    className="btn-close"
+                    size={20}
+                    onClick={() => dispatch(hidePost(post.id))}
+                  />
+                </div>
+              </div>
+
+              <div className="content-posts">{post.content}</div>
+
+              {!post.isSharedPost && <p></p>}
+
+              {post.isSharedPost && (
+                <div className="Share-Post-origigin">
+                  <SharedPost post={post} />
+                </div>
+              )}
+
+              {renderMediaItems(post)}
+
+              <div className="post-actions-summary">
+                <div
+                  className="reactions"
+                  onClick={() => handleOpenInteractorModal(post)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <FaHeart className="like-icon" size={16} />
+                  <span>{post.likeCount}</span>
+                </div>
+                <div className="comments-shares">
+                  <span
+                    onClick={() => handleOpenCommentModal(post, 0)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {post.commentCount} bình luận
+                  </span>
+                  <span
+                    onClick={() => handleOpenInteractorShareModal(post)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {post.shareCount} lượt chia sẻ
                   </span>
                 </div>
               </div>
-              <div className="post-actions">
-                <FiMoreHorizontal
-                  className="btn-edit"
-                  size={20}
-                  onClick={(event) => handleOpenPostOptions(event, post)}
-                />
-                <FiX
-                  className="btn-close"
-                  size={20}
-                  onClick={() => dispatch(hidePost(post.id))}
-                />
-              </div>
-            </div>
 
-            <div className="content-posts">{post.content}</div>
-
-            {post.isSharedPost && (
-              <div className="Share-Post-origigin">
-                <SharedPost post={post} />
-              </div>
-            )}
-
-            {renderMediaItems(post)}
-
-            <div className="post-actions-summary">
-              <div
-                className="reactions"
-                onClick={() => handleOpenInteractorModal(post)}
-                style={{ cursor: "pointer" }}
-              >
-                <FaHeart className="like-icon" size={16} />
-                <span>{post.likeCount}</span>
-              </div>
-              <div className="comments-shares">
-                <span
+              <div className="actions">
+                <button
+                  className={`action-btn ${post.hasLiked ? "liked" : ""}`}
+                  onClick={() => handleLikePost(post.id)}
+                  disabled={post.isLiking}
+                >
+                  {post.hasLiked ? (
+                    <FaHeart className="like-icon" size={18} />
+                  ) : (
+                    <FiHeart className="like-icon" size={18} />
+                  )}
+                  <span className="action-count">Thích</span>
+                </button>
+                <button
+                  className="action-btn"
                   onClick={() => handleOpenCommentModal(post, 0)}
-                  style={{ cursor: "pointer" }}
                 >
-                  {post.commentCount} bình luận
-                </span>
-                <span
-                  onClick={() => handleOpenInteractorShareModal(post)}
-                  style={{ cursor: "pointer" }}
+                  <FiMessageSquare className="comment-icon" size={18} />
+                  <span className="action-count">Bình luận</span>
+                </button>
+                <button
+                  className="action-btn"
+                  onClick={() => dispatch(openShareModal(post))}
                 >
-                  {post.shareCount} lượt chia sẻ
-                </span>
+                  <FiShare2 className="share-icon" size={18} />
+                  <span className="action-count">Chia sẻ</span>
+                </button>
               </div>
             </div>
-
-            <div className="actions">
-              <button
-                className={`action-btn ${post.hasLiked ? "liked" : ""}`}
-                onClick={() => handleLikePost(post.id)}
-                disabled={post.isLiking}
-              >
-                {post.hasLiked ? (
-                  <FaHeart className="like-icon" size={18} />
-                ) : (
-                  <FiHeart className="like-icon" size={18} />
-                )}
-                <span className="action-count">Thích</span>
-              </button>
-              <button
-                className="action-btn"
-                onClick={() => handleOpenCommentModal(post, 0)}
-              >
-                <FiMessageSquare className="comment-icon" size={18} />
-                <span className="action-count">Bình luận</span>
-              </button>
-              <button
-                className="action-btn"
-                onClick={() => dispatch(openShareModal(post))}
-              >
-                <FiShare2 className="share-icon" size={18} />
-                <span className="action-count">Chia sẻ</span>
-              </button>
-            </div>
-          </div>
-        ))
+          ))}
+        </>
       ) : (
         <div className="no-posts">
           <p>Không có bài viết nào.</p>
         </div>
       )}
 
-      {isPostOptionsOpen && selectedPostToOption && (
-        <PostOptionsModal
-          isOwner={userId === selectedPostToOption.post.userId}
-          onClose={() => dispatch(closePostOptionModal())}
-          position={selectedPostToOption.position}
-          postId={selectedPostToOption.post.id}
-          handleDeletePost={confirmDelete}
-          post={selectedPostToOption.post}
-        />
-      )}
-
-      {selectedPost &&
-        location.pathname.includes(`/post/${selectedPost.id}`) && (
+      {/* {selectedPost &&
+        location.pathname.includes(`/post/${selectedPost.id}`) &&
+        (selectedPost.imageUrl ? (
           <CommentModal
             post={selectedPost}
             onClose={handleCloseCommentModal}
             usersProfile={usersProfile}
           />
-        )}
+        ) : (
+          <CommentModalNoImg
+            post={selectedPost}
+            onClose={handleCloseCommentModal}
+            usersProfile={usersProfile}
+          />
+        ))} */}
 
       {selectedPostToShare && (
         <ShareModal

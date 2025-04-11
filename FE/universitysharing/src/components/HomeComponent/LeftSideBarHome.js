@@ -13,7 +13,7 @@ import {
 import { RiUserLocationLine } from "react-icons/ri";
 
 const LeftSidebar = ({ usersProfile }) => {
-  console.log("Hello>>", usersProfile);
+  // console.log("Hello>>", usersProfile);
   const navigate = useNavigate();
   const location = useLocation();
 
