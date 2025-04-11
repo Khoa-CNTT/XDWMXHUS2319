@@ -18,6 +18,6 @@ namespace Domain.Interface
         Task<List<User>> GetAllUsersAsync();
         Task<List<User>> GetUsersByIdsAsync(List<Guid> userIds);
 
-
+        Task<bool> ExistUsersAsync(Guid userId);
     }
 }

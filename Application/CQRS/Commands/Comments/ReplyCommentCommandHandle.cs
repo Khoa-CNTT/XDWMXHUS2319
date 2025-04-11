@@ -85,7 +85,7 @@ namespace Application.CQRS.Commands.Comments
                 // 🔥 Publish sự kiện bình luận để gửi thông báo qua SignalR
                 if (parentComment.UserId != userId)
                 {
-                    await _notificationService.SendReplyNotificationAsync(parentComment.PostId,request.ParentCommentId, userId, user.FullName);
+                    await _notificationService.SendReplyNotificationAsync(parentComment.PostId,request.ParentCommentId, userId);
                 }
                 return ResponseFactory.Success(Mapping.MapToResultCommentPostDto(replyComment, user.FullName, user.ProfilePicture), "Phản hồi bình luận thành công", 201);
             }

@@ -10,7 +10,9 @@ import { jwtDecode } from "jwt-decode";
 
 const RightSidebar = () => {
   const dispatch = useDispatch();
-  const { friends, loading, error, activeFriend } = useSelector((state) => state.friends);
+  const { friends, loading, error, activeFriend } = useSelector(
+    (state) => state.friends
+  );
   const [openChats, setOpenChats] = useState([]);
   const [onlineStatus, setOnlineStatus] = useState({});
   const token = localStorage.getItem("token");
@@ -116,11 +118,19 @@ const RightSidebar = () => {
   };
 
   if (loading) {
-    return <aside className="right-sidebar"><p>Đang tải...</p></aside>;
+    return (
+      <aside className="right-sidebar">
+        <p>Đang tải...</p>
+      </aside>
+    );
   }
 
   if (error) {
-    return <aside className="right-sidebar"><p>Lỗi: {error}</p></aside>;
+    return (
+      <aside className="right-sidebar">
+        <p>Lỗi: {error}</p>
+      </aside>
+    );
   }
 
   return (
@@ -144,7 +154,7 @@ const RightSidebar = () => {
                 onClick={() => handleFriendClick(friend.friendId)}
               >
                 <div className="friend-info">
-                  <img src={friend.avatar || avatarDefault} alt="Avatar" />
+                  <img src={friend.avatarFriend || avatarDefaut} alt="Avatar" />
                   <div className="name-status">
                     <div className="friend-name">{friend.fullNameFriend}</div>
                     <div className={`status ${onlineStatus[friend.friendId] ? "online" : "offline"}`}>

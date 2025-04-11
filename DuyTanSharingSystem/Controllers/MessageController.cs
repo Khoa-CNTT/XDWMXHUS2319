@@ -1,4 +1,5 @@
-﻿using Application.CQRS.Commands.Messages;
+﻿using Application.Common;
+using Application.CQRS.Commands.Messages;
 using Application.CQRS.Queries.Messages;
 using Application.DTOs.Message;
 using Application.Interface;
@@ -107,9 +108,10 @@ namespace DuyTanSharingSystem.Controllers
         public class FriendDto
         {
             public Guid FriendId { get; set; }         // ID của người bạn (khác với người dùng hiện tại)
-            public string FullNameFriend { get; set; }       // Tên đầy đủ của bạn
+            public required string FullNameFriend { get; set; }       // Tên đầy đủ của bạn
+            public string? AvatarFriend { get; set; }
             public DateTime CreatedAt { get; set; }    // Ngày bắt đầu kết bạn
-            public string Status { get; set; }         // Trạng thái (Pending, Accepted, Blocked,...)
+            public required string Status { get; set; }         // Trạng thái (Pending, Accepted, Blocked,...)
         }
         [HttpGet("friends/{userId}")]
         public async Task<List<FriendDto>> GetFriendsAsync(Guid userId)
@@ -130,7 +132,7 @@ namespace DuyTanSharingSystem.Controllers
 
             // Convert thành dictionary cho dễ truy xuất
             var userDict = users.ToDictionary(u => u.Id, u => u.FullName);
-
+            var userPictureDict = users.ToDictionary(u => u.Id, u => u.ProfilePicture);
             var friendDtos = friendships.Select(f =>
             {
                 var friendId = f.UserId == userId ? f.FriendId : f.UserId;
@@ -139,6 +141,7 @@ namespace DuyTanSharingSystem.Controllers
                 {
                     FriendId = friendId,
                     FullNameFriend = userDict.GetValueOrDefault(friendId, "Không rõ"),
+                    AvatarFriend = Constaint.baseUrl + userPictureDict.GetValueOrDefault(friendId, "Không rõ"),
                     CreatedAt = f.CreatedAt,
                     Status = f.Status.ToString()
                 };

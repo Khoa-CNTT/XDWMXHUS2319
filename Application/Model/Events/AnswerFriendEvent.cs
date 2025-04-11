@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Application.Model.Events
 {
-    public class ReplyCommentEvent : INotification
+    public class AnswerFriendEvent : INotification
     {
-        public Guid ReceiverId { get; }
+        public Guid FriendId { get; }
         public ResponseNotificationModel Data { get; }
 
-        public ReplyCommentEvent(Guid receiverId, ResponseNotificationModel data)
+        public AnswerFriendEvent(Guid friendId, ResponseNotificationModel data)
         {
-            ReceiverId = receiverId;
+            FriendId = friendId;
             Data = data;
         }
     }
