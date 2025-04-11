@@ -14,19 +14,24 @@ namespace Domain.Entities
         public string? Content { get; private set; }
         public string StartLocation { get; private set; }
         public string EndLocation { get; private set; }
+        public string LatLonStart { get; private set; }
+        public string LatLonEnd { get; private set; }
+
         public DateTime StartTime { get; private set; }
         public PostRideTypeEnum PostType { get; private set; }
         public RidePostStatusEnum Status { get; private set; } = RidePostStatusEnum.open;
         public DateTime CreatedAt { get; private set; }
         public User? User { get;private set; }
         public Ride? Ride { get;private set; } // Quan hệ 1-1 với Ride (nếu có người ghép chuyến)
-        public RidePost(Guid userId,string? content, string startLocation, string endLocation, DateTime startTime, PostRideTypeEnum postType)
+        public RidePost(Guid userId,string? content, string startLocation, string endLocation, string latLonStart, string latLonEnd, DateTime startTime, PostRideTypeEnum postType)
         {
             Id = Guid.NewGuid();
             UserId = userId;
             Content = content;
             StartLocation = startLocation;
             EndLocation = endLocation;
+            LatLonStart = latLonStart;
+            LatLonEnd = latLonEnd;
             StartTime = startTime;
             PostType = postType;
             CreatedAt = DateTime.UtcNow;

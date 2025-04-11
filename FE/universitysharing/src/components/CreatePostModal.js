@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import avatarDeafault from "../assets/AvatarDefault.png";
 import closeIcon from "../assets/iconweb/closeIcon.svg";
 import imageIcon from "../assets/iconweb/imageIcon.svg";
@@ -7,19 +8,21 @@ import "../styles/CreatePostModal.scss";
 import "animate.css";
 
 import { useDispatch, useSelector } from "react-redux";
-import { createPost } from "../stores/action/listPostActions"; // Import action từ Redux
+import { createPost } from "../stores/action/listPostActions";
+import Spinner from "../utils/Spinner";
 
 const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
-  const [mediaFiles, setMediaFile] = useState([]);
+  const [mediaFiles, setMediaFiles] = useState([]);
   const dispatch = useDispatch();
   const [content, setContent] = useState("");
   const [postType, setPostType] = useState(4);
   const [scope, setScope] = useState(0);
-  const loading = useSelector((state) => state.posts.loading); // Lấy trạng thái loading từ Redux
+  const loading = useSelector((state) => state.posts.loading);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        onClose(); // Đóng modal khi nhấn ESC
+        onClose();
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -27,63 +30,63 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
   }, [onClose]);
 
   const handleFileChange = (event) => {
-    const file = event.target.files[0]; // Chỉ lấy file đầu tiên
-    //Nếu muốn lấy nhiều ảnh và video thì // const files = Array.from(event.target.files);
-    if (!file) return;
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
 
-    const newMedia = {
+    const newMediaFiles = files.map((file) => ({
       url: URL.createObjectURL(file),
       type: file.type.startsWith("video") ? "video" : "image",
-      file: file, // Lưu file gốc vào đây
-    };
+      file: file,
+    }));
 
-    setMediaFile((prev) => {
-      // Nếu là video, thay thế video cũ, nếu là ảnh, thay thế ảnh cũ
-      const updatedMedia = prev.filter((media) => media.type !== newMedia.type);
-      return [...updatedMedia, newMedia];
+    setMediaFiles((prev) => {
+      // Lấy danh sách ảnh hiện tại
+      const currentImages = prev.filter((media) => media.type === "image");
+      // Kiểm tra có video trong file mới upload không
+      const hasNewVideo = newMediaFiles.some((media) => media.type === "video");
+      // Lấy video mới (nếu có)
+      const newVideo = newMediaFiles.find((media) => media.type === "video");
+      // Lấy tất cả ảnh mới
+      const newImages = newMediaFiles.filter((media) => media.type === "image");
+
+      if (hasNewVideo) {
+        // Nếu có video mới, thay thế video cũ (nếu có) và giữ lại các ảnh hiện tại
+        return [...currentImages, newVideo];
+      } else {
+        // Nếu chỉ có ảnh mới, thêm vào danh sách ảnh hiện tại
+        return [...currentImages, ...newImages];
+      }
     });
   };
+
   const handleRemoveMedia = (index) => {
-    setMediaFile((prev) => prev.filter((_, i) => i !== index));
+    setMediaFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Thêm bài viết
   const handleSubmit = async () => {
     if (!content.trim()) {
       alert("Vui lòng nhập nội dung bài viết!");
       return;
     }
-
+  
     const formData = new FormData();
     formData.append("Content", content);
     formData.append("PostType", postType);
     formData.append("Scope", scope);
-
-    // if (mediaFiles.length > 0) {
-    //   const file = mediaFiles[0].file; // Lấy file đầu tiên
-    //   if (file.type.startsWith("video")) {
-    //     formData.append("Video", file);
-    //   } else {
-    //     formData.append("Image", file);
-    //   }
-    // }
+  
     if (mediaFiles.length > 0) {
-      let videoFile = null;
-      let imageFile = null;
-
-      mediaFiles.forEach(({ file }) => {
-        if (file.type.startsWith("video") && !videoFile) {
-          videoFile = file; // Lưu file video đầu tiên
-        } else if (!file.type.startsWith("video") && !imageFile) {
-          imageFile = file; // Lưu file ảnh đầu tiên
-        }
+      const videoFile = mediaFiles.find((media) => media.type === "video");
+      const imageFiles = mediaFiles.filter((media) => media.type === "image");
+  
+      if (videoFile) {
+        formData.append("Video", videoFile.file);
+      }
+  
+      imageFiles.forEach((image) => {
+        formData.append("Images", image.file); // 👈 quan trọng: sửa thành "Images"
       });
-
-      if (videoFile) formData.append("Video", videoFile);
-      if (imageFile) formData.append("Image", imageFile);
     }
-
-    console.log("Form Data", formData);
+  
     dispatch(
       createPost({
         formData,
@@ -91,20 +94,18 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
         profilePicture: usersProfile.profilePicture || avatarDeafault,
       })
     );
-
-    onClose(); // Đóng modal sau khi gửi bài
+  
+    onClose();
   };
+
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
-      <div
-        className="create-post-overlay animate__animated animate__fadeIn animate_faster"
-        onClick={onClose}
-      ></div>
-      <div className="create-post-modal  animate__animated animate__fadeIn animate_faster">
+      <div className="create-post-overlay" onClick={onClose}></div>
+      <div className="create-post-modal">
         <div className="header-post-modal">
-          <span>Đăng bài </span>
+          <span>Đăng bài</span>
           <img
             src={closeIcon}
             alt="Close"
@@ -112,13 +113,13 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
             className="close-icon"
           />
         </div>
+        {/* Rest of your JSX remains the same */}
         <div className="user-create-post">
           <img
             src={usersProfile.profilePicture || avatarDeafault}
             alt="Avatar"
           />
           <span className="userName-share">
-            {" "}
             {usersProfile.fullName || "University Sharing"}
           </span>
         </div>
@@ -162,7 +163,6 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
             <input
               type="file"
               accept="video/*"
-              multiple
               onChange={handleFileChange}
               hidden
             />
@@ -176,6 +176,7 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
           >
             <option value="0">Công khai</option>
             <option value="1">Riêng tư</option>
+            <option value="2">Chỉ bạn bè</option>
           </select>
           <select
             className="type-post"
@@ -183,8 +184,9 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
             onChange={(e) => setPostType(Number(e.target.value))}
           >
             <option value="4">Thảo luận</option>
-            <option value="4 ">Tư liệu học tập</option>
-            <option value="4 ">Trao đổi</option>
+            <option value="5">Tư liệu học tập</option>{" "}
+            {/* Sửa value để khác nhau */}
+            <option value="6">Trao đổi</option> {/* Sửa value để khác nhau */}
           </select>
         </div>
         <button
@@ -192,10 +194,12 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
           onClick={handleSubmit}
           disabled={loading}
         >
-          {loading ? "Đang đăng..." : "Đăng bài"}
+          {loading ? <Spinner size={20} color="#fff" /> : "Đăng bài"}
         </button>
       </div>
-    </>
+    </>,
+    document.body // Render trực tiếp vào body
   );
 };
+
 export default CreatePostModal;

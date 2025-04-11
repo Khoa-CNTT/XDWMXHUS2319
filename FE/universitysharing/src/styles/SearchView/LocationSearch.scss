@@ -1,0 +1,131 @@
+// Biến màu sắc
+$primary-color: #007bff;
+$border-color: #ced4da;
+$hover-border-color: #adb5bd;
+$focus-border-color: $primary-color;
+$placeholder-color: #6c757d;
+$background-color: #fff;
+$loading-color: #868e96;
+$dropdown-shadow: rgba(0, 0, 0, 0.1);
+
+// Style cho container chính
+.search-location {
+  width: 100%;
+  max-width: 500px;
+
+  // Style cho react-select
+  .react-select {
+    &__control {
+      min-height: 38px;
+      border: 1px solid $border-color;
+      border-radius: 4px;
+      background-color: $background-color;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+      &:hover {
+        border-color: $hover-border-color;
+      }
+
+      &--is-focused {
+        border-color: $focus-border-color;
+        box-shadow: 0 0 0 2px rgba($focus-border-color, 0.2);
+        outline: none;
+      }
+    }
+
+    // Khi đang loading
+    &__control--is-loading {
+      .react-select__indicator {
+        color: $loading-color;
+      }
+    }
+
+    // Input
+    &__input {
+      color: #495057;
+
+      input {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+    }
+
+    // Placeholder
+    &__placeholder {
+      color: $placeholder-color;
+      font-size: 14px;
+    }
+
+    // Dropdown menu
+    &__menu {
+      border-radius: 4px;
+      box-shadow: 0 2px 4px $dropdown-shadow;
+      margin-top: 4px;
+      border: 1px solid $border-color;
+      z-index: 1000;
+    }
+
+    // Option trong dropdown
+    &__option {
+      padding: 8px 12px;
+      font-size: 14px;
+      color: #212529;
+
+      &:hover,
+      &--is-focused {
+        background-color: #f8f9fa;
+        cursor: pointer;
+      }
+
+      &--is-selected {
+        background-color: $primary-color;
+        color: white;
+      }
+    }
+
+    // Thông báo không có kết quả
+    &__menu-notice--no-options {
+      color: $placeholder-color;
+      font-size: 14px;
+      padding: 8px 12px;
+    }
+
+    // Indicator (loading spinner)
+    &__loading-indicator {
+      color: $loading-color;
+    }
+  }
+
+  // Style khi có giá trị
+  &--has-value {
+    .react-select__control {
+      border-color: $focus-border-color;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .search-location {
+    max-width: 100%;
+    
+    .react-select {
+      &__control {
+        min-height: 36px;
+      }
+      
+      &__input input {
+        font-size: 13px;
+      }
+      
+      &__placeholder {
+        font-size: 13px;
+      }
+      
+      &__option {
+        font-size: 13px;
+        padding: 6px 10px;
+      }
+    }
+  }
+}

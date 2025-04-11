@@ -1,6 +1,7 @@
 ﻿using Application.Common;
 using Application.DTOs.CommentLikes;
 using Application.DTOs.Comments;
+using Application.DTOs.FriendShips;
 using Application.DTOs.Likes;
 using Application.DTOs.Post;
 using Application.DTOs.Posts;
@@ -25,16 +26,42 @@ namespace Application
                 OriginalPost = new OriginalPostDto(post)
             };
         }
-        public static ResultSharePostDto MapToResultSharePostDto(Share share, Post post, User user)
+        public static ResultSharePostDto MapToResultSharePostDto(Post share, Post originalPost, User user)
         {
             return new ResultSharePostDto
             {
-                ShareId = share.Id,
-                SharedAt = share.CreatedAt,
+                Id = share.Id,
+                UserId = user.Id, // ✅ Người dùng đã chia sẻ bài viết
+                FullName = user.FullName,
+                ProfilePicture = user.ProfilePicture,
                 Content = share.Content,
-                User = new UserPostDto(user),
+                CreatedAt = share.CreatedAt,
+                PostType = originalPost.PostType,
+                CommentCount =  0,
+                LikeCount =0,
+                ShareCount = 0,
+                HasLiked = 0,
+                IsSharedPost = true,
+                OriginalPostId = originalPost.Id,
+                OriginalPost = new OriginalPostDto(originalPost) // ✅ Đảm bảo bài viết gốc có đúng User
             };
         }
+
+
+        public static FriendDto MapToFriendDto(Friendship friendship, User user, Guid currentUserId)
+        {
+            var otherUserId = friendship.UserId == currentUserId ? friendship.FriendId : friendship.UserId;
+
+            return new FriendDto
+            {
+                FriendId = otherUserId,
+                FullName = user.FullName,
+                PictureProfile = user.ProfilePicture,
+                CreatedAt = friendship.CreatedAt,
+                Status = friendship.Status
+            };
+        }
+
         public static CommentPostDto MapToCommentPostDto(Comment comment, Post post, User user)
         {
             return new CommentPostDto
@@ -67,19 +94,36 @@ namespace Application
                 Id = user?.Id,
                 FullName = user?.FullName,
                 Email = user?.Email,
+                CreatedAt = user?.CreatedAt ?? DateTime.MinValue, // ✅ Cung cấp giá trị mặc định
                 ProfilePicture = user?.ProfilePicture != null ? $"{Constaint.baseUrl}{user?.ProfilePicture}" : null,
             };
         }
 
-        public static UserProfileDto MaptoUserprofileDto(User user)
+        public static MaptoUserprofileDetailDto MaptoUserprofileDto(User user)
         {
-            return new UserProfileDto
+            return new MaptoUserprofileDetailDto
             {
                 Id = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
                 ProfilePicture = user.ProfilePicture != null ? $"{Constaint.baseUrl}{user.ProfilePicture}" : null,
+                BackgroundPicture = user.BackgroundPicture != null ? $"{Constaint.baseUrl}{user.BackgroundPicture}" : null,
                 Bio = user.Bio,
+                CreatedAt = user.CreatedAt
+            };
+        }
+        public static UserProfileDetailDto MaptoUserprofileDetailDto(User user)
+        {
+            return new UserProfileDetailDto
+            {
+                Id = user.Id,
+                Email= user.Email,
+                FullName = user.FullName,
+                ProfilePicture = user.ProfilePicture != null ? $"{Constaint.baseUrl}{user.ProfilePicture}" : null,
+                BackgroundPicture = user.BackgroundPicture != null ? $"{Constaint.baseUrl}{user.BackgroundPicture}" : null,
+                Bio = user.Bio,
+                PhoneNumber = user.Phone,
+                PhoneNumberRelative = user.RelativePhone,
                 CreatedAt = user.CreatedAt
             };
         }
@@ -174,6 +218,8 @@ namespace Application
                 ImageUrl = p.ImageUrl != null ? $"{Constaint.baseUrl}{p.ImageUrl}" : null, // ✅ Thêm Base URL
                 VideoUrl = p.VideoUrl != null ? $"{Constaint.baseUrl}{p.VideoUrl}" : null, // ✅ Thêm Base URL
                 CreateAt = p.CreatedAt,
+                PostType = p.PostType,
+                Scope = p.Scope,
                 Author = new UserPostDto(p.User ?? new Domain.Entities.User("Người dùng ẩn danh", "anonymous@example.com", "hashed_password"))
             };
 
@@ -281,9 +327,10 @@ namespace Application
                 CreatedAt = p.CreatedAt,
                 UpdateAt = p.UpdateAt,
                 PostType = p.PostType,
+                Scope = p.Scope,
                 CommentCount = p.Comments?.Count ?? 0,
                 LikeCount = p.Likes?.Count ?? 0,
-                ShareCount = p.Shares?.Count ?? 0,
+                ShareCount = p.Shares?.Count(s => !s.IsDeleted) ?? 0,
                 HasLiked = validLikes.Any(l => l.UserId == userId) ? 1 : 0,
                 IsSharedPost = p.IsSharedPost,
                 OriginalPostId = p.OriginalPostId,

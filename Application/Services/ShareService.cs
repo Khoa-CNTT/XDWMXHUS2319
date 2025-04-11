@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Shares;
+﻿using Application.Common;
+using Application.DTOs.Shares;
 using Application.DTOs.User;
 using Domain.Entities;
 using System;
@@ -18,7 +19,6 @@ namespace Application.Services
         }
         public async Task<GetSharedUsersResponse> GetSharedUsersByPostIdAsync(Guid postId, Guid? lastUserId, CancellationToken cancellationToken)
         {
-            const string baseUrl = " https://localhost:7053";
             const int PAGE_SIZE = 10; // 🔥 Số lượng phần tử mỗi lần lấy
 
             // Lấy nhiều hơn 1 phần tử để kiểm tra còn dữ liệu hay không
@@ -42,7 +42,7 @@ namespace Application.Services
             {
                 Id = s.User.Id,
                 FullName = s.User.FullName,
-                ProfilePicture = s.User.ProfilePicture != null ? $"{baseUrl}{s.User.ProfilePicture}" : null, // ✅ Thêm Base URL
+                ProfilePicture = s.User.ProfilePicture != null ? $"{Constaint.baseUrl}{s.User.ProfilePicture}" : null, // ✅ Thêm Base URL
                 Email = s.User.Email,
             }).ToList();
 

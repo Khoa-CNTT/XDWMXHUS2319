@@ -1,54 +1,250 @@
-.messenger-modal {
+.messenger-modal-overlay {
   position: fixed;
-  top: 70px;
-  right: 50px;
-  width: 350px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  border: 1px solid #ddd;
+  bottom: 0;
+  right: 20px;
+  width: 360px;
+  height: calc(100vh - 80px);
+  max-height: 590px;
   z-index: 1000;
-
-  .modal-header {
-    padding: 14px;
-    font-weight: bold;
-    font-size: 18px;
-    background: #f0f2f5;
-    border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px 8px 0 0;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+  will-change: transform, opacity; // This helps with performance
+  &.open {
+    opacity: 1;
+    transform: translateY(0);
   }
-
-  .modal-body {
-    padding: 12px;
-    max-height: 400px;
-    overflow-y: auto;
-
-    .message-item {
+  .messenger-modal {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+    // Add this for smooth scrolling
+    .friends-list {
+      overflow-y: auto;
+      will-change: transform; // Helps with scroll performance
+      transform: translateZ(0); // Hardware acceleration
+    }
+    .modal-header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      padding: 10px;
-      border-bottom: 1px solid #eee;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e4e6eb;
+      background: #f0f2f5;
 
-      .avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        margin-right: 10px;
-      }
+      .header-left {
+        display: flex;
+        align-items: center;
 
-      .message-content {
-        flex: 1;
-
-        strong {
-          font-size: 14px;
-          display: block;
+        h2 {
+          font-size: 16px;
+          font-weight: 600;
+          margin: 0;
+          color: #050505;
         }
 
-        p {
-          font-size: 13px;
-          color: #555;
-          margin: 2px 0 0;
+        .header-actions {
+          display: flex;
+          margin-left: 8px;
+
+          .icon-button {
+            background: none;
+            border: none;
+            padding: 6px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: #65676b;
+            margin-left: 4px;
+
+            &:hover {
+              background: #e4e6eb;
+            }
+          }
+        }
+      }
+
+      .header-right {
+        display: flex;
+
+        .icon-button, .close-button {
+          background: none;
+          border: none;
+          padding: 6px;
+          border-radius: 50%;
+          cursor: pointer;
+          color: #65676b;
+
+          &:hover {
+            background: #e4e6eb;
+          }
+        }
+      }
+    }
+
+    .search-bar {
+      padding: 8px;
+      border-bottom: 1px solid #e4e6eb;
+
+      .search-container {
+        display: flex;
+        align-items: center;
+        background: #f0f2f5;
+        border-radius: 18px;
+        padding: 8px 12px;
+
+        .search-icon {
+          margin-right: 8px;
+          color: #65676b;
+        }
+
+        input {
+          flex: 1;
+          border: none;
+          background: transparent;
+          outline: none;
+          font-size: 14px;
+
+          &::placeholder {
+            color: #65676b;
+          }
+        }
+
+        .filter-button {
+          background: none;
+          border: none;
+          color: #65676b;
+          cursor: pointer;
+          padding: 4px;
+        }
+      }
+    }
+
+    .tabs-container {
+      display: flex;
+      border-bottom: 1px solid #e4e6eb;
+      padding: 0 12px;
+
+      .tab {
+        flex: 1;
+        padding: 12px 0;
+        background: none;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        color: #65676b;
+        cursor: pointer;
+        position: relative;
+
+        &.active {
+          color: #1877f2;
+
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #1877f2;
+            border-radius: 3px 3px 0 0;
+          }
+        }
+      }
+    }
+
+    .friends-list {
+      flex: 1;
+      overflow-y: auto;
+
+      .friend-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        position: relative;
+
+        &:hover {
+          background: #f0f2f5;
+        }
+
+        .friend-avatar {
+          position: relative;
+          margin-right: 12px;
+
+          img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+          }
+
+          .active-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background: #31a24c;
+            border: 2px solid #fff;
+            border-radius: 50%;
+          }
+        }
+
+        .friend-info {
+          flex: 1;
+          overflow: hidden;
+
+          .friend-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #050505;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .friend-status {
+            font-size: 12px;
+            color: #65676b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
+        .friend-actions {
+          .action-button {
+            background: none;
+            border: none;
+            padding: 6px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: #65676b;
+            opacity: 0;
+            transition: opacity 0.2s;
+
+            &:hover {
+              background: #e4e6eb;
+            }
+          }
+        }
+
+        &:hover .friend-actions .action-button {
+          opacity: 1;
         }
       }
     }
   }
+}
+// Add this to prevent layout shifts
+body.modal-open {
+  overflow: hidden;
 }

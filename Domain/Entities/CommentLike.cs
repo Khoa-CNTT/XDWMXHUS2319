@@ -9,7 +9,7 @@ namespace Domain.Entities
 {
     public class CommentLike
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get;private set; } = Guid.NewGuid();
 
         public Guid UserId { get; private set; }
         public virtual User? User { get; private set; }

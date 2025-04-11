@@ -51,9 +51,32 @@
 
   .content-ride-post {
     display: block;
-    margin: 10px 0;
+    margin: 20px 0; // Thêm khoảng cách để nội dung không quá sát nhau
     font-size: 14px;
+    color: #333; // Màu chữ chính cho nội dung
+    line-height: 1.5; // Cải thiện khoảng cách dòng giúp đọc dễ dàng hơn
+    border-left: 4px solid #4CAF50; // Đánh dấu bài viết bằng viền bên trái
+    padding-left: 15px; // Khoảng cách cho văn bản khỏi viền
+    background-color: #f9f9f9; // Nền nhạt giúp bài viết dễ nhìn
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Thêm bóng nhẹ cho phần nội dung
+    border-radius: 8px; // Bo góc nhẹ để mềm mại hơn
   }
+  
+  .post-content {
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: bold; // Làm cho nội dung bài viết nổi bật hơn
+    color: #333; // Màu chữ chính
+  }
+  
+  .location-time {
+    display: block;
+    font-size: 14px;
+    color: #777; // Màu nhạt cho thông tin địa điểm và thời gian
+    margin-top: 5px; // Thêm khoảng cách trên giữa nội dung và thông tin địa điểm
+    font-style: italic; // Chữ nghiêng giúp phân biệt với phần nội dung chính
+  }
+  
 
   .map-ride-post {
     margin-top: 10px;
@@ -86,4 +109,48 @@
       }
     }
   }
+}
+.safety-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Lớp mờ nền */
+  z-index: 1000;
+}
+
+.safety-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  z-index: 1001;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.safety-modal-buttons {
+  margin-top: 20px;
+}
+
+.safety-modal-buttons button {
+  margin: 0 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.safety-modal-buttons button:first-child {
+  background-color: #4caf50; /* Màu xanh cho nút "Bật" */
+  color: white;
+}
+
+.safety-modal-buttons button:last-child {
+  background-color: #f44336; /* Màu đỏ cho nút "Không" */
+  color: white;
 }

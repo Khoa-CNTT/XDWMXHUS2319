@@ -23,7 +23,7 @@ const HomeView = () => {
       <Header className="header" usersProfile={users} />
       <div className="main-content">
         <div className="left-sidebar">
-          <LeftSidebar />
+          <LeftSidebar usersProfile={users} />
           <FooterHome className="footer" /> {/* Footer chuyển vào đây */}
         </div>
         <div className="center-content">

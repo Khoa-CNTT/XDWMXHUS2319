@@ -70,8 +70,8 @@ namespace Infrastructure.Data.Repositories
                      .ThenInclude(s => s.User)
                  .Include(p => p.OriginalPost)
                      .ThenInclude(op => op.User)
-                 .Where(p => !p.IsDeleted && p.Scope == ScopeEnum.Public) // Chỉ lấy bài chưa bị xóa
-                 .OrderByDescending(p => p.CreatedAt); // Sắp xếp bài mới nhất lên trước
+                 .Where(p => !p.IsDeleted && p.Scope == 0 && (p.IsApproved || p.ApprovalStatus == ApprovalStatusEnum.Approved)); // Chỉ lấy bài chưa bị xóa
+
 
             // Nếu có LastPostId, chỉ lấy bài viết cũ hơn nó
             if (lastPostId.HasValue)
@@ -79,16 +79,45 @@ namespace Infrastructure.Data.Repositories
                 var lastPost = await _context.Posts.FindAsync(lastPostId.Value);
                 if (lastPost != null)
                 {
-                    query = query.Where(p => p.CreatedAt < lastPost.CreatedAt)
-                                 .OrderByDescending(p => p.CreatedAt); // Sắp xếp lại sau khi lọc
+                    query = query.Where(p => p.CreatedAt < lastPost.CreatedAt);
                 }
             }
+            query = query.OrderByDescending(p => p.CreatedAt);
 
             return await query
                 .Take(PAGE_SIZE)
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<Post>> GetPostsByOwnerAsync(Guid userId, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
+        {
+            const int PAGE_SIZE = 10;
+            var query = _context.Posts
+               .Include(p => p.User)
+               .Include(p => p.Likes.Where(l => l.IsLike))
+               .Include(p => p.Comments.Where(c => !c.IsDeleted))
+               .Include(p => p.Shares.Where(s => !s.IsDeleted))
+               .Include(p => p.OriginalPost)
+                   .ThenInclude(op => op.User)
+               .Where(p => p.UserId == userId && !p.IsDeleted);
+
+            // Nếu có LastPostId, lấy bài viết cũ hơn bài cuối cùng đã tải
+            if (lastPostId.HasValue)
+            {
+                var lastPost = await _context.Posts.FindAsync(lastPostId.Value);
+                if (lastPost != null)
+                {
+                    query = query.Where(p => p.CreatedAt < lastPost.CreatedAt);
+                }
+            }
+
+            // Áp dụng OrderBy sau cùng để đảm bảo kiểu dữ liệu đúng
+            query = query.OrderByDescending(p => p.CreatedAt);
+
+            return await query
+                .Take(PAGE_SIZE)
+                .ToListAsync(cancellationToken);
+        }
 
         public async Task<List<Post>> GetPostsByTypeAsync(PostTypeEnum postType, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {
@@ -129,11 +158,9 @@ namespace Infrastructure.Data.Repositories
             var query = _context.Posts
          .Include(p => p.User)
          .Include(p => p.Comments.Where(c => !c.IsDeleted))
-             .ThenInclude(c => c.User)
          .Include(p => p.Likes.Where(l => l.IsLike)) // Sửa lỗi chỗ này
-             .ThenInclude(l => l.User)
+                .ThenInclude(l => l.User)
          .Include(p => p.Shares.Where(s => !s.IsDeleted))
-             .ThenInclude(s => s.User)
         .Where(p => p.Content.Contains(keyword) || p.User != null && p.User.FullName.Contains(keyword));
 
             if (fromDate.HasValue)
@@ -221,40 +248,12 @@ namespace Infrastructure.Data.Repositories
         public async Task<Post?> GetByIdOriginalPostAsync(Guid id)
         {
             return await _context.Posts
+                .Include(p => p.User)
                 .Include(p => p.OriginalPost)
-                .ThenInclude(op => op.User)
+                    .ThenInclude(op => op.User)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<List<Post>> GetPostsByOwnerAsync(Guid userId, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
-        {
-            const int PAGE_SIZE = 10;
-            var query = _context.Posts
-               .Include(p => p.User)
-               .Include(p => p.Likes.Where(l => l.IsLike))
-               .Include(p => p.Comments.Where(c => !c.IsDeleted))
-               .Include(p => p.Shares.Where(s => !s.IsDeleted))
-               .Include(p => p.OriginalPost)
-                   .ThenInclude(op => op.User)
-               .Where(p => p.UserId == userId && !p.IsDeleted);
-
-            // Nếu có LastPostId, lấy bài viết cũ hơn bài cuối cùng đã tải
-            if (lastPostId.HasValue)
-            {
-                var lastPost = await _context.Posts.FindAsync(lastPostId.Value);
-                if (lastPost != null)
-                {
-                    query = query.Where(p => p.CreatedAt < lastPost.CreatedAt);
-                }
-            }
-
-            // Áp dụng OrderBy sau cùng để đảm bảo kiểu dữ liệu đúng
-            query = query.OrderByDescending(p => p.CreatedAt);
-
-            return await query
-                .Take(PAGE_SIZE)
-                .ToListAsync(cancellationToken);
-        }
         public async Task<bool> HasUserLikedPostAsync(Guid userId, Guid postId)
         {
             return await _context.Likes

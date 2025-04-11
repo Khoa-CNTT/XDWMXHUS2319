@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+
+#Bỏ qua các folder mà chưa Img 
+DuyTanSharingSystem/wwwroot
+
 # User-specific files
 *.rsuser
 *.suo

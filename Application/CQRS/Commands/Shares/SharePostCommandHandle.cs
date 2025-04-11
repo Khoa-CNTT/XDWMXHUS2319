@@ -71,9 +71,9 @@ namespace Application.CQRS.Commands.Shares
                 await _unitOfWork.PostRepository.AddAsync(sharedPost);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-                await _notificationService.SendShareNotificationAsync(request.PostId, userId);
+/*                await _notificationService.SendShareNotificationAsync(request.PostId, userId);*/
                 return ResponseFactory.Success(
-                    Mapping.MapToResultSharePostDto(share, originalPost, user), // ⚠️ Truyền `share` thay vì `sharedPost`
+                    Mapping.MapToResultSharePostDto(sharedPost, originalPost, user), // ⚠️ Truyền `share` thay vì `sharedPost`
                     "Chia sẻ bài viết thành công",
                     200
                 );

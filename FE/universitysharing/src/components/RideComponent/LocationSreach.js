@@ -1,66 +1,75 @@
 import { useState, useCallback } from "react";
 import Select from "react-select";
 import debounce from "lodash.debounce";
+import "../../styles/SearchView/LocationSearch.scss";
 
-const LocationSearch = ({ onSelect }) => {
+const HERE_API_KEY = process.env.REACT_APP_HERE_API_KEY;
+
+const LocationSearch = ({ onSelect, bounds, placeholder, value }) => {
   const [options, setOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [inputValue, setInputValue] = useState("");
 
   const fetchLocations = async (query) => {
-    if (!query) return;
+    if (!query || query.trim() === "") {
+      setOptions([]);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const response = await fetch(`https://photon.komoot.io/api/?q=${query}`);
+      const url = `https://autosuggest.search.hereapi.com/v1/autosuggest?q=${encodeURIComponent(query)}&lang=vi&in=bbox:108.05,15.975,108.35,16.15&limit=10&apiKey=${HERE_API_KEY}`;
+      const response = await fetch(url);
       const data = await response.json();
 
-      console.log("Dữ liệu API Photon trả về:", data); // ✅ Kiểm tra toàn bộ dữ liệu trả về
+      const filteredOptions = data.items
+        ? data.items
+            .filter((item) => {
+              if (!item.position) return false;
+              const { lat, lng } = item.position;
+              return bounds.contains([lat, lng]);
+            })
+            .map((item) => ({
+              label: item.title,
+              value: [item.position.lat, item.position.lng],
+            }))
+        : [];
 
-      setOptions(
-        data.features.map((place) => {
-          const name = place.properties.name || "";
-          const street = place.properties.street || "";
-          const city = place.properties.city || "";
-          const province = place.properties.state || "";
-          // Tạo mảng chứa các phần tử có thể hiển thị, lọc bỏ các giá trị rỗng
-          const labelParts = [name, street, city, province].filter(Boolean);
-
-          return {
-            label: labelParts.join(", "), // ✅ Hiển thị đầy đủ thông tin
-            value: place.geometry.coordinates
-              ? [place.geometry.coordinates[1], place.geometry.coordinates[0]]
-              : [0, 0], // ✅ Đảm bảo có tọa độ hợp lệ
-          };
-        })
-      );
+      setOptions(filteredOptions);
     } catch (error) {
-      console.error("Lỗi khi lấy gợi ý địa điểm:", error);
+      console.error("Lỗi khi lấy gợi ý địa điểm từ HERE Maps:", error);
+      setOptions([]);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  // Tạo debounce function
-  const debouncedFetch = useCallback(
-    debounce((query) => fetchLocations(query), 300),
-    []
-  );
+  const debouncedFetch = useCallback(debounce(fetchLocations, 500), []);
+
+  const handleInputChange = (newValue, actionMeta) => {
+    setInputValue(newValue);
+    if (actionMeta.action === "input-change") {
+      debouncedFetch(newValue);
+    }
+  };
 
   return (
     <Select
-      className="search-location"
+      className={`search-location ${inputValue ? "search-location--has-value" : ""}`}
+      classNamePrefix="react-select"
       options={options}
       isLoading={isLoading}
-      onInputChange={(value, { action }) => {
-        if (
-          action === "input-change" &&
-          typeof value === "string" &&
-          value.trim() !== ""
-        ) {
-          debouncedFetch(value);
+      onInputChange={handleInputChange}
+      onChange={(selectedOption) => {
+        if (selectedOption) {
+          onSelect(selectedOption.value, selectedOption.label); // Truyền cả tọa độ và tên
+          setInputValue(selectedOption.label);
         }
       }}
-      onChange={(selectedOption) => onSelect(selectedOption.value)}
-      placeholder="Nhập vào điểm đến!"
-      noOptionsMessage={() => "Không có kết quả"}
+      placeholder={placeholder}
+      noOptionsMessage={() => "Không tìm thấy địa điểm trong Đà Nẵng"}
+      value={value ? { label: value, value: value } : null}
+      inputValue={inputValue}
     />
   );
 };

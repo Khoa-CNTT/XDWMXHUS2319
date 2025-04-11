@@ -27,21 +27,50 @@ namespace Application.Services
         {
            return await _unitOfWork.PostRepository.GetPostOwnerIdAsync(postId);
         }
-            public async Task<GetPostsResponse> GetPostsWithCursorAsync(Guid? lastPostId, CancellationToken cancellationToken)
+        public async Task<GetPostsResponse?> GetPostsWithCursorAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
+        {
+            var userId = _userContextService.UserId();
+            const int PAGE_SIZE = 10;
+
+            var posts = await _unitOfWork.PostRepository.GetAllPostsAsync(lastPostId, pageSize, cancellationToken);
+
+            // ⚠️ Nếu không có bài viết nào nữa
+            if (posts == null || posts.Count == 0)
             {
-                var userId = _userContextService.UserId();
-                const int PAGE_SIZE = 10; // 📌 Set cứng PageSize = 10
-                var posts = await _unitOfWork.PostRepository.GetAllPostsAsync(lastPostId, PAGE_SIZE, cancellationToken);
-
-            // Nếu số bài viết trả về ít hơn PAGE_SIZE => Không còn bài để tải
-                var nextCursor = posts.Count == PAGE_SIZE ? (Guid?)posts.Last().Id : null;
-
                 return new GetPostsResponse
-                    {
-                        Posts = posts.Select(post => Mapping.MapToAllPostDto(post, userId)).ToList(), // 🔥 Truyền userId vào
-                        NextCursor = nextCursor
-                    };
+                {
+                    Posts = new List<GetAllPostDto>(),
+                    NextCursor = null
+                };
             }
+
+            var nextCursor = (posts.Count == PAGE_SIZE) ? (Guid?)posts.Last().Id : null;
+
+            return new GetPostsResponse
+            {
+                Posts = posts.Select(post => Mapping.MapToAllPostDto(post, userId)).ToList(),
+                NextCursor = nextCursor
+            };
+        }
+
+        public async Task<GetPostsResponse> GetPostsByOwnerWithCursorAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
+        {
+            // 🟢 Lấy UserId từ IUserContextService (Kiểm tra nếu là phương thức)
+            var userId = _userContextService.UserId(); // Nếu lỗi, sửa thành: _userContextService.UserId();
+            const int PAGE_SIZE = 10;
+
+            // 🟢 Lấy danh sách bài viết theo chủ sở hữu
+            var posts = await _unitOfWork.PostRepository.GetPostsByOwnerAsync(userId, lastPostId, pageSize, cancellationToken);
+
+            // 🟢 Xác định nextCursor nếu còn bài viết
+            var nextCursor = (posts.Count == PAGE_SIZE) ? (Guid?)posts.Last().Id : null;
+
+            return new GetPostsResponse
+            {
+                Posts = posts.Select(post => Mapping.MapToAllPostDto(post, userId)).ToList(),
+                NextCursor = nextCursor
+            };
+        }
 
         public async Task<GetCommentsResponse> GetCommentByPostIdWithCursorAsync(Guid postId, Guid? lastCommentId, CancellationToken cancellationToken)
         {
@@ -149,23 +178,5 @@ namespace Application.Services
             }
         }
 
-        public async Task<GetPostsResponse> GetPostsByOwnerWithCursorAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
-        {
-            // 🟢 Lấy UserId từ IUserContextService (Kiểm tra nếu là phương thức)
-            var userId = _userContextService.UserId(); // Nếu lỗi, sửa thành: _userContextService.UserId();
-            const int PAGE_SIZE = 10;
-
-            // 🟢 Lấy danh sách bài viết theo chủ sở hữu
-            var posts = await _unitOfWork.PostRepository.GetPostsByOwnerAsync(userId, lastPostId, pageSize, cancellationToken);
-
-            // 🟢 Xác định nextCursor nếu còn bài viết
-            var nextCursor = (posts.Count == PAGE_SIZE) ? (Guid?)posts.Last().Id : null;
-
-            return new GetPostsResponse
-            {
-                Posts = posts.Select(post => Mapping.MapToAllPostDto(post, userId)).ToList(),
-                NextCursor = nextCursor
-            };
-        }
     }
 }

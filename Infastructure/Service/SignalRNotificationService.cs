@@ -1,9 +1,10 @@
-﻿using Application.Interface;
-using Application.Interface.Hubs;
-using Application.Services;
-using Infrastructure.Email;
-using Infrastructure.Hubs;
+using Application.DTOs.FriendShips;
+using Application.Model;
+
+using Application.Model.Events;
+
 using Microsoft.AspNetCore.SignalR;
+using MimeKit;
 
 namespace Infrastructure.Service
 {
@@ -18,15 +19,11 @@ namespace Infrastructure.Service
 
 
         }
-// sửa lại
-//         public async Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName)
-//         {
-//             var postOwnerId = await _postService.GetPostOwnerId(postId);
-//             if (postOwnerId == commenterId) return; // Không gửi nếu chủ bài viết tự bình luận
 
-//             string message = $"{commenterName} đã bình luận vào bài viết của bạn.";
-//             await _hubContext.Clients.User(postOwnerId.ToString()).SendAsync("ReceiveNotification", message);
-//         }
+         public async Task SendCommentNotificationSignalR(Guid postOwnerId, ResponseNotificationModel data)
+              {
+                 await _hubContext.Clients.User(postOwnerId.ToString()).SendAsync("ReceiveNotification", data);
+          }
 
         /// <summary>
         /// Gửi cảnh báo khẩn cấp đến tài xế qua thông báo ứng dụng và email (nếu cần)
@@ -51,25 +48,33 @@ namespace Infrastructure.Service
         }
 
 
-//         public async Task SendReplyNotificationAsync(Guid commentId, Guid responderId, string responderName)
-//         {
-//             var commentOwnerId = await _commentService.GetCommentOwnerId(commentId);
-//             if(commentOwnerId == responderId) return;
-//             string message = $"{responderName} đã bình luận vào bài viết của bạn.";
-//             await _hubContext.Clients.User(commentOwnerId.ToString()).SendAsync("ReceiveNotification", message);
-//         }
-//         public async Task SendShareNotificationAsync(Guid postId, Guid userId)
-//         {
-//             var ownerId = await _postService.GetPostOwnerId(postId);
-//             var user = await _userService.GetByIdAsync(userId);
+        public async Task SendReplyNotificationSignalR(Guid receiverId, ResponseNotificationModel data)
+        {
+            await _hubContext.Clients.User(receiverId.ToString())
+                    .SendAsync("ReceiveNotification", data);
+        }
 
-//             if (user == null || ownerId == Guid.Empty) return;
 
-//             string message = $"{user.FullName} đã chia sẻ bài viết của bạn.";
+        public async Task SendFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
+        {
+            await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", data);
+        }
 
-//             await _hubContext.Clients.User(ownerId.ToString())
-//                 .SendAsync("ReceiveNotification", message);
-//         }
+        public async Task SendAnswerFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
+        {
+            await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", data);
+        }
 
+
+        public async Task SendNewMessageSignalRAsync(SendMessageNotificationEvent sendMessageNotificationEvent)
+        {
+            await _hubContext.Clients.Group(sendMessageNotificationEvent.ReceiverId.ToString())
+                .SendAsync("ReceiveMessageNotification", new
+                {
+                    SenderId = sendMessageNotificationEvent.SenderId.ToString(),
+                    Content = sendMessageNotificationEvent.Message,
+                    MessageId = sendMessageNotificationEvent.MessageId.ToString()
+                });
+        }
     }
 }

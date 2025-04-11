@@ -1,9 +1,9 @@
-.modal-overlay {
-  position: absolute; // Để modal hiện đúng vị trí gần dấu ba chấm
-  z-index: 1000;
+.modal-postOption-overlay {
+  // position: absolute; // Để modal hiện đúng vị trí gần dấu ba chấm
+  z-index: 99999;
 }
 
-.modal-content {
+.modal-postOption-content {
   background: white;
   padding: 12px;
   border-radius: 8px;

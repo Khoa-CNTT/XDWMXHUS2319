@@ -24,12 +24,13 @@ namespace Domain.Entities
         public User? Driver { get; private set; }
         public User? Passenger { get; private set; }
         public ICollection<LocationUpdate>? LocationUpdates { get; private set; }
-        public Ride(Guid driverId, Guid passengerId, decimal? fare, int estimatedDuration, Guid ridePostId)
+        public Ride(Guid driverId, Guid passengerId, decimal? fare, int estimatedDuration, Guid ridePostId,bool isSafetyTrackingEnabled)
         {
             Id = Guid.NewGuid();
             DriverId = driverId;
             PassengerId = passengerId;
             EstimatedDuration = estimatedDuration;
+            IsSafetyTrackingEnabled = isSafetyTrackingEnabled;
             Fare = fare ?? 0;
             CreatedAt = DateTime.UtcNow;
             RidePostId = ridePostId;

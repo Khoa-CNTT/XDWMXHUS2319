@@ -57,5 +57,13 @@ namespace Application.Interface
         Task SaveDataAsync<T>(string key, T data, TimeSpan? expiry = null);
         Task<T?> GetDataAsync<T>(string key);
         Task RemoveDataAsync(string key);
+        Task<bool> IsUserOnlineAsync(string userId);
+        Task AddToSetAsync(string key, string value, TimeSpan? expiry = null);
+        Task<List<string>> GetSetAsync(string key);
+        Task RemoveFromSetAsync(string key, string value);
+        Task<long> GetListLengthAsync(string key);
+        Task<long> IncrementAsync(string key, TimeSpan? expiry = null);
+        Task<bool> IsMemberOfSetAsync(string key, string value);
+        Task<List<string>> GetKeysAsync(string pattern);
     }
 }

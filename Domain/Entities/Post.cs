@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static Domain.Common.Enums;
+using static Domain.Common.Helper;
 
 namespace Domain.Entities
 {
@@ -15,7 +16,7 @@ namespace Domain.Entities
         public string? ImageUrl { get; private set; }
         public string? VideoUrl { get; private set; }
         public PostTypeEnum PostType { get; private set; }
-        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; private set; }
         public DateTime? UpdateAt { get; private set; }
         public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
         public double? Score { get; private set; } = 0;
@@ -48,6 +49,7 @@ namespace Domain.Entities
             UserId = userId;
             Content = content;
             PostType = postType;
+            CreatedAt =DateTime.UtcNow;
             Scope = scope;
             ImageUrl = imageUrl;
             VideoUrl = videoUrl;
@@ -58,29 +60,50 @@ namespace Domain.Entities
         {
             bool isUpdated = false;
 
+            // Cập nhật nội dung nếu có thay đổi
             if (!string.IsNullOrWhiteSpace(newContent) && newContent != Content)
             {
                 Content = newContent;
                 isUpdated = true;
             }
 
-            if ((newImageUrl != null && newImageUrl != ImageUrl) || (newVideoUrl != null && newVideoUrl != VideoUrl))
+            // Cập nhật hình ảnh nếu có thay đổi (bao gồm trường hợp gán null khi truyền vào ảnh trống)
+            if (newImageUrl != null && newImageUrl != ImageUrl)
             {
-                ImageUrl = newImageUrl;
-                VideoUrl = newVideoUrl;
+                ImageUrl = newImageUrl; // Cập nhật hình ảnh nếu có thay đổi
+                isUpdated = true;
+            }
+            else if (newImageUrl == null && ImageUrl != null)  // Nếu ảnh mới là null và ảnh cũ không phải null
+            {
+                ImageUrl = null; // Gán null nếu truyền ảnh trống
                 isUpdated = true;
             }
 
+            // Cập nhật video nếu có thay đổi
+            if (newVideoUrl != null && newVideoUrl != VideoUrl)
+            {
+                VideoUrl = newVideoUrl; // Cập nhật video nếu có thay đổi
+                isUpdated = true;
+            }
+            else if (newVideoUrl == null && VideoUrl != null)  // Nếu video mới là null và video cũ không phải null
+            {
+                VideoUrl = null; // Gán null nếu truyền video trống
+                isUpdated = true;
+            }
+
+            // Cập nhật Scope nếu có thay đổi
             if (newScope.HasValue && newScope.Value != Scope)
             {
                 Scope = newScope.Value;
                 isUpdated = true;
             }
 
+            // Cập nhật thời gian nếu có thay đổi
             if (isUpdated)
-                UpdateAt = DateTime.UtcNow; // ✅ Chỉ cập nhật nếu có thay đổi
+            {
+                UpdateAt = DateTime.UtcNow; // Cập nhật thời gian chỉ khi có thay đổi
+            }
         }
-
         public void Approve()
         {
             IsApproved = true;

@@ -2,6 +2,7 @@
 ﻿using Application.CQRS.Queries.Search;
 using Application.Interface;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading;
@@ -9,6 +10,7 @@ using System.Threading;
 
 namespace DuyTanSharingSystem.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SearchController : ControllerBase
