@@ -1,9 +1,6 @@
-﻿using Application.Interface;
+﻿
 using Application.Interface.Api;
-using Application.Interface.ContextSerivce;
-using Application.Interface.Hubs;
-using Application.Model.Events;
-using static Domain.Common.Helper;
+
 
 
 namespace Application.Services
@@ -71,6 +68,30 @@ namespace Application.Services
                 await _publisher.Publish(new LikeEvent(postId, ownerId, $"{name} đã bỏ thích bài đăng của bạn vào lúc {FormatUtcToLocal(DateTime.UtcNow)}"));
             }
 
+        }
+
+        public async Task SendNotificationNewMessageAsync(Guid conversationId, Guid receiverId, string content, Guid messageId)
+        {
+            try
+            {
+                const int maxLength = 40;
+                string truncatedContent = content.Length > maxLength ? content.Substring(0, maxLength) + "..." : content;
+
+                var conversation = await _unitOfWork.ConversationRepository.GetByIdAsync(conversationId);
+                if (conversation == null) return;
+
+                var senderId = conversation.User1Id == receiverId ? conversation.User2Id : conversation.User1Id;
+                var receiver = await _unitOfWork.UserRepository.GetByIdAsync(receiverId);
+                if (receiver == null) return;
+
+                var senderName = await _unitOfWork.UserRepository.GetFullNameByIdAsync(senderId);
+                string message = $"{senderName} đã gửi cho bạn một tin nhắn: {truncatedContent}";
+                await _publisher.Publish(new SendMessageNotificationEvent( messageId,senderId, receiverId, message));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending notification: {ex.Message}");
+            }
         }
         public async Task SendNotificationUpdateLocationAsync(Guid driverId, Guid passengerId, float lat, float lng, string location, bool isEnd)
         {

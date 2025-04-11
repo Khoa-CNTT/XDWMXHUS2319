@@ -1,6 +1,9 @@
 ﻿
 
 
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+
 namespace Infrastructure.Data.Repositories
 {
     public class ConversationRepository : BaseRepository<Conversation>, IConversationRepository
@@ -26,6 +29,13 @@ namespace Infrastructure.Data.Repositories
         {
             return await _context.Conversations
                 .Where(c => c.User1Id == userId || c.User2Id == userId)
+                .ToListAsync();
+        }
+        public async Task<List<Conversation>> GetManyAsync(Expression<Func<Conversation, bool>> predicate)
+        {
+            return await _context.Conversations
+                .AsNoTracking()
+                .Where(predicate)
                 .ToListAsync();
         }
     }

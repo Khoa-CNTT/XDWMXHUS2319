@@ -67,10 +67,10 @@ namespace Infrastructure.Data.Repositories
         }
 
         public async Task<List<Message>> GetMessagesByConversationAsync(
-            Guid conversationId,
-            int page,
-            int pageSize,
-            Guid? lastMessageId = null)
+    Guid conversationId,
+    int page,
+    int pageSize,
+    Guid? lastMessageId = null)
         {
             const int MAX_PAGE_SIZE = 50;
             pageSize = Math.Min(pageSize, MAX_PAGE_SIZE);
@@ -88,16 +88,21 @@ namespace Infrastructure.Data.Repositories
                     query = query.Where(m => m.SentAt < lastMessage.SentAt);
                 }
             }
-            else
+
+            // Sắp xếp theo thứ tự mới nhất → cũ nhất
+            query = query.OrderByDescending(m => m.SentAt);
+
+            // Phân trang nếu cần
+            if (!lastMessageId.HasValue)
             {
-                // Nếu không dùng lastMessageId thì dùng kiểu page-based
                 query = query.Skip((page - 1) * pageSize);
             }
 
-            return await query
-                .OrderBy(m => m.SentAt)
-                .Take(pageSize)
-                .ToListAsync();
+            // Lấy dữ liệu rồi đảo lại thứ tự: từ cũ đến mới (hiển thị đúng)
+            var messages = await query.Take(pageSize).ToListAsync();
+            messages.Reverse(); // Để hiện từ cũ đến mới
+
+            return messages;
         }
 
     }

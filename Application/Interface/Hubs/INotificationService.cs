@@ -19,7 +19,6 @@ namespace Application.Interface.Hubs
 
         Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName);
         Task SendReplyNotificationAsync(Guid postId, Guid commentId, Guid responderId, string responderName);
-
-    }
+        Task SendNotificationNewMessageAsync(Guid conversationId, Guid receiverId, string content, Guid messageId);    }
 
 }
