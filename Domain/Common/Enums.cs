@@ -95,7 +95,10 @@ namespace Domain.Common
             NewMessage,
             NewFriendRequest,
             RideInvite,
-            SystemAlert
+            SystemAlert,
+            SendFriend,
+            AcceptFriend,
+            RejectFriend,
         }
 
     }

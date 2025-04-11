@@ -52,6 +52,8 @@ namespace Infrastructure
             services.AddScoped<IShareRepository, ShareRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
             services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
+            services.AddScoped<IFriendshipRepository, FriendshipRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
             //đăng kí cho search AI
             services.AddScoped<IDataAIService, DataAIService>();
             services.AddScoped<IApiPythonService, ApiPythonService>();

@@ -9,7 +9,9 @@ import avatarDefaut from "../../assets/AvatarDefault.png";
 
 const RightSidebar = () => {
   const dispatch = useDispatch();
-  const { friends, loading, error, activeFriend } = useSelector((state) => state.friends);
+  const { friends, loading, error, activeFriend } = useSelector(
+    (state) => state.friends
+  );
   const [openChats, setOpenChats] = useState([]);
 
   useEffect(() => {
@@ -31,11 +33,19 @@ const RightSidebar = () => {
   };
 
   if (loading) {
-    return <aside className="right-sidebar"><p>Đang tải...</p></aside>;
+    return (
+      <aside className="right-sidebar">
+        <p>Đang tải...</p>
+      </aside>
+    );
   }
 
   if (error) {
-    return <aside className="right-sidebar"><p>Lỗi: {error}</p></aside>;
+    return (
+      <aside className="right-sidebar">
+        <p>Lỗi: {error}</p>
+      </aside>
+    );
   }
 
   return (
@@ -49,7 +59,7 @@ const RightSidebar = () => {
               className={activeFriend === friend.friendId ? "active" : ""}
               onClick={() => handleFriendClick(friend.friendId)}
             >
-              <img src={avatarDefaut} alt="Avatar" />
+              <img src={friend.avatarFriend || avatarDefaut} alt="Avatar" />
               <span>{friend.fullNameFriend}</span>
             </li>
           ))}

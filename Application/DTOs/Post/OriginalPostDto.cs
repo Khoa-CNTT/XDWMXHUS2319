@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Domain.Common.Enums;
 
 namespace Application.DTOs.Post
 {
@@ -18,15 +19,17 @@ namespace Application.DTOs.Post
         public string? VideoUrl { get; set; }
         public UserPostDto Author { get; set; } = null!;
         public DateTime CreateAt { get; set; }
+        public PostTypeEnum PostType { get; set; }
+        public ScopeEnum Scope { get; set; }
 
-/*      public int CommentCount { get; set; }
-        public List<CommentDto> Comments { get; set; } = new();
+        /*      public int CommentCount { get; set; }
+                public List<CommentDto> Comments { get; set; } = new();
 
-        public int LikeCount { get; set; }
-        public List<UserPostDto> LikedUsers { get; set; } = new();
+                public int LikeCount { get; set; }
+                public List<UserPostDto> LikedUsers { get; set; } = new();
 
-        public int ShareCount { get; set; }
-        public List<UserPostDto> SharedUsers { get; set; } = new();*/
+                public int ShareCount { get; set; }
+                public List<UserPostDto> SharedUsers { get; set; } = new();*/
         public OriginalPostDto() { }
         public OriginalPostDto(Domain.Entities.Post post)
         {
@@ -36,6 +39,8 @@ namespace Application.DTOs.Post
             VideoUrl = post.VideoUrl != null ? $"{Constaint.baseUrl}{post.VideoUrl}" : null; // ✅ Thêm Base URL
 
             CreateAt = post.CreatedAt;
+            PostType = post.PostType;
+            Scope = post.Scope;
             if (post.User != null)
             {
                 Author = new UserPostDto(post.User);

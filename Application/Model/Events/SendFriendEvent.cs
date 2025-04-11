@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Application.DTOs.FriendShips;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace Application.Model.Events
 {
-    public class ReplyCommentEvent : INotification
+    public class SendFriendEvent : INotification
     {
-        public Guid ReceiverId { get; }
+        public Guid FriendId { get; }
         public ResponseNotificationModel Data { get; }
 
-        public ReplyCommentEvent(Guid receiverId, ResponseNotificationModel data)
+        public SendFriendEvent(Guid friendId, ResponseNotificationModel data)
         {
-            ReceiverId = receiverId;
+            FriendId = friendId;
             Data = data;
         }
     }

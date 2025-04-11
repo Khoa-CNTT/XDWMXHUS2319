@@ -18,9 +18,7 @@ import CommentModal from "../CommentModal";
 import ShareModal from "../shareModal";
 import SharedPost from "./SharingPost";
 
-
 import CommentModalNoImg from "../CommentModal-NoImge/CommentNoImage";
-
 
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -200,7 +198,7 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     const imageCount = post.imageUrl ? post.imageUrl.split(",").length : 0;
     const hasVideo = !!post.videoUrl;
     const totalMedia = imageCount + (hasVideo ? 1 : 0);
-  
+
     let className = "media-container";
     switch (totalMedia) {
       case 1:
@@ -219,53 +217,57 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     return className;
   };
 
-// Trong AllPosts
-const renderMediaItems = (post) => {
-  const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
-  const hasVideo = !!post.videoUrl;
-  const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
-// Nếu không có ảnh lẫn video, không render media-container
-if (totalMedia === 0) return null;
-  return (
-    <div className={getMediaContainerClass(post)}>
-      {imageUrls.map((url, index) => {
-        const fullUrl = url.startsWith("http")
-          ? url.trim()
-          : `https://localhost:7053${url.trim()}`;
-        // Hiển thị overlay trên ảnh thứ 2 nếu có > 2 media, hoặc trên ảnh đầu tiên nếu có video và > 1 ảnh
-        const showOverlay = totalMedia > 2 && index === (hasVideo ? 0 : 1);
+  // Trong AllPosts
+  const renderMediaItems = (post) => {
+    const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
+    const hasVideo = !!post.videoUrl;
+    const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
+    // Nếu không có ảnh lẫn video, không render media-container
+    if (totalMedia === 0) return null;
+    return (
+      <div className={getMediaContainerClass(post)}>
+        {imageUrls.map((url, index) => {
+          const fullUrl = url.startsWith("http")
+            ? url.trim()
+            : `https://localhost:7053${url.trim()}`;
+          // Hiển thị overlay trên ảnh thứ 2 nếu có > 2 media, hoặc trên ảnh đầu tiên nếu có video và > 1 ảnh
+          const showOverlay = totalMedia > 2 && index === (hasVideo ? 0 : 1);
 
-        // Hiển thị tối đa 1 ảnh nếu có video, hoặc 2 ảnh nếu không có video
-        if (totalMedia > 2 && index > (hasVideo ? 0 : 1)) return null;
-        if (hasVideo && index > 0) return null; // Chỉ hiển thị 1 ảnh nếu có video
+          // Hiển thị tối đa 1 ảnh nếu có video, hoặc 2 ảnh nếu không có video
+          if (totalMedia > 2 && index > (hasVideo ? 0 : 1)) return null;
+          if (hasVideo && index > 0) return null; // Chỉ hiển thị 1 ảnh nếu có video
 
-        return (
-          <div className="media-item" key={index}>
-            <img
-              src={fullUrl}
-              alt={`Post media ${index}`}
-              onClick={() => handleOpenCommentModal(post, index)}
-            />
-            {showOverlay && (
-              <div className="media-overlay" onClick={() => handleOpenCommentModal(post, index)}>+{totalMedia - (hasVideo ? 1 : 2)}</div>
-
-            )}
+          return (
+            <div className="media-item" key={index}>
+              <img
+                src={fullUrl}
+                alt={`Post media ${index}`}
+                onClick={() => handleOpenCommentModal(post, index)}
+              />
+              {showOverlay && (
+                <div
+                  className="media-overlay"
+                  onClick={() => handleOpenCommentModal(post, index)}
+                >
+                  +{totalMedia - (hasVideo ? 1 : 2)}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {hasVideo && (
+          <div className="media-item video-item">
+            <video
+              controls
+              onClick={() => handleOpenCommentModal(post, imageUrls.length)}
+            >
+              <source src={post.videoUrl} type="video/mp4" />
+            </video>
           </div>
-        );
-      })}
-      {hasVideo && (
-        <div className="media-item video-item">
-          <video
-            controls
-            onClick={() => handleOpenCommentModal(post, imageUrls.length)}
-          >
-            <source src={post.videoUrl} type="video/mp4" />
-          </video>
-        </div>
-      )}
-    </div>
-  );
-};
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="all-posts">
@@ -433,21 +435,21 @@ if (totalMedia === 0) return null;
         />
       )}
 
-{selectedPost && 
-  location.pathname.includes(`/post/${selectedPost.id}`) && 
-  (selectedPost.imageUrl ? (
-    <CommentModal
-      post={selectedPost}
-      onClose={handleCloseCommentModal}
-      usersProfile={usersProfile}
-    />
-  ) : (
-    <CommentModalNoImg
-      post={selectedPost}
-      onClose={handleCloseCommentModal}
-      usersProfile={usersProfile}
-    />
-  ))}
+      {selectedPost &&
+        location.pathname.includes(`/post/${selectedPost.id}`) &&
+        (selectedPost.imageUrl ? (
+          <CommentModal
+            post={selectedPost}
+            onClose={handleCloseCommentModal}
+            usersProfile={usersProfile}
+          />
+        ) : (
+          <CommentModalNoImg
+            post={selectedPost}
+            onClose={handleCloseCommentModal}
+            usersProfile={usersProfile}
+          />
+        ))}
 
       {selectedPostToShare && (
         <ShareModal
@@ -482,7 +484,5 @@ if (totalMedia === 0) return null;
     </div>
   );
 };
-
-
 
 export default AllPosts;

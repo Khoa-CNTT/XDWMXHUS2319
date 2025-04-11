@@ -1,4 +1,6 @@
 ﻿
+using Application.DTOs.FriendShips;
+using Application.Model;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Infrastructure.Service
@@ -15,9 +17,9 @@ namespace Infrastructure.Service
 
         }
 
-         public async Task SendCommentNotificationSignalR(Guid postId, Guid postOwnerId, Guid commenterId, string message)
+         public async Task SendCommentNotificationSignalR(Guid postOwnerId, ResponseNotificationModel data)
               {
-                 await _hubContext.Clients.User(postOwnerId.ToString()).SendAsync("ReceiveNotification", message);
+                 await _hubContext.Clients.User(postOwnerId.ToString()).SendAsync("ReceiveNotification", data);
           }
 
         /// <summary>
@@ -43,22 +45,33 @@ namespace Infrastructure.Service
         }
 
 
-        public async Task SendReplyNotificationSignalR(Guid postId, Guid commentOwnerId, Guid responderId, string message)
+        public async Task SendReplyNotificationSignalR(Guid receiverId, ResponseNotificationModel data)
         {
-             await _hubContext.Clients.User(commentOwnerId.ToString()).SendAsync("ReceiveNotification", message);
+            await _hubContext.Clients.User(receiverId.ToString())
+                    .SendAsync("ReceiveNotification", data);
         }
-//         public async Task SendShareNotificationAsync(Guid postId, Guid userId)
- //        {
-//             var ownerId = await _postService.GetPostOwnerId(postId);
-//             var user = await _userService.GetByIdAsync(userId);
 
-//             if (user == null || ownerId == Guid.Empty) return;
+        public async Task SendFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
+        {
+            await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", data);
+        }
 
-//             string message = $"{user.FullName} đã chia sẻ bài viết của bạn.";
+        public async Task SendAnswerFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
+        {
+            await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", data);
+        }
+        //         public async Task SendShareNotificationAsync(Guid postId, Guid userId)
+        //        {
+        //             var ownerId = await _postService.GetPostOwnerId(postId);
+        //             var user = await _userService.GetByIdAsync(userId);
 
-//             await _hubContext.Clients.User(ownerId.ToString())
-//                 .SendAsync("ReceiveNotification", message);
-//         }
+        //             if (user == null || ownerId == Guid.Empty) return;
+
+        //             string message = $"{user.FullName} đã chia sẻ bài viết của bạn.";
+
+        //             await _hubContext.Clients.User(ownerId.ToString())
+        //                 .SendAsync("ReceiveNotification", message);
+        //         }
 
     }
 }

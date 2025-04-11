@@ -51,8 +51,18 @@ namespace Domain.Entities
         {
             Status = FriendshipStatusEnum.Removed;
         }
+        public void Reactivate()
+        {
+            if (Status == FriendshipStatusEnum.Removed)
+            {
+                Status = FriendshipStatusEnum.Pending;
+                CreatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                throw new InvalidOperationException("Không thể kích hoạt lại lời mời kết bạn không ở trạng thái Removed.");
+            }
+        }
     }
-
-  
 }
 
