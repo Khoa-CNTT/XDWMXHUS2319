@@ -1,7 +1,10 @@
-﻿
 using Application.DTOs.FriendShips;
 using Application.Model;
+
+using Application.Model.Events;
+
 using Microsoft.AspNetCore.SignalR;
+using MimeKit;
 
 namespace Infrastructure.Service
 {
@@ -51,6 +54,7 @@ namespace Infrastructure.Service
                     .SendAsync("ReceiveNotification", data);
         }
 
+
         public async Task SendFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
         {
             await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", data);
@@ -60,18 +64,17 @@ namespace Infrastructure.Service
         {
             await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", data);
         }
-        //         public async Task SendShareNotificationAsync(Guid postId, Guid userId)
-        //        {
-        //             var ownerId = await _postService.GetPostOwnerId(postId);
-        //             var user = await _userService.GetByIdAsync(userId);
 
-        //             if (user == null || ownerId == Guid.Empty) return;
 
-        //             string message = $"{user.FullName} đã chia sẻ bài viết của bạn.";
-
-        //             await _hubContext.Clients.User(ownerId.ToString())
-        //                 .SendAsync("ReceiveNotification", message);
-        //         }
-
+        public async Task SendNewMessageSignalRAsync(SendMessageNotificationEvent sendMessageNotificationEvent)
+        {
+            await _hubContext.Clients.Group(sendMessageNotificationEvent.ReceiverId.ToString())
+                .SendAsync("ReceiveMessageNotification", new
+                {
+                    SenderId = sendMessageNotificationEvent.SenderId.ToString(),
+                    Content = sendMessageNotificationEvent.Message,
+                    MessageId = sendMessageNotificationEvent.MessageId.ToString()
+                });
+        }
     }
 }

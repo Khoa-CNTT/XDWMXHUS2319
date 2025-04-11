@@ -35,8 +35,11 @@ namespace Infrastructure.Data.UnitOfWork
 
             IConversationRepository conversationRepository,
             IMessageRepository messageRepository,
+
             IFriendshipRepository friendshipRepository,
             INotificationRepository notificationRepository
+
+
             )
         {
             _context = context;
@@ -60,7 +63,9 @@ namespace Infrastructure.Data.UnitOfWork
 
             ConversationRepository = conversationRepository;
             MessageRepository = messageRepository;
+
             FriendshipRepository = friendshipRepository;
+            
             NotificationRepository = notificationRepository;
         }
         public IUserRepository UserRepository { get; }
@@ -83,7 +88,9 @@ namespace Infrastructure.Data.UnitOfWork
 
         public IConversationRepository ConversationRepository { get; }
         public IMessageRepository MessageRepository { get; }
+
         public IFriendshipRepository FriendshipRepository { get; }
+
         public INotificationRepository NotificationRepository { get; }
         public async Task<int> SaveChangesAsync()
         => await _context.SaveChangesAsync();

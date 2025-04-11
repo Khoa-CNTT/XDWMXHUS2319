@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+
+﻿using System;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static Domain.Common.Enums;
+
 
 namespace Infrastructure.Data.Repositories
 {
@@ -18,6 +20,7 @@ namespace Infrastructure.Data.Repositories
         {
             throw new NotImplementedException();
         }
+
         public async Task DeletePendingFriendRequestNotificationAsync(Guid senderId, Guid receiverId)
         {
             var notification = await _context.Notifications

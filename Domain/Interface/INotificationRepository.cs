@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Domain.Common.Enums;
 
 namespace Domain.Interface
@@ -12,4 +7,5 @@ namespace Domain.Interface
         Task DeletePendingFriendRequestNotificationAsync(Guid senderId, Guid receiverId);
         Task DeleteAcceptedFriendRequestNotificationAsync(Guid userId, Guid friendId);
     }
+
 }

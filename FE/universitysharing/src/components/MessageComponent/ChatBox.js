@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   FaTimes,
   FaEllipsisV,
@@ -22,6 +22,7 @@ import {
 import { jwtDecode } from "jwt-decode";
 
 const ChatBox = ({ friendId, onClose }) => {
+  const dispatch = useDispatch();
   const { friends } = useSelector((state) => state.friends);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -29,11 +30,16 @@ const ChatBox = ({ friendId, onClose }) => {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isUserTyping, setIsUserTyping] = useState(false);
   const [isFriendTyping, setIsFriendTyping] = useState(false);
-  const messagesEndRef = useRef(null);
-  const messagesContainerRef = useRef(null);
   const [conversationId, setConversationId] = useState(null);
   const [nextCursor, setNextCursor] = useState(null);
   const [hasMore, setHasMore] = useState(true);
+  const [isNearBottom, setIsNearBottom] = useState(true);
+  const processedMessageIds = useRef(new Set()); // Theo dõi ID tin nhắn đã xử lý
+
+  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const initialLoad = useRef(true);
+  const typingTimeoutRef = useRef(null);
 
   const activeFriend = friends.find((friend) => friend.friendId === friendId);
   const token = localStorage.getItem("token");
@@ -41,67 +47,95 @@ const ChatBox = ({ friendId, onClose }) => {
     ? jwtDecode(token)["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]
     : null;
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Scroll to bottom
+  const scrollToBottom = useCallback((behavior = "smooth") => {
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior, block: "end" });
+    });
+  }, []);
+
+  // Check if near bottom
+  const checkIfNearBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    return scrollHeight - scrollTop - clientHeight < 100;
   };
 
-  const loadMoreMessages = async () => {
-    if (!hasMore || !conversationId) return;
+  // Load more messages
+  const loadMoreMessages = useCallback(async () => {
+    if (!hasMore || !nextCursor || !conversationId) return;
+
     try {
-      const data = await getMessages(conversationId, nextCursor);
+      const container = messagesContainerRef.current;
+      const prevScrollHeight = container.scrollHeight;
+
+      const data = await dispatch(getMessages(conversationId, nextCursor));
       if (data.messages.length === 0) {
         setHasMore(false);
-      } else {
-        setMessages((prev) => {
-          const newMessages = data.messages.reverse().filter(
-            (msg) => !prev.some((existing) => existing.id === msg.id)
-          );
-          return [...newMessages, ...prev];
-        });
-        setNextCursor(data.nextCursor);
+        return;
       }
-    } catch (error) {
-      console.error("Lỗi khi tải thêm tin nhắn:", error);
-    }
-  };
 
+      setMessages((prev) => {
+        const newMessages = data.messages
+          .reverse()
+          .filter((msg) => !processedMessageIds.current.has(msg.id));
+        newMessages.forEach((msg) => processedMessageIds.current.add(msg.id));
+        return [...newMessages, ...prev];
+      });
+
+      setNextCursor(data.nextCursor || null);
+
+      requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight - prevScrollHeight;
+      });
+    } catch (error) {
+      console.error("Error loading more messages:", error);
+    }
+  }, [conversationId, nextCursor, hasMore, dispatch]);
+
+  // Initialize chat and SignalR
   useEffect(() => {
     if (!token || !userId) {
-      console.error("Không có token hoặc userId");
+      console.error("No token or userId available");
       return;
     }
 
     const initializeChat = async () => {
       try {
-        const conversation = await getConversation(friendId);
+        const conversation = await dispatch(getConversation(friendId));
         setConversationId(conversation.id);
 
-        const history = await getMessages(conversation.id);
-        setMessages(history.messages.reverse() || []);
-        setNextCursor(history.nextCursor);
-        setHasMore(history.messages.length > 0);
-        scrollToBottom();
+        const history = await dispatch(getMessages(conversation.id));
+        const initialMessages = history.messages || [];
+        initialMessages.forEach((msg) => processedMessageIds.current.add(msg.id));
+        setMessages(initialMessages);
+        setNextCursor(history.nextCursor || null);
+        setHasMore(!!history.nextCursor);
+
+        setTimeout(() => {
+          scrollToBottom("auto");
+          initialLoad.current = false;
+        }, 100);
 
         await signalRService.startConnection(token);
         await signalRService.joinConversation(conversation.id.toString());
 
+        // Handle incoming messages
         signalRService.onReceiveMessage((message) => {
-          console.log("Received message:", message);
-          setMessages((prev) => {
-            // Chỉ thêm nếu tin nhắn chưa tồn tại và không phải do mình gửi
-            if (!prev.some((msg) => msg.id === message.id) && message.senderId !== userId) {
-              return [...prev, message];
-            }
-            return prev;
-          });
-          if (message.senderId !== userId) {
-            scrollToBottom();
-            console.log(`Thông báo: Bạn có tin nhắn mới từ ${activeFriend?.fullNameFriend}: ${message.content}`);
+          if (processedMessageIds.current.has(message.id)) {
+            console.log(`Bỏ qua tin nhắn lặp: ${message.id}`);
+            return;
           }
+
+          processedMessageIds.current.add(message.id);
+          setMessages((prev) => [...prev, message]);
+
+          
         });
 
+        // Handle message delivered
         signalRService.onMessageDelivered((messageId) => {
-          console.log("Message delivered:", messageId);
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === messageId ? { ...msg, status: "Delivered", deliveredAt: new Date() } : msg
@@ -109,40 +143,75 @@ const ChatBox = ({ friendId, onClose }) => {
           );
         });
 
+        // Handle message seen
         signalRService.onMessageSeen((messageId) => {
-          setTimeout(() => {
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === messageId ? { ...msg, status: "Seen", seenAt: new Date() } : msg
-              )
-            );
-          }, 1000); // 1 second delay
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId ? { ...msg, status: "Seen", seenAt: new Date() } : msg
+            )
+          );
+        });
+
+        // Handle typing indicator (nếu BE hỗ trợ)
+        signalRService.onUserTyping((typingUserId) => {
+          if (typingUserId === friendId) {
+            setIsFriendTyping(true);
+            clearTimeout(typingTimeoutRef.current);
+            typingTimeoutRef.current = setTimeout(() => setIsFriendTyping(false), 2000);
+          }
         });
       } catch (error) {
-        console.error("Lỗi khi khởi tạo chat:", error);
+        console.error("Error initializing chat:", error);
       }
     };
 
     initializeChat();
 
     return () => {
-      if (conversationId) signalRService.leaveConversation(conversationId.toString());
+      if (conversationId) {
+        signalRService.leaveConversation(conversationId.toString());
+        signalRService.off("ReceiveMessage");
+        signalRService.off("MessageDelivered");
+        signalRService.off("MessageSeen");
+        signalRService.off("UserTyping");
+      }
     };
-  }, [friendId, token, userId, activeFriend]);
+  }, [friendId, token, userId, dispatch, scrollToBottom]);
 
+  // Auto-scroll on new messages
+  useEffect(() => {
+    if (!initialLoad.current && isNearBottom) {
+      scrollToBottom();
+    }
+  }, [messages, scrollToBottom]);
+
+  // Handle scroll events
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsNearBottom(checkIfNearBottom());
+      const container = messagesContainerRef.current;
+      if (container?.scrollTop === 0 && hasMore) {
+        loadMoreMessages();
+      }
+    };
+
+    const container = messagesContainerRef.current;
+    container?.addEventListener("scroll", handleScroll);
+    return () => container?.removeEventListener("scroll", handleScroll);
+  }, [hasMore, loadMoreMessages]);
+
+  // Mark unseen messages as seen
   useEffect(() => {
     const markUnseenMessages = async () => {
-      // Find the last unseen message from this friend
-      const lastUnseenMessage = messages
-        .filter(msg => msg.senderId === friendId && msg.status !== "Seen")
-        .pop();
-  
-      if (lastUnseenMessage && conversationId) {
+      const unseenMessages = messages.filter(
+        (msg) => msg.status !== "Seen" && msg.senderId !== userId
+      );
+      for (const msg of unseenMessages) {
         try {
-          await markMessageAsSeen(lastUnseenMessage.id, conversationId);
-          await signalRService.markMessageAsSeen(conversationId.toString(), lastUnseenMessage.id);
+          await dispatch(markMessageAsSeen(msg.id.toString(), conversationId));
+          await signalRService.markMessageAsSeen(conversationId.toString(), msg.id.toString());
         } catch (error) {
-          console.error("Lỗi khi đánh dấu tin nhắn đã đọc:", error);
+          console.error("Error marking message as seen:", error);
         }
       }
     };
@@ -150,97 +219,49 @@ const ChatBox = ({ friendId, onClose }) => {
     if (conversationId && messages.length > 0) {
       markUnseenMessages();
     }
-  }, [messages, conversationId, friendId]);
+  }, [messages, conversationId, userId, dispatch]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const container = messagesContainerRef.current;
-      if (container && container.scrollTop === 0 && hasMore) {
-        loadMoreMessages();
-      }
-    };
-
-    const container = messagesContainerRef.current;
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener("scroll", handleScroll);
-      }
-    };
-  }, [hasMore, conversationId, nextCursor]);
-
+  // Send message handler
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (newMessage.trim() === "") return;
+    if (!newMessage.trim()) return;
 
-    const messageDto = {
-      user2Id: friendId,
-      content: newMessage,
-    };
-
+    const messageDto = { user2Id: friendId, content: newMessage };
     try {
-      const sentMessage = await sendMessage(messageDto);
-      setMessages((prev) => {
-        if (!prev.some((msg) => msg.id === sentMessage.id)) {
-          return [...prev, sentMessage];
-        }
-        return prev;
-      });
+      const sentMessage = await dispatch(sendMessage(messageDto));
+      if (!processedMessageIds.current.has(sentMessage.id)) {
+        processedMessageIds.current.add(sentMessage.id);
+        setMessages((prev) => [...prev, sentMessage]);
+      }
       setConversationId(sentMessage.conversationId);
       await signalRService.sendMessage(sentMessage.conversationId.toString(), sentMessage);
       setNewMessage("");
-      scrollToBottom();
-    } catch (error) {
-      console.error("Lỗi khi gửi tin nhắn:", error);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage(e);
       setIsUserTyping(false);
+    } catch (error) {
+      console.error("Error sending message:", error);
     }
   };
 
+  // Typing handlers
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
-    if (e.target.value && isInputFocused) {
-      setIsUserTyping(true);
-    } else {
-      setIsUserTyping(false);
+    const isTyping = e.target.value.trim() && isInputFocused;
+    setIsUserTyping(isTyping);
+
+    if (conversationId && isTyping) {
+      signalRService.sendTyping(conversationId.toString());
     }
   };
 
-  const handleFocus = () => {
-    setIsInputFocused(true);
-    if (newMessage.trim()) setIsUserTyping(true);
-  };
-
-  const handleBlur = () => {
-    setIsInputFocused(false);
-    setIsUserTyping(false);
-  };
-
-  const getMessageStatus = (message, index) => {
+  const getMessageStatus = (message) => {
     if (message.senderId !== userId) return null;
-    
-    // Only show status on the last message you sent
-    const isLastMessage = index === messages.length - 1 || 
-      messages[index + 1]?.senderId !== userId;
-  
-    if (!isLastMessage) return null;
-  
     switch (message.status) {
       case "Sent":
-        return <span className="status sent">✓<span className="seen-text">Đã gửi</span></span>;
+        return <span className="status sent">✓</span>;
       case "Delivered":
-        return <span className="status delivered">✓✓<span className="seen-text">Đã nhận</span></span>;
+        return <span className="status delivered">✓✓</span>;
       case "Seen":
-        return <span className="status seen">✓✓ <span className="seen-text">Đã xem</span></span>;
+        return <span className="status seen">Đã xem</span>;
       default:
         return null;
     }
@@ -274,7 +295,7 @@ const ChatBox = ({ friendId, onClose }) => {
       {!isMinimized && (
         <>
           <div className="chat-messages" ref={messagesContainerRef}>
-          {messages.map((message, index) => (
+            {messages.map((message) => (
               <div
                 key={message.id}
                 className={`message ${message.senderId === userId ? "me" : "them"}`}
@@ -287,7 +308,7 @@ const ChatBox = ({ friendId, onClose }) => {
                       minute: "2-digit",
                     })}
                   </span>
-                  {getMessageStatus(message, index)}
+                  {getMessageStatus(message)}
                 </div>
               </div>
             ))}
@@ -309,7 +330,7 @@ const ChatBox = ({ friendId, onClose }) => {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} style={{ float: "left", clear: "both" }} />
           </div>
 
           <form className="message-input" onSubmit={handleSendMessage}>
@@ -320,9 +341,17 @@ const ChatBox = ({ friendId, onClose }) => {
             <textarea
               value={newMessage}
               onChange={handleTyping}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyPress}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => {
+                setIsInputFocused(false);
+                setIsUserTyping(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage(e);
+                }
+              }}
               placeholder="~/Type a message..."
               rows="1"
             />

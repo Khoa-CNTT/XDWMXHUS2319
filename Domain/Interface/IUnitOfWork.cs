@@ -28,7 +28,9 @@ namespace Domain.Interface
 
         IConversationRepository ConversationRepository { get; }
         IMessageRepository MessageRepository { get; }
+      
         IFriendshipRepository FriendshipRepository { get; }
+
         INotificationRepository NotificationRepository { get; }
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync(); // ✅ Bắt đầu giao dịch

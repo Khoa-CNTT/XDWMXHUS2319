@@ -16,5 +16,6 @@ namespace Domain.Interface
             int page,
             int pageSize,
             Guid? lastMessageId = null);
+        //AddRangeAsync
     }
 }

@@ -52,6 +52,7 @@ namespace Domain.Entities
         public void UpdateSeenAt(DateTime? seenAt)
         {
             SeenAt = seenAt;
+            IsSeen = true;
         }
         public void UpdateSentAt(DateTime sentAt)
         {

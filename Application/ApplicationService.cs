@@ -1,19 +1,4 @@
-﻿using Application.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using System.Text;
-using Application.CQRS.Commands.Users;
-using Application.BackgroundServices;
-using Application.Provider;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Domain.Common;
-using Application.Interface.Hubs;
-using Application.Interface.SearchAI;
-
-
-
+﻿
 namespace Application
 {
     public static class ApplicationService
@@ -52,6 +37,7 @@ namespace Application
             //services.AddHostedService<GpsMonitorService>();
             //services.AddHostedService<LikeCommentEventProcessor>();
             //services.AddHostedService<TrustScoreBackgroundService>();
+            services.AddHostedService<MessageProcessingService>();
             //đăng kí hub
             services.AddScoped<INotificationService, NotificationService>();
             // Đăng ký Auth Services

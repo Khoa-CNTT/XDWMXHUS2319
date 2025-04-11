@@ -20,3 +20,6 @@ global using Infrastructure.Service;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using StackExchange.Redis;
+global using Application.DTOs.Message;
+global using Microsoft.AspNetCore.SignalR;
+global using static Domain.Common.Enums;

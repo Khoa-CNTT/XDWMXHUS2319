@@ -48,6 +48,7 @@ namespace Infrastructure
             services.AddScoped<IRatingRepository, RatingRepository>();
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
 
             services.AddScoped<IShareRepository, ShareRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
