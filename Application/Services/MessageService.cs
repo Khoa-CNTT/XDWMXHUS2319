@@ -87,11 +87,7 @@ namespace Application.Services
             return conversationDtos;
         }
 
-        public async Task<MessageListDto> GetMessagesAsync(
-                Guid conversationId,
-                Guid userId,
-                Guid? lastMessageId = null,
-                int pageSize = 20)
+        public async Task<MessageListDto> GetMessagesAsync(Guid conversationId,Guid userId,Guid? lastMessageId = null,int pageSize = 10)
         {
             var messages = await _unitOfWork.MessageRepository
                 .GetMessagesByConversationAsync(conversationId, 1, pageSize, lastMessageId);

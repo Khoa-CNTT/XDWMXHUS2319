@@ -1,8 +1,4 @@
-﻿using Application.DTOs.Message;
-using Microsoft.AspNetCore.SignalR;
-using static Domain.Common.Enums;
-
-
+﻿
 namespace Infrastructure.Service
 {
     public class ChatService : IChatService
@@ -41,7 +37,7 @@ namespace Infrastructure.Service
             if (message != null && message.Status != MessageStatus.Seen)
             {
                 message.UpdateStatus(MessageStatus.Seen);
-                message.UpdateSentAt(DateTime.UtcNow);
+                message.UpdateSeenAt(DateTime.UtcNow);
                 await _unitOfWork.SaveChangesAsync();
             }
 
