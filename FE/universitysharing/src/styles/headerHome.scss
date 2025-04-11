@@ -13,12 +13,10 @@
   .logoWeb {
     cursor: pointer;
     .logowebsite {
-
       max-width: 150px;
 
       height: 40px;
       object-fit: contain;
-
     }
   }
 
@@ -26,7 +24,6 @@
     flex: 1;
     max-width: 600px;
     margin: 0 20px;
-
 
     input[type="text"] {
       width: 29rem;
@@ -36,40 +33,39 @@
       margin-left: 10px;
       font-size: 1rem;
 
-    .search-form {
-      width: 100%;
-
-    }
-
-    .search-container {
-      position: relative;
-      display: flex;
-      align-items: center;
-
-      .search-icon {
-        position: absolute;
-        left: 12px;
-        color: #65676b;
+      .search-form {
+        width: 100%;
       }
 
-      .search-input {
-        width: 100%;
-        padding: 10px 12px 10px 40px;
-        border-radius: 20px;
-        border: none;
-        background-color: #f0f2f5;
-        font-size: 14px;
-        outline: none;
-        transition: all 0.3s ease;
+      .search-container {
+        position: relative;
+        display: flex;
+        align-items: center;
 
-        &:focus {
-          background-color: #e4e6eb;
-          box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+        .search-icon {
+          position: absolute;
+          left: 12px;
+          color: #65676b;
+        }
+
+        .search-input {
+          width: 100%;
+          padding: 10px 12px 10px 40px;
+          border-radius: 20px;
+          border: none;
+          background-color: #f0f2f5;
+          font-size: 14px;
+          outline: none;
+          transition: all 0.3s ease;
+
+          &:focus {
+            background-color: #e4e6eb;
+            box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+          }
         }
       }
     }
   }
-
   .rightHeader {
     display: flex;
     align-items: center;
@@ -95,7 +91,7 @@
 
       &.active {
         color: #1877f2;
-        
+
         .indicator {
           position: absolute;
           bottom: 4px;
@@ -275,7 +271,6 @@
     }
   }
 }
-
 
 // scss postinput
 .post-input {
