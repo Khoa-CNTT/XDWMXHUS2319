@@ -58,5 +58,26 @@ namespace DuyTanSharingSystem.Controllers
             var response = await _mediator.Send(query);
             return Ok(response);
         }
+        [HttpGet("passenger")]
+        public async Task<IActionResult> GetRidePostsByPassenger([FromQuery] GetRidePostsByPassengerIdQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        [HttpGet("driver")]
+        public async Task<IActionResult> GetRidePostsByDriver([FromQuery] GetRidePostsByDriverIdQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        [HttpGet("user/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetRidesByUserId(Guid userId, [FromQuery] Guid? nextCursor = null, [FromQuery] int? pageSize = null)
+        {
+            var query = new GetRidesByUserIdQueries(userId, nextCursor, pageSize);
+            var result = await _mediator.Send(query);
+
+            return Ok(result); // ResponseModel đã có format bạn cần
+        }
     }
 }

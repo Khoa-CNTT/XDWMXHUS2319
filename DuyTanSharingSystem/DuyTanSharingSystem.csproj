@@ -19,7 +19,10 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\images\posts\" />
+    <Folder Include="wwwroot\images\profile\avatar\" />
+    <Folder Include="wwwroot\images\profile\background\" />
     <Folder Include="wwwroot\videos\" />
+    <Folder Include="wwwroot\videos\posts\" />
   </ItemGroup>
 
 </Project>

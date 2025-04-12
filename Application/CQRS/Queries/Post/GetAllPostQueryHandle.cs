@@ -17,13 +17,11 @@ namespace Application.CQRS.Queries.Posts
     public class GetAllPostQueryHandle : IRequestHandler<GetAllPostQuery, ResponseModel<GetPostsResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<GetAllPostQueryHandle> _logger;
         private readonly IPostService _postService;
         private readonly IUserContextService _userContextService;
-        public GetAllPostQueryHandle(IUnitOfWork unitOfWork, ILogger<GetAllPostQueryHandle> logger, IPostService postService, IUserContextService userContextService)
+        public GetAllPostQueryHandle(IUnitOfWork unitOfWork, IPostService postService, IUserContextService userContextService)
         {
             _unitOfWork = unitOfWork;
-            _logger = logger;
             _postService = postService;
             _userContextService = userContextService;
         }
@@ -32,11 +30,10 @@ namespace Application.CQRS.Queries.Posts
         {
             var userId = _userContextService.UserId();
 
-            var postsResponse = await _postService.GetPostsWithCursorAsync(request.LastPostId, cancellationToken);
+            var postsResponse = await _postService.GetPostsWithCursorAsync(request.LastPostId, request.PageSize, cancellationToken);
 
-            if (postsResponse == null || !postsResponse.Posts.Any())
+            if (postsResponse?.Posts == null || !postsResponse.Posts.Any())
             {
-                _logger.LogInformation("Không còn bài viết nào để load");
                 return ResponseFactory.Success<GetPostsResponse>("Không còn bài viết nào để load", 200);
             }
 

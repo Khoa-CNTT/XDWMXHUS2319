@@ -1,14 +1,33 @@
+// CreatePostModal.scss
+.create-post-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 3;
+}
+
 .create-post-modal {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 400px;
+  max-height: 90vh; // Thêm giới hạn chiều cao
+  overflow-y: auto; // Thêm scroll nếu nội dung dài
   background: white;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  z-index: 1001;
+  z-index: 5;
+
+  // Để tránh modal bị tràn khi màn hình nhỏ
+  @media (max-width: 480px) {
+    width: 90%;
+    padding: 15px;
+  }
 
   .header-post-modal {
     display: flex;
@@ -18,6 +37,10 @@
     font-weight: bold;
     border-bottom: 1px solid #ddd;
     padding-bottom: 10px;
+    position: sticky; // Giữ header cố định khi scroll
+    top: 0;
+    background: white;
+    z-index: 1;
 
     .close-icon {
       width: 20px;
@@ -48,11 +71,51 @@
     height: 80px;
     border: none;
     outline: none;
-    //padding: 10px;
+    padding: 10px; // Thêm padding đã bị comment
     font-size: 14px;
     border-radius: 5px;
     background: #f3f3f3;
     resize: none;
+    box-sizing: border-box;
+  }
+
+  .preview-imgae-or-video {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0;
+
+    .media-preview {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border-radius: 5px;
+      overflow: hidden;
+
+      img,
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 5px;
+      }
+
+      .remove-media {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
   }
 
   .option-create {
@@ -75,8 +138,10 @@
     display: flex;
     justify-content: space-between;
     margin: 10px 0;
+    gap: 10px;
 
     select {
+      width: 100%;
       padding: 5px;
       border-radius: 5px;
       border: 1px solid #ccc;
@@ -98,44 +163,10 @@
     &:hover {
       background: #145dbf;
     }
-  }
-}
 
-// Overlay làm mờ nền khi modal mở
-.create-post-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-}
-.preview-imgae-or-video {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
-
-  .media-preview {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    border-radius: 5px;
-    overflow: hidden;
-
-    img,
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 5px;
-    }
-    .remove-media {
-      position: absolute;
-      border-radius: 5px;
-      top: 0px;
-      right: 1px;
+    &:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
     }
   }
 }

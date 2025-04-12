@@ -9,13 +9,7 @@ namespace Application.Helpers
 {
     public static class ResponseFactory
     {
- //OK = 200,
- //Created = 201,
- //BadRequest = 400,
- //Unauthorized = 401,
- //Forbidden = 403,
- //NotFound = 404,
- //InternalServerError = 500
+
         public static ResponseModel<T> Success<T>(string message,int? code)
         {
             return new ResponseModel<T>

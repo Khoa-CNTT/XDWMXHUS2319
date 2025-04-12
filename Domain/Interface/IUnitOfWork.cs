@@ -26,6 +26,12 @@ namespace Domain.Interface
         IRideReportRepository RideReportRepository { get; }
         IRatingRepository RatingRepository { get; }
 
+        IConversationRepository ConversationRepository { get; }
+        IMessageRepository MessageRepository { get; }
+      
+        IFriendshipRepository FriendshipRepository { get; }
+
+        INotificationRepository NotificationRepository { get; }
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync(); // ✅ Bắt đầu giao dịch
         Task CommitTransactionAsync(); // ✅ Hoàn tất giao dịch

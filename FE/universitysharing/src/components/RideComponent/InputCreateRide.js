@@ -16,7 +16,12 @@ const InputCreateRide = ({ usersProfile }) => {
         <input type="text" readOnly placeholder="Bạn muốn đi đâu nào!" />
         <button>Đăng</button>
       </div>
-      {isOpenModal && <CreateRidePost onClose={() => closeModal()} />}
+      {isOpenModal && (
+        <CreateRidePost
+          onClose={() => closeModal()}
+          usersProfile={usersProfile}
+        />
+      )}
     </>
   );
 };

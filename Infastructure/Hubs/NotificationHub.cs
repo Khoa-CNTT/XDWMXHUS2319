@@ -44,6 +44,13 @@ namespace Infrastructure.Hubs
             await Clients.User(userId.ToString()).SendAsync("ReceiveNotification", message);
         }
         /// <summary>
+        /// Gửi thông báo đến người mình gửi kết bạn
+        /// </summary>
+        public async Task SendFriendNotification(Guid friendId, string message)
+        {
+            await Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", message);
+        }
+        /// <summary>
         /// Gửi thông báo trong ứng dụng đến một tài xế cụ thể
         /// </summary>
         public async Task SendInAppNotificationToUser(Guid userId, string message)
@@ -57,24 +64,36 @@ namespace Infrastructure.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var userId = _userContextService.UserId();
-            Console.WriteLine($"🔗 User {userId} đã kết nối với SignalR");
-            if (userId != Guid.Empty)
+            var userIdFromContext = _userContextService.UserId();
+            Console.WriteLine($"🔗 Client kết nối với ConnectionId: {Context.ConnectionId}, UserId từ context: {userIdFromContext}");
+
+            if (userIdFromContext == Guid.Empty)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, userId.ToString());
-                Console.WriteLine($"📌 User {userId} joined group.");
+                // Yêu cầu UserId từ client nếu context không có
+                Console.WriteLine("UserId từ context không hợp lệ, yêu cầu UserId từ client");
+                await Clients.Caller.SendAsync("ReceiveUserId");
             }
-            await base.OnConnectedAsync();
+            else
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, userIdFromContext.ToString());
+                Console.WriteLine($"📌 User {userIdFromContext} joined group từ context.");
+            }
+
+             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var userId = _userContextService.UserId();
-            if (userId != Guid.Empty)
+            var userIdFromContext = _userContextService.UserId();
+            var userIdFromClient = Context.Items["UserId"]?.ToString();
+            var userId = !string.IsNullOrEmpty(userIdFromClient) ? userIdFromClient : userIdFromContext.ToString();
+
+            if (!string.IsNullOrEmpty(userId) && userId != Guid.Empty.ToString())
             {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId.ToString());
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
                 Console.WriteLine($"❌ User {userId} left group.");
             }
+            Console.WriteLine($"Client ngắt kết nối: ConnectionId: {Context.ConnectionId}, UserId: {userId}");
             await base.OnDisconnectedAsync(exception);
         }
 
@@ -89,8 +108,19 @@ namespace Infrastructure.Hubs
                 await Clients.Group(userId.ToString()).SendAsync("ReceiveMessage", "Huny", aiResponse, false);
             }
         }
+        public async Task SendNewMessageNotification(Guid receiverId, string senderId, string content, string messageId)
+        {
+            var message = new
+            {
+                SenderId = senderId,
+                Content = content,
+                MessageId = messageId
+            };
+            Console.WriteLine($"Gửi SignalR tới UserId: {receiverId}: {Newtonsoft.Json.JsonConvert.SerializeObject(message)}");
+            await Clients.Group(receiverId.ToString()).SendAsync("ReceiveMessageNotification", message);
+        }
 
-       
+
     }
 
 }

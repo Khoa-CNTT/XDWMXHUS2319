@@ -1,18 +1,348 @@
-.right-sidebar {
-  width: 250px;
-  background-color: #fff;
-  border-left: 1px solid #ddd;
+// RightSidebar.scss
 
-  padding: 20px;
+// --- Biến ---
+*,
+*::before,
+*::after {
+  box-sizing: border-box; // Áp dụng cho tất cả các phần tử
+}
+// Bảng màu (Refined Palette)
+$primary-color: #4A55E6; // Slightly adjusted primary blue
+$secondary-color: #3b82f6; // A complementary blue
+$text-color: #1f2937; // Darker gray for better contrast
+$text-light-gray: #6b7280; // Lighter gray for secondary text
+$bg-color: #ffffff;
+$bg-hover: #f3f4f6; // Light gray for hover
+$bg-active: #e5e7eb; // Slightly darker gray for active
+$online-color: #10b981; // Emerald green for online
+$offline-color: #9ca3af; // Medium gray for offline/borders
+$border-color: #e5e7eb; // Match active background
+$search-bg: #f3f4f6; // Match hover background
+$placeholder-color: #9ca3af; // Match offline color
+$danger-color: #ef4444; // For errors
+
+// Bóng đổ & Chuyển tiếp (Shadows & Transitions)
+$shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06);
+$shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08); // Softer main shadow
+$transition-base: all 0.25s ease-in-out; // Slightly faster transition
+
+// Khoảng cách & Bo góc (Spacing & Borders)
+$padding-base: 16px; // Base padding unit
+$padding-item: 10px 12px; // Padding for list items
+$radius-base: 8px; // Standard border radius
+$radius-round: 50%;
+$radius-input: 20px;
+$sidebar-width: 280px;
+
+// --- Mixins ---
+@mixin flex-center {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  align-items: center;
+  justify-content: center;
+}
 
-  &__section {
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// --- Styles ---
+
+.right-sidebar {
+  width: $sidebar-width;
+  background-color: $bg-color;
+  border-left: 1px solid $border-color;
+  padding: $padding-base 0; // Use variable
+  overflow-y: auto;
+  box-shadow: $shadow-medium; // Apply softer shadow
+  transition: $transition-base;
+  position: relative;
+  z-index: 10;
+
+  // Custom Scrollbar
+  scrollbar-width: thin; // Firefox
+  scrollbar-color: darken($border-color, 10%) $bg-color; // Firefox
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent; // Cleaner track
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: darken($border-color, 10%);
+    border-radius: 3px;
+    &:hover {
+      background-color: darken($border-color, 15%);
+    }
+  }
+
+  // Search Section
+  .search-container {
+    padding: 0 $padding-base $padding-base;
+    position: sticky;
+    top: 0;
+    background-color: $bg-color;
+    z-index: 11; // Ensure it's above list items
+    border-bottom: 1px solid $border-color;
+    margin-bottom: 10px; // Space below search
+
     h3 {
-      font-size: 16px;
+      color: $primary-color;
+      font-size: 1.25rem; // Slightly smaller heading
+      margin-bottom: $padding-base;
       font-weight: 600;
-      margin: 0 0 10px 0;
+      padding-left: 4px; // Small indent
+    }
+
+    .search-box {
+      position: relative;
+      width: 100%;
+
+      // Recommend using an icon font (e.g., Font Awesome, Heroicons) or SVG
+      // <i class="search-icon"></i> or <svg>...</svg>
+      // Example with pseudo-element for icon placeholder:
+      &::before {
+        // content: '\f002'; // Example using Font Awesome unicode
+        // font-family: "Font Awesome 5 Free";
+        content: "🔍"; // Keeping emoji for simplicity, but SVG is better
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $placeholder-color;
+        font-size: 0.9rem;
+        z-index: 1;
+        pointer-events: none; // Prevent icon from blocking input focus
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 15px 10px 40px; // Adjust padding for icon
+        border-radius: $radius-input;
+        border: 1px solid $border-color;
+        background-color: $search-bg;
+        transition: $transition-base;
+        font-size: 0.9rem;
+        color: $text-color;
+
+        &::placeholder {
+          color: $placeholder-color;
+          opacity: 1; // Ensure placeholder is visible
+        }
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          background-color: $bg-color; // White background on focus
+          box-shadow: 0 0 0 3px rgba($primary-color, 0.15); // Refined focus ring
+        }
+      }
+    }
+  }
+
+  // Friends List Section
+  .friends-list {
+    padding: 0 ($padding-base / 2); // Slightly reduced horizontal padding
+
+    .friend-count {
+      font-size: 0.75rem; // Smaller text
+      color: $text-light-gray; // Use light gray
+      margin-bottom: 12px;
+      padding: 5px ($padding-base / 2);
+      @include flex-between;
+      text-transform: uppercase; // Optional styling
+      letter-spacing: 0.5px; // Optional styling
+
+      .online-count {
+        color: $online-color;
+        font-weight: 600; // Bolder online count
+      }
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        @include flex-between;
+        padding: $padding-item;
+        margin-bottom: 5px; // Space between items
+        border-radius: $radius-base;
+        cursor: pointer;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease; // Smoother transitions
+        position: relative;
+        overflow: hidden; // Important for effects like borders/shadows
+
+        &:hover {
+          background-color: $bg-hover;
+          // Optional subtle lift effect
+          // box-shadow: $shadow-subtle;
+
+          .friend-info img {
+            border-color: rgba($primary-color, 0.5); // Subtle border highlight on avatar
+          }
+        }
+
+        &.active {
+          background-color: $bg-active;
+          box-shadow: none; // Remove shadow when active if using bg color
+
+          .friend-name {
+            color: $primary-color; // Highlight name when active
+            font-weight: 600;
+          }
+          .friend-info img {
+            border-color: $primary-color; // Stronger border highlight on active
+          }
+        }
+
+        .friend-info {
+          display: flex; // Use flex directly
+          align-items: center;
+          flex: 1; // Take available space
+          overflow: hidden; // Prevent content overflow
+          gap: 12px; // Spacing between avatar and text
+
+          img {
+            width: 40px;
+            height: 40px;
+            border-radius: $radius-round;
+            object-fit: cover;
+            // border: 2px solid $border-color; // Use transparent initially or bg color
+            border: 2px solid transparent;
+            transition: border-color $transition-base; // Animate border color change
+            flex-shrink: 0; // Prevent avatar from shrinking
+            background-color: $border-color; // Placeholder background while loading
+          }
+
+          .name-status {
+            flex: 1; // Allow text to take remaining space
+            overflow: hidden; // Hide overflow text
+
+            .friend-name {
+              font-weight: 500;
+              color: $text-color;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              margin-bottom: 2px; // Slightly less space
+              font-size: 0.9rem; // Consistent font size
+            }
+
+            .status {
+              font-size: 0.75rem;
+              display: flex;
+              align-items: center;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+
+              // Status indicator dot
+              &::before {
+                content: "";
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                border-radius: $radius-round;
+                margin-right: 6px; // Space after dot
+                flex-shrink: 0; // Prevent dot shrinking
+              }
+
+              &.online {
+                color: $online-color;
+                &::before {
+                  background-color: $online-color;
+                  box-shadow: 0 0 5px rgba($online-color, 0.6); // Subtle glow
+                  animation: pulse 2s infinite ease-in-out; // Refined pulse
+                }
+              }
+
+              &.offline {
+                color: $text-light-gray; // Use lighter gray for offline text
+                &::before {
+                  background-color: $offline-color;
+                }
+              }
+            }
+          }
+        }
+
+        .last-seen {
+          font-size: 0.7rem;
+          color: $text-light-gray; // Consistent light gray
+          text-align: right;
+          min-width: 60px; // Adjust as needed
+          flex-shrink: 0; // Prevent shrinking
+          margin-left: 8px; // Space before last seen time
+        }
+      }
+    }
+  }
+
+  // Loading and Error States
+  .loading-error {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
+    color: $text-light-gray;
+
+    &.error {
+      color: $danger-color; // Use danger color for errors
+    }
+  }
+}
+
+// --- Animations ---
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); } // Add subtle scale
+}
+
+// Staggered fade-in animation for list items (keep as is, seems fine)
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.right-sidebar .friends-list ul li {
+  animation: fadeIn 0.3s ease forwards;
+  opacity: 0;
+
+  // Apply delay based on item index
+  @for $i from 1 through 30 { // Increased max items if needed
+    &:nth-child(#{$i}) {
+      animation-delay: $i * 0.04s; // Slightly faster delay increment
+    }
+  }
+}
+
+// --- Responsive ---
+@media (max-width: 992px) { // Adjust breakpoint if needed
+  .right-sidebar {
+     // Maybe hide it or make it collapsible on tablets/smaller laptops too
+     // Example: transform: translateX(100%); position: fixed; right: 0; top: 0; height: 100vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .right-sidebar {
+    width: 100%; // Full width on mobile
+    height: auto; // Adjust height as needed, maybe fixed portion?
+    border-left: none;
+    border-bottom: 1px solid $border-color;
+    box-shadow: none; // Remove side shadow on mobile
+
+    .search-container {
+      padding: $padding-base; // Consistent padding
+    }
+
+    .friends-list {
+      padding: 0 $padding-base / 2; // Adjust padding
     }
   }
 }

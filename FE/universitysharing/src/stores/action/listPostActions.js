@@ -3,20 +3,43 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const token = localStorage.getItem("token");
+// const token = localStorage.getItem("token");
+// console.warn("Token khi bắt đầu đăng nhập 1 >>", token);
 //Lấy danh sách bài viết
-export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
-  const response = await axios.get(
-    "https://localhost:7053/api/Post/getallpost?pageSize=10",
-    {
-      headers: { Authorization: `Bearer ${token}` },
+export const fetchPosts = createAsyncThunk(
+  "posts/fetchPosts",
+  async (lastPostId = null, { rejectWithValue }) => {
+    try {
+      const tokens = localStorage.getItem("token");
+      const url = lastPostId
+        ? `https://localhost:7053/api/Post/getallpost?lastPostId=${lastPostId}`
+        : "https://localhost:7053/api/Post/getallpost";
+      // console.log("Đang chạy", url);
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${tokens}` },
+      });
+
+      // Handle case when no more posts are available
+      if (response.data.message === "Không còn bài viết nào để load") {
+        return {
+          posts: [],
+          hasMore: false,
+        };
+      }
+
+      return {
+        posts: response.data.data.posts,
+        hasMore: response.data.data.nextCursor !== null,
+      };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Error fetching posts");
     }
-  );
-  return response.data.data.posts;
-});
+  }
+);
 
 //Like bài viết
 export const likePost = createAsyncThunk("posts/likePosts", async (postId) => {
+  const token = localStorage.getItem("token");
   await axios.post(
     "https://localhost:7053/api/Like/like",
     { postId: postId },
@@ -30,34 +53,36 @@ export const likePost = createAsyncThunk("posts/likePosts", async (postId) => {
 //Load Comment All Comment
 export const commentPost = createAsyncThunk(
   "posts/commentPost",
-  async (postId, { rejectWithValue }) => {
-    // console.log(
-    //   "postID nhận được load Comment",
-    //   postId,
-    //   "Loại:",
-    //   typeof postId
-    // );
+  async ({ postId, lastCommentId = null }, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
-      const response = await axios.get(
-        `https://localhost:7053/api/Comment/GetCommentByPost?PostId=${postId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return { postId, comments: response.data.data.comments }; // Trả về danh sách comments
+      const url = lastCommentId
+        ? `https://localhost:7053/api/Comment/GetCommentByPost?PostId=${postId}&lastCommentId=${lastCommentId}`
+        : `https://localhost:7053/api/Comment/GetCommentByPost?PostId=${postId}`;
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return {
+        postId,
+        comments: response.data.data.comments,
+        hasMore: response.data.data.lastCommentId !== null,
+        isInitialLoad: !lastCommentId,
+      };
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi không xác định");
     }
   }
 );
-
 //AddComment post
 export const addCommentPost = createAsyncThunk(
   "posts/addCommentPost",
   async ({ postId, content, userId }, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         "https://localhost:7053/api/Comment/CommentPost",
         {
@@ -85,6 +110,7 @@ export const addCommentPost = createAsyncThunk(
 export const likeComment = createAsyncThunk(
   "posts/likeComment",
   async (commentId, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
         `https://localhost:7053/api/CommentLike/like/${commentId}`,
@@ -102,10 +128,13 @@ export const likeComment = createAsyncThunk(
   }
 );
 
-// //Đăng bài
+// Đăng bài
 export const createPost = createAsyncThunk(
   "post/createPost",
   async ({ formData, fullName, profilePicture }, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
+    const toastId = toast.loading("Đang đăng bài...");
+
     try {
       const response = await axios.post(
         "https://localhost:7053/api/Post/create",
@@ -116,14 +145,20 @@ export const createPost = createAsyncThunk(
           },
         }
       );
+
       if (response.data.success) {
-        // console.log("Đăng bài thành công ");
-        toast.success("Đăng bài thành công!");
+        toast.update(toastId, {
+          render: response.data.message || "Đăng bài thành công!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
+
         return {
           fullName,
           profilePicture,
           ...response.data.data,
-          updateAt: null, // API không trả về updateAt, nên thêm vào để đồng bộ
+          updateAt: null,
           commentCount: 0,
           likeCount: 0,
           shareCount: 0,
@@ -131,8 +166,64 @@ export const createPost = createAsyncThunk(
           isSharedPost: false,
         };
       } else {
-        toast.error("Đăng bài thất bại!");
+        toast.update(toastId, {
+          render: response.data.message || "Đăng bài thất bại!",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
         return rejectWithValue(response.data.errors);
+      }
+    } catch (error) {
+      toast.update(toastId, {
+        render: error.response?.data?.message || "Lỗi không xác định!",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+//Chỉnh sửa bài viết
+export const updatePost = createAsyncThunk(
+  "posts/updatePost",
+  async (
+    { postId, formData, fullName, profilePicture, createdAt },
+    { rejectWithValue }
+  ) => {
+    const token = localStorage.getItem("token");
+    try {
+      console.log("FormData contents:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]); // In key và value của FormData
+      }
+
+      const response = await axios.patch(
+        "https://localhost:7053/api/Post/update-post",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Gửi token trong header
+          },
+        }
+      );
+      console.log("Response từ API >>", response.data); // Kiểm tra response trả về
+      if (response.data.data) {
+        toast.success("Sửa bài viết thành công!");
+        return {
+          postId,
+          data: response.data.data,
+          fullName,
+          profilePicture,
+          createdAt,
+        };
+        console.log("respone>>", response.data.data);
+      } else {
+        toast.error("Sửa bài viết không thành công!");
+        return rejectWithValue("Dữ liệu trả về không hợp lệ");
       }
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -146,6 +237,7 @@ export const deletePost = createAsyncThunk(
   async (postID, { rejectWithValue }) => {
     // console.log("postID nhận được:", postID, "Loại:", typeof postID);
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.delete(
         `https://localhost:7053/api/Post/delete?PostId=${postID}`,
         {
@@ -167,6 +259,7 @@ export const getReplyComment = createAsyncThunk(
   "post/getReplyComment",
   async (commentId, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         `https://localhost:7053/api/Comment/replies?ParentCommentId=${commentId}`,
         {
@@ -188,6 +281,7 @@ export const deleteComments = createAsyncThunk(
   "posts/deleteComments",
   async ({ postId, commentId }, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.patch(
         `https://localhost:7053/api/Comment/DeleteComment/${commentId}`,
         {},
@@ -209,10 +303,11 @@ export const deleteComments = createAsyncThunk(
 export const replyComments = createAsyncThunk(
   "post/replyComments",
   async ({ postId, parentId, content, userId }, { rejectWithValue }) => {
-    console.log("Id cha>>", parentId);
-    console.log("Id post>>", parentId);
-    console.log("Id content>>", parentId);
+    // console.log("Id cha>>", parentId);
+    // console.log("Id post>>", parentId);
+    // console.log("Id content>>", parentId);
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         "https://localhost:7053/api/Comment/ReplyComment",
         {
@@ -233,6 +328,98 @@ export const replyComments = createAsyncThunk(
       return { postId, data: response.data.data, userId };
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+//listpostaction
+export const sharePost = createAsyncThunk(
+  "post/sharePost",
+
+  async ({ postId, content }, { rejectWithValue }) => {
+    console.log("sharePost action started", { postId, content }); // Thêm dòng này
+    try {
+      const token = localStorage.getItem("token");
+      // if (!token) throw new Error('Vui lòng đăng nhập');
+
+      const response = await axios.post(
+        "https://localhost:7053/api/Share/SharePost",
+        { postId, content },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Chia sẻ thất bại");
+      }
+      console.log("chia se");
+      // Format dữ liệu theo chuẩn BE trả về
+      const formatSharedPost = (apiData) => ({
+        id: apiData.id,
+        userId: apiData.userId,
+        fullName: apiData.fullName,
+        profilePicture: apiData.profilePicture,
+        content: apiData.content,
+        createdAt: apiData.createdAt,
+        isSharedPost: true,
+        originalPost: {
+          postId: apiData.originalPostId,
+          content: apiData.originalPost.content,
+          author: apiData.originalPost.author,
+          createAt: apiData.originalPost.createAt,
+        },
+        stats: {
+          likes: 0,
+          comments: 0,
+          shares: 0,
+        },
+      });
+
+      toast.success(response.data.message);
+      return formatSharedPost(response.data.data);
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || error.message;
+      toast.error(errorMsg);
+      return rejectWithValue({
+        message: errorMsg,
+        code: error.response?.status,
+      });
+    }
+  }
+);
+
+// Lấy bài viết của người sở hữu (tự động lấy theo token)
+export const fetchPostsByOwner = createAsyncThunk(
+  "posts/fetchPostsByOwner",
+  async (lastPostId = null, { rejectWithValue }) => {
+    try {
+      const tokens = localStorage.getItem("token");
+      const url = lastPostId
+        ? `https://localhost:7053/api/Post/GetPostsByOwner?lastPostId=${lastPostId}`
+        : "https://localhost:7053/api/Post/GetPostsByOwner";
+
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${tokens}` },
+      });
+      // Handle case when no more posts are available
+      if (response.data.message === "Không còn bài viết nào để load") {
+        return {
+          posts: [],
+          hasMore: false,
+        };
+      }
+      return {
+        posts: response.data.data.posts,
+        hasMore: response.data.data.nextCursor !== null,
+      };
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Error fetching owner posts"
+      );
     }
   }
 );

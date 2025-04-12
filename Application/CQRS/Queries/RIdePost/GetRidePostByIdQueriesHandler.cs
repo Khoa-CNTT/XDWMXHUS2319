@@ -25,6 +25,8 @@ namespace Application.CQRS.Queries.RIdePost
                 UserId = ridePost.UserId,
                 StartLocation = ridePost.StartLocation,
                 EndLocation = ridePost.EndLocation,
+                LatLonStart = ridePost.LatLonStart,
+                LatLonEnd = ridePost.LatLonEnd,
                 StartTime =FormatUtcToLocal(ridePost.StartTime),
                 Status =ridePost.Status.ToString(),
                 CreatedAt =FormatUtcToLocal(ridePost.CreatedAt),

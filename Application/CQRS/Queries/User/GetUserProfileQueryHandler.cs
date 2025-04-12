@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.User
 {
-    public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, ResponseModel<UserProfileDto>>
+    public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, ResponseModel<MaptoUserprofileDetailDto>>
     {
   
         private readonly IUserContextService _userContextService;
@@ -22,18 +22,18 @@ namespace Application.CQRS.Queries.User
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ResponseModel<UserProfileDto>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
+        public async Task<ResponseModel<MaptoUserprofileDetailDto>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId(); // Lấy UserId tại đây
             if (userId == Guid.Empty)
             {
-                return ResponseFactory.Fail<UserProfileDto>("Unauthorized", 401);
+                return ResponseFactory.Fail<MaptoUserprofileDetailDto>("Unauthorized", 401);
             }
 
             var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
             if (user == null)
             {
-                return ResponseFactory.Fail<UserProfileDto>("User not found", 404);
+                return ResponseFactory.Fail<MaptoUserprofileDetailDto>("User not found", 404);
             }
 
             return ResponseFactory.Success(Mapping.MaptoUserprofileDto(user), "Get user profile success", 200);

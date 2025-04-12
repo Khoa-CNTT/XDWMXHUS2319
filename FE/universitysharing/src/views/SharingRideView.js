@@ -22,11 +22,11 @@ const SharingRideView = () => {
       <Header className="header" usersProfile={users} />
       <div className="main-content">
         <div className="left-sidebar">
-          <LeftSidebar />
+          <LeftSidebar usersProfile={users} />
           <Footer className="footer" />
         </div>
         <div className="center-content">
-          <InputCreateRide className="post-input" />
+          <InputCreateRide className="post-input" usersProfile={users} />
           <AllSharingRide className="all-posts" />
         </div>
         <RightSidebar className="right-sidebar" />

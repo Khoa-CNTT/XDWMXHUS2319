@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../../styles/CommentOverlay.scss";
 import avatarDefaut from "../../assets/AvatarDefault.png";
-import likeIcon from "../../assets/iconweb/likeIcon.svg";
-import likeIconFill from "../../assets/iconweb/likefillIcon.svg";
-import moreIcon from "../../assets/iconweb/moreIcon.svg";
-
+import {
+  FiMoreHorizontal,
+  FiMessageSquare,
+  FiHeart,
+  FiChevronDown,
+  FiChevronUp,
+} from "react-icons/fi";
+import { FaHeart } from "react-icons/fa";
 import { getReplyComment } from "../../stores/action/listPostActions";
 import { useDispatch } from "react-redux";
 import { debounce } from "lodash";
-
 import CommentOption from "./CommentOption";
 import getUserIdFromToken from "../../utils/JwtDecode";
 
@@ -16,75 +19,78 @@ const CommentItem = ({
   comments,
   handleLikeComment,
   post,
+  usersProfile,
   handleReplyComment,
 }) => {
   const dispatch = useDispatch();
-  //console.log("Dũ liệu comment ", comments.id);
-  const [isReplying, setIsReplying] = useState(false); // Kiểm soát hiển thị input
-  const [replyText, setReplyText] = useState(""); // Lưu nội dung nhập vào
-  const [replyingCommentId, setReplyingCommentId] = useState(null); // Lưu ID của comment đang được trả lời
-  const [replyingTo, setReplyingTo] = useState(""); // Lưu tên người được trả lời
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [replyingCommentId, setReplyingCommentId] = useState(null);
+  const [replyingTo, setReplyingTo] = useState("");
+  const [openOptionId, setOpenOptionId] = useState(null);
+  const [visibleReplies, setVisibleReplies] = useState(1); // Chỉ hiển thị 1 reply ban đầu
+  const [isRepliesHidden, setIsRepliesHidden] = useState(false); // Trạng thái ẩn/hiện replies
 
-  const replyInputTargert = useRef(null);
-  const moreReplyTargert = useRef(null);
+  const replyInputRef = useRef(null);
+  const moreReplyRef = useRef(null);
+  const menuRef = useRef(null);
+  const repliesContainerRef = useRef(null);
+  const userId = getUserIdFromToken();
 
+  // Xử lý khi click nút trả lời
   const handleReplyClick = (commentId, userName) => {
-    //console.log("CommentId và userName>>", commentId, userName);
-    setReplyingTo(userName); // Lưu tên người được trả lời
-    setReplyingCommentId(commentId); // Cập nhật commentId đang trả lời
-    setIsReplying(!isReplying); // Khi click, đảo trạng thái true/false
-    setReplyText(`@${userName} `); // Gán sẵn nội dung
+    setReplyingTo(userName);
+    setReplyingCommentId(commentId);
+    setIsReplying(!isReplying);
+    setReplyText(`@${userName} `);
+
+    // Mở replies nếu đang ẩn
+    if (isRepliesHidden) {
+      setIsRepliesHidden(false);
+    }
+
     setTimeout(() => {
-      if (replyInputTargert.current) {
-        replyInputTargert.current.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-        });
-      }
+      replyInputRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     }, 100);
   };
-  //Submit reply
+
+  // Gửi reply
   const handleSendReply = () => {
     if (!replyingCommentId || !replyText.trim()) return;
-    console.log("Id cha>>", replyingCommentId);
-    console.log("Content>>", replyText);
-
-    handleReplyComment(replyingCommentId, replyText); // Gửi lên cha
+    handleReplyComment(replyingCommentId, replyText);
     setIsReplying(false);
-    setReplyText(""); // Reset input
+    setReplyText("");
   };
 
+  // Xử lý thay đổi nội dung reply
   const handleChange = (e) => {
-    const text = e.target.value;
-
-    // Luôn giữ phần "@TênNgườiDùng " không bị xóa
-    if (!text.startsWith(`@${replyingTo} `)) {
-      // setReplyText(`@${replyingTo} `);
-      setReplyText(e.target.value); // Không bắt buộc giữ @TênNgườiDùng
-    } else {
-      setReplyText(text);
-    }
+    setReplyText(e.target.value);
   };
 
-  //hàm lấy thêm replyComment
-  const handleGetReplyComment = debounce((commentid) => {
-    dispatch(getReplyComment(commentid));
+  // Load thêm replies
+  const handleLoadMoreReplies = debounce(() => {
+    if (comments.hasMoreReplies) {
+      dispatch(getReplyComment(comments.id));
+    } else {
+      // Hiển thị thêm replies đã load
+      setVisibleReplies((prev) => prev + 3);
+    }
+
     setTimeout(() => {
-      if (moreReplyTargert.current) {
-        moreReplyTargert.current.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-        });
-      }
-    }, 300); // Đợi 300ms để React cập nhật UI xong
-  }, 1000);
+      moreReplyRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }, 300);
+  }, 500);
 
-  // const userId = getUserIdFromToken();
-
-  //Mở menuOption
-  const [openOptionId, setOpenOptionId] = useState(null); // Lưu ID của comment/reply đang mở menu
-  const menuRef = useRef(null);
-  const userId = getUserIdFromToken();
+  // Toggle ẩn/hiện replies
+  const toggleRepliesVisibility = () => {
+    setIsRepliesHidden(!isRepliesHidden);
+  };
 
   // Đóng menu khi click bên ngoài
   useEffect(() => {
@@ -97,154 +103,240 @@ const CommentItem = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Tự động mở rộng textarea khi nội dung nhiều
+  useEffect(() => {
+    if (replyInputRef.current) {
+      const textarea = replyInputRef.current.querySelector("textarea");
+      if (textarea) {
+        textarea.style.height = "auto";
+        textarea.style.height = `${textarea.scrollHeight}px`;
+      }
+    }
+  }, [replyText]);
+
+  // Lấy số lượng replies hiển thị
+  const displayedReplies = comments.replies?.slice(0, visibleReplies) || [];
+  const hasHiddenReplies =
+    comments.replies?.length > visibleReplies || comments.hasMoreReplies;
+  const totalReplyCount = comments.replyCount || comments.replies?.length || 0;
+
   return (
-    <>
-      <div className="comment-wrapper">
-        <div className="comment" style={{ position: "relative" }}>
-          <img
-            className="avatar"
-            src={comments.profilePicture || avatarDefaut}
-            alt="Avatar"
-          />
-          <div className="comment-content">
-            <span className="comment-username">{comments.userName}</span>
-            <p></p>
-            <span className="comment-text">{comments.content}</span>
+    <div className="comment-item">
+      {/* Comment chính */}
+      <div className="comment-main">
+        <img
+          className="comment-avatar"
+          src={comments.profilePicture || avatarDefaut}
+          alt="Avatar"
+        />
+
+        <div className="comment-body">
+          <div className="comment-header">
+            <span className="comment-author">{comments.userName}</span>
+
+            <button
+              className="comment-more-btn"
+              onClick={() =>
+                setOpenOptionId(
+                  openOptionId === comments.id ? null : comments.id
+                )
+              }
+            >
+              <FiMoreHorizontal size={18} />
+            </button>
+
+            {openOptionId === comments.id && (
+              <div ref={menuRef} className="comment-options-container">
+                <CommentOption
+                  isOwner={userId === comments.userId}
+                  onClose={() => setOpenOptionId(null)}
+                  idComment={comments.id}
+                  post={post}
+                />
+              </div>
+            )}
           </div>
-          <img
-            className="more-options"
-            src={moreIcon}
-            alt="More"
-            onClick={() =>
-              setOpenOptionId(openOptionId === comments.id ? null : comments.id)
-            }
-          />
-          {/* Hiển thị menu nếu comment này đang mở */}
-          {openOptionId === comments.id && (
-            <div ref={menuRef}>
-              <CommentOption
-                isOwner={userId === comments.userId}
-                onClose={() => setOpenOptionId(null)}
-                style={{ right: "20px", top: "50px" }} // Đặt vị trí menu sát bên nút "..."
-                idComment={comments.id}
-                post={post}
-              />
-            </div>
+
+          <div className="comment-content">{comments.content}</div>
+
+          <div className="comment-actions">
+            <button
+              className={`action-btn ${comments.hasLiked ? "liked" : ""}`}
+              onClick={() => handleLikeComment(comments.id)}
+            >
+              {comments.hasLiked ? (
+                <FaHeart className="like-icon" size={16} />
+              ) : (
+                <FiHeart className="like-icon" size={16} />
+              )}
+              <span className="action-count">{comments.likeCountComment}</span>
+            </button>
+
+            <button
+              className="action-btn"
+              onClick={() => handleReplyClick(comments.id, comments.userName)}
+            >
+              <FiMessageSquare className="reply-icon" size={16} />
+              <span className="action-text">Trả lời</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Nút hiển thị/ẩn replies */}
+      {totalReplyCount > 0 && (
+        <button
+          className="toggle-replies-btn"
+          onClick={toggleRepliesVisibility}
+        >
+          {isRepliesHidden ? (
+            <>
+              <FiChevronDown size={16} />
+              <span>Hiển thị {totalReplyCount} bình luận</span>
+            </>
+          ) : (
+            <>
+              <FiChevronUp size={16} />
+              <span>Ẩn bình luận</span>
+            </>
           )}
-        </div>
+        </button>
+      )}
 
-        {/* Like và Trả lời */}
-        <div className="comment-actions">
-          <img
-            className="like-icon"
-            src={comments.hasLiked ? likeIconFill : likeIcon}
-            alt="Like"
-            onClick={() => handleLikeComment(comments.id)}
-          />
-          <span className="number-like">{comments.likeCountComment}</span>
-          <span
-            className="reply"
-            onClick={() => handleReplyClick(comments.id, comments.userName)}
-          >
-            Trả lời
-          </span>
-        </div>
+      {/* Các reply - chỉ hiển thị khi không bị ẩn */}
+      {!isRepliesHidden && displayedReplies.length > 0 && (
+        <div className="replies-container" ref={repliesContainerRef}>
+          {displayedReplies.map((reply) => (
+            <div key={reply.id} className="reply-item">
+              <img
+                className="reply-avatar"
+                src={reply.profilePicture || avatarDefaut}
+                alt="Avatar"
+              />
 
-        {/* Reply bình luận */}
-        {comments.replies?.length > 0 && (
-          <div className="reply-section">
-            {comments.replies.map((reply) => (
-              <React.Fragment key={reply.id}>
-                <div className="reply-comment" style={{ position: "relative" }}>
-                  <img
-                    className="avatar"
-                    src={reply.profilePicture || avatarDefaut}
-                    alt="Avatar"
-                  />
-                  <div className="reply-content">
-                    <span className="reply-username">{reply.userName}</span>
-                    <p></p>
-                    <span className="reply-text">{reply.content}</span>
-                  </div>
-                  <img
-                    className="more-options"
-                    src={moreIcon}
-                    alt="More"
+              <div className="reply-body">
+                <div className="reply-header">
+                  <span className="reply-author">{reply.userName}</span>
+
+                  <button
+                    className="reply-more-btn"
                     onClick={() =>
                       setOpenOptionId(
                         openOptionId === reply.id ? null : reply.id
                       )
                     }
-                  />
-                  {/* Hiển thị menu nếu reply này đang mở */}
+                  >
+                    <FiMoreHorizontal size={16} />
+                  </button>
+
                   {openOptionId === reply.id && (
-                    <div ref={menuRef}>
+                    <div ref={menuRef} className="comment-options-container">
                       <CommentOption
                         isOwner={userId === reply.userId}
                         onClose={() => setOpenOptionId(null)}
-                        style={{ right: "20px", top: "50px" }}
                         idComment={reply.id}
                         post={post}
                       />
                     </div>
                   )}
                 </div>
-                <div className="comment-rely-actions">
-                  <img
-                    className="like-rely-icon"
-                    src={reply.hasLiked ? likeIconFill : likeIcon}
-                    alt="Like"
+
+                <div className="reply-content">{reply.content}</div>
+
+                <div className="reply-actions">
+                  <button
+                    className={`action-btn ${reply.hasLiked ? "liked" : ""}`}
                     onClick={() => handleLikeComment(reply.id)}
-                  />
-                  <span className="number-rely-like">
-                    {reply.likeCountComment}
-                  </span>
-                  <span
-                    className="reply-comment"
+                  >
+                    {reply.hasLiked ? (
+                      <FaHeart className="like-icon" size={14} />
+                    ) : (
+                      <FiHeart className="like-icon" size={14} />
+                    )}
+                    <span className="action-count">
+                      {reply.likeCountComment}
+                    </span>
+                  </button>
+
+                  <button
+                    className="action-btn"
                     onClick={() => handleReplyClick(reply.id, reply.userName)}
                   >
-                    Trả lời
-                  </span>
+                    <FiMessageSquare className="reply-icon" size={14} />
+                    <span className="action-text">Trả lời</span>
+                  </button>
                 </div>
-                {/* <div ref={relyScroll}></div> */}
-              </React.Fragment>
-            ))}
-            <div ref={moreReplyTargert}></div>
+              </div>
+            </div>
+          ))}
+          <div ref={moreReplyRef} />
+        </div>
+      )}
+
+      {/* Nút xem thêm reply - chỉ hiển thị khi không bị ẩn */}
+      {!isRepliesHidden && hasHiddenReplies && (
+        <button className="view-more-replies" onClick={handleLoadMoreReplies}>
+          {comments.hasMoreReplies
+            ? "Tải thêm bình luận"
+            : `Xem thêm ${comments.replies.length - visibleReplies} bình luận`}
+        </button>
+      )}
+
+      {/* Ô nhập reply */}
+      {isReplying && (
+        <div className="reply-input-container" ref={replyInputRef}>
+          <div className="reply-input-avatar">
+            <img
+              src={usersProfile.profilePicture || avatarDefaut}
+              alt="Avatar"
+            />
           </div>
-        )}
-
-        {comments.hasMoreReplies && (
-          <div
-            className="more-reply-comment"
-            onClick={() => handleGetReplyComment(comments.id)}
-          >
-            Xem thêm bình luận{" "}
-          </div>
-        )}
-
-        {/* Hiển thị input reply nếu người dùng nhấn "Trả lời" */}
-
-        {isReplying && (
-          <>
-            <div className="reply-input">
+          <div className="reply-input-wrapper">
+            <div className="input-box">
               <textarea
-                type="text"
-                placeholder="Trả lời bình luận..."
-                // value={replyText}
                 value={replyText}
                 onChange={handleChange}
+                placeholder="Viết phản hồi..."
+                autoFocus
+                rows="1"
               />
-              <button type="submit" onClick={handleSendReply}>
-                Trả lời
-              </button>
+              <div className="input-actions">
+                <button
+                  className={`send-reply-btn ${
+                    !replyText.trim() ? "disabled" : ""
+                  }`}
+                  onClick={handleSendReply}
+                  disabled={!replyText.trim()}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M22 2L11 13"
+                      stroke={!replyText.trim() ? "#BCC0C4" : "#1877F2"}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M22 2L15 22L11 13L2 9L22 2Z"
+                      stroke={!replyText.trim() ? "#BCC0C4" : "#1877F2"}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div ref={replyInputTargert} />
-          </>
-        )}
-
-        {/* <div ref={replyInputRef} /> */}
-      </div>
-    </>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
+
 export default CommentItem;

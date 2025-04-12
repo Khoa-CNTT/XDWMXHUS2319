@@ -22,6 +22,11 @@ namespace Infrastructure.Data.Repositories
             return entity;
         }
 
+        public async Task AddRangeAsync(List<T> entities)
+        {
+            await _context.AddRangeAsync(entities);
+        }
+
         public abstract Task<bool> DeleteAsync(Guid id);
 
 

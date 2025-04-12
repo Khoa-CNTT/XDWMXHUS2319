@@ -12,16 +12,17 @@ namespace Infrastructure.Hubs
 {
     public class CommentEventHandler : INotificationHandler<CommentEvent>
     {
-        private readonly INotificationService _notificationService;
+        private readonly ISignalRNotificationService _signalRNotificationService;
 
-        public CommentEventHandler(INotificationService notificationService)
+        public CommentEventHandler(ISignalRNotificationService signalRNotificationService)
         {
-            _notificationService = notificationService;
+            _signalRNotificationService = signalRNotificationService;
         }
+
 
         public async Task Handle(CommentEvent notification, CancellationToken cancellationToken)
         {
-            await _notificationService.SendCommentNotificationAsync(notification.PostId, notification.CommenterId, notification.CommenterName);
+            await _signalRNotificationService.SendCommentNotificationSignalR(notification.PostOwnerId, notification.Data);
         }
     }
 }

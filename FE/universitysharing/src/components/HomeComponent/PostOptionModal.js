@@ -1,8 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "../../styles/PostOptionModal.scss";
 import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
 import { closePostOptionModal } from "../../stores/reducers/listPostReducers";
+
+import EditModal from "../EditPostModal";
 
 const PostOptionsModal = ({
   isOwner,
@@ -10,11 +12,25 @@ const PostOptionsModal = ({
   position,
   postId,
   handleDeletePost,
+  post,
 }) => {
+  //console.log("Nội dung>>", post);
   const modalRef = useRef(null); // Tạo ref để kiểm tra click ra ngoài modal
-  // console.log("Người chủ>>", isOwner);
-  // console.log("ID post>>", postId);
   const dispatch = useDispatch();
+  const [isHidden, setIsHidden] = useState(false); // Thêm state để ẩn/hiện modal
+  //Update bài viếtviết
+  const [isOpenEdit, setOpenEdit] = useState(false);
+
+  const handleOpenEditModal = () => {
+    setOpenEdit(true);
+    setIsHidden(true); // Ẩn PostOptionsModal
+  };
+  const handleCloseEditModal = () => {
+    setOpenEdit(false);
+    onClose();
+  };
+
+  //đóng PostOption
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -49,34 +65,49 @@ const PostOptionsModal = ({
 
   return (
     <>
-      <div
-        className="modal-overlay"
-        onClick={onClose}
-        style={{ top: `${position.top}px`, left: `${position.left}px` }}
-      >
+      {!isHidden && (
         <div
-          className="modal-content"
-          onClick={(e) => e.stopPropagation()}
-          ref={modalRef}
+          className="modal-postOption-overlay"
+          onClick={onClose}
+          // style={{ top: `${position.top}px`, left: `${position.left}px` }}
         >
-          {isOwner ? (
-            <>
-              <p className="option-item option-edit">Chỉnh sửa bài viết</p>
-              <p
-                className="option-item option-delete"
-                onClick={() => {
-                  handleDeletePost(postId);
-                  onClose();
-                }}
-              >
-                Xóa bài viết
-              </p>
-            </>
-          ) : (
-            <p className="option-item option-report">Báo cáo bài viết</p>
-          )}
+          <div
+            className="modal-postOption-content"
+            onClick={(e) => e.stopPropagation()}
+            ref={modalRef}
+          >
+            {isOwner ? (
+              <>
+                <p
+                  className="option-item option-edit"
+                  onClick={handleOpenEditModal}
+                >
+                  Chỉnh sửa bài viết
+                </p>
+                <p
+                  className="option-item option-delete"
+                  onClick={() => {
+                    handleDeletePost(postId);
+                    onClose();
+                  }}
+                >
+                  Xóa bài viết
+                </p>
+              </>
+            ) : (
+              <p className="option-item option-report">Báo cáo bài viết</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+      {isOpenEdit && (
+        <EditModal
+          isOpen={isOpenEdit}
+          postId={postId}
+          post={post}
+          onClose={handleCloseEditModal}
+        ></EditModal>
+      )}
     </>
   );
 };
