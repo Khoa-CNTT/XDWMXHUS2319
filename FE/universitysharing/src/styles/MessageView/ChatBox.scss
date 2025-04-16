@@ -1,6 +1,6 @@
 // ChatBox.scss
 .chat-box-container {
-    position: fixed;
+    position: relative;
     bottom: 0;
     right: 0;
     display: flex;
@@ -171,7 +171,7 @@
             }
         
             &.seen {
-              color: #3578E5; // Facebook blue for seen checkmarks
+              color: rgba(0, 0, 0, 0.45); // Facebook blue for seen checkmarks
         
               .seen-text {
                 color: rgba(0, 0, 0, 0.45);
@@ -195,14 +195,14 @@
         
           .status {
             &.sent, &.delivered {
-              color: rgba(255, 255, 255, 0.7);
+              color: rgba(0, 0, 0, 0.7);
             }
         
             &.seen {
-              color: #aad2ff; // Lighter blue for seen in your messages
+              color: #000000; // Lighter blue for seen in your messages
               
               .seen-text {
-                color: rgba(255, 255, 255, 0.7);
+                color: rgba(0, 0, 0, 0.7);
               }
             }
           }
@@ -229,7 +229,7 @@
           border-radius: 12px 12px 0 12px;
         
           .seen-status {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(0, 0, 0, 0.7);
           }
         
           .message-time {

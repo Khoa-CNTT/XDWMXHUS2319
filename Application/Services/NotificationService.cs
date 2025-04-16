@@ -125,28 +125,16 @@ namespace Application.Services
 
         }
 
-        public async Task SendNotificationNewMessageAsync(Guid conversationId, Guid receiverId, string content, Guid messageId)
+        public async Task SendNotificationMessageWithIsSeenFalse(Guid conversationId,Guid receiverId)
         {
-            try
-            {
-                const int maxLength = 40;
-                string truncatedContent = content.Length > maxLength ? content.Substring(0, maxLength) + "..." : content;
+            int total = await _unitOfWork.MessageRepository.GetUnreadMessageCountAsync(conversationId,receiverId);
+            if (total == 0) return;
+            await _publisher.Publish(new SendNotificationMessageWithIsSeenFalseEvent(receiverId,total));
+        }
 
-                var conversation = await _unitOfWork.ConversationRepository.GetByIdAsync(conversationId);
-                if (conversation == null) return;
-
-                var senderId = conversation.User1Id == receiverId ? conversation.User2Id : conversation.User1Id;
-                var receiver = await _unitOfWork.UserRepository.GetByIdAsync(receiverId);
-                if (receiver == null) return;
-
-                var senderName = await _unitOfWork.UserRepository.GetFullNameByIdAsync(senderId);
-                string message = $"{senderName} đã gửi cho bạn một tin nhắn: {truncatedContent}";
-                await _publisher.Publish(new SendMessageNotificationEvent( messageId,senderId, receiverId, message));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error sending notification: {ex.Message}");
-            }
+        public async Task SendNotificationNewMessageAsync(Guid receiverId, string message)
+        {
+                await _publisher.Publish(new SendMessageNotificationEvent(receiverId, message));
         }
         public async Task SendNotificationUpdateLocationAsync(Guid driverId, Guid passengerId, float lat, float lng, string location, bool isEnd)
         {
@@ -246,5 +234,6 @@ namespace Application.Services
         {
             await _publisher.Publish(new ShareEvent(postId, userId));
         }
+
     }
 }

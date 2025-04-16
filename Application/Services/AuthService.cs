@@ -1,10 +1,4 @@
 ﻿using Application.DTOs.User;
-using Application.Helpers;
-using Application.Interface;
-using Application.Model;
-using Domain.Entities;
-
-
 namespace Application.Services
 {
     public class AuthService : IAuthService
@@ -12,11 +6,13 @@ namespace Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IJwtProvider _jwtProvider;
         private readonly ITokenService _tokenService;
-        public AuthService(IUnitOfWork unitofWork, IJwtProvider jwtProvider, ITokenService tokenService)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public AuthService(IUnitOfWork unitofWork, IJwtProvider jwtProvider, ITokenService tokenService, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitofWork;
             _jwtProvider = jwtProvider;
             _tokenService = tokenService;
+            _httpContextAccessor = httpContextAccessor;
         }
         public Task<string> GetRoleNameByIdAsync(int roleId)
         {
@@ -54,15 +50,46 @@ namespace Application.Services
         }
 
         public async Task<ResponseModel<string>?> RefreshTokenAsync()
-        { 
-            var token = await _jwtProvider.ValidateAndGenerateAccessToken();
-            if (token == null)
+        {
+            var context = _httpContextAccessor.HttpContext;  // Lấy HttpContext
+
+            if (context == null || !context.Request.Cookies.TryGetValue("refreshToken", out var oldRefreshToken))
             {
-                return ResponseFactory.Fail<string>("Refresh token is invalid or expired", 404);
+                return ResponseFactory.Fail<string>("HttpContext không hợp lệ", 400);
             }
 
-            return ResponseFactory.Success(token, "Refresh token is valid",200);
+            // Kiểm tra nếu cookie refreshToken không tồn tại
+            if (!context.Request.Cookies.ContainsKey("refreshToken"))
+            {
+                return ResponseFactory.Fail<string>("Refresh token không có trong cookie", 400);
+            }
+
+            var refreshToken = context.Request.Cookies["refreshToken"];
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return ResponseFactory.Fail<string>("Refresh token là rỗng hoặc không hợp lệ", 400);
+            }
+
+            // Lấy userId từ refresh token
+            var userId = (await _tokenService.GetByTokenAsync(refreshToken))?.UserId;
+
+            if (userId == null) return null;
+
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId.Value);
+            if (user == null) return null;
+
+            // Sửa: Xóa refresh token cũ
+            await _tokenService.RevokeRefreshTokenAsync(oldRefreshToken);
+
+            // Tạo token mới
+            var (newAccessToken, newRefreshToken) = _jwtProvider.GenerateJwtToken(user);
+            await _tokenService.AddRefreshTokenAsync(user, newRefreshToken);
+
+            return ResponseFactory.Success(newAccessToken, "Refresh token successful", 200);
         }
+
+
+
 
 
     }
