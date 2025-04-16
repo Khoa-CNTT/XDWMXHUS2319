@@ -15,6 +15,6 @@ namespace Application.Interface
                 Guid userId,
                 Guid? lastMessageId = null,
                 int pageSize = 20);
-        Task<ResponseModel<string>> MarkMessageAsSeenAsync(Guid messageId);
+        Task<ListInBoxDto> GetListInBoxAsync(Guid? cursor, int pageSize);
     }
 }

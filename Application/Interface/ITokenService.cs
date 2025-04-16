@@ -13,5 +13,6 @@ namespace Application.Interface
         
         Task<RefreshToken> AddRefreshTokenAsync(User user, string rerefreshToken);
         Task<RefreshToken?> GetByTokenAsync(string token);
+        Task RevokeRefreshTokenAsync(string token);
     }
 }

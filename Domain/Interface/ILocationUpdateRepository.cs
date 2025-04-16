@@ -14,7 +14,7 @@ namespace Domain.Interface
         //viết phương thức mới để lấy vị trí gần nhất
         Task<LocationUpdate?> GetLatestLocationByRideIdAsync(Guid rideId);
         //tạo phương thức add range
-        Task AddRangeAsync(List<LocationUpdate> locationUpdates);
+       // Task AddRangeAsync(List<LocationUpdate> locationUpdates);
         Task<DateTime?> GetTimestampByRideIdAsync(Guid rideId);
         Task<DateTime?> GetPassengerLocationTimestampAsync(Guid passengerId);
     }

@@ -1,13 +1,11 @@
 import {
   configureStore,
-  createAction,
-  combineReducers,
 } from "@reduxjs/toolkit";
 import listPostReducer from "./reducers/listPostReducers.js";
 import listUser from "./reducers/proFileReducers.js";
 import ridePostReducer from "./reducers/ridePostReducer.js";
 import friendReducer from "./reducers/friendReducer.js";
-
+import onlineUsersReducer from "./reducers/onlineSlice.js";
 import searchSlice from "./reducers/searchReducers.js";
 
 const store = configureStore({
@@ -16,7 +14,7 @@ const store = configureStore({
     users: listUser,
     rides: ridePostReducer,
     friends: friendReducer,
-
+    onlineUsers: onlineUsersReducer,
     searchs: searchSlice,
 
   },
