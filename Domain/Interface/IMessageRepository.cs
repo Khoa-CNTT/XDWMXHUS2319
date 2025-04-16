@@ -20,9 +20,7 @@ namespace Domain.Interface
             Guid? lastMessageId = null);
         Task<List<Message>> GetLatestMessagesForInboxAsync(Guid userId, Guid? cursorMessageId, int pageSize);
         Task<int> GetUnreadMessageCountAsync(Guid conversationId, Guid userId); // Tách riêng để rõ ràng
-        Task<List<Message>> GetMessagesForDeliveryAsync(List<Guid> conversationIds, Guid recipientId);
-        Task<Message?> GetMessagesForSeenAsync(Guid messageId, Guid readerId);
-        Task<List<Message>> GetListMessagesForSeenAsync(Guid conversationId, Guid senderId);
+        Task<List<Message>> GetListMessagesAsync(Guid messageId, Guid senderId, MessageStatus targetStatus);
 
     }
 }

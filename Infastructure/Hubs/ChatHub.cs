@@ -21,59 +21,35 @@ namespace Infrastructure.Hubs
             var userIdString = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId) || userId == Guid.Empty)
             {
-                Console.WriteLine("UserId không hợp lệ trong OnConnectedAsync");
-                // Cân nhắc ngắt kết nối hoặc yêu cầu client cung cấp UserId hợp lệ
                 Context.Abort();
                 return;
             }
-
-            Console.WriteLine($"🔗 User {userId} kết nối, ConnectionId: {Context.ConnectionId}");
-
-            // Thêm vào Group SignalR để có thể gửi tin nhắn theo UserId
             await Groups.AddToGroupAsync(Context.ConnectionId, userId.ToString());
-            Console.WriteLine($"👥 Đã thêm ConnectionId {Context.ConnectionId} vào group {userId}");
-
-            // Lưu connectionId và trạng thái online vào Redis (như cũ)
             await _redisService.AddAsync($"user_connections:{userId}", Context.ConnectionId);
             await _redisService.SaveDataAsync($"user_status:{userId}", "online", _statusExpiration);
-            Console.WriteLine($"✅ Đã lưu trạng thái online cho user {userId}");
-
-            // --- GỌI SERVICE ĐỂ CẬP NHẬT TRẠNG THÁI DELIVERED ---
-            try
-            {
-                await _messageStatusService.MarkMessagesAsDeliveredAsync(userId);
-                Console.WriteLine($"✅ Đã xử lý cập nhật Delivered status cho user {userId}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Lỗi khi xử lý MarkMessagesAsDeliveredAsync cho user {userId}: {ex.Message}");
-                // Ghi log chi tiết lỗi ở đây
-            }
-            // --- KẾT THÚC GỌI SERVICE ---
-
-            // Gửi UserOnline tới bạn bè và gửi InitialOnlineUsers (như cũ)
-            var friends = await _redisService.GetFriendsAsync(userId.ToString()); // Chuyển Guid sang string nếu cần
+            //try
+            //{
+            //    await _messageStatusService.MarkMessagesAsync(messageId,userId,MessageStatus.Delivered);
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw new Exception($"Lỗi khi xử lý MarkMessagesAsync cho user {userId}: {ex.Message}");
+            //}
+            var friends = await _redisService.GetFriendsAsync(userId.ToString()); 
             if (!friends.Any())
-            {
-                Console.WriteLine($"Danh sách bạn bè trống cho {userId}, đồng bộ từ DB...");
-                await _redisService.SyncFriendsToRedis(userId.ToString()); // Chuyển Guid sang string nếu cần
+            {                await _redisService.SyncFriendsToRedis(userId.ToString()); 
                 friends = await _redisService.GetFriendsAsync(userId.ToString());
             }
-            Console.WriteLine($"Gửi UserOnline cho bạn bè của {userId}: {string.Join(", ", friends)}");
-            // Chuyển đổi friends sang Guid nếu cần gửi tới Clients.User(Guid)
             foreach (var friendIdStr in friends)
             {
                 if (Guid.TryParse(friendIdStr, out var friendId))
                 {
-                    // Sử dụng Clients.Group(friendId.ToString()) vì bạn add user vào group theo UserId string
                     await Clients.Group(friendId.ToString()).SendAsync("UserOnline", userId.ToString());
                 }
             }
-
             var onlineUsers = await GetOnlineUsers();
             Console.WriteLine($"Gửi InitialOnlineUsers cho {userId}: {string.Join(", ", onlineUsers)}");
-            await Clients.Caller.SendAsync("InitialOnlineUsers", onlineUsers.ToString()); // Gửi danh sách user đang online
-
+            await Clients.Caller.SendAsync("InitialOnlineUsers", onlineUsers.ToString()); 
             await base.OnConnectedAsync();
         }
 
@@ -162,27 +138,24 @@ namespace Infrastructure.Hubs
         {
             await Clients.Group(conversationId).SendAsync("ReceiveMessage", message);
         }
-        public async Task SendTyping(string conversationId)
-       {
+        public async Task SendTyping(string conversationId, string friendId)
+        {
             var userIdString = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId) || userId == Guid.Empty)
             {
-                Console.WriteLine("SendTyping: UserId không hợp lệ");
                 return;
             }
 
-            if (!Guid.TryParse(conversationId, out var convIdGuid))
+            if (!Guid.TryParse(conversationId, out var convIdGuid) || !Guid.TryParse(friendId, out var friendGuid))
             {
-                Console.WriteLine($"SendTyping: ConversationId không hợp lệ: {conversationId}");
                 return;
             }
 
-            Console.WriteLine($"User {userId} đang typing trong conversation {convIdGuid}");
-
-            // Gửi sự kiện typing cho người kia trong group conversation
-            await Clients.OthersInGroup(conversationId).SendAsync("UserTyping", userId.ToString());
+            // Gửi trực tiếp đến người bạn kia, thay vì dùng OthersInGroup
+            await Clients.User(friendGuid.ToString()).SendAsync("UserTyping", userId.ToString());
         }
-        public async Task MarkMessagesAsSeen(string messageId)
+
+        public async Task MarkMessagesAsSeen(string messageId,MessageStatus status)
         {
             var userIdString = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId) || userId == Guid.Empty)
@@ -202,43 +175,15 @@ namespace Infrastructure.Hubs
             // --- GỌI SERVICE ĐỂ CẬP NHẬT TRẠNG THÁI SEEN ---
             try
             {
-                await _messageStatusService.MarkMessagesAsSeenAsync(messIdGuid, userId);
+                await _messageStatusService.MarkMessagesAsync(messIdGuid, userId,status);
                 Console.WriteLine($"✅ Đã xử lý cập nhật Seen status trong conversation {messIdGuid} theo yêu cầu của user {userId}.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Lỗi khi xử lý MarkMessagesAsSeenAsync cho conversation {messIdGuid}, reader {userId}: {ex.Message}");
                 // Ghi log chi tiết lỗi
-            }
-            // --- KẾT THÚC GỌI SERVICE ---
+            }       
         }
-        public async Task MarkMessagesAsSeenOnInputFocus(string conversationId)
-        {
-            var userIdString = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId) || userId == Guid.Empty)
-            {
-                Console.WriteLine("MarkMessagesAsSeenOnInputFocus: UserId không hợp lệ");
-                return;
-            }
-
-            if (!Guid.TryParse(conversationId, out var convIdGuid))
-            {
-                Console.WriteLine($"MarkMessagesAsSeenOnInputFocus: ConversationId không hợp lệ: {conversationId}");
-                return;
-            }
-
-            Console.WriteLine($"User {userId} focus vào ô input trong conversation {convIdGuid}");
-
-            // Gọi service để cập nhật trạng thái Seen
-            try
-            {
-                await _messageStatusService.MarkMessagesAsSeenAsync(convIdGuid, userId);
-                Console.WriteLine($"✅ Đã xử lý cập nhật Seen status trong conversation {convIdGuid} khi focus ô input bởi user {userId}.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Lỗi khi xử lý MarkMessagesAsSeenAsync cho conversation {convIdGuid}, reader {userId}: {ex.Message}");
-            }
-        }
+        
     }
 }

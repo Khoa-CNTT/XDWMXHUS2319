@@ -1,6 +1,7 @@
 // src/services/signalService.js
 import * as signalR from "@microsoft/signalr";
 import { refreshAccessToken } from "./authService";
+import { message } from "antd";
 
 class SignalRService {
   constructor() {
@@ -335,66 +336,20 @@ class SignalRService {
     }
   }
 
-  // onReceiveMessageNotification: Sửa để dùng on
-  onReceiveMessageNotification(callback) {
-    if (
-      this.notificationConnection &&
-      this.notificationConnection.state === signalR.HubConnectionState.Connected
-    ) {
-      this.notificationConnection.on("ReceiveMessageNotification", callback);
-      this.eventListeners.set(`notification:ReceiveMessageNotification`, callback);
-      console.log("[SignalRService] Đăng ký trực tiếp ReceiveMessageNotification vì đã kết nối");
-    } else {
-      console.warn("[SignalRService] Kết nối chưa sẵn sàng, đưa ReceiveMessageNotification vào hàng đợi");
-      this.eventQueue.notificationHub.push({
-        event: "ReceiveMessageNotification",
-        callback,
-      });
-    }
-  }
+ 
   
-  // onMessagesDelivered: Sửa để dùng on
-  onMessagesDelivered(callback) {
-    this.on(this.chatConnection, "MessagesDelivered", (messageIds) => {
-      console.log("Nhận sự kiện MessagesDelivered:", messageIds);
-      if (typeof callback === "function") {
-        callback(messageIds);
-      }
-    });
-    console.log("Đăng ký sự kiện MessagesDelivered");
-  }
   async sendNotification(message) {
     await this.invoke(this.notificationConnection, "SendNotification", message);
   }
-  // Cập nhật onMessageSeen để rõ ràng hơn
-  // onMessagesSeen: Sửa để dùng on
-  onMessagesSeen(callback) {
-    this.on(this.chatConnection, "MessagesSeen", (messageIds) => {
-      console.log("Nhận sự kiện MessagesSeen:", JSON.stringify(messageIds));
-      if (typeof callback === "function") {
-        console.log("Gọi callback cho MessagesSeen với messageIds:", messageIds);
-        callback(messageIds);
-      } else {
-        console.error("Callback cho MessagesSeen không phải là hàm:", callback);
-      }
-    });
-    console.log("Đã đăng ký sự kiện MessagesSeen");
-  }
   // MarkMessagesAsSeen: Sửa tên và dùng invoke
-  async markMessagesAsSeen(messageId) {
+  async markMessagesAsSeen(messageId,status) {
     if (!messageId) {
-      console.error("markMessagesAsSeen: conversationId là bắt buộc");
+      console.error("markMessagesAsSeen: messageId là bắt buộc");
       throw new Error("conversationId là bắt buộc");
     }
-    await this.invoke(this.chatConnection, "MarkMessagesAsSeen", messageId.toString());
+    await this.invoke(this.chatConnection, "MarkMessagesAsSeen", messageId.toString(),status);
   }
-  async markMessagesAsSeenOnInputFocus(conversationId) {
-    if (!conversationId) {
-      console.error("markMessagesAsSeenOnInputFocus: conversationId là bắt buộc");
-      return;
-    }
-    await this.invoke(this.chatConnection, "MarkMessagesAsSeenOnInputFocus", conversationId.toString());
-  }
+
   async joinConversation(conversationId) {
     await this.invoke(this.chatConnection, "JoinConversation", conversationId);
   }
@@ -406,12 +361,8 @@ class SignalRService {
     await this.invoke(this.chatConnection, "SendMessageToConversation", conversationId, message);
   }
 
-  async markMessageAsSeen(conversationId, messageId) {
-    await this.invoke(this.chatConnection, "MarkMessageAsSeen", conversationId, messageId);
-  }
-
-  async sendTyping(conversationId) {
-    await this.invoke(this.chatConnection, "SendTyping", conversationId);
+  async sendTyping(conversationId,friendId) {
+    await this.invoke(this.chatConnection, "SendTyping", conversationId,friendId);
   }
 
  // onReceiveMessage: Sửa để dùng on
@@ -429,6 +380,12 @@ class SignalRService {
       callback(unreadCount);
     });
     console.log("Đăng ký sự kiện ReceiveUnreadCountNotification");
+  }
+   // onReceiveMessageNotification: Sửa để dùng on
+   onReceiveMessageNotification(callback) {
+    this.on(this.notificationConnection,"ReceiveMessageNotification",(notifiTab)=>{
+      callback(notifiTab);
+    })
   }
   // onInitialOnlineUsers: Sửa để dùng on 
   onInitialOnlineUsers(callback) {
@@ -465,6 +422,11 @@ class SignalRService {
       }
     });
     console.log("Đã đăng ký sự kiện UserTyping");
+  }
+  onMarkAsSeen(callback){
+    this.on(this.chatConnection,"MarkMessagesAsSeen",({ lastSeenMessageId, seenAt,status })=>{
+      callback({ lastSeenMessageId, seenAt,status });
+    })
   }
 
 }

@@ -130,7 +130,7 @@ const ChatBox = ({ friendId, onClose }) => {
    *   - Trong useEffect khi có conversationId, messages và isConnected.
    *   - Trong handleSendMessage khi textarea được focus và chưa đánh dấu.
    */
-  const markConversationAsSeen = useCallback(async () => {
+  const markConversationAsSeen = useCallback(async (status) => {
     if (!conversationId || hasMarkedSeen.current || !isConnected) return;
   
     // 👇 Tìm tin nhắn cuối cùng mà BẠN nhận được từ người gửi (userId)
@@ -142,7 +142,7 @@ const ChatBox = ({ friendId, onClose }) => {
     if (lastMessageFromUser.status === "Seen") return;
     try {
       // Gửi ID của tin nhắn cuối cùng từ người gửi
-      await signalRService.markMessagesAsSeen(lastMessageFromUser.id.toString());
+      await signalRService.markMessagesAsSeen(lastMessageFromUser.id.toString(),status);
       hasMarkedSeen.current = true;
       console.log("[ChatBox] Đã đánh dấu tin nhắn cuối cùng là Seen:", lastMessageFromUser.id);
       //resetTitle();
@@ -225,9 +225,9 @@ const ChatBox = ({ friendId, onClose }) => {
       setNewMessage(e.target.value);
       const isTyping = e.target.value.trim() && isInputFocused;
       setIsUserTyping(isTyping);
-
+  
       const now = Date.now();
-
+  
       if (
         conversationId &&
         isTyping &&
@@ -235,13 +235,16 @@ const ChatBox = ({ friendId, onClose }) => {
         now - lastTypingTimeRef.current > TYPING_INTERVAL
       ) {
         lastTypingTimeRef.current = now;
-        signalRService.sendTyping(conversationId.toString()).catch((err) =>
-          console.error("[ChatBox] Lỗi gửi trạng thái typing:", err.message)
-        );
+        signalRService
+          .sendTyping(conversationId.toString(), friendId)
+          .catch((err) =>
+            console.error("[ChatBox] Lỗi gửi trạng thái typing:", err.message)
+          );
       }
     },
-    [conversationId, isInputFocused, isConnected, signalRService]
+    [conversationId, friendId, isInputFocused, isConnected, signalRService]
   );
+  
 
   /**
    * Hàm getMessageStatus: Lấy trạng thái hiển thị của tin nhắn (Sending, Sent, Delivered, Seen).
@@ -252,6 +255,21 @@ const ChatBox = ({ friendId, onClose }) => {
    * @param {Array} messages - Danh sách tất cả tin nhắn.
    * @returns {JSX.Element|null} - Component trạng thái hoặc null.
    */
+  useEffect(() => {
+    signalRService.onMarkAsSeen(({ lastSeenMessageId, seenAt,status }) => {
+      console.log("Đã nhận MarkMessagesAsSeen:", lastSeenMessageId, seenAt,status);
+  
+      // Cập nhật status của message tương ứng trong danh sách messages
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === lastSeenMessageId
+            ? { ...msg, status, seenAt }
+            : msg
+        )
+      );
+    });
+  }, []);
+  
   const getMessageStatus = useCallback(
     (message, messages) => {
       if (message.senderId !== userId) return null;
@@ -343,44 +361,21 @@ const ChatBox = ({ friendId, onClose }) => {
         signalRService.onReceiveMessage((message) => {
           console.log("[ChatBox] Nhận tin nhắn mới:", message);
           if (message.conversationId !== conversation.id.toString()) {
-            console.log(
-              `[ChatBox] Bỏ qua tin nhắn từ conversation khác: ${message.conversationId}`
-            );
             return;
           }
           if (processedMessageIds.current.has(message.id)) {
             console.log(`[ChatBox] Bỏ qua tin nhắn lặp: ${message.id}`);
             return;
           }
+          if (message.senderId === friendId) {
+            setIsFriendTyping(false);
+            clearTimeout(typingTimeoutRef.current);
+          }
           processedMessageIds.current.add(message.id);
           setMessages((prev) => [...prev, message]);
           if (isNearBottom) scrollToBottom();
         });
-
-        signalRService.onMessagesDelivered((messageIds) => {
-          console.log("[ChatBox] MessagesDelivered:", messageIds);
-          setMessages((prev) =>
-            prev.map((msg) =>
-              messageIds.includes(msg.id.toString())
-                ? { ...msg, status: "Delivered", deliveredAt: new Date().toISOString() }
-                : msg
-            )
-          );
-        });
-
-        signalRService.onMessagesSeen((messageIds) => {
-          console.log("[ChatBox] MessagesSeen:", messageIds);
-          setMessages((prev) =>
-            prev.map((msg) =>
-              messageIds.includes(msg.id.toString())
-                ? { ...msg, status: "Seen", seenAt: new Date().toISOString() }
-                : msg
-            )
-          );
-        });
-
         signalRService.onUserTyping((typingUserId) => {
-          console.log("[ChatBox] onUserTyping:", typingUserId);
           if (typingUserId === friendId.toString()) {
             setIsFriendTyping(true);
             clearTimeout(typingTimeoutRef.current);
@@ -389,15 +384,6 @@ const ChatBox = ({ friendId, onClose }) => {
             }, 5000);
           }
         });
-
-        signalRService.onReceiveMessageNotification((notification) => {
-          console.log("[ChatBox] Nhận thông báo tin nhắn:", notification);
-          if (notification.conversationId === conversation.id.toString()) {
-            toast.info(`Tin nhắn mới: ${notification.content}`);
-            resetTitle();
-          }
-        });
-
         retryCountRef.current = 0;
       } catch (error) {
         console.error("[ChatBox] Lỗi khởi tạo chat:", {
@@ -443,7 +429,6 @@ const ChatBox = ({ friendId, onClose }) => {
           );
         signalRService.off("ReceiveMessage", signalRService.chatConnection);
         signalRService.off("MessagesDelivered", signalRService.chatConnection);
-        signalRService.off("MessagesSeen", signalRService.chatConnection);
         signalRService.off("UserTyping", signalRService.chatConnection);
         signalRService.off(
           "ReceiveMessageNotification",
@@ -493,10 +478,13 @@ const ChatBox = ({ friendId, onClose }) => {
 
   // Effect đánh dấu đã xem
   // useEffect(() => {
-  //   if (conversationId && messages.length > 0 && isConnected) {
-  //     markConversationAsSeen();
+  //   console.log("Effect đánh dấu đã xem");
+  
+  //   if (conversationId && isConnected && !isMinimized) {
+  //     markConversationAsSeen(1);
   //   }
-  // }, [conversationId, messages, markConversationAsSeen, isConnected]);
+  // }, [conversationId, messages, markConversationAsSeen, isConnected, isMinimized]);
+  
 
   return (
     <div className={`chat-box ${isMinimized ? "minimized" : ""}`}>
@@ -596,7 +584,7 @@ const ChatBox = ({ friendId, onClose }) => {
               onFocus={() => {
                 setIsInputFocused(true);
                 if (conversationId) {
-                  markConversationAsSeen();
+                  markConversationAsSeen(2);
                 }
               }}
               onBlur={() => {

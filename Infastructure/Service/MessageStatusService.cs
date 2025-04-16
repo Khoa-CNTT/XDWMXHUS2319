@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Domain.Entities;
+using MimeKit;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,83 +27,44 @@ namespace Infrastructure.Service
             _chatHubContext = chatHubContext;
         }
 
-        public async Task MarkMessagesAsDeliveredAsync(Guid recipientId)
+        public async Task MarkMessagesAsync(Guid messageId, Guid readerId, MessageStatus targetStatus)
         {
-            // Lấy danh sách conversation của recipient
-            var conversations = await _conversationRepository.GetAllConversationsAsync(recipientId);
-            if (!conversations.Any()) return;
-
-            var conversationIds = conversations.Select(c => c.Id).ToList();
-
-            // Lấy các tin nhắn cần cập nhật status
-            var messagesToUpdate = await _messageRepository.GetMessagesForDeliveryAsync(conversationIds, recipientId);
-            if (!messagesToUpdate.Any()) return;
-
-            Console.WriteLine($"Updating {messagesToUpdate.Count} messages to Delivered for recipient {recipientId}");
-
-            var deliveredMessageIdsBySender = new Dictionary<Guid, List<Guid>>();
-
-            foreach (var message in messagesToUpdate)
-            {
-                if (message.Status == MessageStatus.Sent)
-                {
-                    message.UpdateStatus(MessageStatus.Delivered);
-
-                    if (!deliveredMessageIdsBySender.ContainsKey(message.SenderId))
-                    {
-                        deliveredMessageIdsBySender[message.SenderId] = new List<Guid>();
-                    }
-                    deliveredMessageIdsBySender[message.SenderId].Add(message.Id);
-                }
-            }
-
-            // Lưu thay đổi
-            await _unitOfWork.SaveChangesAsync();
-
-            // Thông báo cho người gửi
-            foreach (var kvp in deliveredMessageIdsBySender)
-            {
-                var senderId = kvp.Key;
-                var messageIds = kvp.Value;
-                Console.WriteLine($"Notifying sender {senderId} about {messageIds.Count} delivered messages.");
-                await _chatHubContext.Clients.Group(senderId.ToString())
-                    .SendAsync("MessagesDelivered", messageIds);
-            }
-        }
-
-        public async Task MarkMessagesAsSeenAsync(Guid messageId, Guid readerId)
-        {
-            var messagesToUpdate = await _messageRepository.GetListMessagesForSeenAsync(messageId, readerId);
-
-            if (messagesToUpdate == null || messagesToUpdate.Count == 0)
+            var messagesToUpdate = await _messageRepository.GetListMessagesAsync(messageId, readerId, targetStatus);
+            if (messagesToUpdate == null || !messagesToUpdate.Any())
                 return;
-
-            var seenAt = DateTime.UtcNow;
-
-            // Cập nhật status và thời gian seen
+                var seenAt = DateTime.UtcNow;
+            // Cập nhật status và thời gian seen (nếu cần)
             foreach (var msg in messagesToUpdate)
             {
-                msg.UpdateStatus(MessageStatus.Seen);
-                msg.UpdateSeenAt(seenAt);
-                await _messageRepository.UpdateAsync(msg);
+                msg.UpdateStatus(targetStatus);
+                if (targetStatus == MessageStatus.Seen)
+                {
+                    msg.UpdateSeenAt(seenAt);
+                    msg.UpdateStatus(MessageStatus.Seen);
+                }
+                else if (targetStatus == MessageStatus.Delivered)
+                {
+                    msg.UpdateStatus(MessageStatus.Delivered);
+                }
             }
-
-            // Sử dụng BulkUpdate để tối ưu hiệu năng
-
-
+                // Cập nhật hàng loạt
+            await _messageRepository.BulkUpdateAsync(messagesToUpdate);
+            await _unitOfWork.SaveChangesAsync();
             // Lấy tin nhắn cuối cùng để gửi về client
             var lastSeenMessage = messagesToUpdate.OrderByDescending(m => m.SentAt).FirstOrDefault();
             if (lastSeenMessage != null)
             {
+                var methodName = targetStatus == MessageStatus.Seen ? "MarkMessagesAsSeen" : "MarkMessagesAsDelivered";
                 await _chatHubContext.Clients.Group(lastSeenMessage.SenderId.ToString())
-                    .SendAsync("LastMessageSeen", new
+                    .SendAsync(methodName, new
                     {
                         lastSeenMessageId = lastSeenMessage.Id,
-                        seenAt = seenAt
+                        seenAt,
+                        status = targetStatus.ToString()
                     });
             }
 
-            Console.WriteLine($"✅ Đã cập nhật Seen {messagesToUpdate.Count} tin nhắn. Cuối cùng: {lastSeenMessage?.Id}");
+            Console.WriteLine($"✅ Đã cập nhật {targetStatus} {messagesToUpdate.Count} tin nhắn. Cuối cùng: {lastSeenMessage?.Id}");
         }
 
     }
