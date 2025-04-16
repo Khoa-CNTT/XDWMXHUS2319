@@ -3,6 +3,7 @@ import "../../styles/PostOptionModal.scss";
 import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
 import { closePostOptionModal } from "../../stores/reducers/listPostReducers";
+import ReportModal from "../ReportModal";
 
 import EditModal from "../EditPostModal";
 
@@ -20,6 +21,7 @@ const PostOptionsModal = ({
   const [isHidden, setIsHidden] = useState(false); // Thêm state để ẩn/hiện modal
   //Update bài viếtviết
   const [isOpenEdit, setOpenEdit] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false); // thêm state
 
   const handleOpenEditModal = () => {
     setOpenEdit(true);
@@ -29,7 +31,15 @@ const PostOptionsModal = ({
     setOpenEdit(false);
     onClose();
   };
+  const handleOpenReportModal = () => {
+    setIsReportModalOpen(true);
+    setIsHidden(true); // ẩn menu options
+  };
 
+  const handleCloseReportModal = () => {
+    setIsReportModalOpen(false);
+    onClose(); // đóng luôn modal options
+  };
   //đóng PostOption
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -95,7 +105,12 @@ const PostOptionsModal = ({
                 </p>
               </>
             ) : (
-              <p className="option-item option-report">Báo cáo bài viết</p>
+              <p
+                className="option-item option-report"
+                onClick={handleOpenReportModal}
+              >
+                Báo cáo bài viết
+              </p>
             )}
           </div>
         </div>
@@ -107,6 +122,9 @@ const PostOptionsModal = ({
           post={post}
           onClose={handleCloseEditModal}
         ></EditModal>
+      )}
+      {isReportModalOpen && (
+        <ReportModal postId={postId} onClose={handleCloseReportModal} />
       )}
     </>
   );

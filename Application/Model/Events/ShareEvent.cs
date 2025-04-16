@@ -10,12 +10,14 @@ namespace Application.Model.Events
     {
         public Guid UserId { get; set; }
         public Guid PostId { get; set; }
-        
-        public ShareEvent(Guid postId, Guid userId)
+        public string Message { get; set; }
+
+        public ShareEvent(Guid postId, Guid userId, string message)
         {
             PostId = postId;
             UserId = userId;
-            
+            Message = message;
+
         }  
     }
 }

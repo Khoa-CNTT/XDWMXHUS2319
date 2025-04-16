@@ -230,9 +230,13 @@ namespace Application.Services
                 await _publisher.Publish(new ReplyCommentEvent(postOwnerId, postData));
             }
         }
-        public async Task SendShareNotificationAsync(Guid postId, Guid userId)
+        public async Task SendShareNotificationAsync(Guid postId, Guid userId, string message)
         {
-            await _publisher.Publish(new ShareEvent(postId, userId));
+            
+            var postOwnerId = await _postService.GetPostOwnerId(postId);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null|| postOwnerId == Guid.Empty) return;
+            await _publisher.Publish(new ShareEvent(postId, postOwnerId, message));
         }
 
     }

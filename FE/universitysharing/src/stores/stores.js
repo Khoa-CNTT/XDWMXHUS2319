@@ -4,8 +4,13 @@ import {
 import listPostReducer from "./reducers/listPostReducers.js";
 import listUser from "./reducers/proFileReducers.js";
 import ridePostReducer from "./reducers/ridePostReducer.js";
+
+import reportSlice from "./reducers/reportReducers.js";
+
+
 import friendReducer from "./reducers/friendReducer.js";
 import onlineUsersReducer from "./reducers/onlineSlice.js";
+
 import searchSlice from "./reducers/searchReducers.js";
 
 const store = configureStore({
@@ -13,10 +18,13 @@ const store = configureStore({
     posts: listPostReducer,
     users: listUser,
     rides: ridePostReducer,
+
+    report: reportSlice,
+
     friends: friendReducer,
     onlineUsers: onlineUsersReducer,
-    searchs: searchSlice,
 
+    searchs: searchSlice,
   },
 });
 

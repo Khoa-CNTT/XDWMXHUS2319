@@ -230,8 +230,10 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
     const hasVideo = !!post.videoUrl;
     const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
+
     // Nếu không có ảnh lẫn video, không render media-container
     if (totalMedia === 0) return null;
+
     return (
       <div className={getMediaContainerClass(post)}>
         {imageUrls.map((url, index) => {
@@ -453,6 +455,27 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
           <p>Không có bài viết nào.</p>
         </div>
       )}
+
+
+      {isPostOptionsOpen && selectedPostToOption && (
+        <PostOptionsModal
+          isOwner={userId === selectedPostToOption.post.userId}
+          onClose={() => dispatch(closePostOptionModal())}
+          position={selectedPostToOption.position}
+          postId={selectedPostToOption.post.id}
+          handleDeletePost={confirmDelete}
+          post={selectedPostToOption.post}
+        />
+      )}
+
+      {selectedPost &&
+        location.pathname.includes(`/post/${selectedPost.id}`) && (
+          <CommentModal
+            post={selectedPost}
+            onClose={handleCloseCommentModal}
+            usersProfile={usersProfile}
+          />
+        )}
 
       {selectedPostToShare && (
         <ShareModal
