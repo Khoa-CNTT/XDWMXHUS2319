@@ -6,15 +6,14 @@ using System.Threading.Tasks;
 
 namespace Application.Model.Events
 {
-    public class SendMessageNotificationEvent : INotification
+    public class SendNotificationMessageWithIsSeenFalseEvent : INotification
     {
         public Guid ReceiverId { get; set; }
-        public string Message { get; set; } = null!;
-        public SendMessageNotificationEvent(Guid receiverId, string message)
+        public int UnreadCount { get; set; }
+        public SendNotificationMessageWithIsSeenFalseEvent(Guid receiverId, int unreadCount)
         {
-
             ReceiverId = receiverId;
-            Message = message;
+            UnreadCount = unreadCount;
         }
     }
 }

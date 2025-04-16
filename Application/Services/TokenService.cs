@@ -49,5 +49,20 @@ namespace Application.Services
         {
             return await _unitOfWork.RefreshtokenRepository.GetByTokenAsync(token);
         }
+
+        public async Task RevokeRefreshTokenAsync(string token)
+        {
+            var refreshToken = await _unitOfWork.RefreshtokenRepository.GetByTokenAsync(token);
+            if (refreshToken != null)
+            {
+                refreshToken.Revoke();
+                await _unitOfWork.RefreshtokenRepository.UpdateAsync(refreshToken);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            else
+            {
+                throw new Exception("Refresh token not found");
+            }
+        }
     }
 }

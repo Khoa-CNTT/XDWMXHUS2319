@@ -1,30 +1,43 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useState,useEffect } from "react";
 import "../../styles/headerHome.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
+import { useSignalR } from "../../Service/SignalRProvider";
 
 import {
   FiSearch,
   FiBell,
   FiMessageSquare,
-  FiChevronDown,
-  FiX,
-  FiHome,
 } from "react-icons/fi";
 import NotifyModal from "../NotifyModal";
 import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
 
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { searchPost } from "../../stores/action/searchAction";
 import { useDispatch } from "react-redux";
 
 const Header = ({ usersProfile }) => {
+  const [unreadCount, setUnreadCount] = useState(0);
   const dispatch = useDispatch();
   const [searchKeyword, setSearchKeyword] = useState("");
   const navigate = useNavigate();
   const [modalPosition, setModalPosition] = useState({});
+  const { signalRService } = useSignalR();
+
+useEffect(() => {
+  const handleUnreadCount = (count) => {
+    setUnreadCount(count);
+  };
+
+  signalRService.onReceiveUnreadCount(handleUnreadCount);
+
+  return () => {
+    // Nếu bạn có hỗ trợ unsubscribe thì thực hiện ở đây
+  };
+}, [signalRService]);
+
+
   const UserProfile = () => {
 
     navigate("/ProfileUserView");
@@ -55,6 +68,12 @@ const Header = ({ usersProfile }) => {
     messenger: false,
     setting: false,
   });
+  useEffect(() => {
+    if (modalState.messenger) {
+      setUnreadCount(0);
+      // TODO: Gọi API đánh dấu tin nhắn là đã đọc
+    }
+  }, [modalState.messenger]);
   // Add this function to calculate button position
   const getButtonPosition = (buttonId) => {
     const button = document.getElementById(buttonId);
@@ -108,8 +127,11 @@ const toggleModal = (modalName) => {
             aria-label="Messenger"
           >
             <FiMessageSquare className="icon" />
-            {modalState.messenger && <div className="indicator"></div>}
+            {unreadCount > 0 && (
+              <span className="badge">{unreadCount}</span>
+            )}
           </button>
+
           
           <button 
             className={`icon-button ${modalState.notify ? 'active' : ''}`}

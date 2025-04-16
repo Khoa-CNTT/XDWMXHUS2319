@@ -68,87 +68,91 @@ namespace DuyTanSharingSystem.Controllers
             return Ok(result);
         }
 
-        [HttpPatch("{messageId}/seen")]
-        public async Task<IActionResult> MarkMessageAsSeen([FromRoute] Guid messageId, [FromQuery] Guid conversationId)
+        
+        [HttpGet("inbox")]
+        public async Task<IActionResult> GetListInBox([FromQuery] Guid? cursor, [FromQuery] int pageSize = 20)
         {
-            var command = new MarkMessageAsSeenCommand(messageId, conversationId);
-            var result = await _mediator.Send(command);
+            var query = new GetListInBoxMessageQueries
+            {
+                Cursor = cursor,
+                PageSize = pageSize
+            };
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
 
 
 
-
         //viết để test
-        [HttpGet("friends")]
-        public async Task<IActionResult> GetFriends()
-        {
-            var userId = _userContextService.UserId();
-            if (userId == Guid.Empty)
-            {
-                return BadRequest(new ResponseModel<object>
-                {
-                    Success = false,
-                    Message = "Người dùng không hợp lệ.",
-                    Code = 400
-                });
-            }
+        //[HttpGet("friends")]
+        //public async Task<IActionResult> GetFriends()
+        //{
+        //    var userId = _userContextService.UserId();
+        //    if (userId == Guid.Empty)
+        //    {
+        //        return BadRequest(new ResponseModel<object>
+        //        {
+        //            Success = false,
+        //            Message = "Người dùng không hợp lệ.",
+        //            Code = 400
+        //        });
+        //    }
 
-            var friends = await GetFriendsAsync(userId);
+        //    var friends = await GetFriendsAsync(userId);
 
-            return Ok(new ResponseModel<List<FriendDto>>
-            {
-                Success = true,
-                Message = "Lấy danh sách bạn bè thành công.",
-                Data = friends,
-                Code = 200
-            });
-        }
+        //    return Ok(new ResponseModel<List<FriendDto>>
+        //    {
+        //        Success = true,
+        //        Message = "Lấy danh sách bạn bè thành công.",
+        //        Data = friends,
+        //        Code = 200
+        //    });
+        //}
 
-        public class FriendDto
-        {
-            public Guid FriendId { get; set; }         // ID của người bạn (khác với người dùng hiện tại)
-            public required string FullNameFriend { get; set; }       // Tên đầy đủ của bạn
-            public string? AvatarFriend { get; set; }
-            public DateTime CreatedAt { get; set; }    // Ngày bắt đầu kết bạn
-            public required string Status { get; set; }         // Trạng thái (Pending, Accepted, Blocked,...)
-        }
-        [HttpGet("friends/{userId}")]
-        public async Task<List<FriendDto>> GetFriendsAsync(Guid userId)
-        {
-            var friendships = await _unitOfWork.MessageRepository.GetFriendshipsAsync(userId);
+        //public class FriendDto
+        //{
+        //    public Guid FriendId { get; set; }         // ID của người bạn (khác với người dùng hiện tại)
+        //    public required string FullNameFriend { get; set; }       // Tên đầy đủ của bạn
+        //    public string? AvatarFriend { get; set; }
+        //    public DateTime CreatedAt { get; set; }    // Ngày bắt đầu kết bạn
+        //    public required string Status { get; set; }         // Trạng thái (Pending, Accepted, Blocked,...)
+        //}
+        //[HttpGet("friends/{userId}")]
+        //public async Task<List<FriendDto>> GetFriendsAsync(Guid userId)
+        //{
+        //    var friendships = await _unitOfWork.MessageRepository.GetFriendshipsAsync(userId);
 
-            if (friendships == null || !friendships.Any())
-                return new List<FriendDto>();
+        //    if (friendships == null || !friendships.Any())
+        //        return new List<FriendDto>();
 
-            // Lấy ra danh sách ID người bạn (người còn lại trong mối quan hệ)
-            var friendIds = friendships
-                .Select(f => f.UserId == userId ? f.FriendId : f.UserId)
-                .Distinct()
-                .ToList();
+        //    // Lấy ra danh sách ID người bạn (người còn lại trong mối quan hệ)
+        //    var friendIds = friendships
+        //        .Select(f => f.UserId == userId ? f.FriendId : f.UserId)
+        //        .Distinct()
+        //        .ToList();
 
-            // Lấy thông tin người dùng theo friendIds
-            var users = await _unitOfWork.UserRepository.GetUsersByIdsAsync(friendIds);
+        //    // Lấy thông tin người dùng theo friendIds
+        //    var users = await _unitOfWork.UserRepository.GetUsersByIdsAsync(friendIds);
 
-            // Convert thành dictionary cho dễ truy xuất
-            var userDict = users.ToDictionary(u => u.Id, u => u.FullName);
-            var userPictureDict = users.ToDictionary(u => u.Id, u => u.ProfilePicture);
-            var friendDtos = friendships.Select(f =>
-            {
-                var friendId = f.UserId == userId ? f.FriendId : f.UserId;
+        //    // Convert thành dictionary cho dễ truy xuất
+        //    var userDict = users.ToDictionary(u => u.Id, u => u.FullName);
+        //    var userPictureDict = users.ToDictionary(u => u.Id, u => u.ProfilePicture);
+        //    var friendDtos = friendships.Select(f =>
+        //    {
+        //        var friendId = f.UserId == userId ? f.FriendId : f.UserId;
 
-                return new FriendDto
-                {
-                    FriendId = friendId,
-                    FullNameFriend = userDict.GetValueOrDefault(friendId, "Không rõ"),
-                    AvatarFriend = Constaint.baseUrl + userPictureDict.GetValueOrDefault(friendId, "Không rõ"),
-                    CreatedAt = f.CreatedAt,
-                    Status = f.Status.ToString()
-                };
-            }).ToList();
+        //        return new FriendDto
+        //        {
+        //            FriendId = friendId,
+        //            FullNameFriend = userDict.GetValueOrDefault(friendId, "Không rõ"),
+        //            AvatarFriend = Constaint.baseUrl + userPictureDict.GetValueOrDefault(friendId, "Không rõ"),
+        //            CreatedAt = f.CreatedAt,
+        //            Status = f.Status.ToString()
+        //        };
+        //    }).ToList();
 
-            return friendDtos;
-        }
+        //    return friendDtos;
+        //}
 
         //
 

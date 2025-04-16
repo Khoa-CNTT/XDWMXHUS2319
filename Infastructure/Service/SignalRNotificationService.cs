@@ -68,13 +68,8 @@ namespace Infrastructure.Service
 
         public async Task SendNewMessageSignalRAsync(SendMessageNotificationEvent sendMessageNotificationEvent)
         {
-            await _hubContext.Clients.Group(sendMessageNotificationEvent.ReceiverId.ToString())
-                .SendAsync("ReceiveMessageNotification", new
-                {
-                    SenderId = sendMessageNotificationEvent.SenderId.ToString(),
-                    Content = sendMessageNotificationEvent.Message,
-                    MessageId = sendMessageNotificationEvent.MessageId.ToString()
-                });
+            await _hubContext.Clients.User(sendMessageNotificationEvent.ReceiverId.ToString())
+                .SendAsync("ReceiveMessageNotification", sendMessageNotificationEvent.Message);
         }
     }
 }

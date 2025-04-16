@@ -1,13 +1,13 @@
 // src/stores/action/friendAction.js
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-
 export const fetchFriends = createAsyncThunk(
   'friends/fetchFriends',
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get('https://localhost:7053/api/Message/friends', {
+      const baseURL = process.env.REACT_APP_BASE_URL;
+      const response = await axios.get(`${baseURL}/api/FriendShip/get-friends-list`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

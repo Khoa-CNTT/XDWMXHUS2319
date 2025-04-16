@@ -3,6 +3,8 @@ using Application.CQRS.Commands.Messages;
 using Application.DTOs.Message;
 using Application.Interface.ContextSerivce;
 using Application.Interface.Hubs;
+using MediatR;
+using Application.DTOs.User;
 
 
 namespace Application.Services
@@ -97,10 +99,13 @@ namespace Application.Services
                 Id = m.Id,
                 ConversationId = m.ConversationId,
                 SenderId = m.SenderId,
+                ReceiverId = m.Conversation.User1Id,
                 Content = m.Content,
                 SentAt =FormatUtcToLocal( m.SentAt),
                 IsSeen = m.IsSeen,
                 SeenAt =FormatUtcToLocal( m.SeenAt ?? DateTime.UtcNow),
+                Status = m.Status.ToString(),
+                DeliveredAt =FormatUtcToLocal(m.DeliveredAt??DateTime.UtcNow)
             }).ToList();
 
             var nextCursor = messageDtos.Count() == pageSize
@@ -111,34 +116,81 @@ namespace Application.Services
 
         }
 
-
-
-        public async Task<ResponseModel<string>> MarkMessageAsSeenAsync(Guid messageId)
+        public async Task<ListInBoxDto> GetListInBoxAsync(Guid? cursor, int pageSize)
         {
-            var userId = _userContextService.UserId();
-            var message = await _unitOfWork.MessageRepository.GetByIdAsync(messageId);
-
-            if (message == null)
+            var currentUserId = _userContextService.UserId();
+            if (currentUserId == Guid.Empty)
             {
-                return ResponseFactory.Fail<string>("Tin nhắn không tồn tại.", 404);
+                throw new UnauthorizedAccessException("User not authenticated or invalid user ID.");
             }
 
-            var conversation = await _unitOfWork.ConversationRepository.GetByIdAsync(message.ConversationId);
-            if (conversation == null)
+            if (pageSize <= 0) pageSize = Constaint.DefaultPageSize;
+            if (pageSize > Constaint.MaxPageSize) pageSize = Constaint.MaxPageSize;
+
+            // === Lấy pageSize + 1 items ===
+            int itemsToFetch = pageSize + 1;
+
+            // === Gọi phương thức Repository ĐÃ SỬA ĐỔI ===
+            var latestMessages = await _unitOfWork.MessageRepository.GetLatestMessagesForInboxAsync(currentUserId, cursor, itemsToFetch);
+
+            var resultDto = new ListInBoxDto();
+            // === Kiểm tra hasNextPage dựa trên số lượng thực tế nhận được ===
+            bool hasNextPage = latestMessages.Count == itemsToFetch;
+
+            // === Chỉ lấy pageSize items để xử lý ===
+            var messagesForPage = latestMessages.Take(pageSize).ToList();
+
+            var inboxDtos = new List<InBoxDto>();
+
+            foreach (var message in messagesForPage)
             {
-                return ResponseFactory.Fail<string>("Cuộc trò chuyện không tồn tại.", 404);
-            }
-            if (conversation.User1Id != userId && conversation.User2Id != userId)
-            {
-                return ResponseFactory.Fail<string>("Bạn không có quyền đánh dấu tin nhắn này.", 403);
+                // --- Logic xác định otherUser, tính unreadCount, isLastMessageSeen, ánh xạ DTO ---
+                // --- (Giữ nguyên như code bạn đã cung cấp) ---
+                var otherUser = (message.Conversation.User1Id == currentUserId)
+                        ? message.Conversation.User2 // Nếu User1 là tôi, thì người kia là User2
+                        : message.Conversation.User1; // Ngược lại, người kia là User1
+                if (otherUser == null)
+                {
+                    continue;
+                }
+
+                bool isLastMessageSeenByCurrentUser;
+                if (message.SenderId != currentUserId) { isLastMessageSeenByCurrentUser = message.IsSeen; }
+                else { isLastMessageSeenByCurrentUser = true; }
+
+                // Tính UnreadCount riêng biệt vì DTO cần nó, ngay cả khi sắp xếp đã dùng trạng thái seen/unread
+                int unreadCount = await _unitOfWork.MessageRepository.GetUnreadMessageCountAsync(message.ConversationId, currentUserId);
+
+                var userDto = new UserDto
+                {
+                    Id = otherUser.Id,
+                    FullName = otherUser.FullName,
+                    ProfilePicture = otherUser.ProfilePicture ?? string.Empty
+                };
+                inboxDtos.Add(new InBoxDto
+                {
+                    User = userDto, // DTO người dùng kia
+                    ConversationId = message.ConversationId,
+                    LastMessage = message.Content,
+                    LastMessageDate = message.SentAt,
+                    UnreadCount = unreadCount, // Vẫn cần để hiển thị số lượng
+                    IsSeen = isLastMessageSeenByCurrentUser // Trạng thái của tin cuối cùng
+                });
+                //--- Kết thúc logic trong vòng lặp ---
             }
 
-            message.CheckIsSeen(true);
-            await _unitOfWork.MessageRepository.UpdateAsync(message);
-            await _unitOfWork.SaveChangesAsync();
+            resultDto.InBox = inboxDtos;
 
-            return ResponseFactory.Success("Tin nhắn đã được đánh dấu là đã đọc.", "Thành công.", 200);
+            // Xác định NextCursor (giữ nguyên logic)
+            if (hasNextPage && messagesForPage.Any())
+            {
+                resultDto.NextCursor = messagesForPage.Last().Id; // Dùng ID của item cuối cùng làm cursor
+            }
+            else
+            {
+                resultDto.NextCursor = Guid.Empty;
+            }
+            return resultDto;
         }
-
     }
 }

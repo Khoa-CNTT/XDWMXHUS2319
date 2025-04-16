@@ -3,6 +3,7 @@ using Application.CQRS.Commands.Users;
 using Application.DTOs.User;
 using Application.Interface;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DuyTanSharingSystem.Controllers
@@ -56,13 +57,18 @@ namespace DuyTanSharingSystem.Controllers
         public async Task<IActionResult> RefreshToken()
         {
             var response = await _authService.RefreshTokenAsync();
-            if(response== null)
+            if (response == null)
             {
                 return BadRequest(new { message = "Invalid token" });
             }
-            return Ok(response); // ✅ Trả về Access Token mới
+            return Ok(new { accessToken = response.Data, message = response.Message });
         }
 
-
+        [HttpGet("validate-token")]
+        [Authorize]
+        public IActionResult ValidateToken()
+        {
+            return Ok(new { success = true });
+        }
     }
 }

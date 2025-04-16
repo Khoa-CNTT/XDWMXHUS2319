@@ -9,12 +9,14 @@ namespace Application.Services
         private readonly ICacheService _cacheService;
         private readonly IDatabase _database;
         private readonly IConnectionMultiplexer _redis;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public RedisService(ICacheService cacheService, IConnectionMultiplexer redis, IConnectionMultiplexer connectionMultiplexer)
+        public RedisService(ICacheService cacheService, IConnectionMultiplexer redis, IConnectionMultiplexer connectionMultiplexer, IUnitOfWork unitOfWork)
         {
             _cacheService = cacheService;
             _database = redis.GetDatabase();
             _redis = connectionMultiplexer;
+            _unitOfWork = unitOfWork;
         }
         public async Task<bool> IsMemberOfSetAsync(string key, string value)
         {
@@ -123,5 +125,92 @@ namespace Application.Services
             return await Task.FromResult(keys);
         }
 
+        public async Task AddFriendAsync(string? userId, string? friendId)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(friendId))
+            {
+                Console.WriteLine("userId hoặc friendId bị null hoặc rỗng.");
+                return;
+            }
+
+            if (!Guid.TryParse(userId, out var userGuid) || !Guid.TryParse(friendId, out var friendGuid))
+            {
+                Console.WriteLine("userId hoặc friendId không hợp lệ.");
+                return;
+            }
+
+            var key1 = $"user_friends:{userGuid}";
+            var key2 = $"user_friends:{friendGuid}";
+
+            var type1 = await _database.ExecuteAsync("TYPE", key1);
+            if (type1.ToString() != "set")
+            {
+                await _database.KeyDeleteAsync(key1);
+                Console.WriteLine($"Xóa key sai kiểu: {key1}");
+            }
+
+            var type2 = await _database.ExecuteAsync("TYPE", key2);
+            if (type2.ToString() != "set")
+            {
+                await _database.KeyDeleteAsync(key2);
+                Console.WriteLine($"Xóa key sai kiểu: {key2}");
+            }
+
+            await _database.SetAddAsync(key1, friendGuid.ToString());
+            await _database.SetAddAsync(key2, userGuid.ToString());
+
+            Console.WriteLine($"Thêm bạn bè Redis: {userGuid} <-> {friendGuid}");
+        }
+
+
+        public async Task RemoveFriendAsync(string userId, string friendId)
+        {
+            await _database.SetRemoveAsync($"user_friends:{userId}", friendId);
+            await _database.SetRemoveAsync($"user_friends:{friendId}", userId);
+        }
+
+        public async Task<List<string>> GetFriendsAsync(string userId)
+        {
+            var friends = await _database.SetMembersAsync($"user_friends:{userId}");
+            var result = friends.Select(f => f.ToString()).ToList();
+            Console.WriteLine($"GetFriendsAsync({userId}) trả về: {string.Join(", ", result)}");
+            return result;
+        }
+        public async Task<Dictionary<string, bool>> CheckMultipleUsersOnlineAsync(List<string> userIds)
+        {
+            var tasks = userIds.Select(async userId =>
+            {
+                var status = await _database.StringGetAsync($"user_status:{userId}");
+                return (userId, isOnline: status == "online");
+            });
+            var results = await Task.WhenAll(tasks);
+            return results.ToDictionary(x => x.userId, x => x.isOnline);
+        }
+
+        public async Task SyncFriendsToRedis(string userId)
+        {
+            var key = $"user_friends:{userId}";
+            var listFriends = await _unitOfWork.FriendshipRepository.GetFriendsAsync(Guid.Parse(userId));
+
+            // Xóa key cũ
+            var type1 = await _database.ExecuteAsync("TYPE", key);
+            if (type1.ToString() != "set")
+            {
+                await _database.KeyDeleteAsync(key);
+                Console.WriteLine($"Xóa key sai kiểu: {key}");
+            }
+            else
+            {
+                await _database.KeyDeleteAsync(key);
+            }
+
+
+            foreach (var friend in listFriends)
+            {
+                await _database.SetAddAsync(key, friend.FriendId.ToString());
+                await _database.SetAddAsync($"user_friends:{friend.FriendId}", userId);
+                Console.WriteLine($"Đồng bộ bạn bè: {userId} <-> {friend.FriendId}");
+            }
+        }
     }
 }
