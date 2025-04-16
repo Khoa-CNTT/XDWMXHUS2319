@@ -195,7 +195,7 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     const imageCount = post.imageUrl ? post.imageUrl.split(",").length : 0;
     const hasVideo = !!post.videoUrl;
     const totalMedia = imageCount + (hasVideo ? 1 : 0);
-  
+
     let className = "media-container";
     switch (totalMedia) {
       case 1:
@@ -214,52 +214,56 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     return className;
   };
 
-// Trong AllPosts
-const renderMediaItems = (post) => {
-  const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
-  const hasVideo = !!post.videoUrl;
-  const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
+  // Trong AllPosts
+  const renderMediaItems = (post) => {
+    const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
+    const hasVideo = !!post.videoUrl;
+    const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
 
-  return (
-    <div className={getMediaContainerClass(post)}>
-      {imageUrls.map((url, index) => {
-        const fullUrl = url.startsWith("http")
-          ? url.trim()
-          : `https://localhost:7053${url.trim()}`;
-        // Hiển thị overlay trên ảnh thứ 2 nếu có > 2 media, hoặc trên ảnh đầu tiên nếu có video và > 1 ảnh
-        const showOverlay = totalMedia > 2 && index === (hasVideo ? 0 : 1);
+    return (
+      <div className={getMediaContainerClass(post)}>
+        {imageUrls.map((url, index) => {
+          const fullUrl = url.startsWith("http")
+            ? url.trim()
+            : `https://localhost:7053${url.trim()}`;
+          // Hiển thị overlay trên ảnh thứ 2 nếu có > 2 media, hoặc trên ảnh đầu tiên nếu có video và > 1 ảnh
+          const showOverlay = totalMedia > 2 && index === (hasVideo ? 0 : 1);
 
-        // Hiển thị tối đa 1 ảnh nếu có video, hoặc 2 ảnh nếu không có video
-        if (totalMedia > 2 && index > (hasVideo ? 0 : 1)) return null;
-        if (hasVideo && index > 0) return null; // Chỉ hiển thị 1 ảnh nếu có video
+          // Hiển thị tối đa 1 ảnh nếu có video, hoặc 2 ảnh nếu không có video
+          if (totalMedia > 2 && index > (hasVideo ? 0 : 1)) return null;
+          if (hasVideo && index > 0) return null; // Chỉ hiển thị 1 ảnh nếu có video
 
-        return (
-          <div className="media-item" key={index}>
-            <img
-              src={fullUrl}
-              alt={`Post media ${index}`}
-              onClick={() => handleOpenCommentModal(post, index)}
-            />
-            {showOverlay && (
-              <div className="media-overlay" onClick={() => handleOpenCommentModal(post, index)}>+{totalMedia - (hasVideo ? 1 : 2)}</div>
-
-            )}
+          return (
+            <div className="media-item" key={index}>
+              <img
+                src={fullUrl}
+                alt={`Post media ${index}`}
+                onClick={() => handleOpenCommentModal(post, index)}
+              />
+              {showOverlay && (
+                <div
+                  className="media-overlay"
+                  onClick={() => handleOpenCommentModal(post, index)}
+                >
+                  +{totalMedia - (hasVideo ? 1 : 2)}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {hasVideo && (
+          <div className="media-item video-item">
+            <video
+              controls
+              onClick={() => handleOpenCommentModal(post, imageUrls.length)}
+            >
+              <source src={post.videoUrl} type="video/mp4" />
+            </video>
           </div>
-        );
-      })}
-      {hasVideo && (
-        <div className="media-item video-item">
-          <video
-            controls
-            onClick={() => handleOpenCommentModal(post, imageUrls.length)}
-          >
-            <source src={post.videoUrl} type="video/mp4" />
-          </video>
-        </div>
-      )}
-    </div>
-  );
-};
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="all-posts">
@@ -427,13 +431,14 @@ const renderMediaItems = (post) => {
         />
       )}
 
-      {selectedPost && location.pathname.includes(`/post/${selectedPost.id}`) && (
-        <CommentModal
-          post={selectedPost}
-          onClose={handleCloseCommentModal}
-          usersProfile={usersProfile}
-        />
-      )}
+      {selectedPost &&
+        location.pathname.includes(`/post/${selectedPost.id}`) && (
+          <CommentModal
+            post={selectedPost}
+            onClose={handleCloseCommentModal}
+            usersProfile={usersProfile}
+          />
+        )}
 
       {selectedPostToShare && (
         <ShareModal
@@ -468,7 +473,5 @@ const renderMediaItems = (post) => {
     </div>
   );
 };
-
-
 
 export default AllPosts;

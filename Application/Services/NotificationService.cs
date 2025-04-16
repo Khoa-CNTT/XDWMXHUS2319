@@ -109,9 +109,13 @@ namespace Application.Services
             if (commentOwnerId == responderId) return;
             await _publisher.Publish(new CommentEvent(postId, commentOwnerId, responderId, $"{responderName} đã phản hồi bình luận vào bài viết của bạn."));
         }
-        public async Task SendShareNotificationAsync(Guid postId, Guid userId)
+        public async Task SendShareNotificationAsync(Guid postId, Guid userId, string message)
         {
-            await _publisher.Publish(new ShareEvent(postId, userId));
+            
+            var postOwnerId = await _postService.GetPostOwnerId(postId);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null|| postOwnerId == Guid.Empty) return;
+            await _publisher.Publish(new ShareEvent(postId, postOwnerId, message));
         }
     }
 }

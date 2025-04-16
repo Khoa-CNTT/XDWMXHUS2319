@@ -13,5 +13,6 @@ namespace Application.Interface.Hubs
         Task SendNotificationUpdateLocationSignalR(Guid driverId, Guid passengerId,string message);
         Task SendReplyNotificationSignalR(Guid postId, Guid commentOwnerId, Guid responderId, string message);
         Task SendCommentNotificationSignalR(Guid postId, Guid postOwnerId, Guid commenterId, string message);
+        Task SendShareNotificationAsync(Guid userId, string message);
     }
 }

@@ -6,6 +6,7 @@ import {
 import listPostReducer from "./reducers/listPostReducers.js";
 import listUser from "./reducers/proFileReducers.js";
 import ridePostReducer from "./reducers/ridePostReducer.js";
+import reportSlice from "./reducers/reportReducers.js";
 
 import searchSlice from "./reducers/searchReducers.js";
 
@@ -14,9 +15,9 @@ const store = configureStore({
     posts: listPostReducer,
     users: listUser,
     rides: ridePostReducer,
+    report: reportSlice,
 
     searchs: searchSlice,
-
   },
 });
 

@@ -4,6 +4,7 @@ using Application.DTOs.Comments;
 using Application.DTOs.Likes;
 using Application.DTOs.Post;
 using Application.DTOs.Posts;
+using Application.DTOs.Reposts;
 using Application.DTOs.Shares;
 using Application.DTOs.User;
 using Domain.Entities;
@@ -12,7 +13,36 @@ namespace Application
 {
     public static class Mapping
     {
-
+        public static ReportResponseDto ToResponseRepostDto(Report report)
+        {
+            return new ReportResponseDto
+            {
+                Id = report.Id,
+                PostId = report.Id,
+                Status = report.Status,
+                CreatedAt = report.CreatedAt
+            };
+        }
+        public static ReportDetailsDto ToRepostDetailsDto(Report report)
+        {
+            return new ReportDetailsDto
+            {
+                Id = report.Id,
+                ReportedBy = report.ReportedBy,
+                PostId = report.PostId,
+                Reason = report.Reason,
+                Status = report.Status,
+                CreatedAt = report.CreatedAt,
+                UpdatedAt = report.UpdatedAt,
+                ProcessedByAI = report.ProcessedByAI,
+                ProcessedByAdmin = report.ProcessedByAdmin,
+                ViolationDetails = report.ViolationDetails,
+                PreActionStatus = report.PreActionStatus,
+                PostActionStatus = report.PostActionStatus,
+                ViolationType = report.ViolationType,
+                ActionTaken = report.ActionTaken
+            };
+        }
         //SHARE POST DTO MAPPER
         public static SharePostDto MapToSharePostDto(Share share, Post post, User user)
         {

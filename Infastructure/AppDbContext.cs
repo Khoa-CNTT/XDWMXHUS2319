@@ -120,18 +120,20 @@ namespace Infrastructure
                 .HasForeignKey(m => m.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Report>()
-                .HasOne<User>()
-                .WithMany(u => u.Reports)
-                .HasForeignKey(r => r.ReportedBy)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Report>(entity =>
+            {
+                // Cấu hình quan hệ với Post
+                entity.HasOne(r => r.Post)
+                      .WithMany(p => p.Reports) // Một Post có nhiều Reports
+                      .HasForeignKey(r => r.PostId)
+                      .OnDelete(DeleteBehavior.Cascade); // Xóa Report khi Post bị xóa
 
-            modelBuilder.Entity<Report>()
-                .HasOne<Post>()
-                .WithMany(p => p.Reports)
-                .HasForeignKey(r => r.PostId)
-                .OnDelete(DeleteBehavior.Cascade);
-
+                // Cấu hình quan hệ với User (người báo cáo)
+                entity.HasOne(r => r.ReportedByUser)
+                      .WithMany(u => u.Reports) // Một User có thể báo cáo nhiều Post
+                      .HasForeignKey(r => r.ReportedBy)
+                      .OnDelete(DeleteBehavior.Restrict); // Không cho xóa User nếu có Report
+            });
             modelBuilder.Entity<GroupMember>()
                 .HasOne<Domain.Entities.Group>()
                 .WithMany(g => g.GroupMembers)
@@ -167,6 +169,13 @@ namespace Infrastructure
                 .WithOne(l => l.Post)
                 .HasForeignKey(l => l.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Post>()
+                .HasMany(p => p.Reports)
+                .WithOne(l => l.Post)
+                .HasForeignKey(l => l.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             // Cấu hình quan hệ Post - Comments
             modelBuilder.Entity<Post>()
@@ -258,6 +267,27 @@ namespace Infrastructure
                 .WithMany(r => r.LocationUpdates)
                 .HasForeignKey(l => l.RideId)
                 .OnDelete(DeleteBehavior.Cascade);
+            //THANH LE
+                modelBuilder.Entity<Report>()
+              .HasOne(r => r.Post)
+              .WithMany(p => p.Reports)
+              .HasForeignKey(r => r.PostId)
+              .OnDelete(DeleteBehavior.Cascade); // Khi xóa Post sẽ xóa các Report liên quan
+
+            // 2. Quan hệ: User (1) - (n) Report (người báo cáo)
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.ReportedByUser)
+                .WithMany() // Nếu bạn muốn thêm User.Reports thì thay bằng `.WithMany(u => u.Reports)`
+                .HasForeignKey(r => r.ReportedBy)
+                .OnDelete(DeleteBehavior.Restrict); // Tránh xóa user kéo theo mất report
+
+            modelBuilder.Entity<User>()
+              .HasMany(u => u.Reports) 
+              .WithOne(p => p.ReportedByUser) 
+              .HasForeignKey(p => p.ReportedBy)
+              .OnDelete(DeleteBehavior.Cascade);
+
+           
         }
     }
 }
