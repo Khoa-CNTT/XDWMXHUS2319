@@ -1,9 +1,10 @@
-﻿using Application.Interface;
-using Application.Interface.Hubs;
-using Application.Services;
-using Infrastructure.Email;
-using Infrastructure.Hubs;
+using Application.DTOs.FriendShips;
+using Application.Model;
+
+using Application.Model.Events;
+
 using Microsoft.AspNetCore.SignalR;
+using MimeKit;
 
 namespace Infrastructure.Service
 {
@@ -19,9 +20,9 @@ namespace Infrastructure.Service
 
         }
 
-         public async Task SendCommentNotificationSignalR(Guid postId, Guid postOwnerId, Guid commenterId, string message)
+         public async Task SendCommentNotificationSignalR(Guid postOwnerId, ResponseNotificationModel data)
               {
-                 await _hubContext.Clients.User(postOwnerId.ToString()).SendAsync("ReceiveNotification", message);
+                 await _hubContext.Clients.User(postOwnerId.ToString()).SendAsync("ReceiveNotification", data);
           }
 
         /// <summary>
@@ -47,13 +48,34 @@ namespace Infrastructure.Service
         }
 
 
-        public async Task SendReplyNotificationSignalR(Guid postId, Guid commentOwnerId, Guid responderId, string message)
+        public async Task SendReplyNotificationSignalR(Guid receiverId, ResponseNotificationModel data)
         {
-             await _hubContext.Clients.User(commentOwnerId.ToString()).SendAsync("ReceiveNotification", message);
+            await _hubContext.Clients.User(receiverId.ToString())
+                    .SendAsync("ReceiveNotification", data);
         }
+
         public async Task SendShareNotificationAsync(Guid userId, string message)
         {
             await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", message);
+
+
+
+        public async Task SendFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
+        {
+            await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", data);
+        }
+
+        public async Task SendAnswerFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
+        {
+            await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", data);
+        }
+
+
+        public async Task SendNewMessageSignalRAsync(SendMessageNotificationEvent sendMessageNotificationEvent)
+        {
+            await _hubContext.Clients.User(sendMessageNotificationEvent.ReceiverId.ToString())
+                .SendAsync("ReceiveMessageNotification", sendMessageNotificationEvent.Message);
+
         }
     }
 }

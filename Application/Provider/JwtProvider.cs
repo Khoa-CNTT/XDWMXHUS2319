@@ -107,7 +107,7 @@ namespace Application.Provider
             _httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,  // 🔐 Chống XSS
-                Secure = true,    // 🔒 Chỉ gửi qua HTTPS
+                Secure = false,    // 🔒 Chỉ gửi qua HTTPS
                 SameSite = SameSiteMode.Strict, // 🛡 Chống CSRF
                 Expires = DateTime.UtcNow.AddDays(7) // ⏳ Refresh Token hết hạn sau 7 ngày
             });

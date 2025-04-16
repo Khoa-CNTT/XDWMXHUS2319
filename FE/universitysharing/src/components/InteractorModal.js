@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import "../styles/InteractorModal.scss";
+import { createPortal } from "react-dom";
 import { IoPersonAddOutline } from "react-icons/io5";
 import { FaHeart } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -55,7 +56,7 @@ const InteractorModal = ({
     return null;
   }
 
-  return (
+  return createPortal(
     <div className="modal-interactor-overlay">
       <div className="modal-interactor-content">
         <div className="modal-header">
@@ -103,7 +104,8 @@ const InteractorModal = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -1,55 +1,64 @@
-import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import React, { useState,useEffect } from "react";
 import "../../styles/headerHome.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
+import { useSignalR } from "../../Service/SignalRProvider";
 
 import {
   FiSearch,
   FiBell,
   FiMessageSquare,
-  FiChevronDown,
-  FiX,
 } from "react-icons/fi";
 import NotifyModal from "../NotifyModal";
 import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
 
-import { useLocation, useNavigate } from "react-router-dom"; //Chuyển hướng trang
+import { useNavigate } from "react-router-dom";
 import { searchPost } from "../../stores/action/searchAction";
-
 import { useDispatch } from "react-redux";
 
-// import { resetApp } from "../../stores/stores";
-
 const Header = ({ usersProfile }) => {
+  const [unreadCount, setUnreadCount] = useState(0);
   const dispatch = useDispatch();
-  // console.log("Data User truyền xuống: ", usersProfile);
   const [searchKeyword, setSearchKeyword] = useState("");
-
   const navigate = useNavigate();
+  const [modalPosition, setModalPosition] = useState({});
+  const { signalRService } = useSignalR();
+
+useEffect(() => {
+  const handleUnreadCount = (count) => {
+    setUnreadCount(count);
+  };
+
+  signalRService.onReceiveUnreadCount(handleUnreadCount);
+
+  return () => {
+    // Nếu bạn có hỗ trợ unsubscribe thì thực hiện ở đây
+  };
+}, [signalRService]);
+
 
   const UserProfile = () => {
-    // navigate("/ProfileUserView");
-    window.location.href = "/ProfileUserView";
+
+    navigate("/ProfileUserView");
+    // window.location.href = "/ProfileUserView";
+
   };
+
   const handleHomeView = () => {
     navigate("/home");
   };
-  //search cua thanh
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchKeyword.trim()) {
       dispatch(searchPost(searchKeyword));
       navigate(`/ResultSearchView?q=${encodeURIComponent(searchKeyword)}`);
-      // Clear the search input after submission if needed
       setSearchKeyword("");
     }
   };
 
-  //Đăng xuất
   const handleLogout = () => {
-    // dispatch(resetApp());
     localStorage.removeItem("token");
     window.location.href = "/";
   };
@@ -59,15 +68,34 @@ const Header = ({ usersProfile }) => {
     messenger: false,
     setting: false,
   });
-
-  const toggleModal = (modalName) => {
-    setModalState((prev) => ({
-      notify: false,
-      messenger: false,
-      setting: false,
-      [modalName]: !prev[modalName],
-    }));
+  useEffect(() => {
+    if (modalState.messenger) {
+      setUnreadCount(0);
+      // TODO: Gọi API đánh dấu tin nhắn là đã đọc
+    }
+  }, [modalState.messenger]);
+  // Add this function to calculate button position
+  const getButtonPosition = (buttonId) => {
+    const button = document.getElementById(buttonId);
+    if (button) {
+      const rect = button.getBoundingClientRect();
+      return {
+        top: rect.bottom + window.scrollY + 5,
+        right: window.innerWidth - rect.right - window.scrollX
+      };
+    }
+    return {};
   };
+// Sửa hàm toggle để không đóng các modal khác
+const toggleModal = (modalName) => {
+  if (!modalState[modalName]) {
+    setModalPosition(getButtonPosition(`${modalName}-button`));
+  }
+  setModalState((prev) => ({
+    ...prev,
+    [modalName]: !prev[modalName],
+  }));
+};
 
   return (
     <>
@@ -90,20 +118,42 @@ const Header = ({ usersProfile }) => {
             </div>
           </form>
         </div>
+        
         <div className="rightHeader">
-          <span onClick={() => toggleModal("messenger")}>
+        <button 
+            id="messenger-button"
+            className={`icon-button ${modalState.messenger ? 'active' : ''}`}
+            onClick={() => toggleModal("messenger")}
+            aria-label="Messenger"
+          >
             <FiMessageSquare className="icon" />
-          </span>
-          <span onClick={() => toggleModal("notify")}>
+            {unreadCount > 0 && (
+              <span className="badge">{unreadCount}</span>
+            )}
+          </button>
+
+          
+          <button 
+            className={`icon-button ${modalState.notify ? 'active' : ''}`}
+            onClick={() => toggleModal("notify")}
+            aria-label="Notifications"
+          >
             <FiBell className="icon" />
-          </span>
-          <span onClick={() => toggleModal("setting")}>
+            <span className="badge">3</span>
+          </button>
+          
+          <button 
+            className="avatar-button"
+            onClick={() => toggleModal("setting")}
+            aria-label="User settings"
+          >
             <img
               className="avatarweb"
               src={usersProfile.profilePicture || avatarweb}
               alt="Avatar"
             />
-          </span>
+            {modalState.setting && <div className="indicator"></div>}
+          </button>
         </div>
       </div>
 
@@ -117,7 +167,7 @@ const Header = ({ usersProfile }) => {
         <MessengerModal
           isOpen={modalState.messenger}
           onClose={() => toggleModal("messenger")}
-          messages={[]}
+          position={modalPosition}
         />
       )}
       {modalState.setting && (

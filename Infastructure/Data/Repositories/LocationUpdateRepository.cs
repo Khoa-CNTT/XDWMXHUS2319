@@ -14,10 +14,10 @@ namespace Infrastructure.Data.Repositories
         {
         }
 
-        public async Task AddRangeAsync(List<LocationUpdate> locationUpdates)
-        {
-            await _context.AddRangeAsync(locationUpdates);
-        }
+        //public async Task AddRangeAsync(List<LocationUpdate> locationUpdates)
+        //{
+        //    await _context.AddRangeAsync(locationUpdates);
+        //}
 
         public override Task<bool> DeleteAsync(Guid id)
         {

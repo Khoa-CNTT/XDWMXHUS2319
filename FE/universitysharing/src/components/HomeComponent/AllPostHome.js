@@ -17,6 +17,9 @@ import avatarWeb from "../../assets/AvatarDefault.png";
 import CommentModal from "../CommentModal";
 import ShareModal from "../shareModal";
 import SharedPost from "./SharingPost";
+
+import CommentModalNoImg from "../CommentModal-NoImge/CommentNoImage";
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchPosts,
@@ -77,6 +80,8 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     sharesError,
   } = useSelector((state) => state.posts);
 
+  // console.log("Selection sercert box>>", selectedPost);
+
   const hasMorePosts = showOwnerPosts ? hasMoreOwnerPosts : hasMoreAllPosts;
   const [lastPostId, setLastPostId] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -123,16 +128,13 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
 
   const userId = getUserIdFromToken();
 
-  const handleOpenCommentModal = (post, index) => {
+  //mở comment modal
+  const handleOpenCommentModal = (post, index = 0) => {
     dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
-    navigate(`/post/${post.id}`);
+    navigate(`/post/${post.id}`, { state: { background: location } });
   };
 
-  const handleCloseCommentModal = () => {
-    dispatch(closeCommentModal());
-    navigate(-1);
-  };
-
+  //mở option post ra
   const handleOpenPostOptions = (event, post) => {
     event.stopPropagation();
     const rect = event.target.getBoundingClientRect();
@@ -144,10 +146,12 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     );
   };
 
+  //xóa post
   const handleDeletePost = debounce((postId) => {
     dispatch(deletePost(postId));
   }, 300);
 
+  //Xác nhận xóa bài đăng
   const confirmDelete = (postId) => {
     confirmAlert({
       title: "Xác nhận xóa",
@@ -159,10 +163,12 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     });
   };
 
+  //thích bài viết
   const handleLikePost = (postId) => {
     dispatch(likePost(postId));
   };
 
+  //hiển thị modal người tương tác bài viết
   const handleOpenInteractorModal = async (post) => {
     if (!postLikes[post.id]) {
       await dispatch(fetchLikes({ postId: post.id }));
@@ -170,10 +176,12 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     dispatch(openInteractorModal(post));
   };
 
+  //tắt hiển thị modal tương tác bài viết
   const handleCloseInteractorModal = () => {
     dispatch(closeInteractorModal());
   };
 
+  //mở modal xem người shareshare
   const handleOpenInteractorShareModal = async (post) => {
     if (!postShares[post.id]) {
       await dispatch(fetchShares({ postId: post.id }));
@@ -181,16 +189,19 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     dispatch(openInteractorShareModal(post));
   };
 
+  //đóng modal xem người shareshare
   const handleCloseInteractorShareModal = () => {
     dispatch(closeInteractorShareModal());
   };
 
+  //chuyển đổi ngày sang UTC +77
   const convertUTCToVNTime = (utcDate) => {
     const date = new Date(utcDate);
     date.setHours(date.getHours() + 7);
     return date;
   };
 
+  //lấy thông hình ảnh và video set lên post nhiều hay 1 ảnh và 1 video
   const getMediaContainerClass = (post) => {
     const imageCount = post.imageUrl ? post.imageUrl.split(",").length : 0;
     const hasVideo = !!post.videoUrl;
@@ -219,6 +230,9 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
     const hasVideo = !!post.videoUrl;
     const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
+
+    // Nếu không có ảnh lẫn video, không render media-container
+    if (totalMedia === 0) return null;
 
     return (
       <div className={getMediaContainerClass(post)}>
@@ -277,6 +291,22 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
         <>
           {posts.map((post) => (
             <div className="post" key={post.id}>
+              {isPostOptionsOpen &&
+                selectedPostToOption &&
+                selectedPostToOption.post.id === post.id && (
+                  <div className="Post-option-modal-Container">
+                    {" "}
+                    <PostOptionsModal
+                      isOwner={userId === selectedPostToOption.post.userId}
+                      onClose={() => dispatch(closePostOptionModal())}
+                      position={selectedPostToOption.position}
+                      postId={selectedPostToOption.post.id}
+                      handleDeletePost={confirmDelete}
+                      post={selectedPostToOption.post}
+                    />
+                  </div>
+                )}
+
               <div className="header-post">
                 <div className="AvaName">
                   <img
@@ -286,46 +316,52 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                   />
                   <div className="user-info">
                     <strong>{post.fullName}</strong>
-                    <span className="timePost">
-                      <FiClock size={12} style={{ marginRight: 4 }} />
-                      {formatDistanceToNow(convertUTCToVNTime(post.createdAt), {
-                        addSuffix: true,
-                        locale: {
-                          ...vi,
-                          formatDistance: (token, count) => {
-                            switch (token) {
-                              case "lessThanXSeconds":
-                                return "vài giây trước";
-                              case "xSeconds":
-                                return `${count} giây trước`;
-                              case "halfAMinute":
-                                return "30 giây trước";
-                              case "lessThanXMinutes":
-                                return `${count} phút trước`;
-                              case "xMinutes":
-                                return `${count} phút trước`;
-                              case "aboutXHours":
-                                return `${count} giờ trước`;
-                              case "xHours":
-                                return `${count} giờ trước`;
-                              case "xDays":
-                                return `${count} ngày trước`;
-                              case "aboutXMonths":
-                                return `${count} tháng trước`;
-                              case "xMonths":
-                                return `${count} tháng trước`;
-                              case "aboutXYears":
-                                return `${count} năm trước`;
-                              case "xYears":
-                                return `${count} năm trước`;
-                              default:
-                                return "";
-                            }
-                          },
-                        },
-                        includeSeconds: true,
-                      })}
-                    </span>
+                    <div className="status-time-post">
+                      <span className="timePost">
+                        <FiClock size={12} style={{ marginRight: 4 }} />
+                        {formatDistanceToNow(
+                          convertUTCToVNTime(post.createdAt),
+                          {
+                            addSuffix: true,
+                            locale: {
+                              ...vi,
+                              formatDistance: (token, count) => {
+                                switch (token) {
+                                  case "lessThanXSeconds":
+                                    return "vài giây trước";
+                                  case "xSeconds":
+                                    return `${count} giây trước`;
+                                  case "halfAMinute":
+                                    return "30 giây trước";
+                                  case "lessThanXMinutes":
+                                    return `${count} phút trước`;
+                                  case "xMinutes":
+                                    return `${count} phút trước`;
+                                  case "aboutXHours":
+                                    return `${count} giờ trước`;
+                                  case "xHours":
+                                    return `${count} giờ trước`;
+                                  case "xDays":
+                                    return `${count} ngày trước`;
+                                  case "aboutXMonths":
+                                    return `${count} tháng trước`;
+                                  case "xMonths":
+                                    return `${count} tháng trước`;
+                                  case "aboutXYears":
+                                    return `${count} năm trước`;
+                                  case "xYears":
+                                    return `${count} năm trước`;
+                                  default:
+                                    return "";
+                                }
+                              },
+                            },
+                            includeSeconds: true,
+                          }
+                        )}
+                      </span>
+                      <span className="status-post">Công khai</span>
+                    </div>
                   </div>
                 </div>
                 <div className="post-actions">
@@ -419,6 +455,7 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
           <p>Không có bài viết nào.</p>
         </div>
       )}
+
 
       {isPostOptionsOpen && selectedPostToOption && (
         <PostOptionsModal

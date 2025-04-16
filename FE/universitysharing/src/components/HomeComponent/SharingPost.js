@@ -11,7 +11,7 @@ import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
 
 const SharedPost = ({ post }) => {
-  console.log("Post data>>", post);
+  // console.log("Post data>>", post);
   return (
     <div className="shared-post-container">
       <div className="post-share" key={post.id}>

@@ -67,21 +67,24 @@ const emptyRideAnimation = {
 
 // Custom Leaflet marker icons
 const startIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
 });
 
 const endIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
 });
 
 const movingCarIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
@@ -218,7 +221,7 @@ const YourRide = () => {
       Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
       Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c / 1000; // Convert to kilometers
+    return (R * c) / 1000; // Convert to kilometers
   };
 
   // Fetch address from coordinates using OpenStreetMap Nominatim
@@ -311,8 +314,12 @@ const YourRide = () => {
     intervalRef.current = setInterval(() => {
       if (
         lastSentPosition &&
-        calculateDistance(lastSentPosition.lat, lastSentPosition.lon, lat, lon) <
-          0.05
+        calculateDistance(
+          lastSentPosition.lat,
+          lastSentPosition.lon,
+          lat,
+          lon
+        ) < 0.05
       )
         return;
 
@@ -340,10 +347,9 @@ const YourRide = () => {
       const response = await fetch(url);
       const data = await response.json();
       if (data.paths?.[0]?.points?.coordinates) {
-        const coordinates = data.paths[0].points.coordinates.map(([lon, lat]) => [
-          lat,
-          lon,
-        ]);
+        const coordinates = data.paths[0].points.coordinates.map(
+          ([lon, lat]) => [lat, lon]
+        );
         setRoutePaths((prev) => ({ ...prev, [rideId]: coordinates }));
       }
     } catch (error) {
@@ -491,8 +497,6 @@ const YourRide = () => {
         <div className="header-gradient"></div>
       </div>
 
-     
-
       {/* Current Ride Section */}
       {currentRide ? (
         <motion.div
@@ -540,8 +544,8 @@ const YourRide = () => {
                     </motion.div>
                   </div>
                   <span className="progress-text">
-                    Đã đi {Math.round(smoothedProgress)}% (
-                    Còn lại {remainingDistance.toFixed(1)} km)
+                    Đã đi {Math.round(smoothedProgress)}% ( Còn lại{" "}
+                    {remainingDistance.toFixed(1)} km)
                   </span>
                 </div>
               </div>
@@ -580,7 +584,9 @@ const YourRide = () => {
                   <label>
                     <FiCalendar /> Bắt đầu:
                   </label>
-                  <span>{new Date(currentRide.startTime).toLocaleString()}</span>
+                  <span>
+                    {new Date(currentRide.startTime).toLocaleString()}
+                  </span>
                 </div>
                 <div className="detail-item">
                   <label>
@@ -618,17 +624,19 @@ const YourRide = () => {
 
               <div className="interactive-section">
                 <div className="map-container">
-                   {/* Map controls - Đã di chuyển nút về phía bên phải */}
-      <div className="map-controls" >
-        <button
-          className={`location-button ${isFollowing ? "active" : ""}`}
-          onClick={handleBackToCurrentLocation}
-          title="Về vị trí hiện tại"
-        >
-          <FiNavigation />
-          {isFollowing && <span className="pulse-dot"></span>}
-        </button>
-      </div>
+                  {/* Map controls - Đã di chuyển nút về phía bên phải */}
+                  <div className="map-controls">
+                    <button
+                      className={`location-button ${
+                        isFollowing ? "active" : ""
+                      }`}
+                      onClick={handleBackToCurrentLocation}
+                      title="Về vị trí hiện tại"
+                    >
+                      <FiNavigation />
+                      {isFollowing && <span className="pulse-dot"></span>}
+                    </button>
+                  </div>
                   <div className="map-header">
                     <h4>
                       <FiMap /> Hành trình
@@ -674,7 +682,10 @@ const YourRide = () => {
                         </Marker>
                         {currentPosition && (
                           <Marker
-                            position={[currentPosition.lat, currentPosition.lon]}
+                            position={[
+                              currentPosition.lat,
+                              currentPosition.lon,
+                            ]}
                             icon={movingCarIcon}
                           >
                             <Popup>Vị trí hiện tại</Popup>
@@ -748,9 +759,9 @@ const YourRide = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-         <div className="empty-animation">
-  <TbMoodEmptyFilled style={{ fontSize: 100, color: "#aaa" }} />
-</div>
+          <div className="empty-animation">
+            <TbMoodEmptyFilled style={{ fontSize: 100, color: "#aaa" }} />
+          </div>
           <h3>Không có chuyến đi hiện tại</h3>
           <p>Bắt đầu chuyến đi mới để bắt đầu!</p>
           <button className="find-ride-btn">

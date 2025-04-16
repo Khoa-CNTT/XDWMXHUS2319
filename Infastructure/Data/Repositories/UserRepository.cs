@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static Domain.Common.Enums;
 
@@ -96,9 +97,16 @@ namespace Infrastructure.Data.Repositories
         }
         //đếm số lượng bình luận (Comments) của tất cả user và sắp xếp theo thứ tự giảm dần
 
+        public async Task<List<User>> GetUsersByIdsAsync(List<Guid> userIds)
+        {
+            return await _context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToListAsync();
+        }
 
-
-
-
+        public async Task<bool> ExistUsersAsync(Guid userId)
+        {
+            return await _context.Users.AnyAsync(u => u.Id == userId);
+        }
     }
 }

@@ -1,7 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../../styles/CommentOverlay.scss";
 import avatarDefaut from "../../assets/AvatarDefault.png";
-import { FiMoreHorizontal, FiMessageSquare, FiHeart, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import {
+  FiMoreHorizontal,
+  FiMessageSquare,
+  FiHeart,
+  FiChevronDown,
+  FiChevronUp,
+} from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { getReplyComment } from "../../stores/action/listPostActions";
 import { useDispatch } from "react-redux";
@@ -13,6 +19,7 @@ const CommentItem = ({
   comments,
   handleLikeComment,
   post,
+  usersProfile,
   handleReplyComment,
 }) => {
   const dispatch = useDispatch();
@@ -23,7 +30,7 @@ const CommentItem = ({
   const [openOptionId, setOpenOptionId] = useState(null);
   const [visibleReplies, setVisibleReplies] = useState(1); // Chỉ hiển thị 1 reply ban đầu
   const [isRepliesHidden, setIsRepliesHidden] = useState(false); // Trạng thái ẩn/hiện replies
-  
+
   const replyInputRef = useRef(null);
   const moreReplyRef = useRef(null);
   const menuRef = useRef(null);
@@ -36,12 +43,12 @@ const CommentItem = ({
     setReplyingCommentId(commentId);
     setIsReplying(!isReplying);
     setReplyText(`@${userName} `);
-    
+
     // Mở replies nếu đang ẩn
     if (isRepliesHidden) {
       setIsRepliesHidden(false);
     }
-    
+
     setTimeout(() => {
       replyInputRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -69,9 +76,9 @@ const CommentItem = ({
       dispatch(getReplyComment(comments.id));
     } else {
       // Hiển thị thêm replies đã load
-      setVisibleReplies(prev => prev + 3);
+      setVisibleReplies((prev) => prev + 3);
     }
-    
+
     setTimeout(() => {
       moreReplyRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -99,9 +106,9 @@ const CommentItem = ({
   // Tự động mở rộng textarea khi nội dung nhiều
   useEffect(() => {
     if (replyInputRef.current) {
-      const textarea = replyInputRef.current.querySelector('textarea');
+      const textarea = replyInputRef.current.querySelector("textarea");
       if (textarea) {
-        textarea.style.height = 'auto';
+        textarea.style.height = "auto";
         textarea.style.height = `${textarea.scrollHeight}px`;
       }
     }
@@ -109,7 +116,8 @@ const CommentItem = ({
 
   // Lấy số lượng replies hiển thị
   const displayedReplies = comments.replies?.slice(0, visibleReplies) || [];
-  const hasHiddenReplies = comments.replies?.length > visibleReplies || comments.hasMoreReplies;
+  const hasHiddenReplies =
+    comments.replies?.length > visibleReplies || comments.hasMoreReplies;
   const totalReplyCount = comments.replyCount || comments.replies?.length || 0;
 
   return (
@@ -121,18 +129,22 @@ const CommentItem = ({
           src={comments.profilePicture || avatarDefaut}
           alt="Avatar"
         />
-        
+
         <div className="comment-body">
           <div className="comment-header">
             <span className="comment-author">{comments.userName}</span>
-            
-            <button 
+
+            <button
               className="comment-more-btn"
-              onClick={() => setOpenOptionId(openOptionId === comments.id ? null : comments.id)}
+              onClick={() =>
+                setOpenOptionId(
+                  openOptionId === comments.id ? null : comments.id
+                )
+              }
             >
               <FiMoreHorizontal size={18} />
             </button>
-            
+
             {openOptionId === comments.id && (
               <div ref={menuRef} className="comment-options-container">
                 <CommentOption
@@ -144,12 +156,12 @@ const CommentItem = ({
               </div>
             )}
           </div>
-          
+
           <div className="comment-content">{comments.content}</div>
-          
+
           <div className="comment-actions">
-            <button 
-              className={`action-btn ${comments.hasLiked ? 'liked' : ''}`}
+            <button
+              className={`action-btn ${comments.hasLiked ? "liked" : ""}`}
               onClick={() => handleLikeComment(comments.id)}
             >
               {comments.hasLiked ? (
@@ -159,8 +171,8 @@ const CommentItem = ({
               )}
               <span className="action-count">{comments.likeCountComment}</span>
             </button>
-            
-            <button 
+
+            <button
               className="action-btn"
               onClick={() => handleReplyClick(comments.id, comments.userName)}
             >
@@ -173,7 +185,7 @@ const CommentItem = ({
 
       {/* Nút hiển thị/ẩn replies */}
       {totalReplyCount > 0 && (
-        <button 
+        <button
           className="toggle-replies-btn"
           onClick={toggleRepliesVisibility}
         >
@@ -201,18 +213,22 @@ const CommentItem = ({
                 src={reply.profilePicture || avatarDefaut}
                 alt="Avatar"
               />
-              
+
               <div className="reply-body">
                 <div className="reply-header">
                   <span className="reply-author">{reply.userName}</span>
-                  
-                  <button 
+
+                  <button
                     className="reply-more-btn"
-                    onClick={() => setOpenOptionId(openOptionId === reply.id ? null : reply.id)}
+                    onClick={() =>
+                      setOpenOptionId(
+                        openOptionId === reply.id ? null : reply.id
+                      )
+                    }
                   >
                     <FiMoreHorizontal size={16} />
                   </button>
-                  
+
                   {openOptionId === reply.id && (
                     <div ref={menuRef} className="comment-options-container">
                       <CommentOption
@@ -224,12 +240,12 @@ const CommentItem = ({
                     </div>
                   )}
                 </div>
-                
+
                 <div className="reply-content">{reply.content}</div>
-                
+
                 <div className="reply-actions">
-                  <button 
-                    className={`action-btn ${reply.hasLiked ? 'liked' : ''}`}
+                  <button
+                    className={`action-btn ${reply.hasLiked ? "liked" : ""}`}
                     onClick={() => handleLikeComment(reply.id)}
                   >
                     {reply.hasLiked ? (
@@ -237,10 +253,12 @@ const CommentItem = ({
                     ) : (
                       <FiHeart className="like-icon" size={14} />
                     )}
-                    <span className="action-count">{reply.likeCountComment}</span>
+                    <span className="action-count">
+                      {reply.likeCountComment}
+                    </span>
                   </button>
-                  
-                  <button 
+
+                  <button
                     className="action-btn"
                     onClick={() => handleReplyClick(reply.id, reply.userName)}
                   >
@@ -257,12 +275,9 @@ const CommentItem = ({
 
       {/* Nút xem thêm reply - chỉ hiển thị khi không bị ẩn */}
       {!isRepliesHidden && hasHiddenReplies && (
-        <button 
-          className="view-more-replies"
-          onClick={handleLoadMoreReplies}
-        >
-          {comments.hasMoreReplies 
-            ? "Tải thêm bình luận" 
+        <button className="view-more-replies" onClick={handleLoadMoreReplies}>
+          {comments.hasMoreReplies
+            ? "Tải thêm bình luận"
             : `Xem thêm ${comments.replies.length - visibleReplies} bình luận`}
         </button>
       )}
@@ -271,7 +286,10 @@ const CommentItem = ({
       {isReplying && (
         <div className="reply-input-container" ref={replyInputRef}>
           <div className="reply-input-avatar">
-            <img src={userId.profilePicture || avatarDefaut} alt="Avatar" />
+            <img
+              src={usersProfile.profilePicture || avatarDefaut}
+              alt="Avatar"
+            />
           </div>
           <div className="reply-input-wrapper">
             <div className="input-box">
@@ -283,22 +301,30 @@ const CommentItem = ({
                 rows="1"
               />
               <div className="input-actions">
-                <button 
-                  className={`send-reply-btn ${!replyText.trim() ? 'disabled' : ''}`}
+                <button
+                  className={`send-reply-btn ${
+                    !replyText.trim() ? "disabled" : ""
+                  }`}
                   onClick={handleSendReply}
                   disabled={!replyText.trim()}
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path 
-                      d="M22 2L11 13" 
-                      stroke={!replyText.trim() ? "#BCC0C4" : "#1877F2"} 
-                      strokeWidth="2" 
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M22 2L11 13"
+                      stroke={!replyText.trim() ? "#BCC0C4" : "#1877F2"}
+                      strokeWidth="2"
                       strokeLinecap="round"
                     />
-                    <path 
-                      d="M22 2L15 22L11 13L2 9L22 2Z" 
-                      stroke={!replyText.trim() ? "#BCC0C4" : "#1877F2"} 
-                      strokeWidth="2" 
+                    <path
+                      d="M22 2L15 22L11 13L2 9L22 2Z"
+                      stroke={!replyText.trim() ? "#BCC0C4" : "#1877F2"}
+                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />

@@ -1,11 +1,3 @@
-﻿using Application.Interface;
-using Application.Interface.Api;
-using Application.Interface.ContextSerivce;
-using Application.Interface.Hubs;
-using Application.Model.Events;
-using static Domain.Common.Helper;
-
-
 namespace Application.Services
 {
     public class NotificationService : INotificationService
@@ -32,6 +24,28 @@ namespace Application.Services
             _commentService = commentService;
         }
 
+        public async Task SendAcceptFriendNotificationAsync(Guid friendId, Guid userId)
+        {
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null || friendId == userId) return;
+
+            string? avatar = null;
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                avatar = $"{Constaint.baseUrl}{user.ProfilePicture}";
+            }
+            var message = $"{user.FullName} đã chấp nhận lời mời kết bạn";
+
+            var data = new ResponseNotificationModel
+            {
+                Message = message,
+                Avatar = avatar ?? "",
+                Url = $"/profile/{userId}"
+            };
+
+            await _publisher.Publish(new AnswerFriendEvent(friendId, data));
+        }
+
         public async Task SendAlertAsync(Guid driverId, string message)
         {
             var user = await _unitOfWork.UserRepository.GetByIdAsync(driverId);
@@ -43,11 +57,49 @@ namespace Application.Services
             }
         }
 
-        public async Task SendCommentNotificationAsync(Guid postId, Guid commenterId, string commenterName)
+        public async Task SendCommentNotificationAsync(Guid postId, Guid commenterId)
         {
             var postOwnerId = await _postService.GetPostOwnerId(postId);
             if (postOwnerId == commenterId) return;
-            await _publisher.Publish(new CommentEvent(postId, postOwnerId, commenterId, $"{commenterName} đã bình luận vào bài viết của bạn"));
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(commenterId);
+            if (user == null) return;
+            string? avatar = null;
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                avatar = $"{Constaint.baseUrl}{user.ProfilePicture}";
+            }
+
+            var message = $"{user.FullName} đã bình luận vào bài viết của bạn";
+            var data = new ResponseNotificationModel
+            {
+                Message = message,
+                Avatar = avatar ?? "",
+                Url = $"/profile/{commenterId}"
+            };
+            await _publisher.Publish(new CommentEvent(postOwnerId, data));
+        }
+
+        public async Task SendFriendNotificationAsync(Guid friendId, Guid userId)
+        {
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null || friendId == userId) return;
+
+            string? avatar = null;
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                avatar = $"{Constaint.baseUrl}{user.ProfilePicture}";
+            }
+
+            var message = $"{user.FullName} đã gửi lời mời kết bạn";
+
+            var data = new ResponseNotificationModel
+            {
+                Message = message,
+                Avatar = avatar ?? "",
+                Url = $"/profile/{userId}"
+            };
+
+            await _publisher.Publish(new SendFriendEvent(friendId, data));
         }
 
         public async Task SendInAppNotificationAsync(Guid driverId, string message)
@@ -71,6 +123,18 @@ namespace Application.Services
                 await _publisher.Publish(new LikeEvent(postId, ownerId, $"{name} đã bỏ thích bài đăng của bạn vào lúc {FormatUtcToLocal(DateTime.UtcNow)}"));
             }
 
+        }
+
+        public async Task SendNotificationMessageWithIsSeenFalse(Guid conversationId,Guid receiverId)
+        {
+            int total = await _unitOfWork.MessageRepository.GetUnreadMessageCountAsync(conversationId,receiverId);
+            if (total == 0) return;
+            await _publisher.Publish(new SendNotificationMessageWithIsSeenFalseEvent(receiverId,total));
+        }
+
+        public async Task SendNotificationNewMessageAsync(Guid receiverId, string message)
+        {
+                await _publisher.Publish(new SendMessageNotificationEvent(receiverId, message));
         }
         public async Task SendNotificationUpdateLocationAsync(Guid driverId, Guid passengerId, float lat, float lng, string location, bool isEnd)
         {
@@ -102,12 +166,69 @@ namespace Application.Services
             }
         }
 
-        
-        public async Task SendReplyNotificationAsync(Guid postId, Guid commentId, Guid responderId, string responderName)
+        public async Task SendRejectFriendNotificationAsync(Guid friendId, Guid userId)
         {
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null || friendId == userId) return;
+
+            string? avatar = null;
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                avatar = $"{Constaint.baseUrl}{user.ProfilePicture}";
+            }
+
+            var message = $"{user.FullName} đã từ chối lời mời kết bạn";
+
+            var data = new ResponseNotificationModel
+            {
+                Message = message,
+                Avatar = avatar ?? "",
+                Url = $"/profile/{userId}"
+            };
+
+            await _publisher.Publish(new AnswerFriendEvent(friendId, data));
+        }
+
+        public async Task SendReplyNotificationAsync(Guid postId, Guid commentId, Guid responderId)
+        {
+            var postOwnerId = await _postService.GetPostOwnerId(postId);
             var commentOwnerId = await _commentService.GetCommentOwnerId(commentId);
             if (commentOwnerId == responderId) return;
-            await _publisher.Publish(new CommentEvent(postId, commentOwnerId, responderId, $"{responderName} đã phản hồi bình luận vào bài viết của bạn."));
+
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(responderId);
+            if (user == null) return;
+
+            string? avatar = null;
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                avatar = $"{Constaint.baseUrl}{user.ProfilePicture}";
+            }
+
+            // Thông báo cho chủ bình luận
+            if (commentOwnerId != responderId)
+            {
+                var commentMsg = $"{user.FullName} đã phản hồi bình luận của bạn";
+                var commentData = new ResponseNotificationModel
+                {
+                    Message = commentMsg,
+                    Avatar = avatar ?? "",
+                    Url = $"/profile/{responderId}"
+                };
+                await _publisher.Publish(new ReplyCommentEvent(commentOwnerId, commentData));
+            }
+
+            // Thông báo cho chủ bài viết nếu khác người bình luận và người phản hồi
+            if (postOwnerId != commentOwnerId && postOwnerId != responderId)
+            {
+                var postMsg = $"{user.FullName} đã phản hồi bình luận vào bài viết của bạn";
+                var postData = new ResponseNotificationModel
+                {
+                    Message = postMsg,
+                    Avatar = avatar ?? "",
+                    Url = $"/profile/{responderId}"
+                };
+                await _publisher.Publish(new ReplyCommentEvent(postOwnerId, postData));
+            }
         }
         public async Task SendShareNotificationAsync(Guid postId, Guid userId, string message)
         {
@@ -117,5 +238,6 @@ namespace Application.Services
             if (user == null|| postOwnerId == Guid.Empty) return;
             await _publisher.Publish(new ShareEvent(postId, postOwnerId, message));
         }
+
     }
 }

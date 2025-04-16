@@ -22,7 +22,7 @@ namespace Infrastructure.Hubs
 
         public async Task Handle(CommentEvent notification, CancellationToken cancellationToken)
         {
-            await _signalRNotificationService.SendCommentNotificationSignalR(notification.PostId, notification.PostOwnerId, notification.CommenterId,  notification.Message ?? "");
+            await _signalRNotificationService.SendCommentNotificationSignalR(notification.PostOwnerId, notification.Data);
         }
     }
 }

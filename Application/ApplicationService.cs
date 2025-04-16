@@ -1,20 +1,4 @@
-﻿using Application.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using System.Text;
-using Application.CQRS.Commands.Users;
-using Application.BackgroundServices;
-using Application.Provider;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Domain.Common;
-using Application.Interface.Hubs;
-using Application.Interface.SearchAI;
-
-
-
-namespace Application
+﻿namespace Application
 {
     public static class ApplicationService
     {
@@ -47,11 +31,12 @@ namespace Application
 
             //background services
             //nếu ko làm việc liên quan đến like và LocationUpdate thì comment lại
-            services.AddHostedService<LikeEventProcessor>();
+            //services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
             //services.AddHostedService<GpsMonitorService>();
             //services.AddHostedService<LikeCommentEventProcessor>();
             //services.AddHostedService<TrustScoreBackgroundService>();
+            services.AddHostedService<MessageProcessingService>();
             //đăng kí hub
             services.AddScoped<INotificationService, NotificationService>();
             // Đăng ký Auth Services
@@ -64,7 +49,7 @@ namespace Application
             //đăn kí các service của search AI
             // services.AddScoped<IDocumentEmbeddingService,EmbeddingService>();
             services.AddScoped<ISearchAIService, SearchAIService>();
-
+            services.AddScoped<IMessageService,MessageService >();
 
 
 
@@ -101,7 +86,8 @@ namespace Application
                             var accessToken = context.Request.Query["access_token"];
                             var path = context.HttpContext.Request.Path;
 
-                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                (path.StartsWithSegments("/notificationHub") || path.StartsWithSegments("/chatHub")))
                             {
                                 context.Token = accessToken;
                             }
@@ -112,10 +98,10 @@ namespace Application
             // 🔹 Cấu hình Authorization
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(nameof(Enums.RoleEnum.User), policy 
-                    => policy.RequireRole(Enums.RoleEnum.User.ToString()));
-                options.AddPolicy(nameof(Enums.RoleEnum.Admin), policy
-                    => policy.RequireRole(Enums.RoleEnum.Admin.ToString()));
+                options.AddPolicy(nameof(RoleEnum.User), policy 
+                    => policy.RequireRole(RoleEnum.User.ToString()));
+                options.AddPolicy(nameof(RoleEnum.Admin), policy
+                    => policy.RequireRole(RoleEnum.Admin.ToString()));
             });
             return services;
         }
