@@ -7,11 +7,22 @@ import shareIcon from "../../assets/iconweb/shareIcon.svg";
 import closeIcon from "../../assets/iconweb/closeIcon.svg";
 import moreIcon from "../../assets/iconweb/moreIcon.svg";
 import "../../styles/SharingPost.scss";
+import { useNavigate } from "react-router-dom";
+import getUserIdFromToken from "../../utils/JwtDecode";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
 
 const SharedPost = ({ post }) => {
   // console.log("Post data>>", post);
+  const userId = getUserIdFromToken();
+  const navigate = useNavigate();
+  const navigateUser = (userId) => {
+    if (userId === getUserIdFromToken()) {
+      navigate("/ProfileUserView");
+    } else {
+      navigate(`/profile/${userId}`);
+    }
+  };
   return (
     <div className="shared-post-container">
       <div className="post-share" key={post.id}>
@@ -23,7 +34,9 @@ const SharedPost = ({ post }) => {
               src={post.originalPost.author.profilePicture || avatarWeb}
               alt="Avatar"
             />
-            <strong>
+            <strong
+              onClick={() => navigateUser(post.originalPost.author.userId)}
+            >
               {post.originalPost.author.userName || "University Sharing"}
             </strong>
             <span className="timePost-share">

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.Friends
 {
-    public class GetFriendsListQuery : IRequest<ResponseModel<List<FriendDto>>>
+    public class GetFriendsListQuery : IRequest<ResponseModel<FriendsListWithCountDto>>
     {
     }
 }

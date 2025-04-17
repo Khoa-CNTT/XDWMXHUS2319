@@ -4,6 +4,7 @@ import {
   getPostOwner,
   userProfileDetail,
   updateUserProfile,
+  fetchOtherUserProfile,
 } from "../action/profileActions";
 
 const listUser = createSlice({
@@ -15,6 +16,7 @@ const listUser = createSlice({
     post: [],
     loading: false,
     error: null,
+    otherUser: {},
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -63,6 +65,10 @@ const listUser = createSlice({
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload; // Xử lý lỗi
+      })
+      .addCase(fetchOtherUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.otherUser = action.payload; // Store the other user's data in users
       });
   },
 });

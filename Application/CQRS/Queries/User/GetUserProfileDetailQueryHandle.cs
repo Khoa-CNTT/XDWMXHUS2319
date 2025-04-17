@@ -32,7 +32,6 @@ namespace Application.CQRS.Queries.User
             {
                 return ResponseFactory.Fail<UserProfileDetailDto>("User not found", 404);
             }
-
             return ResponseFactory.Success(Mapping.MaptoUserprofileDetailDto(user), "Get user profile success", 200);
         }
     }

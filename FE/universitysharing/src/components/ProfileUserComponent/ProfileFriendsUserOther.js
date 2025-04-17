@@ -4,14 +4,13 @@ import { fetchListFriend } from "../../stores/action/friendAction";
 import "../../styles/ProfileUserView/ProfileFriends.scss";
 import avatarDefaut from "../../assets/AvatarDefaultFill.png";
 
-const ProfileFriends = ({ usersProfile }) => {
+const ProfileFriendsUserOther = ({ usersProfile }) => {
   const dispatch = useDispatch();
-  const friendsData = useSelector((state) => state.friends.listFriends);
+  const listFriend = useSelector((state) => state.friends.listFriendsByUser);
 
   useEffect(() => {
-    dispatch(fetchListFriend());
+    dispatch(fetchListFriend(usersProfile?.id));
   }, [dispatch]);
-
   return (
     <div className="profile-friends">
       <div className="profile-friends__header">
@@ -21,7 +20,7 @@ const ProfileFriends = ({ usersProfile }) => {
         </a>
       </div>
       <div className="profile-friends__list">
-        {friendsData?.friends?.slice(0, 6).map(
+        {listFriend?.friends?.slice(0, 6).map(
           (
             friend,
             index // Hiển thị tối đa 6 bạn bè
@@ -41,4 +40,4 @@ const ProfileFriends = ({ usersProfile }) => {
   );
 };
 
-export default ProfileFriends;
+export default ProfileFriendsUserOther;

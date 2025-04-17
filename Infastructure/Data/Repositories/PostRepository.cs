@@ -99,7 +99,7 @@ namespace Infrastructure.Data.Repositories
                .Include(p => p.Shares.Where(s => !s.IsDeleted))
                .Include(p => p.OriginalPost)
                    .ThenInclude(op => op.User)
-               .Where(p => p.UserId == userId && !p.IsDeleted);
+               .Where(p => p.UserId == userId && !p.IsDeleted && (p.IsApproved || p.ApprovalStatus == ApprovalStatusEnum.Approved));
 
             // Nếu có LastPostId, lấy bài viết cũ hơn bài cuối cùng đã tải
             if (lastPostId.HasValue)
@@ -133,7 +133,7 @@ namespace Infrastructure.Data.Repositories
                     .ThenInclude(s => s.User)
                 .Include(p => p.OriginalPost)
                     .ThenInclude(op => op.User)
-                .Where(p => !p.IsDeleted && p.PostType == postType) // Chỉ lấy bài chưa bị xóa và có loại đúng
+                .Where(p => !p.IsDeleted && p.PostType == postType && (p.IsApproved || p.ApprovalStatus == ApprovalStatusEnum.Approved)) // Chỉ lấy bài chưa bị xóa và có loại đúng
                 .OrderByDescending(p => p.CreatedAt); // Sắp xếp bài mới nhất trước
 
             // Nếu có lastPostId, chỉ lấy bài viết cũ hơn nó

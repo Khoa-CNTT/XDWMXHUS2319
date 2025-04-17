@@ -423,3 +423,34 @@ export const fetchPostsByOwner = createAsyncThunk(
     }
   }
 );
+
+export const fetchPostsByOtherUser = createAsyncThunk(
+  "posts/fetchPostsByOtherUser",
+  async ({ userId, lastPostId = null }, { rejectWithValue }) => {
+    try {
+      const tokens = localStorage.getItem("token");
+      const url = lastPostId
+        ? `https://localhost:7053/api/Post/GetPostsByOwnerFriend?userId=${userId}&lastPostId=${lastPostId}`
+        : `https://localhost:7053/api/Post/GetPostsByOwnerFriend?userId=${userId}`;
+
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${tokens}` },
+      });
+
+      if (response.data.message === "Không còn bài viết nào để load") {
+        return {
+          posts: [],
+          hasMore: false,
+        };
+      }
+      return {
+        posts: response.data.data.posts,
+        hasMore: response.data.data.nextCursor !== null,
+      };
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Error fetching owner posts"
+      );
+    }
+  }
+);
