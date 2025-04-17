@@ -78,21 +78,6 @@ public class MessageProcessingService : BackgroundService
                     {
                         await unitOfWork.MessageRepository.AddRangeAsync(messagesToAdd);
                         await unitOfWork.SaveChangesAsync();
-
-                        // Gửi tín hiệu SignalR cho từng tin nhắn mới
-                        foreach (var message in messagesToAdd)
-                        {
-                            var receiverId = conversation.User1Id == message.SenderId ? conversation.User2Id : conversation.User1Id;
-                            await signalRService.SendNewMessageSignalRAsync(new SendMessageNotificationEvent(
-                                message.Id,
-                                message.SenderId,
-                                receiverId,
-                                message.Content
-                                
-                            ));
-                        }
-
-                        Console.WriteLine($"Đã xử lý {messagesToAdd.Count} tin nhắn trong conversation {conversation.Id}. MessageIds: {string.Join(", ", messagesToAdd.Select(m => m.Id))}");
                     }
 
                     var updatedMessages = messageEvents.Where(m => !processedMessageIds.Contains(m.Id.ToString())).ToList();

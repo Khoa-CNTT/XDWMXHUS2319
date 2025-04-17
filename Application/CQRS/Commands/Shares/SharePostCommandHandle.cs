@@ -71,7 +71,12 @@ namespace Application.CQRS.Commands.Shares
                 await _unitOfWork.PostRepository.AddAsync(sharedPost);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-/*                await _notificationService.SendShareNotificationAsync(request.PostId, userId);*/
+                var message = $"{user.FullName} đã chia sẻ bài viết của bạn vào lúc {DateTime.Now.ToString("HH:mm dd/MM/yyyy")}";
+                if(userId != originalPost.UserId)
+                {
+                    await _notificationService.SendShareNotificationAsync(request.PostId, userId, message);
+                }
+                
                 return ResponseFactory.Success(
                     Mapping.MapToResultSharePostDto(sharedPost, originalPost, user), // ⚠️ Truyền `share` thay vì `sharedPost`
                     "Chia sẻ bài viết thành công",

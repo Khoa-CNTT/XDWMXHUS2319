@@ -1,13 +1,4 @@
-﻿using Application.Interface.ContextSerivce;
-using Application.Interface.Hubs;
-using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
-
+﻿
 namespace Application.CQRS.Commands.Friends
 {
     public class AcceptFriendRequestCommandHandle : IRequestHandler<AcceptFriendRequestCommand, ResponseModel<bool>>
@@ -15,11 +6,13 @@ namespace Application.CQRS.Commands.Friends
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContext;
         private readonly INotificationService _notificationService;
-        public AcceptFriendRequestCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContext, INotificationService notificationService)
+        private readonly IRedisService _redisService;
+        public AcceptFriendRequestCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContext, INotificationService notificationService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContext = userContext;
             _notificationService = notificationService;
+            _redisService = redisService;
         }
 
         public async Task<ResponseModel<bool>> Handle(AcceptFriendRequestCommand request, CancellationToken cancellationToken)
@@ -62,6 +55,8 @@ namespace Application.CQRS.Commands.Friends
                            .DeletePendingFriendRequestNotificationAsync(friendship.UserId, friendship.FriendId);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
+                // Thêm vào Redis
+                await _redisService.AddFriendAsync(userId.ToString(), friendship.FriendId.ToString());
                 return ResponseFactory.Success(true, "Đã chấp nhận lời mời kết bạn", 200);
             }
             catch(Exception ex)

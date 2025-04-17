@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.FriendShips;
 using Application.Interface.ContextSerivce;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,14 +13,24 @@ namespace Application.CQRS.Queries.Friends
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContext;
-        public GetFriendsListQueryHandle(IUnitOfWork unitOfWork, IUserContextService userContext)
+        private readonly IRedisService _redisService;
+        public GetFriendsListQueryHandle(IUnitOfWork unitOfWork, IUserContextService userContext, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContext = userContext;
+            _redisService = redisService;
         }
         public async Task<ResponseModel<FriendsListWithCountDto>> Handle(GetFriendsListQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContext.UserId();
+           
+                var friends = await _redisService.GetFriendsAsync(userId.ToString());
+                if (!friends.Any())
+                {
+                    await _redisService.SyncFriendsToRedis(userId.ToString());
+                    friends = await _redisService.GetFriendsAsync(userId.ToString());
+                }
+           
 
             var friendships = await _unitOfWork.FriendshipRepository.GetFriendsAsync(userId);
 

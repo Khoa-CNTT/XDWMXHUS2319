@@ -17,8 +17,8 @@ namespace Application.DTOs.Message
         public string? SentAt { get; set; }
         public bool IsSeen { get; set; }
         public string? SeenAt { get; set; }
-        public DateTime? DeliveredAt { get; set; }
+        public string? DeliveredAt { get; set; }
         public string SenderName { get; set; } = string.Empty;
-        public MessageStatus Status { get; set; }
+        public string? Status { get; set; }
     }
 }

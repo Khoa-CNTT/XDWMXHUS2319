@@ -18,5 +18,6 @@ namespace Application.Common
             NotFound = 404,
             InternalServerError = 500
         }
+        
     }
 }

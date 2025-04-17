@@ -23,3 +23,4 @@ global using StackExchange.Redis;
 global using Application.DTOs.Message;
 global using Microsoft.AspNetCore.SignalR;
 global using static Domain.Common.Enums;
+global using static Domain.Common.Helper;

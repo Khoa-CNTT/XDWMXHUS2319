@@ -38,7 +38,7 @@ namespace Domain.Entities
         public bool IsSharedPost { get;private set; } = false;
         public Guid? OriginalPostId { get;private set; }
         public Post OriginalPost { get;private set; } = null!;
-
+        
         public void SoftDelete()
         {
             IsDeleted = true;
@@ -155,6 +155,14 @@ namespace Domain.Entities
             {
                 OriginalPostId = originalPost.Id
             };
+        }
+        //thanh
+        //cập nhật lại  trạng thái bài post neu bị báo cáo
+        public void UpdateApprovalStatus(ApprovalStatusEnum newStatus, bool isApprovedByAI)
+        {
+            ApprovalStatus = newStatus;
+            IsApproved = isApprovedByAI;
+            UpdateAt = DateTime.UtcNow;
         }
     }
 }
