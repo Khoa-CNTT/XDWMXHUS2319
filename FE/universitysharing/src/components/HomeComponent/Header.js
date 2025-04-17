@@ -26,10 +26,8 @@ const Header = ({ usersProfile }) => {
   const navigate = useNavigate();
   const [modalPosition, setModalPosition] = useState({});
   const UserProfile = () => {
-
     navigate("/ProfileUserView");
     // window.location.href = "/ProfileUserView";
-
   };
 
   const handleHomeView = () => {
@@ -62,21 +60,21 @@ const Header = ({ usersProfile }) => {
       const rect = button.getBoundingClientRect();
       return {
         top: rect.bottom + window.scrollY + 5,
-        right: window.innerWidth - rect.right - window.scrollX
+        right: window.innerWidth - rect.right - window.scrollX,
       };
     }
     return {};
   };
-// Sửa hàm toggle để không đóng các modal khác
-const toggleModal = (modalName) => {
-  if (!modalState[modalName]) {
-    setModalPosition(getButtonPosition(`${modalName}-button`));
-  }
-  setModalState((prev) => ({
-    ...prev,
-    [modalName]: !prev[modalName],
-  }));
-};
+  // Sửa hàm toggle để không đóng các modal khác
+  const toggleModal = (modalName) => {
+    if (!modalState[modalName]) {
+      setModalPosition(getButtonPosition(`${modalName}-button`));
+    }
+    setModalState((prev) => ({
+      ...prev,
+      [modalName]: !prev[modalName],
+    }));
+  };
 
   return (
     <>
@@ -99,28 +97,28 @@ const toggleModal = (modalName) => {
             </div>
           </form>
         </div>
-        
+
         <div className="rightHeader">
-        <button 
+          <button
             id="messenger-button"
-            className={`icon-button ${modalState.messenger ? 'active' : ''}`}
+            className={`icon-button ${modalState.messenger ? "active" : ""}`}
             onClick={() => toggleModal("messenger")}
             aria-label="Messenger"
           >
             <FiMessageSquare className="icon" />
             {modalState.messenger && <div className="indicator"></div>}
           </button>
-          
-          <button 
-            className={`icon-button ${modalState.notify ? 'active' : ''}`}
+
+          <button
+            className={`icon-button ${modalState.notify ? "active" : ""}`}
             onClick={() => toggleModal("notify")}
             aria-label="Notifications"
           >
             <FiBell className="icon" />
             <span className="badge">3</span>
           </button>
-          
-          <button 
+
+          <button
             className="avatar-button"
             onClick={() => toggleModal("setting")}
             aria-label="User settings"

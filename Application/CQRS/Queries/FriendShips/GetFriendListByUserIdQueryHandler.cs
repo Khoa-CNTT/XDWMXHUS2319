@@ -1,27 +1,26 @@
-﻿using Application.DTOs.FriendShips;
-using Application.Interface.ContextSerivce;
+﻿using Application.CQRS.Queries.Friends;
+using Application.DTOs.FriendShips;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.CQRS.Queries.Friends
+namespace Application.CQRS.Queries.FriendShips
 {
-    public class GetFriendsListQueryHandle : IRequestHandler<GetFriendsListQuery, ResponseModel<FriendsListWithCountDto>>
+    public class GetFriendListByUserIdQueryHandler : IRequestHandler<GetFriendListByUserIdQuery, ResponseModel<FriendsListWithCountDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContext;
-        public GetFriendsListQueryHandle(IUnitOfWork unitOfWork, IUserContextService userContext)
+        public GetFriendListByUserIdQueryHandler(IUnitOfWork unitOfWork, IUserContextService userContext)
         {
             _unitOfWork = unitOfWork;
             _userContext = userContext;
         }
-        public async Task<ResponseModel<FriendsListWithCountDto>> Handle(GetFriendsListQuery request, CancellationToken cancellationToken)
+        public async Task<ResponseModel<FriendsListWithCountDto>> Handle(GetFriendListByUserIdQuery request, CancellationToken cancellationToken)
         {
-            var userId = _userContext.UserId();
 
-            var friendships = await _unitOfWork.FriendshipRepository.GetFriendsAsync(userId);
+            var friendships = await _unitOfWork.FriendshipRepository.GetFriendsAsync(request.UserId);
 
             if (friendships == null || !friendships.Any())
             {
@@ -34,7 +33,7 @@ namespace Application.CQRS.Queries.Friends
             }
 
             var friendIds = friendships
-                .Select(f => f.UserId == userId ? f.FriendId : f.UserId)
+                .Select(f => f.UserId == request.UserId ? f.FriendId : f.UserId)
                 .Distinct()
                 .ToList();
 
@@ -43,9 +42,9 @@ namespace Application.CQRS.Queries.Friends
             var result = friendships
              .Select(f =>
              {
-                 var otherUserId = f.UserId == userId ? f.FriendId : f.UserId;
+                 var otherUserId = f.UserId == request.UserId ? f.FriendId : f.UserId;
                  var user = users.FirstOrDefault(u => u.Id == otherUserId);
-                 return user != null ? Mapping.MapToFriendDto(f, user, userId) : null;
+                 return user != null ? Mapping.MapToFriendDto(f, user, request.UserId) : null;
              })
              .Where(dto => dto != null)
              .Select(dto => dto!) // ép kiểu non-null

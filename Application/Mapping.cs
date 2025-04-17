@@ -26,6 +26,7 @@ namespace Application
                 OriginalPost = new OriginalPostDto(post)
             };
         }
+
         public static ResultSharePostDto MapToResultSharePostDto(Post share, Post originalPost, User user)
         {
             return new ResultSharePostDto
@@ -56,7 +57,7 @@ namespace Application
             {
                 FriendId = otherUserId,
                 FullName = user.FullName,
-                PictureProfile = user.ProfilePicture,
+                PictureProfile = user.ProfilePicture != null ? $"{Constaint.baseUrl}{user.ProfilePicture}" : null,
                 CreatedAt = friendship.CreatedAt,
                 Status = friendship.Status
             };

@@ -1,5 +1,6 @@
 ﻿using Application.CQRS.Commands.Friends;
 using Application.CQRS.Queries.Friends;
+using Application.CQRS.Queries.FriendShips;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -49,6 +50,12 @@ namespace DuyTanSharingSystem.Controllers
         }
         [HttpGet("get-friends-list")]
         public async Task<IActionResult> GetFriendsList([FromQuery] GetFriendsListQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        [HttpGet("get-list-friend")]
+        public async Task<IActionResult> GetFriendsList([FromQuery] GetFriendListByUserIdQuery query)
         {
             var result = await _mediator.Send(query);
             return Ok(result);

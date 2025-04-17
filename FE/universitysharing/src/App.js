@@ -27,7 +27,7 @@ import SearchView from "./views/SearchView";
 import ResultSearchView from "./views/ResultSearchView";
 
 import Notifications from "./views/Notifications";
-
+import FriendProfileView from "./views/FriendProfileView";
 import getUserIdFromToken from "./utils/JwtDecode";
 import commentModalBackGround from "./components/CommentModalBackgroud.";
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
@@ -84,6 +84,7 @@ function App() {
             <Route path="/post/:id" element={<Homeview />} />
             <Route path="/MessageView" element={<MessageView />} />
             <Route path="/ProfileUserView" element={<ProfileUserView />} />
+            <Route path="/profile/:userId" element={<FriendProfileView />} />
             <Route path="*" element={<Navigate to="/home" replace />} />
 
             <Route path="/ResultSearchView" element={<ResultSearchView />} />
