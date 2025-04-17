@@ -179,6 +179,10 @@ const AllPosts = ({
     navigate(`/post/${post.id}`, { state: { background: location } });
   };
 
+  const handleCloseCommentModal = () => {
+    dispatch(closeCommentModal());
+  };
+
   //mở option post ra
   const handleOpenPostOptions = (event, post) => {
     event.stopPropagation();
@@ -502,7 +506,6 @@ const AllPosts = ({
           <p>Không có bài viết nào.</p>
         </div>
       )}
-
 
       {isPostOptionsOpen && selectedPostToOption && (
         <PostOptionsModal
