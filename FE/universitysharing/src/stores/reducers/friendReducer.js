@@ -17,6 +17,7 @@ const friendSlice = createSlice({
   name: "friends",
   initialState: {
     friends: [],
+    countFriend: 0, // Add this to initialState
     loading: false,
     error: null,
     activeFriend: null,
@@ -50,7 +51,7 @@ const friendSlice = createSlice({
       })
       .addCase(fetchFriends.fulfilled, (state, action) => {
         state.loading = false;
-        state.friends = action.payload || [];
+        state.friends = action.payload.friends || [];
       })
       .addCase(fetchFriends.rejected, (state, action) => {
         state.loading = false;

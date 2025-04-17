@@ -11,8 +11,17 @@ import avatarDefault from "../../assets/AvatarDefault.png";
 
 const RightSidebar = () => {
   const dispatch = useDispatch();
-  const { friends, loading: friendsLoading, error: friendsError } = useSelector((state) => state.friends);
-  const { onlineStatus, loading: onlineLoading, error: onlineError } = useSelector((state) => state.onlineUsers);
+  const {
+    friends = [],
+    loading: friendsLoading,
+    error: friendsError,
+  } = useSelector((state) => state.friends || {});
+  console.log("friends", friends);
+  const {
+    onlineStatus,
+    loading: onlineLoading,
+    error: onlineError,
+  } = useSelector((state) => state.onlineUsers);
   const { token, userId } = useAuth();
 
   const [openChats, setOpenChats] = useState([]);
@@ -79,46 +88,57 @@ const RightSidebar = () => {
         </div>
         <div className="friends-list">
           <ul>
-          {[...friends]
-  .sort((a, b) => {
-    const isOnlineA = onlineStatus[a.friendId];
-    const isOnlineB = onlineStatus[b.friendId];
+            {Array.isArray(friends) &&
+              [...friends]
+                .sort((a, b) => {
+                  const isOnlineA = onlineStatus[a.friendId];
+                  const isOnlineB = onlineStatus[b.friendId];
 
-    if (isOnlineA && !isOnlineB) return -1;
-    if (!isOnlineA && isOnlineB) return 1;
+                  if (isOnlineA && !isOnlineB) return -1;
+                  if (!isOnlineA && isOnlineB) return 1;
 
-    // Cả hai đều offline -> so sánh thời gian lastSeen
-    if (!isOnlineA && !isOnlineB) {
-      const lastSeenA = new Date(a.lastSeen).getTime();
-      const lastSeenB = new Date(b.lastSeen).getTime();
-      return lastSeenB - lastSeenA; // người mới offline (lastSeen lớn hơn) sẽ nằm trên
-    }
+                  // Cả hai đều offline -> so sánh thời gian lastSeen
+                  if (!isOnlineA && !isOnlineB) {
+                    const lastSeenA = new Date(a.lastSeen).getTime();
+                    const lastSeenB = new Date(b.lastSeen).getTime();
+                    return lastSeenB - lastSeenA; // người mới offline (lastSeen lớn hơn) sẽ nằm trên
+                  }
 
-    return 0; // nếu cả hai online thì không cần đổi vị trí
-  })
-  .map((friend) => {
-              const isOnline = onlineStatus[friend.friendId];
-              return (
-                <li
-                  key={friend.friendId}
-                  className={activeFriend === friend.friendId ? "active" : ""}
-                  onClick={() => handleFriendClick(friend.friendId)}
-                >
-                  <div className="friend-info">
-                    <img
-                      src={friend.pictureProfile || avatarDefault}
-                      alt={`${friend.fullName || "Bạn bè"}'s avatar`}
-                    />
-                    <div className="name-status">
-                      <div className="friend-name">{friend.fullName || "Không tên"}</div>
-                      <div className={`status ${isOnline ? "online" : "offline"}`}>
-                        {isOnline ? "Online" : getLastSeenText(friend.lastSeen)}
+                  return 0; // nếu cả hai online thì không cần đổi vị trí
+                })
+                .map((friend) => {
+                  const isOnline = onlineStatus[friend.friendId];
+                  return (
+                    <li
+                      key={friend.friendId}
+                      className={
+                        activeFriend === friend.friendId ? "active" : ""
+                      }
+                      onClick={() => handleFriendClick(friend.friendId)}
+                    >
+                      <div className="friend-info">
+                        <img
+                          src={friend.pictureProfile || avatarDefault}
+                          alt={`${friend.fullName || "Bạn bè"}'s avatar`}
+                        />
+                        <div className="name-status">
+                          <div className="friend-name">
+                            {friend.fullName || "Không tên"}
+                          </div>
+                          <div
+                            className={`status ${
+                              isOnline ? "online" : "offline"
+                            }`}
+                          >
+                            {isOnline
+                              ? "Online"
+                              : getLastSeenText(friend.lastSeen)}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
+                    </li>
+                  );
+                })}
             {friends.length === 0 && (
               <div className="loading-error">Không tìm thấy bạn bè.</div>
             )}
