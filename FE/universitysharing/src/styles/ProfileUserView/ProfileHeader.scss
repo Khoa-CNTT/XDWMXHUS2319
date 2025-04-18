@@ -7,19 +7,19 @@
   box-sizing: border-box;
 
   &__background {
-    height: 142px; // Giữ nguyên kích thước
-    background-color: #e0f7fa; // Màu nền dự phòng (light aqua)
-    overflow: hidden; // Ẩn phần dư thừa
+    height: 142px;
+    background-color: #e0f7fa;
+    overflow: hidden;
     width: 100%;
-    position: relative; // Để xử lý hình ảnh bên trong
-    border-radius: 0 0 8px 8px; // Bo góc nhẹ ở đáy (tuỳ chọn)
+    position: relative;
+    border-radius: 0 0 8px 8px;
   }
 
   &__background-image {
     width: 100%;
     height: 100%;
-    object-fit: cover; // Quan trọng: giúp ảnh phủ kín mà không bị méo
-    object-position: center; // Giữ ảnh ở chính giữa (cả ngang và dọc)
+    object-fit: cover;
+    object-position: center;
     display: block;
   }
 
@@ -42,7 +42,7 @@
     border: 3px solid #00b7ff;
     margin: 0px 20px;
     flex-shrink: 0;
-    transform: translateY(-30px); // Đẩy avatar lên trên
+    transform: translateY(-30px);
   }
 
   &__details {
@@ -68,27 +68,224 @@
     margin: 2px 0px;
   }
 
-  &__edit-link {
-    font-size: 14px;
-    font-weight: bold;
-    color: #007bff;
-    text-decoration: none;
+  &__friend-actions {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+}
+
+// Friend button styles
+
+.profile-header__friend-button {
+  display: flex;
+  align-items: center;
+  background-color: #1877f2;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  svg {
+    font-size: 18px;
+    margin-right: 8px;
+  }
+
+  &:hover {
+    background-color: #166fe5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &:disabled {
+    background-color: #e4e6eb;
+    cursor: not-allowed;
+  }
+}
+
+// Dropdown styles
+.friend-options-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  z-index: 100;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    right: 16px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent white transparent;
+  }
+}
+
+.friend-option-item {
+  padding: 12px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #050505;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+
+  svg {
+    margin-right: 8px;
+  }
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+  &.cancel-friend {
+    color: #ff4d4f;
+    border-top: 1px solid #f0f0f0;
+
     &:hover {
-      text-decoration: underline;
+      background-color: #fff0f0;
     }
   }
-  &__edit-button {
-    font-size: 14px;
-    color: #007bff;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    padding: 8px 16px;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-    &:hover {
-      background-color: #e7f0ff;
+}
+
+// Other button styles
+.profile-header__edit-button,
+.profile-header__addfriend-button,
+.profile-header__accept-button,
+.profile-header__reject-button,
+.profile-header__cancel-request-button {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  svg {
+    margin-right: 8px;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.profile-header__addfriend-button,
+.profile-header__accept-button {
+  background-color: #1877f2;
+  color: white;
+
+  &:hover {
+    background-color: #166fe5;
+  }
+}
+
+.profile-header__reject-button {
+  background-color: #e4e6eb;
+  color: #050505;
+  margin-left: 10px;
+
+  &:hover {
+    background-color: #d8dadf;
+  }
+}
+
+.profile-header__cancel-request-button {
+  background-color: #e4e6eb;
+  color: #050505;
+
+  &:hover {
+    background-color: #d8dadf;
+  }
+}
+
+.profile-header__option-button {
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: #e4e6eb;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  svg {
+    font-size: 20px;
+    color: #050505;
+  }
+
+  &:hover {
+    background-color: #d8dadf;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .profile-header {
+    height: auto;
+
+    &__info {
+      flex-wrap: wrap;
+      padding-bottom: 20px;
+    }
+
+    &__avatar {
+      width: 80px;
+      height: 80px;
+      margin-right: 15px;
+      transform: translateY(-20px);
+    }
+
+    &__details {
+      order: 1;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    &__friend-actions {
+      order: 2;
+      margin-top: 10px;
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+
+  .friend-options-dropdown {
+    right: auto;
+    left: 0;
+    min-width: 180px;
+
+    &::before {
+      right: auto;
+      left: 16px;
     }
   }
 }

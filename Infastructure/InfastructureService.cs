@@ -33,7 +33,7 @@ namespace Infrastructure
             services.AddScoped<ICacheService, RedisCacheService>();
 
 
-            
+            services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IEmailTokenRepository, EmailTokenRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
@@ -49,7 +49,9 @@ namespace Infrastructure
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
 
+            services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IShareRepository, ShareRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
             services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
@@ -61,8 +63,7 @@ namespace Infrastructure
             //services.AddScoped<ISearchAIService, ApiPythonService2>();
             //đăng kí chat
             services.AddScoped<IChatService, ChatService>();
-
-
+            services.AddScoped<IMessageStatusService, MessageStatusService>();
             // ✅ Đăng ký HttpClient
             services.AddHttpClient();
 

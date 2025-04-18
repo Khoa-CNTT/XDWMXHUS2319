@@ -27,6 +27,7 @@ import {
   likePost,
   deletePost,
   fetchPostsByOwner,
+  fetchPostsByOtherUser,
 } from "../../stores/action/listPostActions";
 import {
   hidePost,
@@ -42,8 +43,8 @@ import {
   closeInteractorShareModal,
 } from "../../stores/reducers/listPostReducers";
 import { debounce } from "lodash";
-import PostOptionsModal from "./PostOptionModal";
 import getUserIdFromToken from "../../utils/JwtDecode";
+import PostOptionsModal from "./PostOptionModal";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
@@ -53,7 +54,12 @@ import InteractorModal from "../InteractorModal";
 import Spinner from "../../utils/Spinner";
 import InteractorShareModal from "../InteractorShareModal";
 
-const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
+const AllPosts = ({
+  usersProfile,
+  showOwnerPosts = false,
+  isFriendProfile = false,
+  userFriendId = null,
+}) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -89,12 +95,20 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
 
   useEffect(() => {
     setLastPostId(null);
+
     if (showOwnerPosts) {
-      dispatch(fetchPostsByOwner());
+      if (isFriendProfile && userFriendId) {
+        // Fetch posts for the specific friend's profile
+        dispatch(fetchPostsByOtherUser({ userId: userFriendId })); // Pass as { userId }
+      } else {
+        // Fetch posts for the logged-in user's profile
+        dispatch(fetchPostsByOwner());
+      }
     } else {
+      // Fetch all posts (for home feed)
       dispatch(fetchPosts());
     }
-  }, [dispatch, showOwnerPosts]);
+  }, [dispatch, showOwnerPosts, isFriendProfile, userFriendId]);
 
   useEffect(() => {
     if (posts.length > 0) {
@@ -104,13 +118,37 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
 
   const loadMorePosts = useCallback(() => {
     if (loadingMore || !hasMorePosts || !lastPostId) return;
+
     setLoadingMore(true);
-    const fetchAction = showOwnerPosts ? fetchPostsByOwner : fetchPosts;
-    dispatch(fetchAction(lastPostId))
-      .unwrap()
-      .catch(() => {})
-      .finally(() => setLoadingMore(false));
-  }, [dispatch, lastPostId, loadingMore, showOwnerPosts, hasMorePosts]);
+
+    if (isFriendProfile && userFriendId) {
+      // For friend's profile - use fetchPostsByOtherUser with userId and lastPostId
+      dispatch(
+        fetchPostsByOtherUser({
+          userId: userFriendId,
+          lastPostId: lastPostId,
+        })
+      )
+        .unwrap()
+        .catch(() => {})
+        .finally(() => setLoadingMore(false));
+    } else {
+      // For own profile or home feed
+      const fetchAction = showOwnerPosts ? fetchPostsByOwner : fetchPosts;
+      dispatch(fetchAction(lastPostId))
+        .unwrap()
+        .catch(() => {})
+        .finally(() => setLoadingMore(false));
+    }
+  }, [
+    dispatch,
+    lastPostId,
+    loadingMore,
+    hasMorePosts,
+    showOwnerPosts,
+    isFriendProfile,
+    userFriendId,
+  ]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -128,11 +166,22 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
   }, [loadMorePosts]);
 
   const userId = getUserIdFromToken();
+  const navigateUser = (userId) => {
+    if (userId === getUserIdFromToken()) {
+      navigate("/ProfileUserView");
+    } else {
+      navigate(`/profile/${userId}`);
+    }
+  };
 
   //mở comment modal
   const handleOpenCommentModal = (post, index = 0) => {
     dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
     navigate(`/post/${post.id}`, { state: { background: location } });
+  };
+
+  const handleCloseCommentModal = () => {
+    dispatch(closeCommentModal());
   };
 
   //mở option post ra
@@ -231,8 +280,10 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
     const hasVideo = !!post.videoUrl;
     const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
+
     // Nếu không có ảnh lẫn video, không render media-container
     if (totalMedia === 0) return null;
+
     return (
       <div className={getMediaContainerClass(post)}>
         {imageUrls.map((url, index) => {
@@ -314,7 +365,9 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                     alt="Avatar"
                   />
                   <div className="user-info">
-                    <strong>{post.fullName}</strong>
+                    <strong onClick={() => navigateUser(post.userId)}>
+                      {post.fullName}
+                    </strong>
                     <div className="status-time-post">
                       <span className="timePost">
                         <FiClock size={12} style={{ marginRight: 4 }} />
@@ -457,6 +510,26 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
           <p>Không có bài viết nào.</p>
         </div>
       )}
+
+      {isPostOptionsOpen && selectedPostToOption && (
+        <PostOptionsModal
+          isOwner={userId === selectedPostToOption.post.userId}
+          onClose={() => dispatch(closePostOptionModal())}
+          position={selectedPostToOption.position}
+          postId={selectedPostToOption.post.id}
+          handleDeletePost={confirmDelete}
+          post={selectedPostToOption.post}
+        />
+      )}
+
+      {selectedPost &&
+        location.pathname.includes(`/post/${selectedPost.id}`) && (
+          <CommentModal
+            post={selectedPost}
+            onClose={handleCloseCommentModal}
+            usersProfile={usersProfile}
+          />
+        )}
 
       {selectedPostToShare && (
         <ShareModal

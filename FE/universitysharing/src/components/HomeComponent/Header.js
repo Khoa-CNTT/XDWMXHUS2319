@@ -1,11 +1,16 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
+
 import "../../styles/headerHome.scss";
 import "../../styles/MoblieReponsive/HomeViewMobile/HeaderHomeReponsive.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
+import { useSignalR } from "../../Service/SignalRProvider";
+
 
 import { FiSearch, FiBell, FiMessageSquare, FiArrowLeft } from "react-icons/fi";
+
 import NotifyModal from "../NotifyModal";
 import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
@@ -16,6 +21,7 @@ import { useDispatch } from "react-redux";
 import "animate.css";
 
 const Header = ({ usersProfile }) => {
+  const [unreadCount, setUnreadCount] = useState(0);
   const dispatch = useDispatch();
   const searchRef = useRef(null);
   const logoRef = useRef(null);
@@ -23,6 +29,23 @@ const Header = ({ usersProfile }) => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const navigate = useNavigate();
   const [modalPosition, setModalPosition] = useState({});
+
+  const { signalRService } = useSignalR();
+
+useEffect(() => {
+  const handleUnreadCount = (count) => {
+    setUnreadCount(count);
+  };
+
+  signalRService.onReceiveUnreadCount(handleUnreadCount);
+
+  return () => {
+    // Nếu bạn có hỗ trợ unsubscribe thì thực hiện ở đây
+  };
+}, [signalRService]);
+
+
+
   const UserProfile = () => {
     navigate("/ProfileUserView");
     // window.location.href = "/ProfileUserView";
@@ -51,6 +74,12 @@ const Header = ({ usersProfile }) => {
     messenger: false,
     setting: false,
   });
+  useEffect(() => {
+    if (modalState.messenger) {
+      setUnreadCount(0);
+      // TODO: Gọi API đánh dấu tin nhắn là đã đọc
+    }
+  }, [modalState.messenger]);
   // Add this function to calculate button position
   const getButtonPosition = (buttonId) => {
     const button = document.getElementById(buttonId);
@@ -74,6 +103,7 @@ const Header = ({ usersProfile }) => {
     }));
   };
 
+
   //Mở đóng left menu
   const showSearchBox = () => {
     if (window.innerWidth <= 768) {
@@ -82,6 +112,7 @@ const Header = ({ usersProfile }) => {
       rightRef.current?.classList.add("hide-mobile");
     }
   };
+
 
   const hideSearchBox = () => {
     if (window.innerWidth <= 768) {
@@ -141,7 +172,9 @@ const Header = ({ usersProfile }) => {
           </form>
         </div>
 
+
         <div className="rightHeader" ref={rightRef}>
+
           <button
             id="messenger-button"
             className={`icon-button ${modalState.messenger ? "active" : ""}`}
@@ -149,11 +182,15 @@ const Header = ({ usersProfile }) => {
             aria-label="Messenger"
           >
             <FiMessageSquare className="icon" />
-            {modalState.messenger && <div className="indicator"></div>}
+            {unreadCount > 0 && (
+              <span className="badge">{unreadCount}</span>
+            )}
           </button>
+
 
           <button
             className={`icon-button ${modalState.notify ? "active" : ""}`}
+
             onClick={() => toggleModal("notify")}
             aria-label="Notifications"
           >

@@ -52,6 +52,22 @@ namespace Application.Services
                 NextCursor = nextCursor
             };
         }
+        public async Task<GetPostsResponse> GetPostsByOwnerFriendWithCursorAsync(Guid userId, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
+        {
+            const int PAGE_SIZE = 10;
+
+            // 🟢 Lấy danh sách bài viết theo chủ sở hữu
+            var posts = await _unitOfWork.PostRepository.GetPostsByOwnerAsync(userId, lastPostId, pageSize, cancellationToken);
+
+            // 🟢 Xác định nextCursor nếu còn bài viết
+            var nextCursor = (posts.Count == PAGE_SIZE) ? (Guid?)posts.Last().Id : null;
+
+            return new GetPostsResponse
+            {
+                Posts = posts.Select(post => Mapping.MapToAllPostDto(post, userId)).ToList(),
+                NextCursor = nextCursor
+            };
+        }
 
         public async Task<GetPostsResponse> GetPostsByOwnerWithCursorAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {

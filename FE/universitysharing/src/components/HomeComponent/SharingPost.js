@@ -1,6 +1,8 @@
 import React from "react";
 import avatarWeb from "../../assets/AvatarDefault.png";
 import "../../styles/SharingPost.scss";
+import { useNavigate } from "react-router-dom";
+import getUserIdFromToken from "../../utils/JwtDecode";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
 import { useDispatch } from "react-redux";
@@ -8,6 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { openCommentModal } from "../../stores/reducers/listPostReducers";
 
 const SharedPost = ({ post }) => {
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -91,6 +94,7 @@ const SharedPost = ({ post }) => {
         )}
       </div>
     );
+
   };
   return (
     <div className="shared-post-container">
@@ -103,7 +107,9 @@ const SharedPost = ({ post }) => {
               src={post.originalPost.author.profilePicture || avatarWeb}
               alt="Avatar"
             />
-            <strong>
+            <strong
+              onClick={() => navigateUser(post.originalPost.author.userId)}
+            >
               {post.originalPost.author.userName || "University Sharing"}
             </strong>
             <span className="timePost-share">

@@ -11,13 +11,14 @@ import "../styles/MoblieReponsive/UsersProfileMoblie/ProfileViewMobile.scss";
 import AllPosts from "../components/HomeComponent/AllPostHome";
 import { fetchPostsByOwner } from "../stores/action/listPostActions";
 import PostInput from "../components/HomeComponent/PostInputHome";
+import { fetchListFriend } from "../stores/action/friendAction";
 
 const ProfileUserView = () => {
   const dispatch = useDispatch();
   const { post } = useSelector((state) => state.users);
   const usersState = useSelector((state) => state.users) || {};
   const { users } = usersState;
-
+  const { listFriend } = useSelector((state) => state.listFriends) || {};
   // Thêm state và ref
   const [shouldFocusBio, setShouldFocusBio] = useState(false);
   const profileHeaderRef = useRef();
@@ -32,6 +33,7 @@ const ProfileUserView = () => {
 
   useEffect(() => {
     dispatch(userProfile()); // Lấy thông tin user
+    dispatch(fetchListFriend()); // Lấy danh sách bạn bè
     dispatch(fetchPostsByOwner()); // Sử dụng action mới
   }, [dispatch]);
 

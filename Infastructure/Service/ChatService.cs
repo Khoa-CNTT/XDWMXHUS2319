@@ -1,4 +1,4 @@
-﻿
+﻿using static Domain.Common.Helper;
 namespace Infrastructure.Service
 {
     public class ChatService : IChatService
@@ -20,30 +20,17 @@ namespace Infrastructure.Service
             {
                 dbMessage.UpdateStatus(MessageStatus.Delivered);
                 await _unitOfWork.SaveChangesAsync();
-                message.Status = MessageStatus.Delivered;
-                message.DeliveredAt = dbMessage.DeliveredAt;
+                message.Status = MessageStatus.Delivered.ToString();
+                message.DeliveredAt =FormatUtcToLocal( DateTime.UtcNow);
             }
 
             // Gửi tin nhắn đến người nhận qua SignalR
-            await _chatHub.Clients.User(recipientId.ToString()).SendAsync("ReceiveMessage", message);
+            // Gửi tin nhắn đến cả người nhận và người gửi qua cùng sự kiện ReceiveMessage
+            await _chatHub.Clients.Users(new[] { recipientId.ToString(), message.SenderId.ToString() })
+                .SendAsync("ReceiveMessage", message);
 
             // Thông báo trạng thái "Delivered" cho người gửi
             await _chatHub.Clients.User(message.SenderId.ToString()).SendAsync("MessageDelivered", message.Id);
-        }
-
-        public async Task MarkMessageAsSeenAsync(Guid conversationId, Guid messageId)
-        {
-            var message = await _unitOfWork.MessageRepository.GetByIdAsync(messageId);
-            if (message != null && message.Status != MessageStatus.Seen)
-            {
-                message.UpdateStatus(MessageStatus.Seen);
-                message.UpdateSeenAt(DateTime.UtcNow);
-                await _unitOfWork.SaveChangesAsync();
-            }
-
-            // Thông báo "Seen" cho tất cả trong cuộc trò chuyện
-            await _chatHub.Clients.Group(conversationId.ToString())
-                       .SendAsync("MessageSeen", messageId);
         }
     }
 }

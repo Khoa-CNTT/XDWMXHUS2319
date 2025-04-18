@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchFriends } from "../../src/stores/action/friendAction";
 import {
@@ -8,91 +9,205 @@ import {
   FiMessageSquare,
   FiX,
 } from "react-icons/fi";
+
 import { BsFilter } from "react-icons/bs";
+import { toast } from "react-toastify";
 import ChatBox from "./MessageComponent/ChatBox";
-import signalRService from "../../src/Service/notificationSignalService";
-import { jwtDecode } from "jwt-decode";
+import { useSignalR } from "../Service/SignalRProvider";
+import { useAuth } from "../contexts/AuthContext";
+import axiosClient from "../Service/axiosClient";
 import "../styles/MessengerModal.scss";
+
 import "../styles/MoblieReponsive/HomeViewMobile/MessengerModalMobile.scss";
 
+import avatarDefault from "../assets/AvatarDefault.png";
+
+const FriendItem = React.memo(({ conv, unreadCount, onClick }) => {
+  const [isPulsing, setIsPulsing] = useState(false);
+
+  useEffect(() => {
+    if (unreadCount > 0) {
+      setIsPulsing(true);
+      const timer = setTimeout(() => setIsPulsing(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [unreadCount]);
+
+  const formatMessageDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return date.toLocaleDateString([], { month: "short", day: "numeric" });
+  };
+
+  return (
+    <div
+      className={`friend-item ${unreadCount > 0 ? "unread" : ""} ${isPulsing ? "pulse" : ""}`}
+      onClick={onClick}
+    >
+      <div className="friend-avatar">
+        <img
+          src={conv.user.profilePicture || avatarDefault}
+          alt={conv.user.fullName}
+          onError={(e) => {
+            e.target.src = avatarDefault;
+          }}
+        />
+      </div>
+      <div className="friend-info">
+        <div className="friend-name">{conv.user.fullName}</div>
+        {conv.lastMessage ? (
+          <div className="friend-preview">
+            <span className="message-preview">
+              {conv.lastMessage.length > 20
+                ? `${conv.lastMessage.substring(0, 20)}...`
+                : conv.lastMessage}
+            </span>
+            <span className="message-time">{formatMessageDate(conv.lastMessageDate)}</span>
+          </div>
+        ) : (
+          <div className="friend-status">No messages yet</div>
+        )}
+      </div>
+      {unreadCount > 0 && (
+        <div className="unread-badge">
+          <span className="unread-count">{unreadCount}</span>
+        </div>
+      )}
+      <div className="friend-actions">
+        <button className="action-button" title="More options">
+          <FiMoreHorizontal size={16} />
+        </button>
+      </div>
+    </div>
+  );
+});
+
+
 const MessengerModal = ({ isOpen, onClose, position }) => {
-  const dispatch = useDispatch();
   const modalRef = useRef(null);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [openChats, setOpenChats] = useState([]);
-  const [unreadMessages, setUnreadMessages] = useState([]);
-  const { friends, loading, error } = useSelector((state) => state.friends);
-  const token = localStorage.getItem("token");
-  const userId = token
-    ? jwtDecode(token)[
-        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-      ]
-    : null;
+
+  const [conversations, setConversations] = useState([]);
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const { friends, loading: friendsLoading, error: friendsError } = useSelector((state) => state.friends);
+  const { signalRService } = useSignalR();
+  const { token, userId } = useAuth();
+
+
+  const fetchConversations = useCallback(async () => {
+    if (!token || !userId) {
+      console.warn("[MessengerModal] Thiếu token hoặc userId");
+      return;
+    }
+    try {
+      const response = await axiosClient.get("api/Message/inbox", {
+        params: { pageSize: 20 },
+      });
+      const { data } = response.data;
+      const uniqueConversations = Array.from(
+        new Map(data.inBox.map((conv) => [conv.conversationId, conv])).values()
+      );
+      setConversations(uniqueConversations);
+      const initialUnreadCounts = {};
+      uniqueConversations.forEach((conv) => {
+        if (conv.unreadCount > 0) {
+          initialUnreadCounts[conv.user.id] = conv.unreadCount;
+        }
+      });
+      setUnreadCounts(initialUnreadCounts);
+      console.log("[MessengerModal] Fetched unique conversations:", uniqueConversations);
+    } catch (err) {
+      console.error("[MessengerModal] Lỗi khi lấy danh sách hội thoại:", err.message);
+      toast.error("Không thể tải danh sách hội thoại");
+    }
+  }, [token, userId]);
 
   useEffect(() => {
-    console.log(
-      "useEffect chạy với isOpen:",
-      isOpen,
-      "token:",
-      token,
-      "userId:",
-      userId
-    );
+
     if (!isOpen || !token || !userId) {
-      console.log("Dừng useEffect vì isOpen, token hoặc userId không hợp lệ");
+      console.log("[MessengerModal] Dừng useEffect vì thiếu điều kiện");
       return;
     }
 
-    const initializeSignalR = async () => {
-      try {
-        // console.log("Bắt đầu kết nối SignalR với UserId:", userId);
-        await signalRService.startConnection(token, userId); // Truyền userId
-        signalRService.onReceiveMessageNotification((notification) => {
-          console.log("Nhận thông báo tin nhắn:", notification);
-          const { SenderId, Content, MessageId } = notification;
 
-          setUnreadMessages((prev) => {
-            if (prev.some((msg) => msg.messageId === MessageId)) {
-              console.log("Tin nhắn đã tồn tại, bỏ qua:", MessageId);
-              return prev;
+    let isMounted = true;
+
+    const setupSignalREvents = () => {
+      signalRService.onReceiveUnreadCount((unreadCount) => {
+        console.log("[MessengerModal] Nhận unreadCount tổng:", unreadCount);
+        if (isMounted) {
+          fetchConversations();
+        }
+      });
+
+      signalRService.onReceiveMessageNotification((notification) => {
+        console.log("[MessengerModal] Nhận thông báo tin nhắn:", notification);
+        const { SenderId, Content, MessageId } = notification;
+
+        if (isMounted) {
+          setConversations((prev) => {
+            const exists = prev.some((conv) => conv.user.id === SenderId);
+            if (exists) {
+              return prev.map((conv) =>
+                conv.user.id === SenderId
+                  ? {
+                      ...conv,
+                      lastMessage: Content,
+                      lastMessageDate: new Date().toISOString(),
+                      unreadCount: (conv.unreadCount || 0) + 1,
+                    }
+                  : conv
+              );
             }
-            console.log("Thêm tin nhắn mới:", { SenderId, Content, MessageId });
             return [
               ...prev,
-              { senderId: SenderId, content: Content, messageId: MessageId },
+              {
+                conversationId: `temp-${MessageId}`,
+                user: { id: SenderId, fullName: "Unknown", profilePicture: "" },
+                lastMessage: Content,
+                lastMessageDate: new Date().toISOString(),
+                unreadCount: 1,
+                isSeen: false,
+              },
+
             ];
           });
 
+          setUnreadCounts((prev) => ({
+            ...prev,
+            [SenderId]: (prev[SenderId] || 0) + 1,
+          }));
+
           if (!document.hasFocus()) {
-            const sender = friends.find((f) => f.friendId === SenderId);
-            console.log(
-              "Tab không focus, bắt đầu nhấp nháy:",
-              sender?.fullNameFriend
-            );
+
+            const sender = conversations.find((conv) => conv.user.id === SenderId);
+            console.log("[MessengerModal] Tab không focus, bắt đầu nhấp nháy:", sender?.user.fullName);
             startTabBlink(
-              `${sender?.fullNameFriend || "Ai đó"} đã gửi bạn 1 tin nhắn`
+              `${sender?.user.fullName || "Ai đó"} đã gửi bạn 1 tin nhắn`
+
             );
           }
-        });
-      } catch (err) {
-        console.error("Lỗi khởi tạo SignalR:", err);
-      }
+        }
+      });
     };
 
-    initializeSignalR();
+    fetchConversations();
+    setupSignalREvents();
 
     return () => {
-      console.log("Ngắt kết nối SignalR");
-      signalRService.stopConnection();
+      isMounted = false;
+      signalRService.off("ReceiveUnreadCount");
+      signalRService.off("ReceiveMessageNotification");
+      console.log("[MessengerModal] Đã hủy đăng ký sự kiện SignalR");
     };
-  }, [isOpen, token, friends, userId]);
-
-  useEffect(() => {
-    if (isOpen) {
-      dispatch(fetchFriends());
-    }
-  }, [isOpen, dispatch]);
+  }, [isOpen, token, userId, signalRService, fetchConversations]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -113,10 +228,17 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
   const handleOpenChat = (friendId) => {
     if (!openChats.includes(friendId)) {
       setOpenChats((prev) => [...prev, friendId]);
-      setUnreadMessages((prev) =>
-        prev.filter((msg) => msg.senderId !== friendId)
+
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [friendId]: 0,
+      }));
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.user.id === friendId ? { ...conv, unreadCount: 0, isSeen: true } : conv
+        )
       );
-      // TODO: Gọi API để đánh dấu IsSeen = true cho các tin nhắn của friendId
+
     }
   };
 
@@ -140,9 +262,17 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
     window.addEventListener("focus", stopBlink, { once: true });
   };
 
-  const getUnreadCount = (friendId) => {
-    return unreadMessages.filter((msg) => msg.senderId === friendId).length;
-  };
+  const filteredConversations = useMemo(() => {
+    return conversations.filter((conv) => {
+      const isGroup = conv.isGroup; // Giả sử API trả về isGroup
+      return (
+        conv.user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        (activeTab === "all" ||
+          (activeTab === "unread" && (unreadCounts[conv.user.id] || 0) > 0) ||
+          (activeTab === "groups" && isGroup))
+      );
+    });
+  }, [conversations, searchQuery, activeTab, unreadCounts]);
 
   if (!isOpen) return null;
 
@@ -199,108 +329,56 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
             </div>
           </div>
 
-          <div className="tabs-container">
-            <button
-              className={`tab ${activeTab === "all" ? "active" : ""}`}
-              onClick={() => setActiveTab("all")}
-            >
-              All
-            </button>
-            <button
-              className={`tab ${activeTab === "unread" ? "active" : ""}`}
-              onClick={() => setActiveTab("unread")}
-            >
-              Unread ({unreadMessages.length})
-            </button>
-            <button
-              className={`tab ${activeTab === "groups" ? "active" : ""}`}
-              onClick={() => setActiveTab("groups")}
-            >
-              Groups
-            </button>
-          </div>
 
-          <div className="friends-list">
-            {loading ? (
-              <div className="loading">Loading...</div>
-            ) : error ? (
-              <div className="error">{error}</div>
-            ) : (
-              friends
-                ?.filter(
-                  (friend) =>
-                    friend &&
-                    friend.fullNameFriend &&
-                    friend.fullNameFriend
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase())
-                )
-                .map((friend) => {
-                  const unreadCount = getUnreadCount(friend.friendId);
-                  const latestMessage = unreadMessages
-                    .filter((msg) => msg.senderId === friend.friendId)
-                    .slice(-1)[0];
+        <div className="tabs-container">
+          <button
+            className={`tab ${activeTab === "all" ? "active" : ""}`}
+            onClick={() => setActiveTab("all")}
+          >
+            All
+          </button>
+          <button
+            className={`tab ${activeTab === "unread" ? "active" : ""}`}
+            onClick={() => setActiveTab("unread")}
+          >
+            Unread ({Object.values(unreadCounts).reduce((sum, count) => sum + (count || 0), 0)})
+          </button>
+          <button
+            className={`tab ${activeTab === "groups" ? "active" : ""}`}
+            onClick={() => setActiveTab("groups")}
+          >
+            Groups
+          </button>
+        </div>
 
-                  return (
-                    <div
-                      key={friend.friendId}
-                      className="friend-item"
-                      onClick={() => handleOpenChat(friend.friendId)}
-                    >
-                      <div className="friend-avatar">
-                        <img
-                          src={
-                            friend.avatar ||
-                            "https://www.facebook.com/images/friends_empty.png"
-                          }
-                          alt={friend.fullNameFriend}
-                          onError={(e) => {
-                            e.target.src =
-                              "https://www.facebook.com/images/friends_empty.png";
-                          }}
-                        />
-                        {friend.active && (
-                          <span className="active-badge"></span>
-                        )}
-                      </div>
-                      <div className="friend-info">
-                        <div className="friend-name">
-                          {friend.fullNameFriend}
-                        </div>
-                        {unreadCount > 0 && latestMessage ? (
-                          <div className="friend-preview">
-                            <span>
-                              {latestMessage.content.substring(0, 20)}...
-                            </span>
-                            {unreadCount > 1 && (
-                              <span> ({unreadCount} tin nhắn)</span>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="friend-status">
-                            {friend.active ? "Active now" : "Active recently"}
-                          </div>
-                        )}
-                      </div>
-                      {unreadCount > 0 && (
-                        <div className="unread-count">{unreadCount}</div>
-                      )}
-                      <div className="friend-actions">
-                        <button className="action-button" title="More options">
-                          <FiMoreHorizontal size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
-            )}
-          </div>
+        <div className="friends-list">
+          {friendsLoading ? (
+            <div className="loading">Loading...</div>
+          ) : friendsError ? (
+            <div className="error">{friendsError}</div>
+          ) : filteredConversations.length === 0 ? (
+            <div className="empty">No conversations</div>
+          ) : (
+            filteredConversations.map((conv) => (
+              <FriendItem
+                key={conv.conversationId}
+                conv={conv}
+                unreadCount={unreadCounts[conv.user.id] || 0}
+                onClick={() => handleOpenChat(conv.user.id)}
+              />
+            ))
+          )}
+        </div>
 
-          {openChats.map((friendId) => (
+        <div className="chat-boxes-wrapper">
+          {openChats.map((friendId, index) => (
             <ChatBox
               key={friendId}
               friendId={friendId}
               onClose={() => handleCloseChat(friendId)}
+
+              index={index}
+
             />
           ))}
         </div>
