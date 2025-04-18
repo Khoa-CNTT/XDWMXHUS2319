@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import "../../styles/headerHome.scss";
+import "../../styles/MoblieReponsive/HomeViewMobile/AllpostMobile.scss";
 import { fetchLikes } from "../../stores/action/likeAction";
 import { fetchShares } from "../../stores/action/shareAction";
 import {
@@ -358,7 +359,10 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
                           }
                         )}
                       </span>
-                      <span className="status-post">Công khai</span>
+                      <span className="status-post">
+                        {" "}
+                        {post.scope === 0 ? "Công khai" : "Riêng tư"}
+                      </span>
                     </div>
                   </div>
                 </div>

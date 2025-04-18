@@ -1,7 +1,5 @@
-import logo from "./logo.svg";
 import "./App.css";
 import { useEffect, useState } from "react";
-import { startAutoRefresh } from "./utils/RefeshToken";
 import {
   BrowserRouter as Router,
   Routes,
@@ -29,7 +27,7 @@ import ResultSearchView from "./views/ResultSearchView";
 import Notifications from "./views/Notifications";
 
 import getUserIdFromToken from "./utils/JwtDecode";
-import commentModalBackGround from "./components/CommentModalBackgroud.";
+
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
 
 function App() {
@@ -81,13 +79,11 @@ function App() {
             <Route path="/search" element={<SearchView />} />
             <Route path="/sharing-ride" element={<SharingRideView />} />
             <Route path="/your-ride" element={<YourRideView />} />
-            <Route path="/post/:id" element={<Homeview />} />
-            <Route path="/MessageView" element={<MessageView />} />
+            {/* <Route path="/post/:id" element={<Homeview />} /> */}
+            <Route path="/Message" element={<MessageView />} />
             <Route path="/ProfileUserView" element={<ProfileUserView />} />
             <Route path="*" element={<Navigate to="/home" replace />} />
-
             <Route path="/ResultSearchView" element={<ResultSearchView />} />
-
             <Route path="/notify" element={<Notifications />} />
           </>
         )}

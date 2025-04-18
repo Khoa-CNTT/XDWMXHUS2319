@@ -1,0 +1,89 @@
+/* Responsive cho màn hình <= 768px */
+@media (max-width: 768px) {
+  .header {
+    width: 100% !important;
+  }
+
+  .left-sidebar-overlay {
+    position: fixed;
+    background-color: rgba(93, 93, 93, 0.526);
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    display: none;
+    &.show {
+      display: flex;
+      overflow: auto;
+    }
+  }
+  .left-sidebar {
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0; // Luôn giữ nguyên
+    transform: translateX(-100%); // Đẩy sidebar ra ngoài
+    transition: transform 0.3s ease-in-out;
+    width: 260px;
+    height: 100vh;
+
+    &.show {
+      transform: translateX(0); // Trượt vào lại
+    }
+  }
+
+  .right-sidebar {
+    display: none !important
+    ;
+  }
+
+  .center-content {
+    width: 100% !important;
+  }
+
+  .main-content {
+    flex-direction: column !important;
+  }
+}
+
+.Open-menu {
+  position: fixed;
+  width: 20px; // ✅ chỉ rộng 20px
+  height: 60px;
+  top: 40%;
+  z-index: 1001;
+  background-color: rgba(255, 255, 255, 0.19);
+  padding: 0;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.312);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  // overflow: visible; // ✅ cho phép icon tràn ra ngoài nếu cần
+  // ✅ THÊM DÒNG NÀY
+  transition: transform 0.3s ease;
+
+  .Open-menu-icon {
+    font-size: 24px;
+    color: #333;
+    // pointer-events: none; // không chặn sự kiện click vào nút cha
+    transform: scale(1.2); // ✅ phóng to icon mà không cần khung to
+    transition: transform 0.3s ease;
+
+    &.rotate {
+      transform: rotate(180deg) scale(1.2); // xoay + giữ to
+    }
+  }
+
+  &.move-right {
+    transform: translateX(250px);
+  }
+}
+
+@media (max-width: 768px) {
+  .Open-menu {
+    display: flex;
+  }
+}

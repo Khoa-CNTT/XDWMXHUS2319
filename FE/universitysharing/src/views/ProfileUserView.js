@@ -7,6 +7,7 @@ import Header from "../components/HomeComponent/Header";
 import { useDispatch, useSelector } from "react-redux";
 import { userProfile } from "../stores/action/profileActions";
 import "../styles/ProfileView.scss";
+import "../styles/MoblieReponsive/UsersProfileMoblie/ProfileViewMobile.scss";
 import AllPosts from "../components/HomeComponent/AllPostHome";
 import { fetchPostsByOwner } from "../stores/action/listPostActions";
 import PostInput from "../components/HomeComponent/PostInputHome";
@@ -35,30 +36,34 @@ const ProfileUserView = () => {
   }, [dispatch]);
 
   return (
-    <div className="profile-user-view">
-      <Header className="header" usersProfile={users} />
-      <ProfileHeader
-        ref={profileHeaderRef}
-        shouldFocusBio={shouldFocusBio}
-        onModalOpened={() => setShouldFocusBio(false)}
-      />
-      <div className="profile-user-view__content">
-        <div className="left-sidebar-container">
-          <div className="left-sidebar-content">
-            <ProfileIntro
-              usersProfile={users}
-              onEditBioClick={handleEditBioClick}
-            />
-            <ProfilePhotos usersProfile={users} />
-            <ProfileFriends usersProfile={users} />
+    <>
+      <div className="home-vieww">
+        <Header className="header" usersProfile={users} />
+      </div>
+      <div className="profile-user-view">
+        <ProfileHeader
+          ref={profileHeaderRef}
+          shouldFocusBio={shouldFocusBio}
+          onModalOpened={() => setShouldFocusBio(false)}
+        />
+        <div className="profile-user-view__content">
+          <div className="left-sidebar-container">
+            <div className="left-sidebar-content">
+              <ProfileIntro
+                usersProfile={users}
+                onEditBioClick={handleEditBioClick}
+              />
+              <ProfilePhotos usersProfile={users} />
+              <ProfileFriends usersProfile={users} />
+            </div>
+          </div>
+          <div className="profile-user-view__right">
+            <PostInput className="post-input" usersProfile={users} />
+            <AllPosts usersProfile={users} post={post} showOwnerPosts={true} />
           </div>
         </div>
-        <div className="profile-user-view__right">
-          <PostInput className="post-input" usersProfile={users} />
-          <AllPosts usersProfile={users} post={post} showOwnerPosts={true} />
-        </div>
       </div>
-    </div>
+    </>
   );
 };
 

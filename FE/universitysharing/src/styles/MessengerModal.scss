@@ -1,3 +1,6 @@
+.messenger-modal-background {
+  display: none;
+}
 .messenger-modal-overlay {
   position: fixed;
   bottom: 0;
@@ -74,7 +77,8 @@
       .header-right {
         display: flex;
 
-        .icon-button, .close-button {
+        .icon-button,
+        .close-button {
           background: none;
           border: none;
           padding: 6px;
@@ -147,7 +151,7 @@
           color: #1877f2;
 
           &::after {
-            content: '';
+            content: "";
             position: absolute;
             bottom: 0;
             left: 0;

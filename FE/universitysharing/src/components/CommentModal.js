@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import "../styles/CommentOverlay.scss";
+import "../styles/MoblieReponsive/CommentModalMobile/CommentModalMobile.scss";
 // import logoweb from "../assets/Logo.png";
 import logoweb from "../assets/Logo white.png";
 import avatarDefaut from "../assets/AvatarDefault.png";

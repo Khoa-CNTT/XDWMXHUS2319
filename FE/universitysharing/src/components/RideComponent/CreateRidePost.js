@@ -1,9 +1,21 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Polyline, useMap, Popup } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  useMap,
+  Popup,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Icon } from "leaflet";
-import { FaTimes, FaSearchLocation, FaClock, FaPaperPlane } from "react-icons/fa";
+import {
+  FaTimes,
+  FaSearchLocation,
+  FaClock,
+  FaPaperPlane,
+} from "react-icons/fa";
 import { MdMyLocation } from "react-icons/md";
 import avatarDefault from "../../assets/AvatarDefault.png";
 import "../../styles/CreateRideModal.scss";
@@ -32,7 +44,7 @@ const useMapControl = (center, bounds) => {
 // Giới hạn phạm vi Đà Nẵng
 const daNangBounds = L.latLngBounds(
   L.latLng(15.975, 108.05), // Tây Nam Đà Nẵng
-  L.latLng(16.15, 108.35)   // Đông Bắc Đà Nẵng
+  L.latLng(16.15, 108.35) // Đông Bắc Đà Nẵng
 );
 
 const HERE_API_KEY = process.env.REACT_APP_HERE_API_KEY;
@@ -100,7 +112,9 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
       );
       const data = await response.json();
       if (data.items && data.items.length > 0) {
-        setLabel(data.items[0]?.title || `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        setLabel(
+          data.items[0]?.title || `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+        );
       } else {
         setLabel(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
       }
@@ -147,7 +161,7 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
         shift += 5;
       } while (byte >= 0x20);
 
-      const deltaLat = (result & 1) ? ~(result >> 1) : (result >> 1);
+      const deltaLat = result & 1 ? ~(result >> 1) : result >> 1;
       lat += deltaLat;
 
       shift = 0;
@@ -158,7 +172,7 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
         shift += 5;
       } while (byte >= 0x20);
 
-      const deltaLng = (result & 1) ? ~(result >> 1) : (result >> 1);
+      const deltaLng = result & 1 ? ~(result >> 1) : result >> 1;
       lng += deltaLng;
 
       coords.push([lat / 1e5, lng / 1e5]);
@@ -166,15 +180,18 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
     return coords;
   };
 
-  const updateLocation = useCallback((location, label, setLocation, setLabel, type) => {
-    if (!daNangBounds.contains(location)) {
-      toast.warning(`Điểm ${type} phải trong phạm vi Đà Nẵng!`);
-      return;
-    }
-    setLocation(location);
-    setLabel(label); // Chỉ cập nhật label để hiển thị trên client
-    setIsUserInteracted(true);
-  }, []);
+  const updateLocation = useCallback(
+    (location, label, setLocation, setLabel, type) => {
+      if (!daNangBounds.contains(location)) {
+        toast.warning(`Điểm ${type} phải trong phạm vi Đà Nẵng!`);
+        return;
+      }
+      setLocation(location);
+      setLabel(label); // Chỉ cập nhật label để hiển thị trên client
+      setIsUserInteracted(true);
+    },
+    []
+  );
 
   useEffect(() => {
     if (isUserInteracted && startLocation && endLocation) {
@@ -225,10 +242,15 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
 
         <div className="user-section">
           <div className="user-avatar">
-            <img src={usersProfile.profilePicture || avatarDefault} alt="Avatar" />
+            <img
+              src={usersProfile.profilePicture || avatarDefault}
+              alt="Avatar"
+            />
           </div>
           <div className="user-info">
-            <span className="user-name">{usersProfile.fullName || "Người dùng"}</span>
+            <span className="user-name">
+              {usersProfile.fullName || "Người dùng"}
+            </span>
             <span className="post-time">Bây giờ</span>
           </div>
         </div>
@@ -254,7 +276,13 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
               <div className="floating-input with-icon">
                 <LocationSearch
                   onSelect={(location, label) =>
-                    updateLocation(location, label, setStartLocation, setStartLabel, "đi")
+                    updateLocation(
+                      location,
+                      label,
+                      setStartLocation,
+                      setStartLabel,
+                      "đi"
+                    )
                   }
                   bounds={daNangBounds}
                   placeholder="Nhập điểm đi"
@@ -270,7 +298,13 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
               <div className="floating-input with-icon">
                 <LocationSearch
                   onSelect={(location, label) =>
-                    updateLocation(location, label, setEndLocation, setEndLabel, "đến")
+                    updateLocation(
+                      location,
+                      label,
+                      setEndLocation,
+                      setEndLabel,
+                      "đến"
+                    )
                   }
                   bounds={daNangBounds}
                   placeholder="Nhập điểm đến"
@@ -312,7 +346,10 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             />
-            <MapControl center={startLocation || endLocation} bounds={daNangBounds} />
+            <MapControl
+              center={startLocation || endLocation}
+              bounds={daNangBounds}
+            />
 
             <Marker position={startLocation} icon={startIcon}>
               <Popup>Điểm đi: {startLabel}</Popup>
@@ -325,12 +362,20 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
             )}
 
             {route.length > 0 && (
-              <Polyline positions={route} color="var(--primary-color)" weight={4} />
+              <Polyline
+                positions={route}
+                color="var(--primary-color)"
+                weight={4}
+              />
             )}
           </MapContainer>
         </div>
 
-        <button className="submit-btn" onClick={handleCreatePost} disabled={loading}>
+        <button
+          className="submit-btn"
+          onClick={handleCreatePost}
+          disabled={loading}
+        >
           {loading ? (
             <>
               <span className="spinner"></span> Đang đăng...

@@ -4,7 +4,8 @@
   padding: 16px;
   color: #fff;
   font-family: Arial, sans-serif;
-  width: 600px; // Điều chỉnh theo kích thước mong muốn
+  max-width: 620px; // Điều chỉnh theo kích thước mong muốn
+  width: 100%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -35,7 +36,7 @@
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: gray;
+    background-color: rgb(235, 235, 235);
   }
 }
 
