@@ -1,23 +1,30 @@
 import React from "react";
 import avatarWeb from "../../assets/AvatarDefault.png";
 import "../../styles/SharingPost.scss";
-import { useNavigate } from "react-router-dom";
-import getUserIdFromToken from "../../utils/JwtDecode";
+// import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale"; // Tiếng Việt
 import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { openCommentModal } from "../../stores/reducers/listPostReducers";
+import getUserIdFromToken from "../../utils/JwtDecode";
 
 const SharedPost = ({ post }) => {
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const userId = getUserIdFromToken();
   //mở comment modal
   const handleOpenCommentModal = (post, index = 0) => {
     dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
     navigate(`/post/${post.id}`, { state: { background: location } });
+  };
+  const navigateUser = (userId) => {
+    if (userId === userId) {
+      navigate("/ProfileUserView");
+    } else {
+      navigate(`/profile/${userId}`);
+    }
   };
 
   //lấy thông hình ảnh và video set lên post nhiều hay 1 ảnh và 1 video
@@ -94,7 +101,6 @@ const SharedPost = ({ post }) => {
         )}
       </div>
     );
-
   };
   return (
     <div className="shared-post-container">

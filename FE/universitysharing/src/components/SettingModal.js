@@ -6,8 +6,7 @@ import avatarDefaut from "../assets/AvatarDefault.png";
 import "../styles/SettingModal.scss";
 
 import "../styles/MoblieReponsive/HomeViewMobile/SettingModalMobile.scss";
-const SettingModal = ({ isOpen, onClose, users, UserProfile, logout }) => {
-
+const SettingModal = ({ isOpen, onClose, users, UserProfile }) => {
   const modalRef = useRef(null);
   const navigate = useNavigate(); // Thêm navigate
   const { logout } = useAuth(); // Lấy logout từ context
@@ -62,15 +61,14 @@ const SettingModal = ({ isOpen, onClose, users, UserProfile, logout }) => {
         </div>
       </div>
 
-      <div className="setting">
+      {/* <div className="setting">
         <span className="btn-changeProfile">Sửa thông tin cá nhân</span>
         <span className="btn-yourScore">Điểm uy tín</span>
         <span className="btn-logout" onClick={handleLogout}>
           Đăng xuất
         </span>
-      </div>
-    </div>
-
+      </div> */}
+    </>
   );
 };
 
