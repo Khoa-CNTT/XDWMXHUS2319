@@ -1,7 +1,14 @@
-// src/App.js
+
 import "./App.css";
-import { useEffect } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "./views/Login";
@@ -40,6 +47,7 @@ function App() {
 
   return (
     <>
+
  <ToastContainer />
       <NotificationProvider>
         <AxiosConfigProvider />
@@ -78,6 +86,7 @@ function App() {
           )}
         </SignalRProvider>
       </NotificationProvider>
+
     </>
   );
 }

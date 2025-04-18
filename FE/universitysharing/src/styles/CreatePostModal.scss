@@ -6,7 +6,7 @@
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 3;
+  z-index: 11;
 }
 
 .create-post-modal {
@@ -21,7 +21,7 @@
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  z-index: 5;
+  z-index: 100;
 
   // Để tránh modal bị tràn khi màn hình nhỏ
   @media (max-width: 480px) {
@@ -80,6 +80,8 @@
   }
 
   .preview-imgae-or-video {
+    max-height: 200px;
+    overflow: auto;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;

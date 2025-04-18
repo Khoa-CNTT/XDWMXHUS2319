@@ -1,6 +1,15 @@
+
 import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { useSelector } from "react-redux";
-import { FiSearch, FiMoreHorizontal, FiVideo, FiMessageSquare, FiX } from "react-icons/fi";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchFriends } from "../../src/stores/action/friendAction";
+import {
+  FiSearch,
+  FiMoreHorizontal,
+  FiVideo,
+  FiMessageSquare,
+  FiX,
+} from "react-icons/fi";
+
 import { BsFilter } from "react-icons/bs";
 import { toast } from "react-toastify";
 import ChatBox from "./MessageComponent/ChatBox";
@@ -8,6 +17,9 @@ import { useSignalR } from "../Service/SignalRProvider";
 import { useAuth } from "../contexts/AuthContext";
 import axiosClient from "../Service/axiosClient";
 import "../styles/MessengerModal.scss";
+
+import "../styles/MoblieReponsive/HomeViewMobile/MessengerModalMobile.scss";
+
 import avatarDefault from "../assets/AvatarDefault.png";
 
 const FriendItem = React.memo(({ conv, unreadCount, onClick }) => {
@@ -75,11 +87,13 @@ const FriendItem = React.memo(({ conv, unreadCount, onClick }) => {
   );
 });
 
+
 const MessengerModal = ({ isOpen, onClose, position }) => {
   const modalRef = useRef(null);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [openChats, setOpenChats] = useState([]);
+
   const [conversations, setConversations] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({});
   const { friends, loading: friendsLoading, error: friendsError } = useSelector((state) => state.friends);
@@ -116,10 +130,12 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
   }, [token, userId]);
 
   useEffect(() => {
+
     if (!isOpen || !token || !userId) {
       console.log("[MessengerModal] Dừng useEffect vì thiếu điều kiện");
       return;
     }
+
 
     let isMounted = true;
 
@@ -160,6 +176,7 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
                 unreadCount: 1,
                 isSeen: false,
               },
+
             ];
           });
 
@@ -169,10 +186,12 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
           }));
 
           if (!document.hasFocus()) {
+
             const sender = conversations.find((conv) => conv.user.id === SenderId);
             console.log("[MessengerModal] Tab không focus, bắt đầu nhấp nháy:", sender?.user.fullName);
             startTabBlink(
               `${sender?.user.fullName || "Ai đó"} đã gửi bạn 1 tin nhắn`
+
             );
           }
         }
@@ -209,6 +228,7 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
   const handleOpenChat = (friendId) => {
     if (!openChats.includes(friendId)) {
       setOpenChats((prev) => [...prev, friendId]);
+
       setUnreadCounts((prev) => ({
         ...prev,
         [friendId]: 0,
@@ -218,6 +238,7 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
           conv.user.id === friendId ? { ...conv, unreadCount: 0, isSeen: true } : conv
         )
       );
+
     }
   };
 
@@ -256,52 +277,58 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="messenger-modal-overlay"
-      style={{
-        top: `${position?.top || 0}px`,
-        right: `${position?.right || 20}px`,
-      }}
-    >
-      <div className={`messenger-modal ${isOpen ? "open" : ""}`} ref={modalRef}>
-        <div className="modal-header">
-          <div className="header-left">
-            <h2>Chat</h2>
-            <div className="header-actions">
-              <button className="icon-button" title="Video chat">
-                <FiVideo size={18} />
+    <>
+      <div className="messenger-modal-background"> </div>
+      <div
+        className="messenger-modal-overlay"
+        style={{
+          top: `${position?.top || 0}px`,
+          right: `${position?.right || 20}px`,
+        }}
+      >
+        <div
+          className={`messenger-modal ${isOpen ? "open" : ""}`}
+          ref={modalRef}
+        >
+          <div className="modal-header">
+            <div className="header-left">
+              <h2>Chat</h2>
+              <div className="header-actions">
+                <button className="icon-button" title="Video chat">
+                  <FiVideo size={18} />
+                </button>
+                <button className="icon-button" title="New message">
+                  <FiMessageSquare size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="header-right">
+              <button className="icon-button" title="Options">
+                <FiMoreHorizontal size={18} />
               </button>
-              <button className="icon-button" title="New message">
-                <FiMessageSquare size={18} />
+              <button className="close-button" onClick={onClose} title="Close">
+                <FiX size={20} />
               </button>
             </div>
           </div>
-          <div className="header-right">
-            <button className="icon-button" title="Options">
-              <FiMoreHorizontal size={18} />
-            </button>
-            <button className="close-button" onClick={onClose} title="Close">
-              <FiX size={20} />
-            </button>
-          </div>
-        </div>
 
-        <div className="search-bar">
-          <div className="search-container">
-            <div className="search-icon">
-              <FiSearch size={16} />
+          <div className="search-bar">
+            <div className="search-container">
+              <div className="search-icon">
+                <FiSearch size={16} />
+              </div>
+              <input
+                type="text"
+                placeholder="Search Messenger"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button className="filter-button" title="Filter conversations">
+                <BsFilter size={16} />
+              </button>
             </div>
-            <input
-              type="text"
-              placeholder="Search Messenger"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button className="filter-button" title="Filter conversations">
-              <BsFilter size={16} />
-            </button>
           </div>
-        </div>
+
 
         <div className="tabs-container">
           <button
@@ -349,12 +376,14 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
               key={friendId}
               friendId={friendId}
               onClose={() => handleCloseChat(friendId)}
+
               index={index}
+
             />
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

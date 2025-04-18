@@ -11,6 +11,7 @@ import { fetchFriends } from "../../stores/action/friendAction";
 import "../../styles/ProfileUserView/ProfileHeader.scss";
 import avatarDefaut from "../../assets/AvatarDefaultFill.png";
 import logoWeb from "../../assets/Logo.png";
+import "../../styles/MoblieReponsive/UsersProfileMoblie/ProfileViewMobile.scss";
 
 const ProfileHeader = forwardRef((props, ref) => {
   const dispatch = useDispatch();
