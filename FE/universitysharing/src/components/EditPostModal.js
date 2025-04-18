@@ -19,31 +19,9 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
   const [scope, setScope] = useState(0);
   const loading = useSelector((state) => state.posts.loading); // Lấy trạng thái loading từ Redux
 
-  //Đưa ảnh lên modal edit
-  // useEffect(() => {
-  //   if (post) {
-  //     setContent(post.content || "");
-  //     setPostType(post.postType || 4);
-  //     setScope(post.scope || 0); // Quyền riêng tư
-  //     setMediaFile(() => {
-  //       const media = [];
+  console.log("Hello đây là modal sửa bài viết");
 
-  //       // if (post.imageUrl) {
-  //       //   media.push({ url: post.imageUrl, type: "image" });
-  //       // }
-  //       if (Array.isArray(post.imageUrl)) {
-  //         post.imageUrl.forEach((url) => {
-  //           media.push({ url: post.imageUrl, type: "image" });
-  //         });
-  //       }
-  //       if (post.videoUrl) {
-  //         media.push({ url: post.videoUrl, type: "video" });
-  //       }
-  //       return media;
-  //     });
-  //   }
-  // }, [post]);
-
+  //Đưa nội dung bài viết vào modal sửa bài viết
   useEffect(() => {
     if (post) {
       setContent(post.content || "");
@@ -86,25 +64,6 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
-
-  //Video hình ảnh
-  // const handleFileChange = (event) => {
-  //   const file = event.target.files[0]; // Chỉ lấy file đầu tiên
-  //   //Nếu muốn lấy nhiều ảnh và video thì // const files = Array.from(event.target.files);
-  //   if (!file) return;
-
-  //   const newMedia = {
-  //     url: URL.createObjectURL(file),
-  //     type: file.type.startsWith("video") ? "video" : "image",
-  //     file: file, // Lưu file gốc vào đây
-  //   };
-
-  //   setMediaFile((prev) => {
-  //     // Nếu là video, thay thế video cũ, nếu là ảnh, thay thế ảnh cũ
-  //     const updatedMedia = prev.filter((media) => media.type !== newMedia.type);
-  //     return [...updatedMedia, newMedia];
-  //   });
-  // };
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
