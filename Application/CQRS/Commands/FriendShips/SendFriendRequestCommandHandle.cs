@@ -95,41 +95,7 @@ public class SendFriendRequestCommandHandle : IRequestHandler<SendFriendRequestC
                 Status = friendship.Status,
             };
 
-            await _notificationService.SendFriendNotificationAsync(friendId, userId);
-
-            await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitTransactionAsync();
-
-            return ResponseFactory.Success(sendFriendDto, "Đã gửi lời mời kết bạn", 200);
-        }
-        catch (Exception ex)
-        {
-            await _unitOfWork.RollbackTransactionAsync();
-            return ResponseFactory.Error<ResultSendFriendDto>("Lỗi khi gửi lời mời kết bạn", 400, ex);
-        }
-    }
-
-    private async Task<ResponseModel<ResultSendFriendDto>> ReactivateFriendRequestAsync(User user, Guid userId, Guid friendId, Friendship existingFriendship)
-    {
-        await _unitOfWork.BeginTransactionAsync();
-        try
-        {
-            existingFriendship.Reactivate();
-            await _unitOfWork.FriendshipRepository.UpdateAsync(existingFriendship);
-
-            var notification = new Notification(friendId, userId, $"{user.FullName} đã gửi lời mời kết bạn đến bạn.", NotificationType.SendFriend, null, $"/profile/{userId}");
-            await _unitOfWork.NotificationRepository.AddAsync(notification);
-
-            var sendFriendDto = new ResultSendFriendDto
-            {
-                Id = existingFriendship.Id,
-                UserId = userId,
-                FriendId = friendId,
-                CreatedAt = FormatUtcToLocal(existingFriendship.CreatedAt),
-                Status = existingFriendship.Status,
-            };
-
-            await _notificationService.SendFriendNotificationAsync(friendId, userId);
+            await _notificationService.SendFriendNotificationAsync(friendId, userId, notification.Id);
 
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitTransactionAsync();

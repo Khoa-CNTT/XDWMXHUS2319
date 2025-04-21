@@ -11,15 +11,15 @@ namespace Application.Interface.Hubs
     {
         Task SendLikeNotificationAsync(Guid postId, Guid userId);
         Task SendNotificationUpdateLocationAsync(Guid driverId, Guid passengerId, float latitude, float longitude, string location, bool isEnd);                //gửi cảnh báo khi gps bị tắt
-        Task SendFriendNotificationAsync(Guid friendId, Guid userId);
-        Task SendAcceptFriendNotificationAsync(Guid friendId , Guid userId);
+        Task SendFriendNotificationAsync(Guid friendId, Guid userId, Guid notificationId);
+        Task SendAcceptFriendNotificationAsync(Guid friendId , Guid userId, Guid notificationId);
         Task SendRejectFriendNotificationAsync(Guid friendId, Guid userId);
         Task SendAlertAsync(Guid driverId, string message);
         Task SendInAppNotificationAsync(Guid driverId, string message);
 
-        Task SendShareNotificationAsync(Guid postId, Guid userId, string message);
+        Task SendShareNotificationAsync(Guid postId, Guid userId, Guid postOwnerId, Guid notificationId);
 
-        Task SendCommentNotificationAsync(Guid postId, Guid commenterId);
+        Task SendCommentNotificationAsync(Guid postId, Guid commenterId, Guid postOwnerId , Guid notificationId);
         Task SendReplyNotificationAsync(Guid postId, Guid commentId, Guid responderId);
 
         Task SendNotificationNewMessageAsync(Guid receiverId, string message);

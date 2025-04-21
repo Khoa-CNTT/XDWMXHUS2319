@@ -3,14 +3,10 @@ import signalRService from "../Service/signalRService";
 import { useAuth } from "../contexts/AuthContext";
 import { useDispatch } from "react-redux";
 import {
-  setOnlineStatus,
-  setUserOnline,
-  setUserOffline,
   setLoading,
   setError,
   resetOnlineStatus,
 } from "../stores/reducers/onlineSlice";
-
 const SignalRContext = createContext();
 
 export const SignalRProvider = ({ children }) => {

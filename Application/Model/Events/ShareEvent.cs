@@ -9,15 +9,12 @@ namespace Application.Model.Events
     public class ShareEvent : INotification
     {
         public Guid UserId { get; set; }
-        public Guid PostId { get; set; }
-        public string Message { get; set; }
+        public ResponseNotificationModel Data { get; set; }
 
-        public ShareEvent(Guid postId, Guid userId, string message)
+        public ShareEvent(Guid userId, ResponseNotificationModel data)
         {
-            PostId = postId;
             UserId = userId;
-            Message = message;
-
+            Data = data;
         }  
     }
 }

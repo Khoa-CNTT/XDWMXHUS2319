@@ -20,7 +20,7 @@ namespace Infrastructure.Hubs
 
         public async Task Handle(ShareEvent notification, CancellationToken cancellationToken)
         {
-            await _signalRNotificationService.SendShareNotificationAsync( notification.UserId,notification.Message);
+            await _signalRNotificationService.SendShareNotificationAsync(notification.UserId,notification.Data);
         }
     }
 }
