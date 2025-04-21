@@ -36,7 +36,7 @@ namespace Infrastructure
             services.AddScoped<ICacheService, RedisCacheService>();
 
 
-            
+            services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IEmailTokenRepository, EmailTokenRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
@@ -56,6 +56,7 @@ namespace Infrastructure
             services.AddScoped<IAIConversationRepository, AIConversationRepository>();
             services.AddScoped<IAIChatHistoryRepository, AIChatHistoryRepository>();
 
+            services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IShareRepository, ShareRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
             services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();

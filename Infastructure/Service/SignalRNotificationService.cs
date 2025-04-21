@@ -54,6 +54,11 @@ namespace Infrastructure.Service
                     .SendAsync("ReceiveNotification", data);
         }
 
+        public async Task SendShareNotificationAsync(Guid userId, string message)
+        {
+            await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", message);
+
+        }
 
         public async Task SendFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
         {
@@ -70,6 +75,7 @@ namespace Infrastructure.Service
         {
             await _hubContext.Clients.User(sendMessageNotificationEvent.ReceiverId.ToString())
                 .SendAsync("ReceiveMessageNotification", sendMessageNotificationEvent.Message);
+
         }
     }
 }

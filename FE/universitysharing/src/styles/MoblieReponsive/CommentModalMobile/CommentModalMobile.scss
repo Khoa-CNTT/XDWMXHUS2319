@@ -1,0 +1,84 @@
+@media (max-width: 768px) {
+  .comment-modal-overlay {
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+
+    .logowebsite {
+      display: none; // Ẩn logo trên mobile để tiết kiệm không gian
+    }
+
+    .post-overlay {
+      flex-direction: column;
+      height: 100vh; // Trừ đi chiều cao của input comment
+
+      .image-Post {
+        width: 100%;
+        height: 30vh; // Giới hạn chiều cao ảnh/video
+
+        .media-container {
+          height: 100%;
+
+          .post-media {
+            max-height: 100%;
+            object-fit: contain;
+          }
+
+          .nav-button {
+            width: 30px;
+            height: 30px;
+            padding: 5px;
+
+            &.prev-button {
+              left: 5px;
+            }
+
+            &.next-button {
+              right: 5px;
+            }
+          }
+        }
+      }
+
+      .content-post {
+        width: 100%;
+        height: 800px; // Điều chỉnh chiều cao phần content
+        overflow-y: auto;
+        padding: 10px;
+        img {
+          width: 30px !important;
+          height: 30px !important;
+        }
+        .post-content {
+          margin-top: 10px;
+          font-size: 18px;
+        }
+      }
+
+      .comment-input {
+        width: 100%;
+        position: unset;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px;
+        background: white;
+        border-top: 1px solid #eee;
+        .avatar {
+          width: 30px;
+          height: 30px;
+        }
+        textarea {
+          width: calc(100% - 80px); // Điều chỉnh width cho phù hợp
+          margin: 0 10px;
+          max-height: 80px;
+        }
+
+        button {
+          width: 40px;
+        }
+      }
+    }
+  }
+}

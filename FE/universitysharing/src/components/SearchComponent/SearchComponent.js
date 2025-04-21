@@ -20,7 +20,7 @@ const SearchComponent = () => {
       } else {
         setShowResults(false);
       }
-    }, 100);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [keyword, dispatch]);

@@ -17,6 +17,16 @@ namespace Infrastructure.Data.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public async Task<IEnumerable<Report>> GetByPostIdAsync(Guid postId)
+        {
+            return await _context.Reports
+            
+            .Where(r => r.PostId == postId)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+        }
+
         public Task<int> GetCorrectReportCountAsync(Guid userId)
         {
             return _context.Reports
@@ -26,6 +36,14 @@ namespace Infrastructure.Data.Repositories
         {
             return _context.Reports
                 .CountAsync(r => r.ReportedBy == userId);
+        }
+
+        public async Task<Report?> GetReportDetailsAsync(Guid reportId)
+        {
+            return await _context.Reports
+                .Include(r => r.Post)
+                .Include(r => r.ReportedByUser)
+                .FirstOrDefaultAsync(r => r.Id == reportId);
         }
     }
 }

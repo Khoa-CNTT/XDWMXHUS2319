@@ -7,14 +7,28 @@ import ChatBox from "../MessageComponent/ChatBox";
 import "../../styles/MessageView/RightSidebar.scss";
 import avatarDefault from "../../assets/AvatarDefault.png";
 
+import signalRService from "../../Service/signalRService";
+import { jwtDecode } from "jwt-decode";
+import {
+  FiSearch,
+  FiBell,
+  FiMessageSquare,
+  FiChevronDown,
+  FiX,
+  FiHome,
+} from "react-icons/fi";
+
+
 const RightSidebar = () => {
   const dispatch = useDispatch();
+
   const { friends, loading: friendsLoading, error: friendsError } = useSelector(
     (state) => state.friends
   );
   const { onlineStatus, loading: onlineLoading, error: onlineError } = useSelector(
     (state) => state.onlineUsers
   );
+
 
   const [openChats, setOpenChats] = useState([]);
   const [activeFriend, setActiveFriendLocal] = useState(null);
@@ -99,6 +113,7 @@ const RightSidebar = () => {
         <div className="search-container">
           <h3>Bạn Bè</h3>
           <div className="search-box">
+            <FiSearch className="search-icon" />
             <input type="text" placeholder="Tìm kiếm bạn bè..." />
           </div>
         </div>
@@ -107,6 +122,7 @@ const RightSidebar = () => {
         )}
         <div className="friends-list">
           <ul>
+
             {sortedFriends.map((friend) => {
               const isOnline = onlineStatus[friend.friendId] ?? false;
               return (
