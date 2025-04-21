@@ -271,5 +271,13 @@ namespace Infrastructure.Data.Repositories
         {
             return _context.Posts.CountAsync(p => p.UserId == userId);
         }
+        public async Task<List<Post>> GetAllPostsWithReportsAsync()
+        {
+            return await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Reports)
+                .Where(p => p.Reports.Any()) // chỉ lấy bài có report
+                .ToListAsync();
+        }
     }
 }

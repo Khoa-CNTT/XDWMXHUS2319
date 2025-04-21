@@ -108,18 +108,7 @@ namespace Infrastructure
                 .OnDelete(DeleteBehavior.Cascade);
 
 
-            modelBuilder.Entity<Message>()
-                .HasOne<User>()
-                .WithMany(u => u.MessageSenders)
-                .HasForeignKey(m => m.SenderId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Message>()
-                .HasOne<User>()
-                .WithMany(u => u.MessageReceivers)
-                .HasForeignKey(m => m.ReceiverId)
-                .OnDelete(DeleteBehavior.Restrict);
-
+           
             modelBuilder.Entity<Report>(entity =>
             {
                 // Cấu hình quan hệ với Post

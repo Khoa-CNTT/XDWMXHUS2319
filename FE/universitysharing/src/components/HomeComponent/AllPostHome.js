@@ -133,7 +133,11 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
     dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
     navigate(`/post/${post.id}`, { state: { background: location } });
   };
-
+  // Đóng comment modal
+  const handleCloseCommentModal = () => {
+    dispatch(closeCommentModal()); // action để đóng modal
+    navigate(-1); // trở lại trang trước (vì khi mở đã push URL mới)
+  };
   //mở option post ra
   const handleOpenPostOptions = (event, post) => {
     event.stopPropagation();
@@ -455,7 +459,6 @@ const AllPosts = ({ usersProfile, showOwnerPosts = false }) => {
           <p>Không có bài viết nào.</p>
         </div>
       )}
-
 
       {isPostOptionsOpen && selectedPostToOption && (
         <PostOptionsModal

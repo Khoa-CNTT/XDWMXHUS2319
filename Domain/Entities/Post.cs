@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
-using static Domain.Common.Helper;
-
+﻿using static Domain.Common.Enums;
 namespace Domain.Entities
 {
     public class Post

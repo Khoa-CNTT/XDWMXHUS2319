@@ -58,7 +58,7 @@ namespace Infrastructure.Service
         {
             await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", message);
 
-
+        }
 
         public async Task SendFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
         {
