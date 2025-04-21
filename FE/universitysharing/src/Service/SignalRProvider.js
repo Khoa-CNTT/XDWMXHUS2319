@@ -3,6 +3,9 @@ import signalRService from "../Service/signalRService";
 import { useAuth } from "../contexts/AuthContext";
 import { useDispatch } from "react-redux";
 import {
+  setOnlineStatus,
+  setUserOnline,
+  setUserOffline,
   setLoading,
   setError,
   resetOnlineStatus,
@@ -59,11 +62,19 @@ export const SignalRProvider = ({ children }) => {
         connectionAttemptRef.current += 1;
         await signalRService.startConnections(token, userId);
         // Kiểm tra tất cả các kết nối
-        if (!signalRService.notificationConnection || !signalRService.chatConnection || !signalRService.aiConnection) {
-          throw new Error("[SignalRProvider] Một hoặc nhiều kết nối SignalR không được khởi tạo");
+        if (
+          !signalRService.notificationConnection ||
+          !signalRService.chatConnection ||
+          !signalRService.aiConnection
+        ) {
+          throw new Error(
+            "[SignalRProvider] Một hoặc nhiều kết nối SignalR không được khởi tạo"
+          );
         }
         if (signalRService.aiConnection.state !== "Connected") {
-          throw new Error("[SignalRProvider] aiConnection không ở trạng thái Connected");
+          throw new Error(
+            "[SignalRProvider] aiConnection không ở trạng thái Connected"
+          );
         }
         if (!isMountedRef.current) return;
 
@@ -75,20 +86,34 @@ export const SignalRProvider = ({ children }) => {
         signalRService.onInitialOnlineUsers((onlineUsers) => {
           let usersArray = onlineUsers;
           if (!Array.isArray(onlineUsers)) {
-            console.warn("[SignalRProvider] Dữ liệu initialOnlineUsers không phải mảng:", onlineUsers);
+            console.warn(
+              "[SignalRProvider] Dữ liệu initialOnlineUsers không phải mảng:",
+              onlineUsers
+            );
             if (onlineUsers && typeof onlineUsers === "object") {
               usersArray = Array.from(onlineUsers);
-              console.log("[SignalRProvider] Đã chuyển đổi dữ liệu thành mảng:", usersArray);
+              console.log(
+                "[SignalRProvider] Đã chuyển đổi dữ liệu thành mảng:",
+                usersArray
+              );
             } else {
-              console.error("[SignalRProvider] Không thể xử lý initialOnlineUsers data:", onlineUsers);
+              console.error(
+                "[SignalRProvider] Không thể xử lý initialOnlineUsers data:",
+                onlineUsers
+              );
               dispatch(setError("Dữ liệu initialOnlineUsers không hợp lệ"));
               return;
             }
           }
 
           if (!usersArray.every((id) => typeof id === "string")) {
-            console.error("[SignalRProvider] Dữ liệu initialOnlineUsers chứa userId không hợp lệ:", usersArray);
-            dispatch(setError("Dữ liệu initialOnlineUsers chứa userId không hợp lệ"));
+            console.error(
+              "[SignalRProvider] Dữ liệu initialOnlineUsers chứa userId không hợp lệ:",
+              usersArray
+            );
+            dispatch(
+              setError("Dữ liệu initialOnlineUsers chứa userId không hợp lệ")
+            );
             return;
           }
 
@@ -102,11 +127,16 @@ export const SignalRProvider = ({ children }) => {
 
         signalRService.onUserOnline((userId) => {
           if (!isConnected) {
-            console.warn("[SignalRProvider] Bỏ qua userOnline vì SignalR chưa kết nối");
+            console.warn(
+              "[SignalRProvider] Bỏ qua userOnline vì SignalR chưa kết nối"
+            );
             return;
           }
           if (typeof userId !== "string" || !userId) {
-            console.error("[SignalRProvider] Invalid userId in userOnline:", userId);
+            console.error(
+              "[SignalRProvider] Invalid userId in userOnline:",
+              userId
+            );
             dispatch(setError("userId không hợp lệ trong userOnline"));
             return;
           }
@@ -116,11 +146,16 @@ export const SignalRProvider = ({ children }) => {
 
         signalRService.onUserOffline((userId) => {
           if (!isConnected) {
-            console.warn("[SignalRProvider] Bỏ qua userOffline vì SignalR chưa kết nối");
+            console.warn(
+              "[SignalRProvider] Bỏ qua userOffline vì SignalR chưa kết nối"
+            );
             return;
           }
           if (typeof userId !== "string" || !userId) {
-            console.error("[SignalRProvider] Invalid userId in userOffline:", userId);
+            console.error(
+              "[SignalRProvider] Invalid userId in userOffline:",
+              userId
+            );
             dispatch(setError("userId không hợp lệ trong userOffline"));
             return;
           }
@@ -138,8 +173,7 @@ export const SignalRProvider = ({ children }) => {
     };
 
     initializeSignalR();
-
-  }, [isAuthenticated, token, userId, isConnected,isLoading, dispatch]);
+  }, [isAuthenticated, token, userId, isConnected, isLoading, dispatch]);
 
   return (
     <SignalRContext.Provider value={{ signalRService, isConnected }}>
