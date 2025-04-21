@@ -24,8 +24,12 @@ import AccountVerified from "./components/AccountVerified";
 import SearchView from "./views/SearchView";
 import ResultSearchView from "./views/ResultSearchView";
 import Notifications from "./views/Notifications";
+
+import ChatBotAIView from "./views/ChatBotAIView";
+
 import FriendProfileView from "./views/FriendProfileView";
 import getUserIdFromToken from "./utils/JwtDecode";
+
 
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
 import { NotificationProvider } from "./contexts/NotificationContext";
@@ -65,6 +69,7 @@ function App() {
                 <Route path="/profile/:userId" element={<FriendProfileView />} />
                 <Route path="/ResultSearchView" element={<ResultSearchView />} />
                 <Route path="/notify" element={<Notifications />} />
+                <Route path="/chatBoxAI/:conversationId?" element={<ChatBotAIView />} />
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </>
             ) : (

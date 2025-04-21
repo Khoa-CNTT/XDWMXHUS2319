@@ -27,14 +27,6 @@ namespace Infrastructure.Hubs
             await Groups.AddToGroupAsync(Context.ConnectionId, userId.ToString());
             await _redisService.AddAsync($"user_connections:{userId}", Context.ConnectionId);
             await _redisService.SaveDataAsync($"user_status:{userId}", "online", _statusExpiration);
-            //try
-            //{
-            //    await _messageStatusService.MarkMessagesAsync(messageId,userId,MessageStatus.Delivered);
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw new Exception($"Lỗi khi xử lý MarkMessagesAsync cho user {userId}: {ex.Message}");
-            //}
             var friends = await _redisService.GetFriendsAsync(userId.ToString()); 
             if (!friends.Any())
             {                await _redisService.SyncFriendsToRedis(userId.ToString()); 
@@ -44,12 +36,11 @@ namespace Infrastructure.Hubs
             {
                 if (Guid.TryParse(friendIdStr, out var friendId))
                 {
-                    await Clients.Group(friendId.ToString()).SendAsync("UserOnline", userId.ToString());
+                    await Clients.Group(friendId.ToString()).SendAsync("userOnline", userId.ToString());
                 }
             }
             var onlineUsers = await GetOnlineUsers();
-            Console.WriteLine($"Gửi InitialOnlineUsers cho {userId}: {string.Join(", ", onlineUsers)}");
-            await Clients.Caller.SendAsync("InitialOnlineUsers", onlineUsers.ToString()); 
+            await Clients.Caller.SendAsync("initialOnlineUsers", onlineUsers); 
             await base.OnConnectedAsync();
         }
 
