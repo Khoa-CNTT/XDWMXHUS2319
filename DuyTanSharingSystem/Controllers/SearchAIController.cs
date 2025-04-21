@@ -1,8 +1,5 @@
-﻿
-using Application.CQRS.Queries.Search;
-using Application.Interface;
+﻿using Application.CQRS.Queries.Search;
 using Application.Interface.SearchAI;
-using Infrastructure.Qdrant;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

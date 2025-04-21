@@ -1,8 +1,4 @@
-﻿
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using static Domain.Common.Enums;
-
+﻿using static Domain.Common.Enums;
 namespace Domain.Entities
 {
     public class Report
@@ -85,7 +81,5 @@ namespace Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
     }
-
- 
 }
 

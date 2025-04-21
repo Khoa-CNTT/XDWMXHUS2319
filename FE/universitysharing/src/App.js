@@ -1,7 +1,15 @@
 import "./App.css";
-import { useEffect } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+
 import { ToastContainer, toast } from "react-toastify";
+
 import "react-toastify/dist/ReactToastify.css";
 import Login from "./views/Login";
 import Register from "./views/Register";
@@ -16,7 +24,13 @@ import AccountVerified from "./components/AccountVerified";
 import SearchView from "./views/SearchView";
 import ResultSearchView from "./views/ResultSearchView";
 import Notifications from "./views/Notifications";
+
+import ChatBotAIView from "./views/ChatBotAIView";
+
 import FriendProfileView from "./views/FriendProfileView";
+
+import getUserIdFromToken from "./utils/JwtDecode";
+
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
 import { useDispatch } from "react-redux";
 import { NotificationProvider } from "./contexts/NotificationContext";
@@ -112,6 +126,7 @@ function App() {
                   element={<ResultSearchView />}
                 />
                 <Route path="/notify" element={<Notifications />} />
+                <Route path="/chatBoxAI/:conversationId?" element={<ChatBotAIView />} />
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </>
             ) : (
@@ -133,6 +148,7 @@ function App() {
           )}
         </SignalRProvider>
       </NotificationProvider>
+
     </>
   );
 }

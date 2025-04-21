@@ -48,9 +48,9 @@ const PostOptionsModal = ({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, [onClose]);
 
@@ -78,7 +78,7 @@ const PostOptionsModal = ({
       {!isHidden && (
         <div
           className="modal-postOption-overlay"
-          onClick={onClose}
+          // onClick={onClose}
           // style={{ top: `${position.top}px`, left: `${position.left}px` }}
         >
           <div
@@ -115,14 +115,16 @@ const PostOptionsModal = ({
           </div>
         </div>
       )}
-      {isOpenEdit && (
-        <EditModal
-          isOpen={isOpenEdit}
-          postId={postId}
-          post={post}
-          onClose={handleCloseEditModal}
-        ></EditModal>
-      )}
+      {isOpenEdit &&
+        (console.log("Render EditModal"),
+        (
+          <EditModal
+            isOpen={isOpenEdit}
+            postId={postId}
+            post={post}
+            onClose={handleCloseEditModal}
+          ></EditModal>
+        ))}
       {isReportModalOpen && (
         <ReportModal postId={postId} onClose={handleCloseReportModal} />
       )}

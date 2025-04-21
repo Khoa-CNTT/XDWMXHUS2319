@@ -10,7 +10,7 @@ import friendReducer from "./reducers/friendReducer.js";
 import onlineUsersReducer from "./reducers/onlineSlice.js";
 
 import searchSlice from "./reducers/searchReducers.js";
-
+import chatAIReducer from "./reducers/chatAIReducer.js"
 const store = configureStore({
   reducer: {
     posts: listPostReducer,
@@ -22,6 +22,10 @@ const store = configureStore({
     friends: friendReducer,
     onlineUsers: onlineUsersReducer,
     notifications: notificationReducer,
+    searchs: searchSlice,
+    chatAI: chatAIReducer,
+
+
     searchs: searchSlice,
   },
 });

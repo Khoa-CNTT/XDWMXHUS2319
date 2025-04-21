@@ -1,14 +1,16 @@
-import React, { useState,useEffect } from "react";
+
+import React, { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
+
 import "../../styles/headerHome.scss";
+import "../../styles/MoblieReponsive/HomeViewMobile/HeaderHomeReponsive.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
 import { useSignalR } from "../../Service/SignalRProvider";
 
-import {
-  FiSearch,
-  FiBell,
-  FiMessageSquare,
-} from "react-icons/fi";
+
+import { FiSearch, FiBell, FiMessageSquare, FiArrowLeft } from "react-icons/fi";
+
 import NotifyModal from "../NotifyModal";
 import MessengerModal from "../MessengerModal";
 import SettingModal from "../SettingModal";
@@ -16,13 +18,18 @@ import SettingModal from "../SettingModal";
 import { useNavigate } from "react-router-dom";
 import { searchPost } from "../../stores/action/searchAction";
 import { useDispatch } from "react-redux";
+import "animate.css";
 
 const Header = ({ usersProfile }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const dispatch = useDispatch();
+  const searchRef = useRef(null);
+  const logoRef = useRef(null);
+  const rightRef = useRef(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const navigate = useNavigate();
   const [modalPosition, setModalPosition] = useState({});
+
   const { signalRService } = useSignalR();
 
 useEffect(() => {
@@ -36,6 +43,7 @@ useEffect(() => {
     // Nếu bạn có hỗ trợ unsubscribe thì thực hiện ở đây
   };
 }, [signalRService]);
+
 
 
   const UserProfile = () => {
@@ -95,15 +103,62 @@ useEffect(() => {
     }));
   };
 
+
+  //Mở đóng left menu
+  const showSearchBox = () => {
+    if (window.innerWidth <= 768) {
+      searchRef.current?.classList.remove("hide-mobile");
+      logoRef.current?.classList.add("hide-mobile");
+      rightRef.current?.classList.add("hide-mobile");
+    }
+  };
+
+
+  const hideSearchBox = () => {
+    if (window.innerWidth <= 768) {
+      searchRef.current?.classList.add("hide-mobile");
+      logoRef.current?.classList.remove("hide-mobile");
+      rightRef.current?.classList.remove("hide-mobile");
+    }
+  };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target) &&
+        window.innerWidth <= 768
+      ) {
+        hideSearchBox();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  //Mở đóng left menu
   return (
     <>
       <div className="header">
-        <div className="logoWeb" onClick={handleHomeView}>
-          <img className="logowebsite" src={logoweb} alt="University Sharing" />
+        <div className="logoWeb" ref={logoRef}>
+          <img
+            className="logowebsite"
+            src={logoweb}
+            alt="University Sharing"
+            onClick={handleHomeView}
+          />
+          <div className="btn-search" onClick={showSearchBox}>
+            <FiSearch className="search-icon-btn"></FiSearch>
+          </div>
         </div>
 
-        <div className="search">
-          <form onSubmit={handleSearch} className="search-form">
+        <div className="search hide-mobile" ref={searchRef}>
+          <div className="close-search-btn ">
+            <FiArrowLeft className="close-btn-search" onClick={hideSearchBox} />
+          </div>
+          <form onSubmit={handleSearch} className="search-form ">
             <div className="search-container">
               <FiSearch className="search-icon" />
               <input
@@ -117,7 +172,9 @@ useEffect(() => {
           </form>
         </div>
 
-        <div className="rightHeader">
+
+        <div className="rightHeader" ref={rightRef}>
+
           <button
             id="messenger-button"
             className={`icon-button ${modalState.messenger ? "active" : ""}`}
@@ -130,8 +187,10 @@ useEffect(() => {
             )}
           </button>
 
-          <button 
-            className={`icon-button ${modalState.notify ? 'active' : ''}`}
+
+          <button
+            className={`icon-button ${modalState.notify ? "active" : ""}`}
+
             onClick={() => toggleModal("notify")}
             aria-label="Notifications"
           >

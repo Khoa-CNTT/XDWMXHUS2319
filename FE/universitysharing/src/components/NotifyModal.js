@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import "../styles/NotifyModal.scss";
+import "../styles/MoblieReponsive/HomeViewMobile/NotifyMobile.scss";
 import { useNavigate } from "react-router-dom";
 import {
   fetchNotifications,

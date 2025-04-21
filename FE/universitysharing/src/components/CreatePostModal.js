@@ -84,6 +84,7 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
   
       imageFiles.forEach((image) => {
         formData.append("Images", image.file); // 👈 quan trọng: sửa thành "Images"
+        console.log("hehehe",image.file);
       });
     }
   

@@ -1,12 +1,5 @@
-﻿using Application.DTOs.Search;
-using Application.Interface.Api;
-using Application.Interface.ContextSerivce;
-using Application.Interface.SearchAI;
-using Application.Model.Events;
-using Application.Model.SearchAI;
-using Domain.Entities;
+﻿using Application.Model.SearchAI;
 using Infrastructure.Qdrant.Model;
-using static Domain.Common.Enums;
 
 namespace Application.Services
 {
