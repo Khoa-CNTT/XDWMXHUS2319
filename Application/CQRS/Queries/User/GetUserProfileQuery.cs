@@ -9,6 +9,5 @@ namespace Application.CQRS.Queries.User
 {
     public class GetUserProfileQuery : IRequest<ResponseModel<MaptoUserprofileDetailDto>>
     {
-        
     }
 }

@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 
 import logoweb from "../../assets/Logo.png";
 import avatarDefaut from "../../assets/AvatarDefault.png";
-// import "../../styles/CommentOverlay.scss";
 import "../../styles/CommentModalNoImg.scss";
+import "../../styles/MoblieReponsive/CommentModalMobile/CommentModalMobileNoImage.scss";
 import ContentPostComment from "./ContenPostComment";
 import CommentList from "./CommentList";
 import { useDispatch, useSelector } from "react-redux";

@@ -11,7 +11,7 @@ import { createPost, updatePost } from "../stores/action/listPostActions"; // Im
 import { set } from "nprogress";
 
 const EditModal = ({ isOpen, postId, post, onClose }) => {
-  //console.log("Nội dung post >> ", postId);
+  console.log("Nội dung post >> ", post);
   const [mediaFiles, setMediaFile] = useState([]);
   const dispatch = useDispatch();
   const [content, setContent] = useState("");
@@ -19,20 +19,36 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
   const [scope, setScope] = useState(0);
   const loading = useSelector((state) => state.posts.loading); // Lấy trạng thái loading từ Redux
 
-  //Đưa ảnh lên modal edit
+  console.log("Hello đây là modal sửa bài viết");
+
+  //Đưa nội dung bài viết vào modal sửa bài viết
   useEffect(() => {
     if (post) {
       setContent(post.content || "");
       setPostType(post.postType || 4);
       setScope(post.scope || 0); // Quyền riêng tư
+
       setMediaFile(() => {
         const media = [];
-        if (post.imageUrl) {
-          media.push({ url: post.imageUrl, type: "image" });
+        const baseUrl = "https://localhost:7053";
+
+        // Tách nhiều ảnh từ chuỗi imageUrl
+        if (typeof post.imageUrl === "string" && post.imageUrl.trim() !== "") {
+          const imageUrls = post.imageUrl.split(",").map((url) => url.trim());
+
+          imageUrls.forEach((url) => {
+            if (url) {
+              const fullUrl = url.startsWith("http") ? url : `${baseUrl}${url}`;
+              media.push({ url: fullUrl, type: "image" });
+            }
+          });
         }
+
+        // Chỉ lấy 1 video nếu có
         if (post.videoUrl) {
           media.push({ url: post.videoUrl, type: "video" });
         }
+
         return media;
       });
     }
@@ -49,22 +65,32 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  //Video hình ảnh
   const handleFileChange = (event) => {
-    const file = event.target.files[0]; // Chỉ lấy file đầu tiên
-    //Nếu muốn lấy nhiều ảnh và video thì // const files = Array.from(event.target.files);
-    if (!file) return;
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
 
-    const newMedia = {
+    const newMediaFiles = files.map((file) => ({
       url: URL.createObjectURL(file),
       type: file.type.startsWith("video") ? "video" : "image",
-      file: file, // Lưu file gốc vào đây
-    };
-
+      file: file,
+    }));
     setMediaFile((prev) => {
-      // Nếu là video, thay thế video cũ, nếu là ảnh, thay thế ảnh cũ
-      const updatedMedia = prev.filter((media) => media.type !== newMedia.type);
-      return [...updatedMedia, newMedia];
+      // Lấy danh sách ảnh hiện tại
+      const currentImages = prev.filter((media) => media.type === "image");
+      // Kiểm tra có video trong file mới upload không
+      const hasNewVideo = newMediaFiles.some((media) => media.type === "video");
+      // Lấy video mới (nếu có)
+      const newVideo = newMediaFiles.find((media) => media.type === "video");
+      // Lấy tất cả ảnh mới
+      const newImages = newMediaFiles.filter((media) => media.type === "image");
+
+      if (hasNewVideo) {
+        // Nếu có video mới, thay thế video cũ (nếu có) và giữ lại các ảnh hiện tại
+        return [...currentImages, newVideo];
+      } else {
+        // Nếu chỉ có ảnh mới, thêm vào danh sách ảnh hiện tại
+        return [...currentImages, ...newImages];
+      }
     });
   };
   const handleRemoveMedia = (index) => {
@@ -175,29 +201,30 @@ const EditModal = ({ isOpen, postId, post, onClose }) => {
             </div>
           ))}
         </div>
-
-        <div className="option-create">
-          <label>
-            <img className="image-post" src={imageIcon} alt="Upload Image" />
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileChange}
-              hidden
-            />
-          </label>
-          <label>
-            <img className="video-post" src={videoIcon} alt="Upload Video" />
-            <input
-              type="file"
-              accept="video/*"
-              multiple
-              onChange={handleFileChange}
-              hidden
-            />
-          </label>
-        </div>
+        {!post.isSharedPost && (
+          <div className="option-create">
+            <label>
+              <img className="image-post" src={imageIcon} alt="Upload Image" />
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileChange}
+                hidden
+              />
+            </label>
+            <label>
+              <img className="video-post" src={videoIcon} alt="Upload Video" />
+              <input
+                type="file"
+                accept="video/*"
+                multiple
+                onChange={handleFileChange}
+                hidden
+              />
+            </label>
+          </div>
+        )}
         <div className="type-status-post">
           <select
             className="status-post"

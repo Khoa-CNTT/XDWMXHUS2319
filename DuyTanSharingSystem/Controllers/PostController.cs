@@ -61,7 +61,12 @@ namespace DuyTanSharingSystem.Controllers
             var posts = await _mediator.Send(query);
             return Ok(posts);
         }
-
+        [HttpGet("GetPostsByOwnerFriend")]
+        public async Task<IActionResult> GetPostsByOwnerFriend([FromQuery] GetPostByOwnerFriendQuery query)
+        {
+            var posts = await _mediator.Send(query);
+            return Ok(posts);
+        }
 
         [HttpDelete("delete")]
         public async Task<IActionResult> DeletePost([FromQuery] SoftDeletePostCommand command)

@@ -1,0 +1,17 @@
+@media (max-width: 768px) {
+  .messenger-modal-background {
+    position: fixed;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99;
+    background-color: rgba(0, 0, 0, 0.392);
+  }
+  .messenger-modal-overlay {
+    position: fixed !important;
+    top: 53% !important;
+    // right: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%);
+  }
+}

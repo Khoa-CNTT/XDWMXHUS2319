@@ -8,6 +8,6 @@ namespace Application.CQRS.Commands.Friends
 {
     public class AcceptFriendRequestCommand :  IRequest<ResponseModel<bool>>
     {
-        public Guid FriendshipId { get; set; }
+        public Guid FriendId { get; set; }
     }
 }

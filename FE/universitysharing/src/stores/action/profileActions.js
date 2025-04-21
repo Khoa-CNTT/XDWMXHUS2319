@@ -36,7 +36,6 @@ export const userProfileDetail = createAsyncThunk(
           },
         }
       );
-      console.log("Day la chep: ", response.data.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Có lỗi xảy ra!");
@@ -83,6 +82,26 @@ export const updateUserProfile = createAsyncThunk(
     } catch (error) {
       // Trả về lỗi từ server nếu có
       return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const fetchOtherUserProfile = createAsyncThunk(
+  "profile/fetchOtherUserProfile",
+  async (userId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `https://localhost:7053/api/UserProfile/user-profile?userid=${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Có lỗi xảy ra!");
     }
   }
 );

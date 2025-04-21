@@ -1,7 +1,14 @@
-// src/App.js
+
 import "./App.css";
-import { useEffect } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "./views/Login";
@@ -17,6 +24,13 @@ import AccountVerified from "./components/AccountVerified";
 import SearchView from "./views/SearchView";
 import ResultSearchView from "./views/ResultSearchView";
 import Notifications from "./views/Notifications";
+
+import ChatBotAIView from "./views/ChatBotAIView";
+
+import FriendProfileView from "./views/FriendProfileView";
+import getUserIdFromToken from "./utils/JwtDecode";
+
+
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { SignalRProvider } from "../src/Service/SignalRProvider"; // Thay useSignalRManager
@@ -37,7 +51,8 @@ function App() {
 
   return (
     <>
-      <ToastContainer />
+
+ <ToastContainer />
       <NotificationProvider>
         <AxiosConfigProvider />
         <SignalRProvider> {/* Bao quanh routes để cung cấp context */}
@@ -51,8 +66,10 @@ function App() {
                 <Route path="/post/:id" element={<Homeview />} />
                 <Route path="/MessageView" element={<MessageView />} />
                 <Route path="/ProfileUserView" element={<ProfileUserView />} />
+                <Route path="/profile/:userId" element={<FriendProfileView />} />
                 <Route path="/ResultSearchView" element={<ResultSearchView />} />
                 <Route path="/notify" element={<Notifications />} />
+                <Route path="/chatBoxAI/:conversationId?" element={<ChatBotAIView />} />
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </>
             ) : (
@@ -74,6 +91,7 @@ function App() {
           )}
         </SignalRProvider>
       </NotificationProvider>
+
     </>
   );
 }

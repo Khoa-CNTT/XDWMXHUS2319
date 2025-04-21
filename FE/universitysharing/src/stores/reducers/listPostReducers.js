@@ -4,6 +4,7 @@ import {
   commentPost,
   fetchPosts,
   fetchPostsByOwner, // Add this import
+  fetchPostsByOtherUser,
   likePost,
   likeComment,
   createPost,
@@ -138,6 +139,19 @@ const listPostSlice = createSlice({
           state.posts = action.payload.posts;
         }
         state.hasMoreOwnerPosts = action.payload.hasMore;
+      })
+      .addCase(fetchPostsByOtherUser.fulfilled, (state, action) => {
+        const { posts, hasMore } = action.payload;
+
+        if (action.meta.arg?.lastPostId) {
+          // Append for pagination
+          state.posts = [...state.posts, ...posts];
+        } else {
+          // Replace for initial load
+          state.posts = posts;
+        }
+
+        state.hasMoreOwnerPosts = hasMore;
       })
       // Sửa phần likePost để hỗ trợ optimistic update
       .addCase(likePost.pending, (state, action) => {
@@ -285,13 +299,20 @@ const listPostSlice = createSlice({
       })
       .addCase(fetchLikes.fulfilled, (state, action) => {
         state.likesLoading = false;
-        const { postId, data } = action.payload;
+        const { postId, data, hasReachedEnd } = action.payload;
+
+        // Nếu đã tải hết thì không cần cập nhật state nữa
+        if (hasReachedEnd && state.postLikes[postId]?.nextCursor === null) {
+          return;
+        }
+
         const existingLikes = state.postLikes[postId] || {
           likeCount: 0,
           likedUsers: [],
           nextCursor: null,
         };
 
+        // Cập nhật state
         state.postLikes = {
           ...state.postLikes,
           [postId]: {

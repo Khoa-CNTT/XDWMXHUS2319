@@ -30,6 +30,8 @@ namespace Infrastructure
         public DbSet<LocationUpdate> LocationUpdates { get; set; }
         public DbSet<RideReport> RideReports { get; set; }
         public DbSet<Rating> Ratings { get; set; }
+        public DbSet<AIConversation> AIConversations { get; set; }
+        public DbSet<AIChatHistory> AIChatHistories { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -56,6 +58,8 @@ namespace Infrastructure
             modelBuilder.Entity<Conversation>().HasKey(c => c.Id);
             modelBuilder.Entity<Message>().HasKey(c => c.Id);
             modelBuilder.Entity<Notification>().HasKey(n => n.Id);
+            modelBuilder.Entity<AIConversation>().HasKey(a => a.Id);
+            modelBuilder.Entity<AIChatHistory>().HasKey(a => a.Id);
 
 
             //Dùng HasQueryFilter để tự động loại bỏ dữ liệu đã bị xóa mềm (IsDeleted = true) khi truy vấn.
@@ -107,8 +111,6 @@ namespace Infrastructure
                 .HasForeignKey(f => f.FriendId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-
-           
             modelBuilder.Entity<Report>(entity =>
             {
                 // Cấu hình quan hệ với Post
@@ -352,6 +354,34 @@ namespace Infrastructure
                 .WithMany(u => u.SentNotifications)
                 .HasForeignKey(n => n.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
+            //chat AI
+            modelBuilder.Entity<AIConversation>()
+                .HasMany(c => c.ChatHistories)
+                .WithOne()
+                .HasForeignKey(ch => ch.ConversationId);
+
+            modelBuilder.Entity<AIConversation>()
+                .HasIndex(c => new { c.UserId, c.CreatedAt })
+                .HasDatabaseName("IX_Conversations_UserId_CreatedAt");
+
+            modelBuilder.Entity<AIChatHistory>()
+                .HasIndex(ch => new { ch.ConversationId, ch.Timestamp })
+                .HasDatabaseName("IX_ChatHistories_ConversationId_Timestamp");
+            // Quan hệ 1-n: User - AIConversations
+            modelBuilder.Entity<AIConversation>()
+                .HasOne(c => c.User)
+                .WithMany(u => u.AIConversations)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // Quan hệ 1-n: AIConversation - ChatHistories
+            modelBuilder.Entity<AIChatHistory>()
+                .HasOne(ch => ch.AIConversation)
+                .WithMany(c => c.ChatHistories)
+                .HasForeignKey(ch => ch.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+
 
 
 

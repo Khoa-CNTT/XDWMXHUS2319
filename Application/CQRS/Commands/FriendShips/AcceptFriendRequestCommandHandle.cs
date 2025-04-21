@@ -19,7 +19,7 @@ namespace Application.CQRS.Commands.Friends
         {
             var userId = _userContext.UserId();
             var friendship = await _unitOfWork.FriendshipRepository
-                .GetPendingRequestAsync(request.FriendshipId, userId); // Đúng sender và receiver
+                .GetPendingRequestAsync(request.FriendId, userId); // Đúng sender và receiver
             if (friendship == null)
                 return ResponseFactory.Fail<bool>("Lời mời kết bạn không tồn tại", 404);
 
@@ -48,7 +48,7 @@ namespace Application.CQRS.Commands.Friends
                 await _unitOfWork.NotificationRepository.AddAsync(notification);
                 if (friendship.UserId != userId)
                 {
-                    await _notificationService.SendAcceptFriendNotificationAsync(request.FriendshipId, userId);
+                    await _notificationService.SendAcceptFriendNotificationAsync(request.FriendId, userId);
                 }
                 //Xóa thông báo gửi lời mời
                 await _unitOfWork.NotificationRepository
