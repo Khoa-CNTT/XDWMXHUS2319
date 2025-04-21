@@ -69,12 +69,16 @@ namespace Application.CQRS.Commands.Shares
                 sharedPost.ApproveAI();
                 sharedPost.IsShare();
                 await _unitOfWork.PostRepository.AddAsync(sharedPost);
+                var postOwnerId = await _postService.GetPostOwnerId(originalPost.Id);
+                //Lưu vào Notification
+                var notification = new Notification(postOwnerId, userId, $"{user.FullName} đã chia sẻ bài viết của bạn", NotificationType.PostShared, null, $"/post/{originalPost.Id}");
+                await _unitOfWork.NotificationRepository.AddAsync(notification);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-                var message = $"{user.FullName} đã chia sẻ bài viết của bạn vào lúc {DateTime.Now.ToString("HH:mm dd/MM/yyyy")}";
+
                 if(userId != originalPost.UserId)
                 {
-                    await _notificationService.SendShareNotificationAsync(request.PostId, userId, message);
+                    await _notificationService.SendShareNotificationAsync(request.PostId, userId, postOwnerId, notification.Id);
                 }
                 
                 return ResponseFactory.Success(

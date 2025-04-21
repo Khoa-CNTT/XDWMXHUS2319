@@ -22,7 +22,7 @@ namespace Infrastructure.Service
 
          public async Task SendCommentNotificationSignalR(Guid postOwnerId, ResponseNotificationModel data)
               {
-                 await _hubContext.Clients.User(postOwnerId.ToString()).SendAsync("ReceiveNotification", data);
+                 await _hubContext.Clients.User(postOwnerId.ToString()).SendAsync("ReceiveCommentNotification", data);
           }
 
         /// <summary>
@@ -33,10 +33,10 @@ namespace Infrastructure.Service
             // Gọi Hub để gửi SignalR
             await _hubContext.Clients.Group(driverId.ToString()).SendAsync("ReceiveAlert", message);
         }
-        public async Task SendLikeNotificationSiganlR(Guid postId, Guid ownerId, string message)
+        public async Task SendLikeNotificationSiganlR(Guid postId, Guid ownerId, ResponseNotificationModel data)
         {
             await _hubContext.Clients.Group(ownerId.ToString())
-                .SendAsync("ReceiveLikeNotification", message);
+                .SendAsync("ReceiveLikeNotification", data);
         }
 
         public async Task SendNotificationUpdateLocationSignalR(Guid driverId, Guid passengerId, string message)
@@ -51,23 +51,22 @@ namespace Infrastructure.Service
         public async Task SendReplyNotificationSignalR(Guid receiverId, ResponseNotificationModel data)
         {
             await _hubContext.Clients.User(receiverId.ToString())
-                    .SendAsync("ReceiveNotification", data);
+                    .SendAsync("ReceiveReplyCommentNotification", data);
         }
 
-        public async Task SendShareNotificationAsync(Guid userId, string message)
+        public async Task SendShareNotificationAsync(Guid userId, ResponseNotificationModel data)
         {
-            await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", message);
-
+            await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveSharePostNotification", data);
         }
 
         public async Task SendFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
         {
-            await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", data);
+            await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveFriendNotification", data);
         }
 
         public async Task SendAnswerFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data)
         {
-            await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", data);
+            await _hubContext.Clients.User(friendId.ToString()).SendAsync("ReceiveFriendAnswerNotification", data);
         }
 
 
@@ -75,7 +74,6 @@ namespace Infrastructure.Service
         {
             await _hubContext.Clients.User(sendMessageNotificationEvent.ReceiverId.ToString())
                 .SendAsync("ReceiveMessageNotification", sendMessageNotificationEvent.Message);
-
         }
     }
 }
