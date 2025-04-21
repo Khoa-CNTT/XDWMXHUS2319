@@ -89,7 +89,7 @@
 
                 return ResponseFactory.Success(messageDto, "Gửi tin nhắn thành công.", 200);
             }
-            catch (Exception ex)
+            catch
             {
                 return ResponseFactory.Fail<MessageDto>("Lỗi hệ thống khi gửi tin nhắn.", 500);
             }

@@ -7,19 +7,22 @@ import store from "./stores/stores";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import {AxiosConfigProvider} from "./Service/axiosClient"
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Provider store={store}>
-      <AuthProvider> 
-        <App />
-      </AuthProvider>
+        <AuthProvider>
+          <AxiosConfigProvider />
+          <App />
+        </AuthProvider>
       </Provider>
     </BrowserRouter>
   </React.StrictMode>
 );
+
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

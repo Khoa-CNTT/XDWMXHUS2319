@@ -1,4 +1,7 @@
 ﻿
+using Application.Interface.ChatAI;
+using Infrastructure.ChatAI;
+
 namespace Infrastructure
 {
     public static class InfastructureService
@@ -50,6 +53,8 @@ namespace Infrastructure
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IAIConversationRepository, AIConversationRepository>();
+            services.AddScoped<IAIChatHistoryRepository, AIChatHistoryRepository>();
 
             services.AddScoped<IShareRepository, ShareRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
@@ -85,8 +90,11 @@ namespace Infrastructure
             //đăng kí hub
             services.AddScoped<ISignalRNotificationService, SignalRNotificationService>(); // Dùng SignalR để gửi thông báo
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(LikeEventHandler).Assembly));
-
-
+            //đăng kí chat
+            services.AddScoped<IChatStreamSender, ChatStreamSender>();
+            //chat AI
+            services.AddScoped<IPythonApiService, PythonApiService>();
+            services.AddScoped<IChatStreamService, ChatStreamService>();
             return services;
         }
     }

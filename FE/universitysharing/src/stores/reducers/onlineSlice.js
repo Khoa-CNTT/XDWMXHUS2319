@@ -11,7 +11,8 @@ const onlineUsersSlice = createSlice({
   initialState,
   reducers: {
     setOnlineStatus(state, action) {
-      state.onlineStatus = { ...state.onlineStatus, ...action.payload };
+      //state.onlineStatus = { ...state.onlineStatus, ...action.payload };
+      state.onlineStatus = action.payload;
       state.loading = false;
       state.error = null;
     },
@@ -34,7 +35,7 @@ const onlineUsersSlice = createSlice({
       state.error = null;
     },
   },
-});
+}); 
 
 export const {
   setOnlineStatus,

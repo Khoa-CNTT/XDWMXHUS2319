@@ -17,6 +17,7 @@ import AccountVerified from "./components/AccountVerified";
 import SearchView from "./views/SearchView";
 import ResultSearchView from "./views/ResultSearchView";
 import Notifications from "./views/Notifications";
+import ChatBotAIView from "./views/ChatBotAIView";
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { SignalRProvider } from "../src/Service/SignalRProvider"; // Thay useSignalRManager
@@ -53,6 +54,7 @@ function App() {
                 <Route path="/ProfileUserView" element={<ProfileUserView />} />
                 <Route path="/ResultSearchView" element={<ResultSearchView />} />
                 <Route path="/notify" element={<Notifications />} />
+                <Route path="/chatBoxAI/:conversationId?" element={<ChatBotAIView />} />
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </>
             ) : (

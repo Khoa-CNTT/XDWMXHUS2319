@@ -23,7 +23,7 @@ const LeftSidebar = ({ usersProfile }) => {
   const menuItems = [
     { path: "/home", icon: <FiHome />, label: "Trang chủ" },
     { path: "/friends", icon: <FiUser />, label: "Bạn bè" },
-    { path: "/messenger", icon: <FiMessageSquare />, label: "Nhắn tin" },
+    { path: "/chatBoxAI", icon: <FiMessageSquare />, label: "ChatBoxAI" },
     { path: "/notifications", icon: <FiBell />, label: "Thông báo" },
     { path: "/sharing-ride", icon: <FiMapPin />, label: "Chia sẻ xe" },
     {
