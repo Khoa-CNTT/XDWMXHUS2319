@@ -47,16 +47,6 @@ namespace Application.CQRS.Commands.Friends
                 friendship.Reject();
                 await _unitOfWork.FriendshipRepository.UpdateAsync(friendship);
 
-                // Lưu thông báo vào Notification nếu muốn
-                var notification = new Notification(
-                    friendship.UserId,
-                    userId,
-                    $"{user.FullName} đã từ chối lời mời kết bạn",
-                    NotificationType.RejectFriend,
-                    null,
-                    $"/profile/{userId}"
-                );
-                await _unitOfWork.NotificationRepository.AddAsync(notification);
                 if (friendship.UserId != userId)
                 {
                     await _notificationService.SendRejectFriendNotificationAsync(request.FriendId, userId);

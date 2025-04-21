@@ -1,13 +1,11 @@
-import {
-  configureStore,
-} from "@reduxjs/toolkit";
+import { configureStore } from "@reduxjs/toolkit";
 import listPostReducer from "./reducers/listPostReducers.js";
 import listUser from "./reducers/proFileReducers.js";
 import ridePostReducer from "./reducers/ridePostReducer.js";
 
 import reportSlice from "./reducers/reportReducers.js";
 
-
+import notificationReducer from "./reducers/notificationReducer.js";
 import friendReducer from "./reducers/friendReducer.js";
 import onlineUsersReducer from "./reducers/onlineSlice.js";
 
@@ -23,7 +21,7 @@ const store = configureStore({
 
     friends: friendReducer,
     onlineUsers: onlineUsersReducer,
-
+    notifications: notificationReducer,
     searchs: searchSlice,
   },
 });

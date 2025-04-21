@@ -1,8 +1,7 @@
-// src/App.js
 import "./App.css";
 import { useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "./views/Login";
 import Register from "./views/Register";
@@ -18,13 +17,62 @@ import SearchView from "./views/SearchView";
 import ResultSearchView from "./views/ResultSearchView";
 import Notifications from "./views/Notifications";
 import FriendProfileView from "./views/FriendProfileView";
-import getUserIdFromToken from "./utils/JwtDecode";
-
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
+import { useDispatch } from "react-redux";
 import { NotificationProvider } from "./contexts/NotificationContext";
-import { SignalRProvider } from "../src/Service/SignalRProvider"; // Thay useSignalRManager
+import { SignalRProvider, useSignalR } from "../src/Service/SignalRProvider";
 import { useAuth } from "./contexts/AuthContext";
 import { AxiosConfigProvider } from "../src/Service/axiosClient";
+import { notificationHandlers } from "./utils/notificationHandlers";
+import { addRealTimeNotification } from "./stores/action/notificationAction";
+
+// Component to handle global SignalR events
+const SignalRHandler = () => {
+  const { signalRService, isConnected } = useSignalR();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!isConnected || !signalRService) return;
+
+    const handleNotification = (eventName) => (notificationData) => {
+      console.log(`[App] Nhận được ${eventName}:`, notificationData);
+      const handler = notificationHandlers[eventName];
+      if (!handler) {
+        console.warn(`Không tìm thấy handler cho sự kiện: ${eventName}`);
+        return;
+      }
+
+      const newNotification = handler.mapToNotification(notificationData);
+      console.log("Thông báo đã map:", newNotification);
+
+      // Dispatch action để thêm thông báo vào store Redux
+      dispatch(addRealTimeNotification(newNotification));
+
+      // Chỉ hiển thị toast nếu không phải là thông báo friend request (vì đã có UI trong modal)
+      if (eventName !== "receivefriendnotification") {
+        toast.info(newNotification.title);
+      }
+    };
+
+    // Đăng ký tất cả sự kiện notification
+    Object.keys(notificationHandlers).forEach((eventName) => {
+      signalRService.on(
+        signalRService.notificationConnection,
+        eventName,
+        handleNotification(eventName)
+      );
+    });
+
+    return () => {
+      // Hủy đăng ký khi component unmount
+      Object.keys(notificationHandlers).forEach((eventName) => {
+        signalRService.off(eventName, signalRService.notificationConnection);
+      });
+    };
+  }, [isConnected, signalRService, dispatch]);
+
+  return null;
+};
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -40,10 +88,11 @@ function App() {
 
   return (
     <>
- <ToastContainer />
+      <ToastContainer />
       <NotificationProvider>
         <AxiosConfigProvider />
-        <SignalRProvider> {/* Bao quanh routes để cung cấp context */}
+        <SignalRProvider>
+          <SignalRHandler /> {/* Thêm component xử lý SignalR toàn cục */}
           <Routes location={background || location}>
             {isAuthenticated ? (
               <>
@@ -54,8 +103,14 @@ function App() {
                 <Route path="/post/:id" element={<Homeview />} />
                 <Route path="/MessageView" element={<MessageView />} />
                 <Route path="/ProfileUserView" element={<ProfileUserView />} />
-                <Route path="/profile/:userId" element={<FriendProfileView />} />
-                <Route path="/ResultSearchView" element={<ResultSearchView />} />
+                <Route
+                  path="/profile/:userId"
+                  element={<FriendProfileView />}
+                />
+                <Route
+                  path="/ResultSearchView"
+                  element={<ResultSearchView />}
+                />
                 <Route path="/notify" element={<Notifications />} />
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </>
