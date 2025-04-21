@@ -16,7 +16,7 @@ namespace Application.Interface
         Task<IEnumerable<ReportResponseDto>> GetAllReportsAsync();
         Task<ReportDetailsDto?> GetReportDetailsAsync(Guid reportId);
         Task<IEnumerable<ReportResponseDto>> GetReportsByPostAsync(Guid postId);
-
+        Task<List<PostWithReportsDto>> GetAllPostsWithReportsAsync();
 
     }
 }

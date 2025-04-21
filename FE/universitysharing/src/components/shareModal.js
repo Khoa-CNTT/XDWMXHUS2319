@@ -8,9 +8,11 @@ import { useDispatch } from "react-redux";
 import { sharePost } from "../stores/action/listPostActions";
 
 const ShareModal = ({ isOpen, onClose, usersProfile, post }) => {
-  console.log("chia  se", post);
-
   const [content, setContent] = useState("");
+  const [isSharing, setIsSharing] = useState(false); // Trạng thái chia sẻ
+
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -20,17 +22,24 @@ const ShareModal = ({ isOpen, onClose, usersProfile, post }) => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
-  const dispatch = useDispatch();
 
-  const handleSharePost = (postId, content) => {
-    dispatch(
-      sharePost({
-        postId: post.id,
-        content: content,
-      })
-    ).then(() => {
+  const handleSharePost = async () => {
+    if (isSharing) return; // Nếu đang chia sẻ, không làm gì cả
+
+    setIsSharing(true); // Đánh dấu đang xử lý
+    try {
+      await dispatch(
+        sharePost({
+          postId: post.id,
+          content: content,
+        })
+      );
       onClose(); // Đóng modal sau khi chia sẻ thành công
-    });
+    } catch (error) {
+      console.error("Lỗi chia sẻ:", error);
+    } finally {
+      setIsSharing(false); // Cho phép chia sẻ lại (tuỳ mục đích bạn có thể bỏ)
+    }
   };
 
   if (!isOpen) return null;
@@ -41,8 +50,8 @@ const ShareModal = ({ isOpen, onClose, usersProfile, post }) => {
   };
 
   return createPortal(
-    <div className="share-Overlay animate__animated animate__fadeIn ">
-      <div className="share-Modal ">
+    <div className="share-Overlay animate__animated animate__fadeIn">
+      <div className="share-Modal">
         <div className="head-Share-Modal">
           <span>Chia sẻ</span>
           <img
@@ -69,11 +78,12 @@ const ShareModal = ({ isOpen, onClose, usersProfile, post }) => {
           onChange={(e) => setContent(e.target.value)}
         ></textarea>
         <button
-          onClick={() => handleSharePost(post.id, content)}
+          onClick={handleSharePost}
           className="btn-share"
           type="submit"
+          disabled={isSharing} // Disable nút nếu đang chia sẻ
         >
-          Chia sẻ
+          {isSharing ? "Đang chia sẻ..." : "Chia sẻ"}
         </button>
       </div>
     </div>,

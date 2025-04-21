@@ -78,7 +78,7 @@ const PostOptionsModal = ({
       {!isHidden && (
         <div
           className="modal-postOption-overlay"
-          onClick={onClose}
+          // onClick={onClose}
           // style={{ top: `${position.top}px`, left: `${position.left}px` }}
         >
           <div

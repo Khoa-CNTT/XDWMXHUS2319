@@ -59,6 +59,15 @@ namespace Application.Services
             return report.Id;
         }
 
+        public async Task<List<PostWithReportsDto>> GetAllPostsWithReportsAsync()
+        {
+            var posts = await _unitOfWork.PostRepository.GetAllPostsWithReportsAsync();
+
+            var result = posts.Select(Mapping.MapToPostWithReportsDto).ToList();
+
+            return result;
+        }
+
         public async Task<IEnumerable<ReportResponseDto>> GetAllReportsAsync()
         {
             var reports = await _reportRepository.GetAllAsync();
