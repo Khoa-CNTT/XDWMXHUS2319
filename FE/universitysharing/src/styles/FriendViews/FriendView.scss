@@ -1,0 +1,22 @@
+.friend-tab-buttons {
+  display: flex;
+  gap: 10px;
+  // max-width: 640px;
+  width: 100%;
+  padding-left: 10px; // hoặc bạn tăng để đẩy ra xa hơn chút
+  margin-top: 1rem;
+
+  button {
+    padding: 10px 20px; // tăng kích thước nút
+    font-size: 16px; // chữ lớn hơn
+    border: none;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &.active {
+      background-color: #1877f2;
+      color: white;
+    }
+  }
+}

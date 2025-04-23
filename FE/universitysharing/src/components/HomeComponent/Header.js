@@ -196,7 +196,8 @@ const Header = ({ usersProfile }) => {
               src={usersProfile.profilePicture || avatarweb}
               alt="Avatar"
             />
-            {modalState.setting && <div className="indicator"></div>}
+            {/* {modalState.setting && <div className="indicator"></div>} */}
+            <div className="indicator"></div>
           </button>
         </div>
       </div>

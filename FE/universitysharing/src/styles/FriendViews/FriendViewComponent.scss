@@ -1,0 +1,94 @@
+.friend-request-container {
+  font-family: Arial, sans-serif;
+  width: 100%;
+  margin: 20px auto;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .friend-request-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .friend-request-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+  }
+
+  .friend-request-card {
+    background-color: white;
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .friend-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+
+      .Avatar-Friend {
+        border-radius: 10px;
+        border: 1px solid rgb(175, 175, 175);
+        overflow: hidden;
+
+        max-width: 300px;
+        img {
+          width: 100%;
+        }
+      }
+
+      input[type="checkbox"] {
+        cursor: pointer;
+      }
+
+      label {
+        font-weight: bold;
+        font-size: 18px;
+        color: #333;
+        cursor: pointer;
+      }
+    }
+
+    .friend-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      button {
+        padding: 5px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        flex: 1;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+
+      .confirm-btn {
+        background-color: #1877f2;
+        color: white;
+      }
+
+      .delete-btn {
+        background-color: #e4e6eb;
+        color: #333;
+      }
+    }
+  }
+}

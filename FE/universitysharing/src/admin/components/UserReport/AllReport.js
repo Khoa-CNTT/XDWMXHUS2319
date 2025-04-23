@@ -13,11 +13,7 @@ import {
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import avatarWeb from "../../assets/AvatarDefault.png";
-import CommentModal from "../CommentModal";
-import ShareModal from "../shareModal";
 import SharedPost from "./SharingPost";
-
-import CommentModalNoImg from "../CommentModal-NoImge/CommentNoImage";
 
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -32,7 +28,6 @@ import {
   openCommentModal,
   closeCommentModal,
   openShareModal,
-  closeShareModal,
   openPostOptionModal,
   closePostOptionModal,
   openInteractorModal,
@@ -48,9 +43,6 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useLocation, useNavigate } from "react-router-dom";
-import InteractorModal from "../InteractorModal";
-import Spinner from "../../utils/Spinner";
-import InteractorShareModal from "../InteractorShareModal";
 
 const AllPosts = ({
   usersProfile,
@@ -67,22 +59,10 @@ const AllPosts = ({
     posts,
     hasMoreAllPosts,
     hasMoreOwnerPosts,
-    selectedPost,
-    isShareModalOpen,
-    selectedPostToShare,
     selectedPostToOption,
     isPostOptionsOpen,
-    isInteractorModalOpen,
-    isInteractorShareModalOpen,
-    selectedPostForInteractions,
-    loading,
-    loadingCreatePost,
     postLikes,
-    likesLoading,
-    likesError,
     postShares,
-    sharesLoading,
-    sharesError,
   } = useSelector((state) => state.posts);
 
   // console.log("Selection sercert box>>", selectedPost);
@@ -178,17 +158,9 @@ const AllPosts = ({
     navigate(`/post/${post.id}`, { state: { background: location } });
   };
 
-  // Đóng comment modal
   const handleCloseCommentModal = () => {
-    dispatch(closeCommentModal()); // action để đóng modal
-    navigate(-1); // trở lại trang trước (vì khi mở đã push URL mới)
+    dispatch(closeCommentModal());
   };
-
-
-//   const handleCloseCommentModal = () => {
-//     dispatch(closeCommentModal());
-//   };
-// loi merger thanh=>dev
 
   //mở option post ra
   const handleOpenPostOptions = (event, post) => {
@@ -232,22 +204,12 @@ const AllPosts = ({
     dispatch(openInteractorModal(post));
   };
 
-  //tắt hiển thị modal tương tác bài viết
-  const handleCloseInteractorModal = () => {
-    dispatch(closeInteractorModal());
-  };
-
   //mở modal xem người shareshare
   const handleOpenInteractorShareModal = async (post) => {
     if (!postShares[post.id]) {
       await dispatch(fetchShares({ postId: post.id }));
     }
     dispatch(openInteractorShareModal(post));
-  };
-
-  //đóng modal xem người shareshare
-  const handleCloseInteractorShareModal = () => {
-    dispatch(closeInteractorShareModal());
   };
 
   //chuyển đổi ngày sang UTC +77
@@ -347,22 +309,6 @@ const AllPosts = ({
         <>
           {posts.map((post) => (
             <div className="post" key={post.id}>
-              {isPostOptionsOpen &&
-                selectedPostToOption &&
-                selectedPostToOption.post.id === post.id && (
-                  <div className="Post-option-modal-Container">
-                    {" "}
-                    <PostOptionsModal
-                      isOwner={userId === selectedPostToOption.post.userId}
-                      onClose={() => dispatch(closePostOptionModal())}
-                      position={selectedPostToOption.position}
-                      postId={selectedPostToOption.post.id}
-                      handleDeletePost={confirmDelete}
-                      post={selectedPostToOption.post}
-                    />
-                  </div>
-                )}
-
               <div className="header-post">
                 <div className="AvaName">
                   <img
@@ -425,18 +371,7 @@ const AllPosts = ({
                     </div>
                   </div>
                 </div>
-                <div className="post-actions">
-                  <FiMoreHorizontal
-                    className="btn-edit"
-                    size={20}
-                    onClick={(event) => handleOpenPostOptions(event, post)}
-                  />
-                  <FiX
-                    className="btn-close"
-                    size={20}
-                    onClick={() => dispatch(hidePost(post.id))}
-                  />
-                </div>
+                <div className="post-actions"></div>
               </div>
 
               <div className="content-posts">{post.content}</div>
@@ -515,57 +450,6 @@ const AllPosts = ({
         <div className="no-posts">
           <p>Không có bài viết nào.</p>
         </div>
-      )}
-
-      {isPostOptionsOpen && selectedPostToOption && (
-        <PostOptionsModal
-          isOwner={userId === selectedPostToOption.post.userId}
-          onClose={() => dispatch(closePostOptionModal())}
-          position={selectedPostToOption.position}
-          postId={selectedPostToOption.post.id}
-          handleDeletePost={confirmDelete}
-          post={selectedPostToOption.post}
-        />
-      )}
-
-      {selectedPost &&
-        location.pathname.includes(`/post/${selectedPost.id}`) && (
-          <CommentModal
-            post={selectedPost}
-            onClose={handleCloseCommentModal}
-            usersProfile={usersProfile}
-          />
-        )}
-
-      {selectedPostToShare && (
-        <ShareModal
-          post={selectedPostToShare}
-          isOpen={isShareModalOpen}
-          onClose={() => dispatch(closeShareModal())}
-          usersProfile={usersProfile}
-        />
-      )}
-
-      {isInteractorModalOpen && selectedPostForInteractions && (
-        <InteractorModal
-          isOpen={isInteractorModalOpen}
-          onClose={handleCloseInteractorModal}
-          likesData={postLikes[selectedPostForInteractions.id]}
-          isLoading={likesLoading}
-          error={likesError}
-          postId={selectedPostForInteractions.id}
-        />
-      )}
-
-      {isInteractorShareModalOpen && selectedPostForInteractions && (
-        <InteractorShareModal
-          isOpen={isInteractorShareModalOpen}
-          onClose={handleCloseInteractorShareModal}
-          sharesData={postShares[selectedPostForInteractions.id]}
-          isLoading={sharesLoading}
-          error={sharesError}
-          postId={selectedPostForInteractions.id}
-        />
       )}
     </div>
   );

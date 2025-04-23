@@ -32,7 +32,7 @@ import FriendProfileView from "./views/FriendProfileView";
 import FriendsView from "./views/FriendsView";
 
 import getUserIdFromToken from "./utils/JwtDecode";
-
+import FriendView from "./views/FriendView";
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
 import { useDispatch } from "react-redux";
 import { NotificationProvider } from "./contexts/NotificationContext";
@@ -90,6 +90,9 @@ import { addRealTimeNotification } from "./stores/action/notificationAction";
 //   return null;
 // };
 
+import Dashboard from "./admin/views/DashBoardView";
+import UserReport from "./admin/views/UserReportManagerView";
+
 function App() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
@@ -108,10 +111,11 @@ function App() {
       <NotificationProvider>
         <AxiosConfigProvider />
         <SignalRProvider>
-          {/* <SignalRHandler /> Thêm component xử lý SignalR toàn cục */}
           <Routes location={background || location}>
             {isAuthenticated ? (
               <>
+                <Route path="/admin/dashboard" element={<Dashboard />} />
+                <Route path="/admin/userreport" element={<UserReport />} />
                 <Route path="/home" element={<Homeview />} />
                 <Route path="/search" element={<SearchView />} />
                 <Route path="/sharing-ride" element={<SharingRideView />} />
@@ -124,6 +128,9 @@ function App() {
                   path="/profile/:userId"
                   element={<FriendProfileView />}
                 />
+
+                <Route path="/friend" element={<FriendView />} />
+
                 <Route
                   path="/ResultSearchView"
                   element={<ResultSearchView />}

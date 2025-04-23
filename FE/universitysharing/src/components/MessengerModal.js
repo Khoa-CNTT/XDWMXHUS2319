@@ -306,7 +306,7 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
       >
         <div
           className={`messenger-modal ${isOpen ? "open" : ""}`}
-          ref={modalRef}
+          // ref={modalRef}
         >
           <div className="modal-header">
             <div className="header-left">
@@ -392,7 +392,7 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
             )}
           </div>
 
-          <div className="chat-boxes-wrapper">
+          {/* <div className="chat-boxes-wrapper">
             {openChats.map((friendId, index) => (
               <ChatBox
                 key={friendId}
@@ -401,9 +401,17 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
                 index={index}
               />
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
+      {openChats.map((friendId, index) => (
+        <ChatBox
+          key={friendId}
+          friendId={friendId}
+          onClose={() => handleCloseChat(friendId)}
+          index={index}
+        />
+      ))}
     </>
   );
 };
