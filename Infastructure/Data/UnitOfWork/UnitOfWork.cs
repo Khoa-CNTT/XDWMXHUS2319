@@ -37,7 +37,10 @@ namespace Infrastructure.Data.UnitOfWork
             IMessageRepository messageRepository,
 
             IFriendshipRepository friendshipRepository,
-            INotificationRepository notificationRepository
+            INotificationRepository notificationRepository,
+
+            IAIConversationRepository aiConversationRepository,
+            IAIChatHistoryRepository aiChatHistoryRepository
 
 
             )
@@ -67,6 +70,9 @@ namespace Infrastructure.Data.UnitOfWork
             FriendshipRepository = friendshipRepository;
             
             NotificationRepository = notificationRepository;
+
+            AIConversationRepository = aiConversationRepository;
+            AIChatHistoryRepository = aiChatHistoryRepository;
         }
         public IUserRepository UserRepository { get; }
         public IPostRepository PostRepository { get; }
@@ -92,6 +98,9 @@ namespace Infrastructure.Data.UnitOfWork
         public IFriendshipRepository FriendshipRepository { get; }
 
         public INotificationRepository NotificationRepository { get; }
+
+        public IAIConversationRepository AIConversationRepository { get; }
+        public IAIChatHistoryRepository AIChatHistoryRepository { get; }
         public async Task<int> SaveChangesAsync()
         => await _context.SaveChangesAsync();
 

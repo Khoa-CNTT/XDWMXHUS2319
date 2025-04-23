@@ -32,6 +32,11 @@ namespace Domain.Interface
         IFriendshipRepository FriendshipRepository { get; }
 
         INotificationRepository NotificationRepository { get; }
+
+
+        IAIConversationRepository AIConversationRepository { get; }
+        IAIChatHistoryRepository AIChatHistoryRepository { get; }
+
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync(); // ✅ Bắt đầu giao dịch
         Task CommitTransactionAsync(); // ✅ Hoàn tất giao dịch

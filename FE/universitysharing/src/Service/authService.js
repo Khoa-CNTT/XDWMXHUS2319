@@ -12,7 +12,7 @@ export const removeAccessToken = () => {
 
 export const refreshAccessToken = async () => {
   try {
-    const res = await axiosClient.post("/auth/refresh-token");
+    const res = await axiosClient.post("/api/auth/refresh-token");
     // Sửa: Lấy accessToken từ response
     const newToken = res.data.accessToken;
     if (!newToken) {
@@ -29,7 +29,7 @@ export const refreshAccessToken = async () => {
 // Sửa: Thêm validateToken
 export const validateToken = async (token) => {
   try {
-    const res = await axiosClient.get("api/auth/validate-token", {
+    const res = await axiosClient.get("/api/auth/validate-token", {
       headers: { Authorization: `Bearer ${token}` },
     });
     return res.data.success === true;

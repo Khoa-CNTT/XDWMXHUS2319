@@ -243,38 +243,39 @@ $sidebar-width: 280px;
               font-size: 0.9rem; // Consistent font size
             }
 
-            .status {
-              font-size: 0.75rem;
+            .status-container {
               display: flex;
               align-items: center;
+              gap: 6px;
+              font-size: 0.75rem; // Kích thước chữ cho trạng thái
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
 
-              // Status indicator dot
-              &::before {
-                content: "";
-                display: inline-block;
+              .status-dot {
                 width: 8px;
                 height: 8px;
                 border-radius: $radius-round;
-                margin-right: 6px; // Space after dot
-                flex-shrink: 0; // Prevent dot shrinking
-              }
+                flex-shrink: 0; // Ngăn chấm bị co lại
 
-              &.online {
-                color: $online-color;
-                &::before {
+                &.online {
                   background-color: $online-color;
-                  box-shadow: 0 0 5px rgba($online-color, 0.6); // Subtle glow
-                  animation: pulse 2s infinite ease-in-out; // Refined pulse
+                  box-shadow: 0 0 5px rgba($online-color, 0.6); // Hiệu ứng glow
+                  animation: pulse 2s infinite ease-in-out; // Hiệu ứng pulse
+                }
+
+                &.offline {
+                  background-color: $offline-color;
                 }
               }
 
-              &.offline {
-                color: $text-light-gray; // Use lighter gray for offline text
-                &::before {
-                  background-color: $offline-color;
+              .status-text {
+                color: $text-light-gray; // Màu mặc định cho văn bản trạng thái
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+                &.online {
+                  color: $online-color; // Màu xanh cho trạng thái online
                 }
               }
             }

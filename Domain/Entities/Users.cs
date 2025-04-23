@@ -54,6 +54,8 @@ namespace Domain.Entities
             public ICollection<Message> SentMessages { get; set; } = new List<Message>();
             public ICollection<Notification> ReceivedNotifications { get; set; } = new List<Notification>();
             public ICollection<Notification> SentNotifications { get; set; } = new List<Notification>();
+            // Navigation property cho AIConversation
+            public ICollection<AIConversation> AIConversations { get; set; } = new List<AIConversation>();
 
         public User(string fullName, string email, string passwordHash)
             {

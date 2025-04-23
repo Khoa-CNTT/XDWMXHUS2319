@@ -18,7 +18,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import {
   getConversation,
   getMessages,
-  sendMessage,
+  sendMessage, 
 } from "../../stores/action/messageAction";
 import { NotificationContext } from "../../contexts/NotificationContext";
 
@@ -300,7 +300,10 @@ const ChatBox = ({ friendId, onClose }) => {
         )
       );
     });
-  }, []);
+//   }, []);
+
+  }, [signalRService]);
+  
 
   const getMessageStatus = useCallback(
     (message, messages) => {

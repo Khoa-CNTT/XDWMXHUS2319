@@ -1,6 +1,7 @@
 ﻿using Application.CQRS.Commands.Posts;
 using Application.DTOs.Reposts;
 using Application.Interface;
+using Domain.Interface;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -59,6 +60,13 @@ namespace DuyTanSharingSystem.Controllers
         {
             await _reportService.ProcessReportByAdminAsync(dto);
             return Ok(new { Message = "Processed by Admin successfully" });
+        }
+
+        [HttpGet("posts-report")]
+        public async Task<IActionResult> GetAllPostsWithReports()
+        {
+            var postsWithReports = await _reportService.GetAllPostsWithReportsAsync();
+            return Ok(postsWithReports);
         }
     }
 }

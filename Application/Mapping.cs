@@ -44,6 +44,33 @@ namespace Application
                 ActionTaken = report.ActionTaken
             };
         }
+
+        public static PostWithReportsDto MapToPostWithReportsDto(Post post)
+        {
+            return new PostWithReportsDto
+            {
+                Id = post.Id,
+                UserId = post.UserId,
+                FullName = post.User?.FullName ?? "",
+                ProfilePicture = post.User?.ProfilePicture,
+                Content = post.Content,
+                ImageUrl = post.ImageUrl,
+                VideoUrl = post.VideoUrl,
+                CreatedAt = post.CreatedAt,
+                UpdateAt = post.UpdateAt,
+                PostType = post.PostType,
+                Scope = post.Scope,
+                Reports = post.Reports.Select(r => new ReportDto
+                {
+                    Id = r.Id,
+                    Reason = r.Reason,
+                    ViolationDetails = r.ViolationDetails,
+                    CreatedAt = r.CreatedAt,
+                    UpdatedAt = r.UpdatedAt
+                }).ToList()
+            };
+        }
+
         //SHARE POST DTO MAPPER
         public static SharePostDto MapToSharePostDto(Share share, Post post, User user)
         {

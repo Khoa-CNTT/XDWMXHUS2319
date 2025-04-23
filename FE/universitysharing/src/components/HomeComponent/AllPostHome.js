@@ -178,9 +178,17 @@ const AllPosts = ({
     navigate(`/post/${post.id}`, { state: { background: location } });
   };
 
+  // Đóng comment modal
   const handleCloseCommentModal = () => {
-    dispatch(closeCommentModal());
+    dispatch(closeCommentModal()); // action để đóng modal
+    navigate(-1); // trở lại trang trước (vì khi mở đã push URL mới)
   };
+
+
+//   const handleCloseCommentModal = () => {
+//     dispatch(closeCommentModal());
+//   };
+// loi merger thanh=>dev
 
   //mở option post ra
   const handleOpenPostOptions = (event, post) => {

@@ -1,3 +1,5 @@
+using Domain.Entities;
+
 namespace Application.Services
 {
     public class NotificationService : INotificationService
@@ -24,7 +26,7 @@ namespace Application.Services
             _commentService = commentService;
         }
 
-        public async Task SendAcceptFriendNotificationAsync(Guid friendId, Guid userId)
+        public async Task SendAcceptFriendNotificationAsync(Guid friendId, Guid userId, Guid notificationId)
         {
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
             if (user == null || friendId == userId) return;
@@ -38,9 +40,12 @@ namespace Application.Services
 
             var data = new ResponseNotificationModel
             {
+                NotificationId = notificationId,
                 Message = message,
                 Avatar = avatar ?? "",
-                Url = $"/profile/{userId}"
+                Url = $"/profile/{userId}",
+                SenderId = userId,
+                CreatedAt = FormatUtcToLocal(DateTime.UtcNow)
             };
 
             await _publisher.Publish(new AnswerFriendEvent(friendId, data));
@@ -57,9 +62,8 @@ namespace Application.Services
             }
         }
 
-        public async Task SendCommentNotificationAsync(Guid postId, Guid commenterId)
+        public async Task SendCommentNotificationAsync(Guid postId, Guid commenterId, Guid postOwnerId, Guid notificationId)
         {
-            var postOwnerId = await _postService.GetPostOwnerId(postId);
             if (postOwnerId == commenterId) return;
             var user = await _unitOfWork.UserRepository.GetByIdAsync(commenterId);
             if (user == null) return;
@@ -72,14 +76,17 @@ namespace Application.Services
             var message = $"{user.FullName} đã bình luận vào bài viết của bạn";
             var data = new ResponseNotificationModel
             {
+                NotificationId = notificationId,
                 Message = message,
                 Avatar = avatar ?? "",
-                Url = $"/profile/{commenterId}"
+                Url = $"/profile/{commenterId}",
+                SenderId = commenterId,
+                CreatedAt = FormatUtcToLocal(DateTime.UtcNow),
             };
             await _publisher.Publish(new CommentEvent(postOwnerId, data));
         }
 
-        public async Task SendFriendNotificationAsync(Guid friendId, Guid userId)
+        public async Task SendFriendNotificationAsync(Guid friendId, Guid userId, Guid notificationId)
         {
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
             if (user == null || friendId == userId) return;
@@ -94,9 +101,12 @@ namespace Application.Services
 
             var data = new ResponseNotificationModel
             {
+                NotificationId = notificationId,
                 Message = message,
                 Avatar = avatar ?? "",
-                Url = $"/profile/{userId}"
+                Url = $"/profile/{userId}",
+                SenderId = userId,
+                CreatedAt = FormatUtcToLocal(DateTime.UtcNow)
             };
 
             await _publisher.Publish(new SendFriendEvent(friendId, data));
@@ -122,7 +132,6 @@ namespace Application.Services
             {
                 await _publisher.Publish(new LikeEvent(postId, ownerId, $"{name} đã bỏ thích bài đăng của bạn vào lúc {FormatUtcToLocal(DateTime.UtcNow)}"));
             }
-
         }
 
         public async Task SendNotificationMessageWithIsSeenFalse(Guid conversationId,Guid receiverId)
@@ -183,7 +192,8 @@ namespace Application.Services
             {
                 Message = message,
                 Avatar = avatar ?? "",
-                Url = $"/profile/{userId}"
+                Url = $"/profile/{userId}",
+                CreatedAt = FormatUtcToLocal(DateTime.UtcNow),
             };
 
             await _publisher.Publish(new AnswerFriendEvent(friendId, data));
@@ -212,7 +222,8 @@ namespace Application.Services
                 {
                     Message = commentMsg,
                     Avatar = avatar ?? "",
-                    Url = $"/profile/{responderId}"
+                    Url = $"/profile/{responderId}",
+                    CreatedAt = FormatUtcToLocal(DateTime.UtcNow),
                 };
                 await _publisher.Publish(new ReplyCommentEvent(commentOwnerId, commentData));
             }
@@ -225,18 +236,36 @@ namespace Application.Services
                 {
                     Message = postMsg,
                     Avatar = avatar ?? "",
-                    Url = $"/profile/{responderId}"
+                    Url = $"/profile/{responderId}",
+                    CreatedAt = FormatUtcToLocal(DateTime.UtcNow),
                 };
                 await _publisher.Publish(new ReplyCommentEvent(postOwnerId, postData));
             }
         }
-        public async Task SendShareNotificationAsync(Guid postId, Guid userId, string message)
+        public async Task SendShareNotificationAsync(Guid postId, Guid userId, Guid postOwnerId, Guid notificationId)
         {
-            
-            var postOwnerId = await _postService.GetPostOwnerId(postId);
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+
             if (user == null|| postOwnerId == Guid.Empty) return;
-            await _publisher.Publish(new ShareEvent(postId, postOwnerId, message));
+            string? avatar = null;
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                avatar = $"{Constaint.baseUrl}{user.ProfilePicture}";
+            }
+
+            var message = $"{user.FullName} đã chia sẻ bài viết của bạn";
+
+            var data = new ResponseNotificationModel
+            {
+                NotificationId = notificationId,
+                Message = message,
+                Avatar = avatar ?? "",
+                Url = $"/post/{postId}",
+                CreatedAt = FormatUtcToLocal(DateTime.UtcNow),
+                SenderId = userId,
+            };
+            await _publisher.Publish(new ShareEvent(postOwnerId, data));
+
         }
 
     }
