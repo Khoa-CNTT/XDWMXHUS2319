@@ -143,7 +143,7 @@ export const markNotificationAsRead = createAsyncThunk(
 );
 
 export const addRealTimeNotification = (notification) => ({
-  type: "ADD_REAL_TIME_NOTIFICATION",
+  type: "notifications/addRealTimeNotification",
   payload: notification,
 });
 

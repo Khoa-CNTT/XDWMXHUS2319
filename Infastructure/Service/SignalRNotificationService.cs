@@ -33,9 +33,9 @@ namespace Infrastructure.Service
             // Gọi Hub để gửi SignalR
             await _hubContext.Clients.Group(driverId.ToString()).SendAsync("ReceiveAlert", message);
         }
-        public async Task SendLikeNotificationSiganlR(Guid postId, Guid ownerId, ResponseNotificationModel data)
+        public async Task SendLikeNotificationSiganlR(Guid ownerId, ResponseNotificationModel data)
         {
-            await _hubContext.Clients.Group(ownerId.ToString())
+            await _hubContext.Clients.User(ownerId.ToString())
                 .SendAsync("ReceiveLikeNotification", data);
         }
 

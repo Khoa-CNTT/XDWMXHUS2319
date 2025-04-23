@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 
@@ -7,7 +6,6 @@ import "../../styles/MoblieReponsive/HomeViewMobile/HeaderHomeReponsive.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
 import { useSignalR } from "../../Service/SignalRProvider";
-
 
 import { FiSearch, FiBell, FiMessageSquare, FiArrowLeft } from "react-icons/fi";
 
@@ -32,19 +30,17 @@ const Header = ({ usersProfile }) => {
 
   const { signalRService } = useSignalR();
 
-useEffect(() => {
-  const handleUnreadCount = (count) => {
-    setUnreadCount(count);
-  };
+  useEffect(() => {
+    const handleUnreadCount = (count) => {
+      setUnreadCount(count);
+    };
 
-  signalRService.onReceiveUnreadCount(handleUnreadCount);
+    signalRService.onReceiveUnreadCount(handleUnreadCount);
 
-  return () => {
-    // Nếu bạn có hỗ trợ unsubscribe thì thực hiện ở đây
-  };
-}, [signalRService]);
-
-
+    return () => {
+      // Nếu bạn có hỗ trợ unsubscribe thì thực hiện ở đây
+    };
+  }, [signalRService]);
 
   const UserProfile = () => {
     navigate("/ProfileUserView");
@@ -103,7 +99,6 @@ useEffect(() => {
     }));
   };
 
-
   //Mở đóng left menu
   const showSearchBox = () => {
     if (window.innerWidth <= 768) {
@@ -112,7 +107,6 @@ useEffect(() => {
       rightRef.current?.classList.add("hide-mobile");
     }
   };
-
 
   const hideSearchBox = () => {
     if (window.innerWidth <= 768) {
@@ -172,9 +166,7 @@ useEffect(() => {
           </form>
         </div>
 
-
         <div className="rightHeader" ref={rightRef}>
-
           <button
             id="messenger-button"
             className={`icon-button ${modalState.messenger ? "active" : ""}`}
@@ -182,15 +174,11 @@ useEffect(() => {
             aria-label="Messenger"
           >
             <FiMessageSquare className="icon" />
-            {unreadCount > 0 && (
-              <span className="badge">{unreadCount}</span>
-            )}
+            {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
           </button>
-
 
           <button
             className={`icon-button ${modalState.notify ? "active" : ""}`}
-
             onClick={() => toggleModal("notify")}
             aria-label="Notifications"
           >

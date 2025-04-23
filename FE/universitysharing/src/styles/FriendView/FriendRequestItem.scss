@@ -1,0 +1,71 @@
+.friend-request-received-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+}
+
+.friend-request-received-avatar {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background-color: #e0e0e0; /* Màu nền cho avatar mặc định */
+}
+
+.friend-request-received-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 10px;
+  text-align: center;
+}
+
+.friend-request-received-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.accept-request-received-button {
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+  text-align: center;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+}
+
+.decline-request-received-button {
+  background-color: #e0e0e0;
+  color: #333;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+  text-align: center;
+
+  &:hover {
+    background-color: #d0d0d0;
+  }
+}

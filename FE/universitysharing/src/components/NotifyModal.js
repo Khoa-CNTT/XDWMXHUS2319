@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import "../styles/NotifyModal.scss";
-import "../styles/MoblieReponsive/HomeViewMobile/NotifyMobile.scss";
 import { useNavigate } from "react-router-dom";
 import {
   fetchNotifications,
   fetchNotificationsUnread,
   fetchNotificationsRead,
   markNotificationAsRead,
-  addRealTimeNotification,
 } from "../stores/action/notificationAction";
 import { toast } from "react-toastify";
 import {
@@ -18,7 +16,7 @@ import {
 import avatarWeb from "../assets/AvatarDefault.png";
 import { useSignalR } from "../Service/SignalRProvider";
 import { NOTIFICATION_TYPES } from "../constants/notificationTypes";
-import { notificationHandlers } from "../utils/notificationHandlers";
+import { debounce } from "lodash";
 
 // Helper function to format relative time in Vietnamese
 const formatRelativeTime = (createdAt) => {
@@ -26,29 +24,15 @@ const formatRelativeTime = (createdAt) => {
   const notificationTime = new Date(createdAt);
   const diffInSeconds = Math.floor((now - notificationTime) / 1000);
 
-  if (diffInSeconds < 60) {
-    return "vừa xong";
-  }
-
+  if (diffInSeconds < 60) return "vừa xong";
   const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} phút trước`;
-  }
-
+  if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
   const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours} giờ trước`;
-  }
-
+  if (diffInHours < 24) return `${diffInHours} giờ trước`;
   const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) {
-    return `${diffInDays} ngày trước`;
-  }
-
+  if (diffInDays < 7) return `${diffInDays} ngày trước`;
   const diffInWeeks = Math.floor(diffInDays / 7);
-  if (diffInWeeks < 4) {
-    return `${diffInWeeks} tuần trước`;
-  }
+  if (diffInWeeks < 4) return `${diffInWeeks} tuần trước`;
 
   return notificationTime.toLocaleDateString("vi-VN", {
     day: "2-digit",
@@ -64,7 +48,7 @@ const NotifyModal = ({ isOpen, onClose }) => {
   const observerRef = useRef(null);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Tất cả");
-  const { signalRService } = useSignalR();
+  const { signalRService, registerNotifyModal } = useSignalR();
   const [isInfiniteScrollEnabled, setIsInfiniteScrollEnabled] = useState(false);
   const {
     notifications = [],
@@ -77,64 +61,16 @@ const NotifyModal = ({ isOpen, onClose }) => {
   const [processedNotifications, setProcessedNotifications] = useState(
     new Set()
   );
-  const [realTimeNotifications, setRealTimeNotifications] = useState([]);
+  const [lastFetchedAt, setLastFetchedAt] = useState(null);
 
-  const lastNotificationRef = useCallback(
-    (node) => {
-      if (loading || !hasMore || !isInfiniteScrollEnabled) return;
-      if (observerRef.current) observerRef.current.disconnect();
-
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          if (activeTab === "Tất cả") {
-            dispatch(fetchNotifications(nextCursor));
-          } else if (activeTab === "Chưa đọc") {
-            dispatch(fetchNotificationsUnread(nextCursor));
-          } else if (activeTab === "Đã đọc") {
-            dispatch(fetchNotificationsRead(nextCursor));
-          }
-        }
-      });
-
-      if (node) observerRef.current.observe(node);
-    },
-    [loading, hasMore, isInfiniteScrollEnabled, dispatch, nextCursor, activeTab]
-  );
-
+  // Thông báo trạng thái modal tới SignalRProvider
   useEffect(() => {
-    if (!isOpen || !signalRService) return;
+    if (signalRService) {
+      registerNotifyModal(isOpen);
+    }
+  }, [isOpen, signalRService, registerNotifyModal]);
 
-    const handleNotification = (eventName) => (notificationData) => {
-      console.log(`[NotifyModal] Nhận được ${eventName}:`, notificationData);
-      const handler = notificationHandlers[eventName];
-      if (!handler) return;
-
-      const newNotification = handler.mapToNotification(notificationData);
-      console.log("Thông báo đã map:", newNotification);
-
-      // Dispatch action để thêm vào Redux store
-      dispatch(addRealTimeNotification(newNotification));
-    };
-
-    Object.keys(notificationHandlers).forEach((eventName) => {
-      signalRService.on(
-        signalRService.notificationConnection,
-        eventName,
-        handleNotification(eventName)
-      );
-    });
-
-    return () => {
-      Object.keys(notificationHandlers).forEach((eventName) => {
-        signalRService.off(
-          signalRService.notificationConnection,
-          eventName,
-          handleNotification(eventName)
-        );
-      });
-    };
-  }, [isOpen, signalRService, dispatch]);
-
+  // Tải dữ liệu ban đầu khi mở modal
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -144,12 +80,14 @@ const NotifyModal = ({ isOpen, onClose }) => {
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      if (activeTab === "Tất cả" && notifications.length === 0) {
-        dispatch(fetchNotifications(null));
-      } else if (activeTab === "Chưa đọc" && unreadNotifications.length === 0) {
-        dispatch(fetchNotificationsUnread(null));
-      } else if (activeTab === "Đã đọc" && readNotifications.length === 0) {
-        dispatch(fetchNotificationsRead(null));
+      // Chỉ tải dữ liệu nếu danh sách rỗng
+      if (
+        (activeTab === "Tất cả" && notifications.length === 0) ||
+        (activeTab === "Chưa đọc" && unreadNotifications.length === 0) ||
+        (activeTab === "Đã đọc" && readNotifications.length === 0)
+      ) {
+        fetchData(activeTab, null);
+        setLastFetchedAt(new Date());
       }
     }
 
@@ -160,49 +98,80 @@ const NotifyModal = ({ isOpen, onClose }) => {
   }, [
     isOpen,
     onClose,
-    dispatch,
     activeTab,
     notifications.length,
     unreadNotifications.length,
     readNotifications.length,
   ]);
 
+  // Debounce API calls
+  const fetchData = useCallback(
+    debounce((tab, cursor) => {
+      if (tab === "Tất cả") {
+        dispatch(fetchNotifications(cursor));
+      } else if (tab === "Chưa đọc") {
+        dispatch(fetchNotificationsUnread(cursor));
+      } else if (tab === "Đã đọc") {
+        dispatch(fetchNotificationsRead(cursor));
+      }
+    }, 500),
+    [dispatch]
+  );
+
+  const lastNotificationRef = useCallback(
+    (node) => {
+      if (loading || !hasMore || !isInfiniteScrollEnabled) return;
+      if (observerRef.current) observerRef.current.disconnect();
+
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchData(activeTab, nextCursor);
+        }
+      });
+
+      if (node) observerRef.current.observe(node);
+    },
+    [
+      loading,
+      hasMore,
+      isInfiniteScrollEnabled,
+      activeTab,
+      nextCursor,
+      fetchData,
+    ]
+  );
+
   const handleTabClick = (tab) => {
     setActiveTab(tab);
     setIsInfiniteScrollEnabled(false);
-    if (tab === "Tất cả" && notifications.length === 0) {
-      dispatch(fetchNotifications(null));
-    } else if (tab === "Chưa đọc" && unreadNotifications.length === 0) {
-      dispatch(fetchNotificationsUnread(null));
-    } else if (tab === "Đã đọc" && readNotifications.length === 0) {
-      dispatch(fetchNotificationsRead(null));
+    // Chỉ tải dữ liệu nếu danh sách rỗng
+    if (
+      (tab === "Tất cả" && notifications.length === 0) ||
+      (tab === "Chưa đọc" && unreadNotifications.length === 0) ||
+      (tab === "Đã đọc" && readNotifications.length === 0)
+    ) {
+      fetchData(tab, null);
+      setLastFetchedAt(new Date());
     }
   };
 
   const handleLoadMore = () => {
     if (hasMore && !loading) {
-      if (activeTab === "Tất cả") {
-        dispatch(fetchNotifications(nextCursor));
-      } else if (activeTab === "Chưa đọc") {
-        dispatch(fetchNotificationsUnread(nextCursor));
-      } else if (activeTab === "Đã đọc") {
-        dispatch(fetchNotificationsRead(nextCursor));
-      }
+      fetchData(activeTab, nextCursor);
       setIsInfiniteScrollEnabled(true);
+      setLastFetchedAt(new Date());
     }
   };
 
   const handleNotificationClick = async (notification) => {
     try {
-      if (!notification.isRealTime && !notification.isRead) {
+      if (!notification.isRead) {
         await dispatch(markNotificationAsRead(notification.id)).unwrap();
       }
-      console.log("Chuyển hướng đến:", notification.url);
       navigate(notification.url);
       onClose();
     } catch (error) {
       console.error("Lỗi khi xử lý click thông báo:", error);
-      console.log("Chuyển hướng (dự phòng):", notification.url);
       navigate(notification.url);
       onClose();
     }
@@ -212,15 +181,11 @@ const NotifyModal = ({ isOpen, onClose }) => {
     async (notificationId, senderId, e) => {
       e.stopPropagation();
       try {
-        if (!senderId) {
+        if (!senderId)
           throw new Error("Thiếu ID người gửi cho lời mời kết bạn");
-        }
         await dispatch(acceptFriendRequest(senderId)).unwrap();
         toast.success("Đã chấp nhận lời mời kết bạn");
         setProcessedNotifications((prev) => new Set(prev).add(notificationId));
-        setRealTimeNotifications((prev) =>
-          prev.filter((notif) => notif.id !== notificationId)
-        );
       } catch (error) {
         toast.error(error.message || "Có lỗi xảy ra khi chấp nhận lời mời");
       }
@@ -232,15 +197,11 @@ const NotifyModal = ({ isOpen, onClose }) => {
     async (notificationId, senderId, e) => {
       e.stopPropagation();
       try {
-        if (!senderId) {
+        if (!senderId)
           throw new Error("Thiếu ID người gửi cho lời mời kết bạn");
-        }
         await dispatch(rejectFriendRequest(senderId)).unwrap();
         toast.success("Đã từ chối lời mời kết bạn");
         setProcessedNotifications((prev) => new Set(prev).add(notificationId));
-        setRealTimeNotifications((prev) =>
-          prev.filter((notif) => notif.id !== notificationId)
-        );
       } catch (error) {
         toast.error(error.message || "Có lỗi xảy ra khi từ chối lời mời");
       }
@@ -257,19 +218,14 @@ const NotifyModal = ({ isOpen, onClose }) => {
       ? unreadNotifications
       : readNotifications;
 
-  const recentNotifications = notifications.filter(
+  const recentNotifications = displayedNotifications.filter(
     (notif) =>
-      new Date(notif.createdAt) >= new Date(Date.now() - 24 * 60 * 60 * 1000) //Phân loại thông báo mới trong 24 giờ
+      new Date(notif.createdAt) >= new Date(Date.now() - 24 * 60 * 60 * 1000)
   );
-  const olderNotifications = notifications.filter(
+  const olderNotifications = displayedNotifications.filter(
     (notif) =>
-      new Date(notif.createdAt) < new Date(Date.now() - 24 * 60 * 60 * 1000) //Phân loại thông báo cũ hơn 24 giờ
+      new Date(notif.createdAt) < new Date(Date.now() - 24 * 60 * 60 * 1000)
   );
-
-  const allRecentNotifications = [
-    ...realTimeNotifications,
-    ...recentNotifications,
-  ];
 
   return (
     <div className="notify-modal" ref={modalRef}>
@@ -297,22 +253,20 @@ const NotifyModal = ({ isOpen, onClose }) => {
         </div>
       </div>
       <div className="modal-content">
-        {displayedNotifications.length === 0 &&
-        allRecentNotifications.length === 0 &&
-        !loading ? (
+        {displayedNotifications.length === 0 && !loading ? (
           <div className="empty-state">Không có thông báo nào</div>
         ) : (
           <div className="notification-section">
             {activeTab === "Tất cả" && (
               <>
                 <h3>Mới</h3>
-                {allRecentNotifications.length > 0 ? (
-                  allRecentNotifications.map((notif, index) => (
+                {recentNotifications.length > 0 ? (
+                  recentNotifications.map((notif, index) => (
                     <div
                       key={notif.id}
                       ref={
                         isInfiniteScrollEnabled &&
-                        index === allRecentNotifications.length - 1 &&
+                        index === recentNotifications.length - 1 &&
                         olderNotifications.length === 0
                           ? lastNotificationRef
                           : null
@@ -330,7 +284,12 @@ const NotifyModal = ({ isOpen, onClose }) => {
                         />
                         <div className="notification-text">
                           <p className="title">{notif.title}</p>
-                          {notif.type === NOTIFICATION_TYPES.SEND_FRIEND}
+                          {notif.type === NOTIFICATION_TYPES.SEND_FRIEND &&
+                            notif.mutualFriendsCount !== undefined && (
+                              <span className="mutual-friends">
+                                {notif.mutualFriendsCount} bạn chung
+                              </span>
+                            )}
                           <span className="time">
                             {formatRelativeTime(notif.createdAt)}
                           </span>
