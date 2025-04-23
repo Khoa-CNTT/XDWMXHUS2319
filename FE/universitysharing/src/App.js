@@ -1,4 +1,3 @@
-
 import "./App.css";
 import { useEffect, useState } from "react";
 import {
@@ -26,12 +25,15 @@ import ResultSearchView from "./views/ResultSearchView";
 import Notifications from "./views/Notifications";
 import FriendProfileView from "./views/FriendProfileView";
 import getUserIdFromToken from "./utils/JwtDecode";
-
+import FriendView from "./views/FriendView";
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { SignalRProvider } from "../src/Service/SignalRProvider"; // Thay useSignalRManager
 import { useAuth } from "./contexts/AuthContext";
 import { AxiosConfigProvider } from "../src/Service/axiosClient";
+
+import Dashboard from "./admin/views/DashBoardView";
+import UserReport from "./admin/views/UserReportManagerView";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -47,14 +49,17 @@ function App() {
 
   return (
     <>
-
- <ToastContainer />
+      <ToastContainer />
       <NotificationProvider>
         <AxiosConfigProvider />
-        <SignalRProvider> {/* Bao quanh routes để cung cấp context */}
+        <SignalRProvider>
+          {" "}
+          {/* Bao quanh routes để cung cấp context */}
           <Routes location={background || location}>
             {isAuthenticated ? (
               <>
+                <Route path="/admin/dashboard" element={<Dashboard />} />
+                <Route path="/admin/userreport" element={<UserReport />} />
                 <Route path="/home" element={<Homeview />} />
                 <Route path="/search" element={<SearchView />} />
                 <Route path="/sharing-ride" element={<SharingRideView />} />
@@ -62,8 +67,15 @@ function App() {
                 <Route path="/post/:id" element={<Homeview />} />
                 <Route path="/MessageView" element={<MessageView />} />
                 <Route path="/ProfileUserView" element={<ProfileUserView />} />
-                <Route path="/profile/:userId" element={<FriendProfileView />} />
-                <Route path="/ResultSearchView" element={<ResultSearchView />} />
+                <Route
+                  path="/profile/:userId"
+                  element={<FriendProfileView />}
+                />
+                <Route path="/friend" element={<FriendView />} />
+                <Route
+                  path="/ResultSearchView"
+                  element={<ResultSearchView />}
+                />
                 <Route path="/notify" element={<Notifications />} />
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </>
@@ -86,7 +98,6 @@ function App() {
           )}
         </SignalRProvider>
       </NotificationProvider>
-
     </>
   );
 }
