@@ -29,6 +29,8 @@ import ChatBotAIView from "./views/ChatBotAIView";
 
 import FriendProfileView from "./views/FriendProfileView";
 
+import FriendsView from "./views/FriendsView";
+
 import getUserIdFromToken from "./utils/JwtDecode";
 import FriendView from "./views/FriendView";
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
@@ -41,52 +43,52 @@ import { notificationHandlers } from "./utils/notificationHandlers";
 import { addRealTimeNotification } from "./stores/action/notificationAction";
 
 // Component to handle global SignalR events
-const SignalRHandler = () => {
-  const { signalRService, isConnected } = useSignalR();
-  const dispatch = useDispatch();
+// const SignalRHandler = () => {
+//   const { signalRService, isConnected } = useSignalR();
+//   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (!isConnected || !signalRService) return;
+//   useEffect(() => {
+//     if (!isConnected || !signalRService) return;
 
-    const handleNotification = (eventName) => (notificationData) => {
-      console.log(`[App] Nhận được ${eventName}:`, notificationData);
-      const handler = notificationHandlers[eventName];
-      if (!handler) {
-        console.warn(`Không tìm thấy handler cho sự kiện: ${eventName}`);
-        return;
-      }
+//     const handleNotification = (eventName) => (notificationData) => {
+//       console.log(`[App] Nhận được ${eventName}:`, notificationData);
+//       const handler = notificationHandlers[eventName];
+//       if (!handler) {
+//         console.warn(`Không tìm thấy handler cho sự kiện: ${eventName}`);
+//         return;
+//       }
 
-      const newNotification = handler.mapToNotification(notificationData);
-      console.log("Thông báo đã map:", newNotification);
+//       const newNotification = handler.mapToNotification(notificationData);
+//       console.log("Thông báo đã map:", newNotification);
 
-      // Dispatch action để thêm thông báo vào store Redux
-      dispatch(addRealTimeNotification(newNotification));
+//       // Dispatch action để thêm thông báo vào store Redux
+//       dispatch(addRealTimeNotification(newNotification));
 
-      // Chỉ hiển thị toast nếu không phải là thông báo friend request (vì đã có UI trong modal)
-      if (eventName !== "receivefriendnotification") {
-        toast.info(newNotification.title);
-      }
-    };
+//       // Chỉ hiển thị toast nếu không phải là thông báo friend request (vì đã có UI trong modal)
+//       if (eventName !== "receivefriendnotification") {
+//         toast.info(newNotification.title);
+//       }
+//     };
 
-    // Đăng ký tất cả sự kiện notification
-    Object.keys(notificationHandlers).forEach((eventName) => {
-      signalRService.on(
-        signalRService.notificationConnection,
-        eventName,
-        handleNotification(eventName)
-      );
-    });
+//     // Đăng ký tất cả sự kiện notification
+//     Object.keys(notificationHandlers).forEach((eventName) => {
+//       signalRService.on(
+//         signalRService.notificationConnection,
+//         eventName,
+//         handleNotification(eventName)
+//       );
+//     });
 
-    return () => {
-      // Hủy đăng ký khi component unmount
-      Object.keys(notificationHandlers).forEach((eventName) => {
-        signalRService.off(eventName, signalRService.notificationConnection);
-      });
-    };
-  }, [isConnected, signalRService, dispatch]);
+//     return () => {
+//       // Hủy đăng ký khi component unmount
+//       Object.keys(notificationHandlers).forEach((eventName) => {
+//         signalRService.off(eventName, signalRService.notificationConnection);
+//       });
+//     };
+//   }, [isConnected, signalRService, dispatch]);
 
-  return null;
-};
+//   return null;
+// };
 
 import Dashboard from "./admin/views/DashBoardView";
 import UserReport from "./admin/views/UserReportManagerView";
@@ -109,9 +111,6 @@ function App() {
       <NotificationProvider>
         <AxiosConfigProvider />
         <SignalRProvider>
-
-          <SignalRHandler /> {/* Thêm component xử lý SignalR toàn cục */}
-
           <Routes location={background || location}>
             {isAuthenticated ? (
               <>
@@ -124,6 +123,7 @@ function App() {
                 <Route path="/post/:id" element={<Homeview />} />
                 <Route path="/MessageView" element={<MessageView />} />
                 <Route path="/ProfileUserView" element={<ProfileUserView />} />
+                <Route path="/Friends" element={<FriendsView />} />
                 <Route
                   path="/profile/:userId"
                   element={<FriendProfileView />}
@@ -136,7 +136,10 @@ function App() {
                   element={<ResultSearchView />}
                 />
                 <Route path="/notify" element={<Notifications />} />
-                <Route path="/chatBoxAI/:conversationId?" element={<ChatBotAIView />} />
+                <Route
+                  path="/chatBoxAI/:conversationId?"
+                  element={<ChatBotAIView />}
+                />
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </>
             ) : (

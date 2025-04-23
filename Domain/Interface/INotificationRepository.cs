@@ -11,6 +11,7 @@ namespace Domain.Interface
         Task<List<Notification>> GetByTypeAsync(Guid receiverId ,NotificationType type, DateTime? cursor, int pageSize, CancellationToken cancellationToken);
         Task<List<Notification>> GetByReadStatusAsync(Guid receiverId, bool isRead, DateTime? cursor, int pageSize, CancellationToken cancellationToken);
         Task<Notification?> GetByIdAsync(Guid notificationId, Guid userId, CancellationToken cancellationToken);
+        Task<int> CountUnreadNotificationsAsync(Guid receiverId, CancellationToken cancellationToken = default);
     }
 
 }

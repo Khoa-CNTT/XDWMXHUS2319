@@ -47,5 +47,11 @@ namespace DuyTanSharingSystem.Controllers
             var result = await _mediator.Send(command);
             return Ok(result);
         }
+        [HttpGet("unread-count")]
+        public async Task<IActionResult> GetUnreadNotificationCount()
+        {
+            var result = await _mediator.Send(new GetUnreadNotificationCountQuery());
+            return Ok(result);
+        }
     }
 }

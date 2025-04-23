@@ -3,4 +3,5 @@ export const NOTIFICATION_TYPES = {
   ACCEPT_FRIEND: "AcceptFriend", // Đồng ý kết bạn
   SHARE_POST: "PostShared", // Chia sẻ bài viết
   COMMENT_POST: "PostCommented", // Bình luận bài viết
+  LIKE_POST: "PostLiked", // Thích bài viết
 };

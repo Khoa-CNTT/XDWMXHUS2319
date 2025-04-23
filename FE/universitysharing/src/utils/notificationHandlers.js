@@ -1,4 +1,3 @@
-// src/utils/notificationHandlers.js
 import { NOTIFICATION_TYPES } from "../constants/notificationTypes";
 import avatarWeb from "../assets/AvatarDefault.png";
 
@@ -10,22 +9,22 @@ export const notificationHandlers = {
       console.log(
         "[notificationHandlers] Dữ liệu nhận được:",
         notificationData
-      ); // Log để kiểm tra
+      );
       return {
-        id: notificationData.notificationId || `friend-request-${Date.now()}`, // Sửa key
+        id: notificationData.notificationId || `friend-request-${Date.now()}`,
         title:
-          notificationData.message || "Ai đó đã gửi lời mời kết bạn cho bạn", // Sửa key
-        senderId: notificationData.senderId, // Sửa key
-        senderProfilePicture: notificationData.avatar || avatarWeb, // Sửa key
-        createdAt: notificationData.createdAt || new Date().toISOString(), // Sửa key
+          notificationData.message || "Ai đó đã gửi lời mời kết bạn cho bạn",
+        senderId: notificationData.senderId,
+        senderProfilePicture: notificationData.avatar || avatarWeb,
+        createdAt: notificationData.createdAt || new Date().toISOString(),
         isRead: false,
         type: NOTIFICATION_TYPES.SEND_FRIEND,
-        mutualFriendsCount: notificationData.mutualFriendsCount || 0, // Sửa key
+        mutualFriendsCount: notificationData.mutualFriendsCount || 0,
         url:
           notificationData.url ||
           (notificationData.senderId
             ? `/profile/${notificationData.senderId}`
-            : "/profile"), // Sửa key
+            : "/profile"),
         isRealTime: true,
       };
     },
@@ -37,21 +36,21 @@ export const notificationHandlers = {
       console.log(
         "[notificationHandlers] Dữ liệu nhận được:",
         notificationData
-      ); // Log để kiểm tra
+      );
       return {
-        id: notificationData.notificationId || `friend-answer-${Date.now()}`, // Sửa key
-        title: notificationData.message || "Ai đó đã đồng ý kết bạn với bạn", // Sửa key
-        senderId: notificationData.senderId, // Sửa key
-        senderProfilePicture: notificationData.avatar || avatarWeb, // Sửa key
-        createdAt: notificationData.createdAt || new Date().toISOString(), // Sửa key
+        id: notificationData.notificationId || `friend-answer-${Date.now()}`,
+        title: notificationData.message || "Ai đó đã đồng ý kết bạn với bạn",
+        senderId: notificationData.senderId,
+        senderProfilePicture: notificationData.avatar || avatarWeb,
+        createdAt: notificationData.createdAt || new Date().toISOString(),
         isRead: false,
         type: NOTIFICATION_TYPES.ACCEPT_FRIEND,
-        mutualFriendsCount: notificationData.mutualFriendsCount || 0, // Sửa key
+        mutualFriendsCount: notificationData.mutualFriendsCount || 0,
         url:
           notificationData.url ||
           (notificationData.senderId
             ? `/profile/${notificationData.senderId}`
-            : "/profile"), // Sửa key
+            : "/profile"),
         isRealTime: true,
       };
     },
@@ -63,9 +62,9 @@ export const notificationHandlers = {
       console.log(
         "[notificationHandlers] Dữ liệu nhận được:",
         notificationData
-      ); // Log để kiểm tra
+      );
       return {
-        id: notificationData.notificationId || `friend-answer-${Date.now()}`,
+        id: notificationData.notificationId || `share-post-${Date.now()}`,
         title: notificationData.message || "Ai đó đã chia sẻ bài viết của bạn",
         senderId: notificationData.senderId,
         senderProfilePicture: notificationData.avatar || avatarWeb,
@@ -77,7 +76,7 @@ export const notificationHandlers = {
           notificationData.url ||
           (notificationData.senderId
             ? `/profile/${notificationData.senderId}`
-            : "/profile"), // Sửa key
+            : "/profile"),
         isRealTime: true,
       };
     },
@@ -90,12 +89,8 @@ export const notificationHandlers = {
         "[notificationHandlers] Dữ liệu nhận được:",
         notificationData
       );
-      // Tạo ID duy nhất bằng cách kết hợp notificationId và timestamp
-      const uniqueId = notificationData.notificationId
-        ? `${notificationData.notificationId}-${Date.now()}`
-        : `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       return {
-        id: uniqueId,
+        id: notificationData.notificationId || `comment-${Date.now()}`,
         title:
           notificationData.message || "Ai đó đã bình luận bài viết của bạn",
         senderId: notificationData.senderId,
@@ -103,6 +98,32 @@ export const notificationHandlers = {
         createdAt: notificationData.createdAt || new Date().toISOString(),
         isRead: false,
         type: NOTIFICATION_TYPES.COMMENT_POST,
+        mutualFriendsCount: notificationData.mutualFriendsCount || 0,
+        url:
+          notificationData.url ||
+          (notificationData.postId
+            ? `/post/${notificationData.postId}`
+            : "/profile"),
+        isRealTime: true,
+      };
+    },
+  },
+  ReceiveLikeNotification: {
+    type: NOTIFICATION_TYPES.LIKE_POST,
+    hasActions: false,
+    mapToNotification: (notificationData) => {
+      console.log(
+        "[notificationHandlers] Dữ liệu nhận được:",
+        notificationData
+      );
+      return {
+        id: notificationData.notificationId || `like-${Date.now()}`,
+        title: notificationData.message || "Ai đó đã thích bài đăng của bạn",
+        senderId: notificationData.senderId,
+        senderProfilePicture: notificationData.avatar || avatarWeb,
+        createdAt: notificationData.createdAt || new Date().toISOString(),
+        isRead: false,
+        type: NOTIFICATION_TYPES.LIKE_POST,
         mutualFriendsCount: notificationData.mutualFriendsCount || 0,
         url:
           notificationData.url ||

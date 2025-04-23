@@ -120,18 +120,41 @@ namespace Application.Services
 
         public async Task SendLikeNotificationAsync(Guid postId, Guid userId)
         {
-            var name = _userContextService.FullName();
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
             bool status = await _unitOfWork.LikeRepository.CheckLike(postId, userId);
             var ownerId = await _postService.GetPostOwnerId(postId);
+            if (user == null || ownerId == userId) return;
+            //Lưu vào notification
+            var message = $"{user.FullName} đã thích bài đăng của bạn";
+           
+            //Phat su kien vao likeEvent
+            string? avatar = null;
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                avatar = $"{Constaint.baseUrl}{user.ProfilePicture}";
+            }
             Task.Delay(2000).Wait();
             if (!status)
             {
-                await _publisher.Publish(new LikeEvent(postId, ownerId, $"{name} đã thích bài đăng của bạn vào lúc {FormatUtcToLocal(DateTime.UtcNow)}"));
+                var notification = new Notification(ownerId, userId, $"{user.FullName} đã thích bài đăng của bạn", NotificationType.PostLiked, null, $"/post/{postId}");
+                await _unitOfWork.NotificationRepository.AddAsync(notification);
+                await _unitOfWork.SaveChangesAsync();
+                var data = new ResponseNotificationModel
+                {
+                    NotificationId = notification.Id,
+                    Message = message,
+                    Avatar = avatar ?? "",
+                    Url = $"/post/{postId}",
+                    CreatedAt = FormatUtcToLocal(DateTime.UtcNow),
+                    SenderId = userId,
+                };
+                await _publisher.Publish(new LikeEvent(ownerId, data));
+
             }
-            else
-            {
-                await _publisher.Publish(new LikeEvent(postId, ownerId, $"{name} đã bỏ thích bài đăng của bạn vào lúc {FormatUtcToLocal(DateTime.UtcNow)}"));
-            }
+            //else
+            //{
+            //    await _publisher.Publish(new LikeEvent(postId, ownerId, $"{name} đã bỏ thích bài đăng của bạn vào lúc {FormatUtcToLocal(DateTime.UtcNow)}"));
+            //}
         }
 
         public async Task SendNotificationMessageWithIsSeenFalse(Guid conversationId,Guid receiverId)
