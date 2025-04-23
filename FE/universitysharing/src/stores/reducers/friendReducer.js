@@ -51,7 +51,11 @@ const friendSlice = createSlice({
       })
       .addCase(fetchFriends.fulfilled, (state, action) => {
         state.loading = false;
-        state.friends = action.payload.friends || [];
+        // Handle case where action.payload is null
+        state.friends =
+          action.payload && action.payload.friends
+            ? action.payload.friends
+            : [];
       })
       .addCase(fetchFriends.rejected, (state, action) => {
         state.loading = false;

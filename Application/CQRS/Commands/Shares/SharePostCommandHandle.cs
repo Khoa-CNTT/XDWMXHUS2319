@@ -39,11 +39,11 @@ namespace Application.CQRS.Commands.Shares
             {
                 return ResponseFactory.Fail<ResultSharePostDto>("Không tìm thấy bài viết để chia sẻ", 404);
             }
-            var isSpamming = await _postService.IsUserSpammingSharesAsync(userId, request.PostId);
-            if (isSpamming)
-            {
-                return ResponseFactory.Fail<ResultSharePostDto>("Bạn đã chia sẻ bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
-            }
+            //var isSpamming = await _postService.IsUserSpammingSharesAsync(userId, request.PostId);
+            //if (isSpamming)
+            //{
+            //    return ResponseFactory.Fail<ResultSharePostDto>("Bạn đã chia sẻ bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
+            //}
             // Lấy thông tin người dùng chia sẻ
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
             if (user == null)

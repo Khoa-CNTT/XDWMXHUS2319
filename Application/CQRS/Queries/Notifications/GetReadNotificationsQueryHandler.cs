@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Notification;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace Application.CQRS.Queries.Notifications
 
             DateTime? nextCursor = hasMore
                 ? notifications.Last().CreatedAt
-                : null;
+            : null;
 
             var result = new GetNotificationResponse
             {
@@ -57,7 +58,14 @@ namespace Application.CQRS.Queries.Notifications
                 }).ToList(),
                 NextCursor = nextCursor
             };
+            DateTime localTime = DateTime.Parse("2025-04-23 17:54:13");
 
+            // Chuyển đổi sang UTC (trừ 7 giờ)
+            DateTime utcTime = localTime.ToUniversalTime();
+
+            // Định dạng lại theo yêu cầu
+            string utcTimeFormatted = utcTime.ToString("yyyy-MM-ddTHH:mm:ss");
+            Console.WriteLine(utcTimeFormatted);  // Output: 2025-04-23T10:54:13
             return ResponseFactory.Success(result, "Lấy thông báo đã đọc thành công", 200);
         }
     }

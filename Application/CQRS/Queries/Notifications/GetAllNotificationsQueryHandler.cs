@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Notification;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -22,22 +23,35 @@ namespace Application.CQRS.Queries.Notifications
         public async Task<ResponseModel<GetNotificationResponse>> Handle(GetAllNotificationsQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContext.UserId();
+            var fetchCount = request.PageSize + 1;
             var notifications = await _unitOfWork.NotificationRepository.GetAllNotificationsAsync(userId, request.Cursor, request.PageSize, cancellationToken);
-            // ✅ Trường hợp không có thông báo nào
+
+            if (request.Cursor.HasValue)
+            {
+                notifications = notifications
+                    .Where(f => f.CreatedAt < request.Cursor.Value)
+                    .OrderByDescending(f => f.CreatedAt)
+                    .ToList();
+            }
+
+            // Kiểm tra còn dữ liệu không
+            bool hasMore = notifications.Count == fetchCount;
+            if (hasMore)
+            {
+                notifications = notifications.Take(request.PageSize).ToList();
+            }
+
             if (notifications == null || !notifications.Any())
             {
                 return ResponseFactory.Success<GetNotificationResponse>("Không có thông báo nào", 200);
-            }
-            // Kiểm tra còn dữ liệu không
-            bool hasMore = notifications.Count > request.PageSize;
-            if (hasMore)
-            {
-                notifications.RemoveAt(notifications.Count - 1); // Bỏ cái dư
             }
 
             DateTime? nextCursor = hasMore
                 ? notifications.Last().CreatedAt
                 : null;
+
+            // ✅ Trường hợp không có thông báo nào
+
 
             var result = new GetNotificationResponse
             {
@@ -57,8 +71,17 @@ namespace Application.CQRS.Queries.Notifications
                     ? $"{Constaint.baseUrl}{n.Sender.ProfilePicture}"
                     : null
                 }).ToList(),
-                NextCursor = nextCursor
+                NextCursor = hasMore ? notifications.Last().CreatedAt : null
             };
+
+            DateTime localTime = DateTime.Parse("2025-04-23 17:54:13");
+
+            // Chuyển đổi sang UTC (trừ 7 giờ)
+            DateTime utcTime = localTime.ToUniversalTime();
+
+            // Định dạng lại theo yêu cầu
+            string utcTimeFormatted = utcTime.ToString("yyyy-MM-ddTHH:mm:ss");
+            Console.WriteLine(utcTimeFormatted);  // Output: 2025-04-23T10:54:13
 
             return ResponseFactory.Success(result, "Lấy tất cả thông báo thành công", 200);
         }

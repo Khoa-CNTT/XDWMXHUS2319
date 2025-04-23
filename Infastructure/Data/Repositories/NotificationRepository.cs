@@ -107,5 +107,12 @@ namespace Infrastructure.Data.Repositories
             return await _context.Notifications
                 .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == userId, cancellationToken);
         }
+
+        public async Task<int> CountUnreadNotificationsAsync(Guid receiverId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Notifications
+                .Where(n => n.ReceiverId == receiverId && !n.IsRead)
+                .CountAsync(cancellationToken);
+        }
     }
 }

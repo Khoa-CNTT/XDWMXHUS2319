@@ -1,4 +1,3 @@
-// src/stores/reducers/notificationReducer.js
 import { createSlice } from "@reduxjs/toolkit";
 import {
   fetchNotifications,
@@ -21,71 +20,34 @@ const notificationSlice = createSlice({
   name: "notifications",
   initialState,
   reducers: {
-    addRealTimeNotification: (state, action) => {
-      const newNotification = action.payload;
-      console.log(
-        "[Reducer] Received addRealTimeNotification with payload:",
-        newNotification
-      );
-
-      if (!newNotification.id) {
-        console.warn("[Reducer] Notification missing ID:", newNotification);
-        return;
-      }
-
-      const isDuplicate = state.notifications.some(
-        (n) => n.id === newNotification.id
-      );
-
-      if (!isDuplicate) {
-        console.log("[Reducer] Adding notification to state");
-        state.notifications = [newNotification, ...state.notifications];
-        if (!newNotification.isRead) {
-          state.unreadNotifications = [
-            newNotification,
-            ...state.unreadNotifications,
-          ];
-        }
-        console.log("[Reducer] Updated state:", {
-          notifications: state.notifications.length,
-          unreadNotifications: state.unreadNotifications.length,
-        });
-      } else {
-        console.warn(
-          "[Reducer] Duplicate notification ignored:",
-          newNotification
-        );
-      }
-    },
-    markRealTimeAsRead: (state, action) => {
-      const notificationId = action.payload;
-      console.log("[Reducer] Marking notification as read:", notificationId);
-
-      state.notifications = state.notifications.map((notif) =>
-        notif.id === notificationId ? { ...notif, isRead: true } : notif
-      );
-
-      state.unreadNotifications = state.unreadNotifications.filter(
-        (notif) => notif.id !== notificationId
-      );
-
+    addNewNotification: (state, action) => {
       if (
-        !state.readNotifications.some((notif) => notif.id === notificationId)
+        !state.notifications.some((notif) => notif.id === action.payload.id)
       ) {
-        const notification = state.notifications.find(
-          (n) => n.id === notificationId
-        );
-        if (notification) {
-          state.readNotifications = [notification, ...state.readNotifications];
+        state.notifications.unshift(action.payload);
+        if (!action.payload.isRead) {
+          state.unreadNotifications.unshift(action.payload);
         }
       }
     },
-    clearNotifications: (state) => {
-      console.log("[Reducer] Clearing all notifications");
+    clearNewNotifications: (state) => {
       state.notifications = [];
       state.unreadNotifications = [];
       state.readNotifications = [];
-      state.nextCursor = null;
+    },
+    addRealTimeNotification: (state, action) => {
+      const notification = action.payload;
+      // Kiểm tra trùng lặp dựa trên id
+      if (!state.notifications.some((notif) => notif.id === notification.id)) {
+        state.notifications.unshift(notification);
+        if (!notification.isRead) {
+          state.unreadNotifications.unshift(notification);
+        }
+      } else {
+        console.log(
+          `[notificationReducer] Bỏ qua thông báo trùng lặp: ${notification.id}`
+        );
+      }
     },
   },
   extraReducers: (builder) => {
@@ -100,18 +62,15 @@ const notificationSlice = createSlice({
           (newNotif) =>
             !state.notifications.some((existing) => existing.id === newNotif.id)
         );
-        state.notifications = [...state.notifications, ...newNotifications];
+        state.notifications = state.notifications.length
+          ? [...state.notifications, ...newNotifications]
+          : action.payload.notifications || [];
         state.nextCursor = action.payload.nextCursor;
         state.hasMore = !!action.payload.nextCursor;
-        console.log(
-          "[Reducer] Fetched notifications:",
-          newNotifications.length
-        );
       })
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        console.error("[Reducer] Fetch notifications failed:", action.payload);
       })
       .addCase(fetchNotificationsUnread.pending, (state) => {
         state.loading = true;
@@ -127,24 +86,15 @@ const notificationSlice = createSlice({
               (existing) => existing.id === newNotif.id
             )
         );
-        state.unreadNotifications = [
-          ...state.unreadNotifications,
-          ...newUnreadNotifications,
-        ];
+        state.unreadNotifications = state.unreadNotifications.length
+          ? [...state.unreadNotifications, ...newUnreadNotifications]
+          : action.payload.notifications || [];
         state.nextCursor = action.payload.nextCursor;
         state.hasMore = !!action.payload.nextCursor;
-        console.log(
-          "[Reducer] Fetched unread notifications:",
-          newUnreadNotifications.length
-        );
       })
       .addCase(fetchNotificationsUnread.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        console.error(
-          "[Reducer] Fetch unread notifications failed:",
-          action.payload
-        );
       })
       .addCase(fetchNotificationsRead.pending, (state) => {
         state.loading = true;
@@ -160,24 +110,15 @@ const notificationSlice = createSlice({
               (existing) => existing.id === newNotif.id
             )
         );
-        state.readNotifications = [
-          ...state.readNotifications,
-          ...newReadNotifications,
-        ];
+        state.readNotifications = state.readNotifications.length
+          ? [...state.readNotifications, ...newReadNotifications]
+          : action.payload.notifications || [];
         state.nextCursor = action.payload.nextCursor;
         state.hasMore = !!action.payload.nextCursor;
-        console.log(
-          "[Reducer] Fetched read notifications:",
-          newReadNotifications.length
-        );
       })
       .addCase(fetchNotificationsRead.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        console.error(
-          "[Reducer] Fetch read notifications failed:",
-          action.payload
-        );
       })
       .addCase(markNotificationAsRead.pending, (state) => {
         state.loading = true;
@@ -185,12 +126,15 @@ const notificationSlice = createSlice({
       .addCase(markNotificationAsRead.fulfilled, (state, action) => {
         state.loading = false;
         const notificationId = action.payload;
+
         state.notifications = state.notifications.map((notif) =>
           notif.id === notificationId ? { ...notif, isRead: true } : notif
         );
+
         state.unreadNotifications = state.unreadNotifications.filter(
           (notif) => notif.id !== notificationId
         );
+
         if (
           !state.readNotifications.some((notif) => notif.id === notificationId)
         ) {
@@ -198,38 +142,20 @@ const notificationSlice = createSlice({
             (notif) => notif.id === notificationId
           );
           if (notification) {
-            state.readNotifications = [
-              notification,
-              ...state.readNotifications,
-            ];
+            state.readNotifications.unshift(notification);
           }
         }
-        console.log("[Reducer] Marked notification as read:", notificationId);
       })
       .addCase(markNotificationAsRead.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        console.error(
-          "[Reducer] Mark notification as read failed:",
-          action.payload
-        );
-      })
-      .addMatcher(
-        (action) => typeof action.type === "string",
-        (state, action) => {
-          console.log(
-            "[Reducer] Received action:",
-            action.type,
-            action.payload
-          );
-        }
-      );
+      });
   },
 });
 
 export const {
+  addNewNotification,
+  clearNewNotifications,
   addRealTimeNotification,
-  markRealTimeAsRead,
-  clearNotifications,
 } = notificationSlice.actions;
 export default notificationSlice.reducer;

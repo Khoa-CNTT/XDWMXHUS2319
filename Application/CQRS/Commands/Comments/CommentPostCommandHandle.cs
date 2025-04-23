@@ -42,16 +42,6 @@ namespace Application.CQRS.Commands.Comments
             }
             var postOwnerId = await _postService.GetPostOwnerId(post.Id);
 
-            // Kiểm tra số lần share của user đối với bài viết này
-            var oneMinutesAgo = DateTime.UtcNow.AddMinutes(-1);
-            var commentCount = await _unitOfWork.CommentRepository.CountPostCommentAsync(c =>
-                c.UserId == userId && c.PostId == request.PostId && c.CreatedAt >= oneMinutesAgo);
-
-            if (commentCount >= 10)
-            {
-                return ResponseFactory.Fail<ResultCommentDto>("Bạn đã bình luận bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
-            }
-
             if(request.Content == null)
             {
                 return ResponseFactory.Fail<ResultCommentDto>("Nội dung bình luận không được để trống", 400);
