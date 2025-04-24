@@ -1,51 +1,26 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import "../../styles/headerHome.scss";
-import "../../styles/MoblieReponsive/HomeViewMobile/AllpostMobile.scss";
-import { fetchLikes } from "../../stores/action/likeAction";
-import { fetchShares } from "../../stores/action/shareAction";
-import {
-  FiMoreHorizontal,
-  FiX,
-  FiHeart,
-  FiMessageSquare,
-  FiShare2,
-  FiClock,
-} from "react-icons/fi";
+
+import "../../styles/AllReport.scss";
+
+import { FiHeart, FiMessageSquare, FiShare2, FiClock } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
-import avatarWeb from "../../assets/AvatarDefault.png";
-import SharedPost from "./SharingPost";
+import avatarWeb from "../../../assets/AvatarDefault.png";
 
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchPosts,
-  likePost,
-  deletePost,
   fetchPostsByOwner,
   fetchPostsByOtherUser,
-} from "../../stores/action/listPostActions";
-import {
-  hidePost,
-  openCommentModal,
-  closeCommentModal,
-  openShareModal,
-  openPostOptionModal,
-  closePostOptionModal,
-  openInteractorModal,
-  closeInteractorModal,
-  openInteractorShareModal,
-  closeInteractorShareModal,
-} from "../../stores/reducers/listPostReducers";
-import { debounce } from "lodash";
-import getUserIdFromToken from "../../utils/JwtDecode";
-import PostOptionsModal from "./PostOptionModal";
-import { confirmAlert } from "react-confirm-alert";
+} from "../../../stores/action/listPostActions";
+import { openCommentModal } from "../../../stores/reducers/listPostReducers";
+import getUserIdFromToken from "../../../utils/JwtDecode";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useLocation, useNavigate } from "react-router-dom";
+import AllReportFromUser from "./ReportFromUser";
 
-const AllPosts = ({
-  usersProfile,
+const AllReport = ({
   showOwnerPosts = false,
   isFriendProfile = false,
   userFriendId = null,
@@ -55,15 +30,9 @@ const AllPosts = ({
   const location = useLocation();
   const postsEndRef = useRef(null);
 
-  const {
-    posts,
-    hasMoreAllPosts,
-    hasMoreOwnerPosts,
-    selectedPostToOption,
-    isPostOptionsOpen,
-    postLikes,
-    postShares,
-  } = useSelector((state) => state.posts);
+  const { posts, hasMoreAllPosts, hasMoreOwnerPosts } = useSelector(
+    (state) => state.posts
+  );
 
   // console.log("Selection sercert box>>", selectedPost);
 
@@ -79,11 +48,9 @@ const AllPosts = ({
         // Fetch posts for the specific friend's profile
         dispatch(fetchPostsByOtherUser({ userId: userFriendId })); // Pass as { userId }
       } else {
-        // Fetch posts for the logged-in user's profile
         dispatch(fetchPostsByOwner());
       }
     } else {
-      // Fetch all posts (for home feed)
       dispatch(fetchPosts());
     }
   }, [dispatch, showOwnerPosts, isFriendProfile, userFriendId]);
@@ -143,7 +110,6 @@ const AllPosts = ({
     };
   }, [loadMorePosts]);
 
-  const userId = getUserIdFromToken();
   const navigateUser = (userId) => {
     if (userId === getUserIdFromToken()) {
       navigate("/ProfileUserView");
@@ -156,60 +122,6 @@ const AllPosts = ({
   const handleOpenCommentModal = (post, index = 0) => {
     dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
     navigate(`/post/${post.id}`, { state: { background: location } });
-  };
-
-  const handleCloseCommentModal = () => {
-    dispatch(closeCommentModal());
-  };
-
-  //mở option post ra
-  const handleOpenPostOptions = (event, post) => {
-    event.stopPropagation();
-    const rect = event.target.getBoundingClientRect();
-    dispatch(
-      openPostOptionModal({
-        post,
-        position: { top: rect.bottom + 5, left: rect.left - 120 },
-      })
-    );
-  };
-
-  //xóa post
-  const handleDeletePost = debounce((postId) => {
-    dispatch(deletePost(postId));
-  }, 300);
-
-  //Xác nhận xóa bài đăng
-  const confirmDelete = (postId) => {
-    confirmAlert({
-      title: "Xác nhận xóa",
-      message: "Bạn có chắc chắn muốn xóa bài viết này không?",
-      buttons: [
-        { label: "Có", onClick: () => handleDeletePost(postId) },
-        { label: "Không", onClick: () => console.log("Hủy xóa") },
-      ],
-    });
-  };
-
-  //thích bài viết
-  const handleLikePost = (postId) => {
-    dispatch(likePost(postId));
-  };
-
-  //hiển thị modal người tương tác bài viết
-  const handleOpenInteractorModal = async (post) => {
-    if (!postLikes[post.id]) {
-      await dispatch(fetchLikes({ postId: post.id }));
-    }
-    dispatch(openInteractorModal(post));
-  };
-
-  //mở modal xem người shareshare
-  const handleOpenInteractorShareModal = async (post) => {
-    if (!postShares[post.id]) {
-      await dispatch(fetchShares({ postId: post.id }));
-    }
-    dispatch(openInteractorShareModal(post));
   };
 
   //chuyển đổi ngày sang UTC +77
@@ -298,148 +210,138 @@ const AllPosts = ({
   };
 
   return (
-    <div className="all-posts">
-      {/* {loadingCreatePost && (
-        <div className="loading-overlay">
-          <Spinner size={70} />
-        </div>
-      )} */}
-
+    <div className="all-posts-report">
       {Array.isArray(posts) && posts.length > 0 ? (
         <>
           {posts.map((post) => (
-            <div className="post" key={post.id}>
-              <div className="header-post">
-                <div className="AvaName">
-                  <img
-                    className="avtardefaut"
-                    src={post.profilePicture || avatarWeb}
-                    alt="Avatar"
-                  />
-                  <div className="user-info">
-                    <strong onClick={() => navigateUser(post.userId)}>
-                      {post.fullName}
-                    </strong>
-                    <div className="status-time-post">
-                      <span className="timePost">
-                        <FiClock size={12} style={{ marginRight: 4 }} />
-                        {formatDistanceToNow(
-                          convertUTCToVNTime(post.createdAt),
-                          {
-                            addSuffix: true,
-                            locale: {
-                              ...vi,
-                              formatDistance: (token, count) => {
-                                switch (token) {
-                                  case "lessThanXSeconds":
-                                    return "vài giây trước";
-                                  case "xSeconds":
-                                    return `${count} giây trước`;
-                                  case "halfAMinute":
-                                    return "30 giây trước";
-                                  case "lessThanXMinutes":
-                                    return `${count} phút trước`;
-                                  case "xMinutes":
-                                    return `${count} phút trước`;
-                                  case "aboutXHours":
-                                    return `${count} giờ trước`;
-                                  case "xHours":
-                                    return `${count} giờ trước`;
-                                  case "xDays":
-                                    return `${count} ngày trước`;
-                                  case "aboutXMonths":
-                                    return `${count} tháng trước`;
-                                  case "xMonths":
-                                    return `${count} tháng trước`;
-                                  case "aboutXYears":
-                                    return `${count} năm trước`;
-                                  case "xYears":
-                                    return `${count} năm trước`;
-                                  default:
-                                    return "";
-                                }
-                              },
-                            },
-                            includeSeconds: true,
-                          }
-                        )}
+            <>
+              <div className="post-container">
+                <div className="post" key={post.id}>
+                  <div className="header-post">
+                    <div className="AvaName">
+                      <img
+                        className="avtardefaut"
+                        src={post.profilePicture || avatarWeb}
+                        alt="Avatar"
+                      />
+                      <div className="user-info">
+                        <strong onClick={() => navigateUser(post.userId)}>
+                          {post.fullName}
+                        </strong>
+                        <div className="status-time-post">
+                          <span className="timePost">
+                            <FiClock size={12} style={{ marginRight: 4 }} />
+                            {formatDistanceToNow(
+                              convertUTCToVNTime(post.createdAt),
+                              {
+                                addSuffix: true,
+                                locale: {
+                                  ...vi,
+                                  formatDistance: (token, count) => {
+                                    switch (token) {
+                                      case "lessThanXSeconds":
+                                        return "vài giây trước";
+                                      case "xSeconds":
+                                        return `${count} giây trước`;
+                                      case "halfAMinute":
+                                        return "30 giây trước";
+                                      case "lessThanXMinutes":
+                                        return `${count} phút trước`;
+                                      case "xMinutes":
+                                        return `${count} phút trước`;
+                                      case "aboutXHours":
+                                        return `${count} giờ trước`;
+                                      case "xHours":
+                                        return `${count} giờ trước`;
+                                      case "xDays":
+                                        return `${count} ngày trước`;
+                                      case "aboutXMonths":
+                                        return `${count} tháng trước`;
+                                      case "xMonths":
+                                        return `${count} tháng trước`;
+                                      case "aboutXYears":
+                                        return `${count} năm trước`;
+                                      case "xYears":
+                                        return `${count} năm trước`;
+                                      default:
+                                        return "";
+                                    }
+                                  },
+                                },
+                                includeSeconds: true,
+                              }
+                            )}
+                          </span>
+                          <span className="status-post">
+                            {" "}
+                            {post.scope === 0 ? "Công khai" : "Riêng tư"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="post-actions"></div>
+                  </div>
+
+                  <div className="content-posts">{post.content}</div>
+
+                  {!post.isSharedPost && <p></p>}
+
+                  {post.isSharedPost && (
+                    <div className="Share-Post-origigin"></div>
+                  )}
+
+                  {renderMediaItems(post)}
+
+                  <div className="post-actions-summary">
+                    <div className="reactions" style={{ cursor: "pointer" }}>
+                      <FaHeart className="like-icon" size={16} />
+                      <span>{post.likeCount}</span>
+                    </div>
+                    <div className="comments-shares">
+                      <span
+                        onClick={() => handleOpenCommentModal(post, 0)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        {post.commentCount} bình luận
                       </span>
-                      <span className="status-post">
-                        {" "}
-                        {post.scope === 0 ? "Công khai" : "Riêng tư"}
+                      <span style={{ cursor: "pointer" }}>
+                        {post.shareCount} lượt chia sẻ
                       </span>
                     </div>
                   </div>
+
+                  <div className="actions">
+                    <button
+                      className={`action-btn ${post.hasLiked ? "liked" : ""}`}
+                      // onClick={() => handleLikePost(post.id)}
+                      disabled={post.isLiking}
+                    >
+                      {post.hasLiked ? (
+                        <FaHeart className="like-icon" size={18} />
+                      ) : (
+                        <FiHeart className="like-icon" size={18} />
+                      )}
+                      <span className="action-count">Thích</span>
+                    </button>
+                    <button
+                      className="action-btn"
+                      onClick={() => handleOpenCommentModal(post, 0)}
+                    >
+                      <FiMessageSquare className="comment-icon" size={18} />
+                      <span className="action-count">Bình luận</span>
+                    </button>
+                    <button
+                      className="action-btn"
+                      // onClick={() => dispatch(openShareModal(post))}
+                    >
+                      <FiShare2 className="share-icon" size={18} />
+                      <span className="action-count">Chia sẻ</span>
+                    </button>
+                  </div>
                 </div>
-                <div className="post-actions"></div>
+                <AllReportFromUser />
               </div>
-
-              <div className="content-posts">{post.content}</div>
-
-              {!post.isSharedPost && <p></p>}
-
-              {post.isSharedPost && (
-                <div className="Share-Post-origigin">
-                  <SharedPost post={post} />
-                </div>
-              )}
-
-              {renderMediaItems(post)}
-
-              <div className="post-actions-summary">
-                <div
-                  className="reactions"
-                  onClick={() => handleOpenInteractorModal(post)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <FaHeart className="like-icon" size={16} />
-                  <span>{post.likeCount}</span>
-                </div>
-                <div className="comments-shares">
-                  <span
-                    onClick={() => handleOpenCommentModal(post, 0)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    {post.commentCount} bình luận
-                  </span>
-                  <span
-                    onClick={() => handleOpenInteractorShareModal(post)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    {post.shareCount} lượt chia sẻ
-                  </span>
-                </div>
-              </div>
-
-              <div className="actions">
-                <button
-                  className={`action-btn ${post.hasLiked ? "liked" : ""}`}
-                  onClick={() => handleLikePost(post.id)}
-                  disabled={post.isLiking}
-                >
-                  {post.hasLiked ? (
-                    <FaHeart className="like-icon" size={18} />
-                  ) : (
-                    <FiHeart className="like-icon" size={18} />
-                  )}
-                  <span className="action-count">Thích</span>
-                </button>
-                <button
-                  className="action-btn"
-                  onClick={() => handleOpenCommentModal(post, 0)}
-                >
-                  <FiMessageSquare className="comment-icon" size={18} />
-                  <span className="action-count">Bình luận</span>
-                </button>
-                <button
-                  className="action-btn"
-                  onClick={() => dispatch(openShareModal(post))}
-                >
-                  <FiShare2 className="share-icon" size={18} />
-                  <span className="action-count">Chia sẻ</span>
-                </button>
-              </div>
-            </div>
+            </>
           ))}
 
           <div ref={postsEndRef} className="load-more-indicator">
@@ -455,4 +357,4 @@ const AllPosts = ({
   );
 };
 
-export default AllPosts;
+export default AllReport;

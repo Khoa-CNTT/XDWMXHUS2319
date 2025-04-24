@@ -184,36 +184,6 @@
   }
 }
 
-// Responsive adjustments
-// @media (max-width: 768px) {
-//   .header {
-//     padding: 8px 12px;
-
-//     .logoWeb {
-//       .logowebsite {
-//         height: 32px;
-//       }
-//     }
-
-//     .search {
-//       margin: 0 12px;
-//     }
-
-//     .rightHeader {
-//       gap: 8px;
-//     }
-//   }
-// }
-
-// @media (max-width: 480px) {
-//   .header {
-//     .search {
-//       display: none;
-//     }
-//   }
-// }
-// Scss left-sidebar
-
 .left-sidebar {
   width: 200px;
   background: #fff;
@@ -619,26 +589,6 @@ $transition: all 0.2s ease;
   }
 }
 
-// Responsive adjustments
-// @media (max-width: 768px) {
-//   .all-posts {
-//     padding: 0 8px;
-
-//     .post {
-//       .media-container {
-//         &.has-both {
-//           flex-direction: column;
-
-//           .post-media {
-//             width: 100%;
-//             height: auto;
-//             max-height: 300px;
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
 .post-actions-summary {
   display: flex;
   justify-content: space-between;
