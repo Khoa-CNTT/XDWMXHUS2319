@@ -10,5 +10,6 @@ namespace Application.DTOs.FriendShips
     {
         public int CountFriend { get; set; }
         public List<FriendDto> Friends { get; set; } = new();
+        public DateTime? NextCursor { get; set; }
     }
 }

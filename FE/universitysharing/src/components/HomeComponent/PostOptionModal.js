@@ -40,7 +40,9 @@ const PostOptionsModal = ({
     setIsReportModalOpen(false);
     onClose(); // đóng luôn modal options
   };
+
   // //đóng PostOption
+
   // useEffect(() => {
   //   const handleClickOutside = (event) => {
   //     if (modalRef.current && !modalRef.current.contains(event.target)) {

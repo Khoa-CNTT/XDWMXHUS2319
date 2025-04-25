@@ -70,8 +70,14 @@ class SignalRService {
 
   // Thêm phương thức để cập nhật token mới
   updateToken(token) {
-    if (!this.notificationConnection || !this.chatConnection || !this.aiConnection) {
-      console.warn("[SignalRService] Kết nối chưa khởi tạo, không thể cập nhật token");
+    if (
+      !this.notificationConnection ||
+      !this.chatConnection ||
+      !this.aiConnection
+    ) {
+      console.warn(
+        "[SignalRService] Kết nối chưa khởi tạo, không thể cập nhật token"
+      );
       return;
     }
 
@@ -84,25 +90,34 @@ class SignalRService {
   // Xử lý lỗi kết nối (bao gồm 401)
   setupErrorHandling() {
     const connections = [
-      { name: 'notification', connection: this.notificationConnection },
-      { name: 'chat', connection: this.chatConnection },
-      { name: 'ai', connection: this.aiConnection },
+      { name: "notification", connection: this.notificationConnection },
+      { name: "chat", connection: this.chatConnection },
+      { name: "ai", connection: this.aiConnection },
     ];
 
     connections.forEach(({ name, connection }) => {
       if (!connection) return;
 
       connection.onclose(async (error) => {
-        console.error(`[SignalRService] Kết nối ${name} bị đóng:`, error?.message);
+        console.error(
+          `[SignalRService] Kết nối ${name} bị đóng:`,
+          error?.message
+        );
         this.isConnected = false;
 
-        if (error?.message?.includes('401')) {
+        if (error?.message?.includes("401")) {
           try {
             const newToken = await refreshAccessToken();
             this.updateToken(newToken);
             await connection.start();
             this.isConnected = true;
-            this.eventQueue[name === 'notification' ? 'notificationHub' : name === 'chat' ? 'chatHub' : 'aiHub'].forEach(({ event, callback }) => {
+            this.eventQueue[
+              name === "notification"
+                ? "notificationHub"
+                : name === "chat"
+                ? "chatHub"
+                : "aiHub"
+            ].forEach(({ event, callback }) => {
               connection.on(event, callback);
               this.eventListeners.set(`${name}:${event}`, callback);
             });
@@ -118,7 +133,13 @@ class SignalRService {
             try {
               await connection.start();
               this.isConnected = true;
-              this.eventQueue[name === 'notification' ? 'notificationHub' : name === 'chat' ? 'chatHub' : 'aiHub'].forEach(({ event, callback }) => {
+              this.eventQueue[
+                name === "notification"
+                  ? "notificationHub"
+                  : name === "chat"
+                  ? "chatHub"
+                  : "aiHub"
+              ].forEach(({ event, callback }) => {
                 connection.on(event, callback);
                 this.eventListeners.set(`${name}:${event}`, callback);
               });
@@ -137,14 +158,29 @@ class SignalRService {
   // startConnections: Sửa để nhận userId và xử lý hàng đợi
   async startConnections(token, userId) {
     if (!token || !userId) {
-      console.error("[SignalRService] Thiếu token hoặc userId:", { token, userId });
+      console.error("[SignalRService] Thiếu token hoặc userId:", {
+        token,
+        userId,
+      });
       throw new Error("[SignalRService] Thiếu token hoặc userId");
     }
-    if (this.isConnected && this.notificationConnection?.state === 'Connected' && this.chatConnection?.state === 'Connected' && this.aiConnection?.state === 'Connected') {
-      console.log('[SignalRService] Kết nối đã tồn tại, bỏ qua startConnections');
+    if (
+      this.isConnected &&
+      this.notificationConnection?.state === "Connected" &&
+      this.chatConnection?.state === "Connected" &&
+      this.aiConnection?.state === "Connected"
+    ) {
+      console.log(
+        "[SignalRService] Kết nối đã tồn tại, bỏ qua startConnections"
+      );
       return;
     }
-    if (!this.notificationConnection || !this.chatConnection || !this.aiConnection || !this.isInitialized) {
+    if (
+      !this.notificationConnection ||
+      !this.chatConnection ||
+      !this.aiConnection ||
+      !this.isInitialized
+    ) {
       console.log("[SignalRService] Khởi tạo lại connections");
       this.isInitialized = false;
       this.initializeConnections(token);
@@ -154,33 +190,59 @@ class SignalRService {
     while (retries < this.maxRetries) {
       try {
         console.log(`[SignalRService] Thử kết nối SignalR lần ${retries + 1}`);
-        if (!this.notificationConnection || !this.chatConnection || !this.aiConnection) {
-          throw new Error("[SignalRService] Kết nối SignalR không được khởi tạo");
+        if (
+          !this.notificationConnection ||
+          !this.chatConnection ||
+          !this.aiConnection
+        ) {
+          throw new Error(
+            "[SignalRService] Kết nối SignalR không được khởi tạo"
+          );
         }
 
         const startPromises = [];
         if (this.notificationConnection.state !== "Connected") {
-          startPromises.push(this.notificationConnection.start().then(() => console.log("[SignalRService] NotificationHub kết nối thành công")));
-
+          startPromises.push(
+            this.notificationConnection
+              .start()
+              .then(() =>
+                console.log(
+                  "[SignalRService] NotificationHub kết nối thành công"
+                )
+              )
+          );
         }
         if (this.chatConnection.state !== "Connected") {
-          startPromises.push(this.chatConnection.start().then(() => console.log("[SignalRService] ChatHub kết nối thành công")));
+          startPromises.push(
+            this.chatConnection
+              .start()
+              .then(() =>
+                console.log("[SignalRService] ChatHub kết nối thành công")
+              )
+          );
         }
 
         if (this.aiConnection.state !== "Connected") {
-          startPromises.push(this.aiConnection.start().then(() => console.log("[SignalRService] AIHub kết nối thành công")));
+          startPromises.push(
+            this.aiConnection
+              .start()
+              .then(() =>
+                console.log("[SignalRService] AIHub kết nối thành công")
+              )
+          );
         }
 
         if (startPromises.length > 0) {
           await Promise.all(startPromises);
         } else {
-          console.log("[SignalRService] Tất cả kết nối đã ở trạng thái Connected");
+          console.log(
+            "[SignalRService] Tất cả kết nối đã ở trạng thái Connected"
+          );
         }
 
         this.isConnected = true;
         console.log("[SignalRService] Kết nối SignalR thành công");
         this.startKeepAlive();
-
 
         // Đăng ký lại sự kiện từ queue
         this.eventQueue.notificationHub.forEach(({ event, callback }) => {
@@ -203,17 +265,19 @@ class SignalRService {
         });
         this.eventQueue = { chatHub: [], notificationHub: [], aiHub: [] };
 
-
         return;
       } catch (err) {
         retries++;
-        console.error(`[SignalRService] Lỗi kết nối SignalR (lần ${retries}):`, {
-          message: err.message,
-          stack: err.stack,
-          notificationConnection: !!this.notificationConnection,
-          chatConnection: !!this.chatConnection,
-          aiConnection: !!this.aiConnection,
-        });
+        console.error(
+          `[SignalRService] Lỗi kết nối SignalR (lần ${retries}):`,
+          {
+            message: err.message,
+            stack: err.stack,
+            notificationConnection: !!this.notificationConnection,
+            chatConnection: !!this.chatConnection,
+            aiConnection: !!this.aiConnection,
+          }
+        );
 
         if (err.message.includes("401")) {
           console.warn("[SignalRService] Token hết hạn, làm mới token...");
@@ -270,14 +334,25 @@ class SignalRService {
 
     try {
       await Promise.all([
-        this.notificationConnection?.state === signalR.HubConnectionState.Connected
-          ? this.notificationConnection.stop().then(() => console.log("[SignalRService] NotificationHub đã ngắt kết nối"))
+        this.notificationConnection?.state ===
+        signalR.HubConnectionState.Connected
+          ? this.notificationConnection
+              .stop()
+              .then(() =>
+                console.log("[SignalRService] NotificationHub đã ngắt kết nối")
+              )
           : Promise.resolve(),
         this.chatConnection?.state === signalR.HubConnectionState.Connected
-          ? this.chatConnection.stop().then(() => console.log("[SignalRService] ChatHub đã ngắt kết nối"))
+          ? this.chatConnection
+              .stop()
+              .then(() =>
+                console.log("[SignalRService] ChatHub đã ngắt kết nối")
+              )
           : Promise.resolve(),
         this.aiConnection?.state === signalR.HubConnectionState.Connected
-          ? this.aiConnection.stop().then(() => console.log("[SignalRService] AIHub đã ngắt kết nối"))
+          ? this.aiConnection
+              .stop()
+              .then(() => console.log("[SignalRService] AIHub đã ngắt kết nối"))
           : Promise.resolve(),
       ]);
     } catch (err) {
@@ -322,16 +397,29 @@ class SignalRService {
 
   // on: Sửa để thêm vào hàng đợi nếu chưa kết nối
   on(connection, eventName, callback) {
-    if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
-      console.warn(`[SignalRService] Không thể đăng ký sự kiện ${eventName}: Kết nối chưa sẵn sàng, xếp hàng`);
-      const queue = connection === this.notificationConnection ? this.eventQueue.notificationHub : 
-                   connection === this.chatConnection ? this.eventQueue.chatHub : this.eventQueue.aiHub;
+    if (
+      !connection ||
+      connection.state !== signalR.HubConnectionState.Connected
+    ) {
+      console.warn(
+        `[SignalRService] Không thể đăng ký sự kiện ${eventName}: Kết nối chưa sẵn sàng, xếp hàng`
+      );
+      const queue =
+        connection === this.notificationConnection
+          ? this.eventQueue.notificationHub
+          : connection === this.chatConnection
+          ? this.eventQueue.chatHub
+          : this.eventQueue.aiHub;
       queue.push({ event: eventName, callback });
       return;
     }
     connection.on(eventName, callback);
-    const key = connection === this.notificationConnection ? `notification:${eventName}` : 
-                connection === this.chatConnection ? `chat:${eventName}` : `ai:${eventName}`;
+    const key =
+      connection === this.notificationConnection
+        ? `notification:${eventName}`
+        : connection === this.chatConnection
+        ? `chat:${eventName}`
+        : `ai:${eventName}`;
 
     this.eventListeners.set(key, callback);
     console.log(`[SignalRService] Đăng ký sự kiện ${key}`);
@@ -339,16 +427,30 @@ class SignalRService {
 
   // off: Sửa để xóa cả từ hàng đợi
   off(eventName, connection) {
-    const key = connection === this.notificationConnection ? `notification:${eventName}` : 
-                connection === this.chatConnection ? `chat:${eventName}` : `ai:${eventName}`;
-    if (connection && connection.state === signalR.HubConnectionState.Connected) {
+    const key =
+      connection === this.notificationConnection
+        ? `notification:${eventName}`
+        : connection === this.chatConnection
+        ? `chat:${eventName}`
+        : `ai:${eventName}`;
+    if (
+      connection &&
+      connection.state === signalR.HubConnectionState.Connected
+    ) {
       connection.off(eventName);
       console.log(`[SignalRService] Hủy đăng ký sự kiện ${key}`);
       this.eventListeners.delete(key);
     }
-    const queue = connection === this.notificationConnection ? this.eventQueue.notificationHub : 
-                  connection === this.chatConnection ? this.eventQueue.chatHub : this.eventQueue.aiHub;
-    queue.splice(queue.findIndex((e) => e.event === eventName), 1);
+    const queue =
+      connection === this.notificationConnection
+        ? this.eventQueue.notificationHub
+        : connection === this.chatConnection
+        ? this.eventQueue.chatHub
+        : this.eventQueue.aiHub;
+    queue.splice(
+      queue.findIndex((e) => e.event === eventName),
+      1
+    );
   }
 
   async invoke(connection, methodName, ...args) {
@@ -374,22 +476,22 @@ class SignalRService {
       throw err;
     }
   }
-    // Phương thức cho AIHub
-    async joinConversationAI(conversationId) {
-      await this.invoke(this.aiConnection, "JoinConversation", conversationId);
-    }
+  // Phương thức cho AIHub
+  async joinConversationAI(conversationId) {
+    await this.invoke(this.aiConnection, "JoinConversation", conversationId);
+  }
 
-    async leaveConversationAI(conversationId) {
-      await this.invoke(this.aiConnection, "LeaveConversation", conversationId);
-    }
-    onReceiveAnswer(callback) {
-      this.on(this.aiConnection, "ReceiveAnswer", (message) => {
-        console.log("[SignalRService] Nhận sự kiện ReceiveAnswer:", message);
-        callback(message.Data, message.Final);
-      });
-      console.log("Đăng ký sự kiện ReceiveAnswer");
-    }
- 
+  async leaveConversationAI(conversationId) {
+    await this.invoke(this.aiConnection, "LeaveConversation", conversationId);
+  }
+  onReceiveAnswer(callback) {
+    this.on(this.aiConnection, "ReceiveAnswer", (message) => {
+      console.log("[SignalRService] Nhận sự kiện ReceiveAnswer:", message);
+      callback(message.Data, message.Final);
+    });
+    console.log("Đăng ký sự kiện ReceiveAnswer");
+  }
+
   async sendNotification(message) {
     await this.invoke(this.notificationConnection, "SendNotification", message);
   }
@@ -558,6 +660,21 @@ class SignalRService {
       }
     );
     console.log("Đã đăng ký sự kiện ReceiveCommentNotification");
+  }
+  // Thêm phương thức để xử lý sự kiện khi có người thích bài viết của bạn
+  onReceiveLikeNotification(callback) {
+    this.on(
+      this.notificationConnection,
+      "ReceiveLikeNotification",
+      (notificationData) => {
+        console.log(
+          "Nhận được thông báo thích bài viết:",
+          notificationData
+        );
+        callback(notificationData);
+      }
+    );
+    console.log("Đã đăng ký sự kiện ReceiveLikeNotification");
   }
 }
 
