@@ -31,7 +31,7 @@ namespace Application.BackgroundServices
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                 string redisKey = "likeComment_events";
-                var likeCommentEvents = await redisService.GetAsync<List<LikeCommentEvent>>(redisKey);
+                var likeCommentEvents = await redisService.GetAsync<List<CommentLike>>(redisKey);
 
                 if (likeCommentEvents?.Any() == true)
                 {

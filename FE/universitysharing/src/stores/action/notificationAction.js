@@ -142,6 +142,39 @@ export const markNotificationAsRead = createAsyncThunk(
   }
 );
 
+// New action to fetch unread notification count
+export const fetchUnreadNotificationCount = createAsyncThunk(
+  "notifications/fetchUnreadNotificationCount",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const baseURL = process.env.REACT_APP_BASE_URL;
+      const response = await axios.get(
+        `${baseURL}/api/Notification/unread-count`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.data.success) {
+        return rejectWithValue(
+          response.data.message || "Failed to fetch unread notification count"
+        );
+      }
+
+      return response.data.data; // Return the count (e.g., 0)
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Error fetching unread notification count"
+      );
+    }
+  }
+);
+
 export const addRealTimeNotification = (notification) => ({
   type: "notifications/addRealTimeNotification",
   payload: notification,

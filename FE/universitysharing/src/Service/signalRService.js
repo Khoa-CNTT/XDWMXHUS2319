@@ -667,14 +667,40 @@ class SignalRService {
       this.notificationConnection,
       "ReceiveLikeNotification",
       (notificationData) => {
+        console.log("Nhận được thông báo thích bài viết:", notificationData);
+        callback(notificationData);
+      }
+    );
+    console.log("Đã đăng ký sự kiện ReceiveLikeNotification");
+  }
+
+  // Thêm phương thức để xử lý sự kiện khi phản hồi bình luận
+  onReceiveReplyCommentNotification(callback) {
+    this.on(
+      this.notificationConnection,
+      "ReceiveReplyCommentNotification",
+      (notificationData) => {
         console.log(
-          "Nhận được thông báo thích bài viết:",
+          "Nhận được thông báo phản hồi bình luận:",
           notificationData
         );
         callback(notificationData);
       }
     );
-    console.log("Đã đăng ký sự kiện ReceiveLikeNotification");
+    console.log("Đã đăng ký sự kiện ReceiveReplyCommentNotification");
+  }
+
+  // Thêm phương thức để xử lý sự kiện khi thích bình luận
+  onReceiveLikeCommentNotification(callback) {
+    this.on(
+      this.notificationConnection,
+      "ReceiveLikeCommentNotification",
+      (notificationData) => {
+        console.log("Nhận được thông báo thích bình luận:", notificationData);
+        callback(notificationData);
+      }
+    );
+    console.log("Đã đăng ký sự kiện ReceiveLikeCommentNotification");
   }
 }
 

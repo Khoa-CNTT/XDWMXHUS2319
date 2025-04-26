@@ -1,31 +1,28 @@
-﻿using Application.DTOs.FriendShips;
-using Application.DTOs.Notification;
-using Application.Interface.ContextSerivce;
+﻿using Application.CQRS.Queries.Friends;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.CQRS.Queries.Friends
+namespace Application.CQRS.Queries.FriendShips
 {
-    public class GetFriendsListQueryHandle : IRequestHandler<GetFriendsListQuery, ResponseModel<FriendsListWithCountDto>>
+    public class GetFriendListWithCursorQueryHandler : IRequestHandler<GetFriendListWithCursorQuery, ResponseModel<FriendsListWithCursorDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContext;
         private readonly IRedisService _redisService;
-        public GetFriendsListQueryHandle(IUnitOfWork unitOfWork, IUserContextService userContext, IRedisService redisService)
+        public GetFriendListWithCursorQueryHandler(IUnitOfWork unitOfWork, IUserContextService userContext, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContext = userContext;
             _redisService = redisService;
         }
-        public async Task<ResponseModel<FriendsListWithCountDto>> Handle(GetFriendsListQuery request, CancellationToken cancellationToken)
+        public async Task<ResponseModel<FriendsListWithCursorDto>> Handle(GetFriendListWithCursorQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContext.UserId();
 
-            // Redis sync (giữ nguyên)
+            // Redis sync
             var friends = await _redisService.GetFriendsAsync(userId.ToString());
             if (!friends.Any())
             {
@@ -33,19 +30,35 @@ namespace Application.CQRS.Queries.Friends
                 friends = await _redisService.GetFriendsAsync(userId.ToString());
             }
 
+            // Fetch count and friendships
+            var fetchCount = request.PageSize + 1; // Fetch one extra to check for more
             var friendships = await _unitOfWork.FriendshipRepository
-                .GetFriendsAsync(userId);
+                .GetFriendsCursorAsync(userId, request.Cursor, fetchCount, cancellationToken);
             var totalFriendCount = await _unitOfWork.FriendshipRepository
                 .CountAcceptedFriendsAsync(userId);
 
-            // Nếu sau khi lọc mà không còn bạn bè nào
+            // If no friendships, return empty response
             if (friendships == null || !friendships.Any())
             {
-                return ResponseFactory.Success<FriendsListWithCountDto>("Không có bạn bè nào", 200);
+                return ResponseFactory.Success(new FriendsListWithCursorDto
+                {
+                    CountFriend = 0,
+                    Friends = new List<FriendDto>(),
+                    NextCursor = null
+                }, "Không có bạn bè nào", 200);
             }
 
+            // Determine if there are more items
+            bool hasMore = friendships.Count > request.PageSize;
+            if (hasMore)
+            {
+                friendships = friendships.Take(request.PageSize).ToList(); // Trim to PageSize
+            }
 
-            // Lấy danh sách friendId
+            // Calculate nextCursor
+            DateTime? nextCursor = hasMore ? friendships.Last().CreatedAt : null;
+
+            // Get friend IDs
             var friendIds = friendships
                 .Select(f => f.UserId == userId ? f.FriendId : f.UserId)
                 .Distinct()
@@ -64,14 +77,14 @@ namespace Application.CQRS.Queries.Friends
                 .Select(dto => dto!)
                 .ToList();
 
-            var response = new FriendsListWithCountDto
+            var response = new FriendsListWithCursorDto
             {
                 CountFriend = totalFriendCount,
                 Friends = result,
+                NextCursor = nextCursor
             };
 
             return ResponseFactory.Success(response, "Lấy danh sách bạn bè thành công", 200);
-        
         }
     }
 }

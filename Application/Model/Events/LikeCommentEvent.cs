@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Pipelines.Sockets.Unofficial.Buffers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,14 +7,15 @@ using System.Threading.Tasks;
 
 namespace Application.Model.Events
 {
-    public class LikeCommentEvent
+    public class LikeCommentEvent : INotification
     {
-        public Guid UserId { get; set; }
-        public Guid CommentId { get; set; }
-        public LikeCommentEvent(Guid userId, Guid commentId)
+        public Guid ReceivedId { get; set; }
+
+        public ResponseNotificationModel Data { get; set; }
+        public LikeCommentEvent(Guid receivedId, ResponseNotificationModel data)
         {
-            UserId = userId;
-            CommentId = commentId;
+            ReceivedId = receivedId;
+            Data = data;
         }
     }
 }

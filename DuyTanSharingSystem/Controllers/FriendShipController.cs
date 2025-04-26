@@ -54,6 +54,12 @@ namespace DuyTanSharingSystem.Controllers
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+        [HttpGet("get-friends-list-cursor")]
+        public async Task<IActionResult> GetFriendsListWithCursor([FromQuery] GetFriendListWithCursorQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
         [HttpGet("get-list-friend")]
         public async Task<IActionResult> GetFriendsList([FromQuery] GetFriendListByUserIdQuery query)
         {
@@ -66,8 +72,20 @@ namespace DuyTanSharingSystem.Controllers
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+        [HttpGet("get-friends-received-cursor")]
+        public async Task<IActionResult> GetFriendsReceivedWithCursor([FromQuery] GetReceivedRequestWithCursorQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
         [HttpGet("get-friends-sent")]
         public async Task<IActionResult> GetFriendsSent([FromQuery] GetSentRequestsQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        [HttpGet("get-friends-sent-cursor")]
+        public async Task<IActionResult> GetFriendsSentWithCursor([FromQuery] GetSentRequestsWithCursorQuery query)
         {
             var result = await _mediator.Send(query);
             return Ok(result);
