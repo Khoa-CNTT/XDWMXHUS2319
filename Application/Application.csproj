@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Folder Include="DTOs\Token\" />
+    <Folder Include="ModelChatAI\" />
     <Folder Include="Validators\" />
   </ItemGroup>
 

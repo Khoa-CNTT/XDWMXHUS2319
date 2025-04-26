@@ -1,129 +1,106 @@
-﻿using Application.Interface.ChatAI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using Application.CQRS.Commands.ChatAI;
+using Application.DTOs.ChatAI;
+using Application.Interface.ChatAI;
+using MediatR;
+using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
+
 
 namespace Infrastructure.Service
 {
-    public class ChatStreamService : IChatStreamService
+    public class ChatStreamingService : IChatStreamingService
     {
-        private readonly IHubContext<ChatHub> _hubContext;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IPythonApiService _pythonApiService;
+        private readonly IUserContextService _userContextService;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMediator _mediator;
+        private readonly ILogger<ChatStreamingService> _logger;
 
-        public ChatStreamService(IHubContext<ChatHub> hubContext, IServiceProvider serviceProvider)
+        public ChatStreamingService(
+            IPythonApiService pythonApiService,
+            IUserContextService userContextService,
+            IUnitOfWork unitOfWork,
+            IMediator mediator,
+            ILogger<ChatStreamingService> logger)
         {
-            _hubContext = hubContext;
-            _serviceProvider = serviceProvider;
+            _pythonApiService = pythonApiService ?? throw new ArgumentNullException(nameof(pythonApiService));
+            _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task ProcessStreamMessageAsync(Guid conversationId, Guid userId, string data, bool isFinal, string query, string answer, int tokenCount)
+        public async IAsyncEnumerable<string> StreamQueryAsync(string query, string userId, string conversationId, string accessToken, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            // Gửi câu trả lời qua SignalR
-            if (!string.IsNullOrEmpty(data))
+            // Kiểm tra xác thực
+            if (!_userContextService.IsAuthenticated())
             {
-                await _hubContext.Clients.Group(conversationId.ToString())
-                    .SendAsync("ReceiveAnswer", data, isFinal);
+                _logger.LogWarning("User not authenticated");
+                throw new UnauthorizedAccessException("User not authenticated");
             }
 
-            // Xử lý CRUD nếu là JSON
-            if (!string.IsNullOrEmpty(data) && data.StartsWith("{"))
+            Guid jwtUserId = _userContextService.UserId();
+            if (userId != jwtUserId.ToString())
             {
-                try
-                {
-                    var actionData = JsonSerializer.Deserialize<CrudAction>(data);
-                    if (actionData != null)
-                    {
-                        await HandleCrudAction(actionData, userId, conversationId);
-                    }
-                }
-                catch (JsonException) { /* Không phải JSON CRUD, bỏ qua */ }
+                _logger.LogWarning("User ID {UserId} does not match JWT {JwtUserId}", userId, jwtUserId);
+                throw new UnauthorizedAccessException("User ID does not match JWT");
             }
 
-            // Lưu lịch sử chat khi hoàn tất
-            if (isFinal && !string.IsNullOrEmpty(query) && !string.IsNullOrEmpty(answer))
+            // Kiểm tra conversation
+            if (!Guid.TryParse(conversationId, out Guid conversationGuid))
             {
-                using var scope = _serviceProvider.CreateScope();
-                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-                await StoreChatHistory(unitOfWork, conversationId, userId, query, answer, tokenCount);
-            }
-        }
-
-        private async Task HandleCrudAction(CrudAction action, Guid userId, Guid conversationId)
-        {
-            using var scope = _serviceProvider.CreateScope();
-            var httpClient = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>().CreateClient();
-            string message;
-
-            switch (action.action)
-            {
-                case "delete_post":
-                    var deleteResponse = await httpClient.DeleteAsync($"http://localhost:5000/api/posts/{action.post_id}", new CancellationToken());
-                    message = deleteResponse.IsSuccessStatusCode ? "Đã xóa bài post." : "Không có quyền hoặc bài post không tồn tại.";
-                    break;
-
-                case "update_email":
-                    var updateResponse = await httpClient.PutAsync(
-                        $"http://localhost:5000/api/users/{userId}/email",
-                        new StringContent(JsonSerializer.Serialize(new { email = action.email }), Encoding.UTF8, "application/json"),
-                        new CancellationToken()
-                    );
-                    message = updateResponse.IsSuccessStatusCode ? $"Đã cập nhật email thành {action.email}." : "Không có quyền hoặc email không hợp lệ.";
-                    break;
-
-                case "create_post":
-                    var createResponse = await httpClient.PostAsync(
-                        "http://localhost:5000/api/posts",
-                        new StringContent(JsonSerializer.Serialize(new { content = action.content }), Encoding.UTF8, "application/json"),
-                        new CancellationToken()
-                    );
-                    message = createResponse.IsSuccessStatusCode ? "Đã tạo bài post." : "Không có quyền hoặc nội dung không hợp lệ.";
-                    break;
-
-                default:
-                    message = "Hành động không được hỗ trợ.";
-                    break;
+                _logger.LogWarning("Invalid conversation ID: {ConversationId}", conversationId);
+                throw new ArgumentException("Invalid conversation ID");
             }
 
-            await _hubContext.Clients.Group(conversationId.ToString())
-                .SendAsync("ReceiveAnswer", message, true);
-        }
-
-        private async Task StoreChatHistory(IUnitOfWork unitOfWork, Guid conversationId, Guid userId, string query, string answer, int tokenCount)
-        {
-            var conversation = await unitOfWork.AIConversationRepository.GetByIdAsync(conversationId);
-            if (conversation == null)
-                return;
-
-            conversation.UpdateTimestamp();
-            var chatHistory = new AIChatHistory(conversationId, query, answer, tokenCount);
-            await unitOfWork.AIChatHistoryRepository.AddAsync(chatHistory);
-
-            // Giới hạn lịch sử chat
-            var histories = await unitOfWork.AIChatHistoryRepository.GetHistoriesByConversationId(conversationId);
-            int cumulativeTokens = 0;
-            for (int i = 0; i < histories.Count; i++)
+            var conversation = await _unitOfWork.AIConversationRepository.GetByIdAsync(conversationGuid);
+            if (conversation == null || conversation.UserId != jwtUserId)
             {
-                cumulativeTokens += histories[i].TokenCount;
-                if (i >= 10 || cumulativeTokens > 1000)
-                {
-                    var idsToDelete = histories.Skip(i).Select(h => h.Id);
-                    await unitOfWork.AIChatHistoryRepository.DeleteRangeAsync(idsToDelete);
-                    break;
-                }
+                _logger.LogWarning("Conversation {ConversationId} not found or unauthorized for UserId {UserId}", conversationId, userId);
+                throw new UnauthorizedAccessException("Conversation not found or unauthorized");
             }
 
-            await unitOfWork.SaveChangesAsync();
-        }
+            // Lấy chat history
+            var histories = await _unitOfWork.AIChatHistoryRepository.GetHistoriesByConversationId(conversationGuid);
+            var chatHistory = histories.OrderByDescending(h => h.Timestamp).Take(5).Select(h => new AIChatHistoryDto
+            {
+                Id = h.Id,
+                Query = h.Query ?? string.Empty,
+                Answer = h.Answer ?? string.Empty,
+                Timestamp = h.Timestamp
+            }).ToList();
 
-        private class CrudAction
-        {
-            public string action { get; set; } = string.Empty;
-            public string post_id { get; set; } = string.Empty;
-            public string email { get; set; } = string.Empty;
-            public string content { get; set; } = string.Empty;
+            // Gọi Python API
+            _logger.LogDebug("Sending query to Python API with token: {Token}", accessToken);
+            var pythonResponse = await _pythonApiService.SendQueryAsync(
+                query,
+                jwtUserId,
+                conversationGuid,
+                _userContextService.Role(),
+                chatHistory,
+                accessToken,
+                cancellationToken
+            );
+
+            // Lưu lịch sử chat
+            var command = new StoreChatHistoryCommand
+            {
+                ConversationId = conversationGuid,
+                UserId = jwtUserId,
+                Query = query,
+                Answer = pythonResponse.Answer,
+                TokenCount = pythonResponse.Metadata.TokenCount
+            };
+            await _mediator.Send(command, cancellationToken);
+
+            // Gửi các chunk với độ trễ để tạo hiệu ứng typing
+            var words = pythonResponse.Answer.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < words.Length; i++)
+            {
+                yield return words[i] + (i < words.Length - 1 ? " " : "");
+                _logger.LogDebug("Streaming chunk: {Chunk}", words[i]);
+                await Task.Delay(100, cancellationToken); // Độ trễ 100ms giữa các từ
+            }
         }
     }
 }

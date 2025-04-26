@@ -26,7 +26,8 @@ namespace Domain.Entities
             public string? RelativePhone { get; private set; }
             public string? Phone { get; private set; }
             public DateTime? LastActive { get; private set; }
-           
+            public DateTime? UpdatedAt { get; private set; }
+
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
             public virtual ICollection<Comment> Comments { get; private set; } = new HashSet<Comment>();
@@ -76,6 +77,7 @@ namespace Domain.Entities
             public void VerifyEmail()
             {
                 IsVerifiedEmail = true;
+                UpdatedAt = DateTime.UtcNow;
             }
 
             /// <summary>
@@ -86,6 +88,7 @@ namespace Domain.Entities
             {
                 if (score < 0) throw new ArgumentException("Trust score cannot be negative.");
                 TrustScore = score;
+                UpdatedAt = DateTime.UtcNow;
             }
 
             /// <summary>
@@ -102,7 +105,8 @@ namespace Domain.Entities
                 Bio = bio;
                 Phone = phone;
                 RelativePhone = relativePhone;
-            }
+                UpdatedAt = DateTime.UtcNow;
+        }
 
             /// <summary>
             /// Cập nhật mật khẩu mới (đã hash).

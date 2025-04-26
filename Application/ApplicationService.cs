@@ -1,4 +1,5 @@
 ﻿using Application.Interface.ChatAI;
+using System.Security.Claims;
 
 namespace Application
 {
@@ -38,7 +39,7 @@ namespace Application
             //services.AddHostedService<GpsMonitorService>();
             //services.AddHostedService<LikeCommentEventProcessor>();
             //services.AddHostedService<TrustScoreBackgroundService>();
-            services.AddHostedService<MessageProcessingService>();
+            //services.AddHostedService<MessageProcessingService>();
             //services.AddHostedService<RedisListenerService>();
             //đăng kí hub
             services.AddScoped<INotificationService, NotificationService>();
@@ -55,7 +56,6 @@ namespace Application
             services.AddScoped<IMessageService,MessageService >();
 
             //chat AI
-            services.AddScoped<IAIChatService, AIChatService>();
             services.AddScoped<IConversationService, ConversationService>();
 
             // ✅ Đăng ký JwtSettings vào DI container
@@ -95,6 +95,16 @@ namespace Application
                                 (path.StartsWithSegments("/notificationHub") || path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/aiHub")))
                             {
                                 context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            // Gán token vào claims để UserContextService có thể lấy
+                            var token = context.SecurityToken as System.IdentityModel.Tokens.Jwt.JwtSecurityToken;
+                            if (token != null)
+                            {
+                                context.Principal?.AddIdentity(new ClaimsIdentity(new[] { new Claim("access_token", token.RawData) }));
                             }
                             return Task.CompletedTask;
                         }

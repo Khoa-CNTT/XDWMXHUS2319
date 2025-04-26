@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using static Domain.Common.Enums;
 
 namespace Domain.Entities
@@ -21,6 +17,8 @@ namespace Domain.Entities
         public PostRideTypeEnum PostType { get; private set; }
         public RidePostStatusEnum Status { get; private set; } = RidePostStatusEnum.open;
         public DateTime CreatedAt { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
+        public bool? IsDeleted { get; private set; } = false; // Đánh dấu bài viết đã bị xóa
         public User? User { get;private set; }
         public Ride? Ride { get;private set; } // Quan hệ 1-1 với Ride (nếu có người ghép chuyến)
         public RidePost(Guid userId,string? content, string startLocation, string endLocation, string latLonStart, string latLonEnd, DateTime startTime, PostRideTypeEnum postType)
@@ -41,6 +39,7 @@ namespace Domain.Entities
             StartLocation = startLocation;
             EndLocation = endLocation;
             StartTime = startTime;
+            UpdatedAt = DateTime.UtcNow;
         }
         public void Matched()
         {
@@ -49,6 +48,10 @@ namespace Domain.Entities
         public void Canceled()
         {
             Status = RidePostStatusEnum.Canceled;
+        }
+        public void Delete()
+        {
+            IsDeleted = true;
         }
     }
 }
