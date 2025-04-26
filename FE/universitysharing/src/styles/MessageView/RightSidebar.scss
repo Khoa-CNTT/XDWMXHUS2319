@@ -345,29 +345,18 @@ $sidebar-width: 280px;
   }
 }
 
-// --- Responsive ---
-@media (max-width: 992px) {
-  // Adjust breakpoint if needed
-  .right-sidebar {
-    // Maybe hide it or make it collapsible on tablets/smaller laptops too
-    // Example: transform: translateX(100%); position: fixed; right: 0; top: 0; height: 100vh;
-  }
+.right-sidebar-message {
+  width: 25%;
+  transition: transform 0.3s ease;
+  background-color: #fff;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+.right-sidebar-message.closed {
+  display: none;
 }
 
-@media (max-width: 768px) {
-  .right-sidebar {
-    width: 100%; // Full width on mobile
-    height: auto; // Adjust height as needed, maybe fixed portion?
-    border-left: none;
-    border-bottom: 1px solid $border-color;
-    box-shadow: none; // Remove side shadow on mobile
-
-    .search-container {
-      padding: $padding-base; // Consistent padding
-    }
-
-    .friends-list {
-      padding: 0 $padding-base / 2; // Adjust padding
-    }
-  }
+.right-sidebar-message.open {
+  display: block;
+  transform: translateX(0);
 }

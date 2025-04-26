@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import ChatList from "../components/MessageComponent/ChatList";
 import ChatHeader from "../components/MessageComponent/ChatHeader";
 import MessageArea from "../components/MessageComponent/MessageArea";
@@ -12,6 +12,7 @@ import "../styles/MessageView.scss";
 const MessageView = () => {
   const dispatch = useDispatch();
   const usersState = useSelector((state) => state.users) || {};
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // trạng thái sidebar
   const { users } = usersState;
   return (
     <div className="Container-MessageView">
@@ -19,11 +20,11 @@ const MessageView = () => {
       <div className="message-view">
         <ChatList />
         <div className="message-view__content">
-          <ChatHeader />
+          <ChatHeader toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
           <MessageArea />
           <MessageInput />
         </div>
-        <RightSidebar />
+        <RightSidebar isOpen={isSidebarOpen} />
       </div>
     </div>
   );

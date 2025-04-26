@@ -1,0 +1,40 @@
+@media (max-width: 768px) {
+  .profile-header__friend-actions {
+    display: flex;
+    align-items: center;
+    width: unset;
+    .profile-header__friend-button {
+      display: flex;
+      align-items: center;
+      background-color: #1877f2;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      svg {
+        font-size: 18px;
+        margin-right: 8px;
+      }
+
+      &:hover {
+        background-color: #166fe5;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      &:disabled {
+        background-color: #e4e6eb;
+        cursor: not-allowed;
+      }
+    }
+  }
+  .profile-header__option-button {
+    position: absolute !important;
+    top: 100px;
+    right: 20px;
+  }
+}
