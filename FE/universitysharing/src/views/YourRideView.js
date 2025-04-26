@@ -6,7 +6,7 @@ import RightSidebar from "../components/HomeComponent/RightSideBarHome";
 
 import InputCreateRide from "../components/RideComponent/InputCreateRide";
 
-import YourRide from "../components/RideComponent/YourRIde";
+import YourRide from "../components/RideComponent/YourRide";
 import {
   useSwipeToOpenSidebar,
   useBackButtonToCloseSidebar,

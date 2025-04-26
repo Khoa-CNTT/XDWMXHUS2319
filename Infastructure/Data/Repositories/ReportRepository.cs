@@ -13,9 +13,14 @@ namespace Infrastructure.Data.Repositories
         {
         }
 
-        public override Task<bool> DeleteAsync(Guid id)
+        public async override Task<bool> DeleteAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var entity = await _context.Reports.FindAsync(id);
+            if (entity == null)
+                return false;
+
+            _context.Reports.Remove(entity);
+            return true;
         }
 
         public async Task<IEnumerable<Report>> GetByPostIdAsync(Guid postId)
@@ -44,6 +49,13 @@ namespace Infrastructure.Data.Repositories
                 .Include(r => r.Post)
                 .Include(r => r.ReportedByUser)
                 .FirstOrDefaultAsync(r => r.Id == reportId);
+        }
+
+        public async Task<List<Report>> GetReportsByPostIdDeleteAsync(Guid postId)
+        {
+            return await _context.Reports
+                .Where(c => c.PostId == postId)
+                .ToListAsync();
         }
     }
 }
