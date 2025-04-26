@@ -47,42 +47,46 @@ const FriendProfileView = () => {
   }, [dispatch, userId]);
 
   return (
-    <div className="profile-user-view">
-      <Header className="header" usersProfile={currentUser} />
-      <ProfileFriendsHeader
-        ref={profileHeaderRef}
-        shouldFocusBio={shouldFocusBio}
-        onModalOpened={() => setShouldFocusBio(false)}
-        isFriendProfile={true}
-        userData={otherUserProfile} // Pass the specific user data
-        usersProfile={currentUser}
-      />
-      <div className="profile-user-view__content">
-        <div className="left-sidebar-container">
-          <div className="left-sidebar-content">
-            <ProfileIntro
+    <>
+      <div className="home-vieww">
+        <Header className="header" usersProfile={currentUser} />
+      </div>
+      <div className="profile-user-view">
+        <ProfileFriendsHeader
+          ref={profileHeaderRef}
+          shouldFocusBio={shouldFocusBio}
+          onModalOpened={() => setShouldFocusBio(false)}
+          isFriendProfile={true}
+          userData={otherUserProfile} // Pass the specific user data
+          usersProfile={currentUser}
+        />
+        <div className="profile-user-view__content">
+          <div className="left-sidebar-container">
+            <div className="left-sidebar-content">
+              <ProfileIntro
+                usersProfile={otherUserProfile}
+                onEditBioClick={handleEditBioClick}
+                isFriendProfile={true}
+              />
+              <ProfilePhotos
+                usersProfile={otherUserProfile}
+                isFriendProfile={true}
+              />
+              <ProfileFriendsUserOther usersProfile={otherUserProfile} />
+            </div>
+          </div>
+          <div className="profile-user-view__right">
+            <AllPosts
               usersProfile={otherUserProfile}
-              onEditBioClick={handleEditBioClick}
+              post={post}
+              showOwnerPosts={true}
               isFriendProfile={true}
+              userFriendId={userId} // Pass the userId to fetch posts for this user
             />
-            <ProfilePhotos
-              usersProfile={otherUserProfile}
-              isFriendProfile={true}
-            />
-            <ProfileFriendsUserOther usersProfile={otherUserProfile} />
           </div>
         </div>
-        <div className="profile-user-view__right">
-          <AllPosts
-            usersProfile={otherUserProfile}
-            post={post}
-            showOwnerPosts={true}
-            isFriendProfile={true}
-            userFriendId={userId} // Pass the userId to fetch posts for this user
-          />
-        </div>
       </div>
-    </div>
+    </>
   );
 };
 

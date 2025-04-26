@@ -6,6 +6,7 @@ import {
   Route,
   Navigate,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 
 import { ToastContainer, toast } from "react-toastify";
@@ -32,7 +33,7 @@ import FriendProfileView from "./views/FriendProfileView";
 import getUserIdFromToken from "./utils/JwtDecode";
 import FriendView from "./views/FriendView";
 import CommentModalBackGround from "./components/CommentModalBackgroud.";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { SignalRProvider, useSignalR } from "../src/Service/SignalRProvider";
 import { useAuth } from "./contexts/AuthContext";
@@ -43,17 +44,60 @@ import { addRealTimeNotification } from "./stores/action/notificationAction";
 import Dashboard from "./admin/views/DashBoardView";
 import UserReport from "./admin/views/UserReportManagerView";
 
+import { DeeplinkCommentModal } from "./stores/action/deepLinkAction";
+import CommentModalDeepLink from "./components/CommentModalDeepLink";
+
 function App() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const state = location.state;
   const background = state && state.background;
+  const isSelectPostOpen = useSelector(
+    (state) => state.deeplink.isSelectPostOpen
+  );
+  const error = useSelector((state) => state.deeplink.error);
+
+  // useEffect(() => {
+  //   if (isAuthenticated && location.pathname === "/login") {
+  //     window.history.replaceState(null, "", "/home");
+  //   }
+  // }, [isAuthenticated, location.pathname]);
 
   useEffect(() => {
+    // Chuyển hướng nếu đã đăng nhập và truy cập /login
     if (isAuthenticated && location.pathname === "/login") {
-      window.history.replaceState(null, "", "/home");
+      navigate("/home", { replace: true });
     }
-  }, [isAuthenticated, location.pathname]);
+
+    // Tách postId từ URL và dispatch action
+    const pathMatch = location.pathname.match(/^\/post\/(.+)$/);
+    if (pathMatch) {
+      const postId = pathMatch[1]; // Ví dụ: 8e9dcfc8-0b5d-4244-a615-e00c0ae7455f
+      // Kiểm tra UUID hợp lệ
+      console.error("POST ID TỪ APP:", postId);
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(postId)) {
+        console.error("postId không hợp lệ:", postId);
+        navigate("/home", { replace: true });
+        return;
+      }
+      if (isAuthenticated) {
+        dispatch(DeeplinkCommentModal(postId));
+      } else {
+        navigate("/login", { replace: true });
+      }
+    }
+  }, [isAuthenticated, location.pathname, dispatch, navigate]);
+
+  useEffect(() => {
+    // Hiển thị thông báo lỗi nếu có
+    if (error) {
+      toast.error(error || "Không thể tải bài viết");
+    }
+  }, [error]);
 
   return (
     <>
@@ -103,11 +147,12 @@ function App() {
               </>
             )}
           </Routes>
-          {background && isAuthenticated && (
+          {/* {background && isAuthenticated && (
             <Routes>
               <Route path="/post/:id" element={<CommentModalBackGround />} />
             </Routes>
-          )}
+          )} */}
+          {isAuthenticated && <CommentModalBackGround />}
         </SignalRProvider>
       </NotificationProvider>
     </>

@@ -20,6 +20,7 @@ import EditProfileModal from "./EditProfileModal";
 import { userProfileDetail } from "../../stores/action/profileActions";
 import getUserIdFromToken from "../../utils/JwtDecode";
 import "../../styles/ProfileUserView/ProfileHeader.scss";
+import "../../styles/MoblieReponsive/ProfileFriendMobile/ProfileHeaderMobile.scss";
 import avatarDefaut from "../../assets/AvatarDefaultFill.png";
 import logoWeb from "../../assets/Logo.png";
 import { toast } from "react-toastify";
