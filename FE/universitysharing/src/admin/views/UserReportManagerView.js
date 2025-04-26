@@ -6,35 +6,6 @@ import AllReport from "../components/UserReport/AllReport";
 const { Content } = Layout;
 const { Title } = Typography;
 
-const dataSource = [
-  {
-    key: "1",
-    user: "Người dùng A",
-    content: "Bài viết mẫu...",
-    status: "Đã duyệt",
-    likes: 10,
-    comments: 5,
-    shares: 3,
-  },
-  {
-    key: "2",
-    user: "Người dùng A",
-    content: "Bài viết mẫu...",
-    status: "Đã duyệt",
-    likes: 10,
-    comments: 5,
-    shares: 3,
-  },
-];
-
-const columns = [
-  { title: "STT", dataIndex: "key" },
-  { title: "Người dùng báo cáo", dataIndex: "user" },
-  { title: "Người dùng bị báo cáo", dataIndex: "content" },
-  { title: "Lý do báo cáo", dataIndex: "status" },
-  { title: "Link bài viết", dataIndex: "status" },
-];
-
 const UserReport = () => {
   return (
     <Layout style={{ minHeight: "100vh" }}>

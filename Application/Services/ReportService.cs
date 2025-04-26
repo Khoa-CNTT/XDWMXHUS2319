@@ -1,7 +1,10 @@
 ﻿using Application.DTOs.Reposts;
+using Application.Interface;
 using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using Domain.Common;
+using Domain.Entities;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,7 +65,9 @@ namespace Application.Services
         public async Task<List<PostWithReportsDto>> GetAllPostsWithReportsAsync()
         {
             var posts = await _unitOfWork.PostRepository.GetAllPostsWithReportsAsync();
-
+            var reports = await _unitOfWork.ReportRepository.GetAllAsync();
+            // ✅ Lọc ra những report chưa được AI xử lý
+            var filtered = reports.Where(x => x.Status != ReportStatusEnum.AI_Processed);
             var result = posts.Select(Mapping.MapToPostWithReportsDto).ToList();
 
             return result;
@@ -139,6 +144,63 @@ namespace Application.Services
 
             await _reportRepository.UpdateAsync(report);
             await _unitOfWork.SaveChangesAsync();
+        }
+        public async Task<ResponseModel<bool>> DeleteAllReportsOfPostAsync(Guid postId)
+        {
+            if (postId == Guid.Empty)
+            {
+                return ResponseFactory.Fail<bool>("Không được để trống", 204);
+            }
+            var reports = await _unitOfWork.ReportRepository.GetReportsByPostIdDeleteAsync(postId);
+
+            if (reports == null || !reports.Any())
+            {
+                return ResponseFactory.Fail<bool>("Không có report để xóa", 204);
+            }
+
+            foreach (var report in reports)
+            {
+               await _unitOfWork.ReportRepository.DeleteAsync(report.Id);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return ResponseFactory.Success(true, "Xóa tất cả báo cáo thành công", 204);
+        }
+        public async Task<ResponseModel<bool>> SoftDeletePostAsync(Guid postId)
+        {
+            var post = await _unitOfWork.PostRepository.GetByIdAsync(postId);
+            // 🔥 Kiểm tra xem bài viết có tồn tại không
+            if (post == null)
+            {
+                return ResponseFactory.Fail<bool>("Không tìm thấy bài viết này", 404);
+            }
+            // 🔥 Kiểm tra xem bài viết có bị xóa chưa
+            if (post.IsDeleted)
+            {
+                return ResponseFactory.Fail<bool>("Bài viết này đã bị xóa", 404);
+            }
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(post.UserId);
+            if (user == null)
+            {
+                return ResponseFactory.Fail<bool>("Không tồn tại người dùng", 404);
+            }
+                // 🔥 Bắt đầu giao dịch
+                await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                // 🔥 Xóa bài viết
+                post.Delete();
+                user.UpdateTrustScore(user.TrustScore - 20);
+                // 🔥 Lưu thay đổi
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+                return ResponseFactory.Success(true, "Xóa bài viết thành công", 200);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                return ResponseFactory.Error<bool>("Lỗi Error", 500, ex);
+            }
         }
     }
 }

@@ -276,6 +276,7 @@ namespace Infrastructure.Data.Repositories
             return await _context.Posts
                 .Include(p => p.User)
                 .Include(p => p.Reports)
+                   .ThenInclude(r => r.ReportedByUser) // Load thông tin người báo cáo
                 .Where(p => p.Reports.Any()) // chỉ lấy bài có report
                 .ToListAsync();
         }
