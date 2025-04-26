@@ -46,11 +46,6 @@ namespace Application.CQRS.Commands.Friends
             {
                 friendship.Reject();
                 await _unitOfWork.FriendshipRepository.UpdateAsync(friendship);
-
-                if (friendship.UserId != userId)
-                {
-                    await _notificationService.SendRejectFriendNotificationAsync(request.FriendId, userId);
-                }
                 // Xóa thông báo lời mời kết bạn
                 await _unitOfWork.NotificationRepository
                             .DeletePendingFriendRequestNotificationAsync(friendship.UserId, friendship.FriendId);

@@ -74,15 +74,6 @@ namespace Application.CQRS.Queries.Notifications
                 NextCursor = hasMore ? notifications.Last().CreatedAt : null
             };
 
-            DateTime localTime = DateTime.Parse("2025-04-23 17:54:13");
-
-            // Chuyển đổi sang UTC (trừ 7 giờ)
-            DateTime utcTime = localTime.ToUniversalTime();
-
-            // Định dạng lại theo yêu cầu
-            string utcTimeFormatted = utcTime.ToString("yyyy-MM-ddTHH:mm:ss");
-            Console.WriteLine(utcTimeFormatted);  // Output: 2025-04-23T10:54:13
-
             return ResponseFactory.Success(result, "Lấy tất cả thông báo thành công", 200);
         }
     }

@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs.FriendShips
 {
-    public class FriendsListWithCountDto
+    public class FriendsListWithCursorDto
     {
         public int CountFriend { get; set; }
         public List<FriendDto> Friends { get; set; } = new();
+        public DateTime? NextCursor { get; set; }
     }
 }

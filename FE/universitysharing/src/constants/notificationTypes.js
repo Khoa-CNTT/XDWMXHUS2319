@@ -4,4 +4,6 @@ export const NOTIFICATION_TYPES = {
   SHARE_POST: "PostShared", // Chia sẻ bài viết
   COMMENT_POST: "PostCommented", // Bình luận bài viết
   LIKE_POST: "PostLiked", // Thích bài viết
+  REPLY_COMMENT: "ReplyComment",
+  LIKE_COMMENT: "LikeComment",
 };

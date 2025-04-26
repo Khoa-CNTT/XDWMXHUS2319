@@ -12,6 +12,8 @@ import AllPosts from "../components/HomeComponent/AllPostHome";
 import { fetchPostsByOwner } from "../stores/action/listPostActions";
 import PostInput from "../components/HomeComponent/PostInputHome";
 import { fetchListFriend } from "../stores/action/friendAction";
+import getUserIdFromToken from "../utils/JwtDecode";
+import { fetchPostImagesPreview } from "../stores/action/profileActions";
 
 const ProfileUserView = () => {
   const dispatch = useDispatch();
@@ -22,6 +24,7 @@ const ProfileUserView = () => {
   // Thêm state và ref
   const [shouldFocusBio, setShouldFocusBio] = useState(false);
   const profileHeaderRef = useRef();
+  const userId = getUserIdFromToken();
 
   const handleEditBioClick = () => {
     setShouldFocusBio(true);
@@ -33,6 +36,7 @@ const ProfileUserView = () => {
 
   useEffect(() => {
     dispatch(userProfile()); // Lấy thông tin user
+    dispatch(fetchPostImagesPreview(userId));
     dispatch(fetchListFriend()); // Lấy danh sách bạn bè
     dispatch(fetchPostsByOwner()); // Sử dụng action mới
   }, [dispatch]);

@@ -4,6 +4,7 @@ import {
   fetchNotificationsUnread,
   fetchNotificationsRead,
   markNotificationAsRead,
+  fetchUnreadNotificationCount,
 } from "../action/notificationAction";
 
 const initialState = {
@@ -14,6 +15,7 @@ const initialState = {
   loading: false,
   error: null,
   hasMore: true,
+  unreadCount: 0,
 };
 
 const notificationSlice = createSlice({
@@ -35,19 +37,17 @@ const notificationSlice = createSlice({
       state.unreadNotifications = [];
       state.readNotifications = [];
     },
-    addRealTimeNotification: (state, action) => {
-      const notification = action.payload;
-      // Kiểm tra trùng lặp dựa trên id
-      if (!state.notifications.some((notif) => notif.id === notification.id)) {
-        state.notifications.unshift(notification);
-        if (!notification.isRead) {
-          state.unreadNotifications.unshift(notification);
-        }
-      } else {
-        console.log(
-          `[notificationReducer] Bỏ qua thông báo trùng lặp: ${notification.id}`
-        );
+    addRealTimeNotification(state, action) {
+      const newNotification = action.payload;
+      if (
+        !state.notifications.some((notif) => notif.id === newNotification.id)
+      ) {
+        state.notifications.unshift(newNotification); // Add new notification to the start
+        state.unreadCount += 1; // Increment unread count for new notification
       }
+    },
+    setUnreadCount(state, action) {
+      state.unreadCount = action.payload; // Set unread count directly
     },
   },
   extraReducers: (builder) => {
@@ -149,6 +149,19 @@ const notificationSlice = createSlice({
       .addCase(markNotificationAsRead.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(fetchUnreadNotificationCount.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUnreadNotificationCount.fulfilled, (state, action) => {
+        state.loading = false;
+        state.unreadCount = action.payload; // Set the fetched unread count
+      })
+      .addCase(fetchUnreadNotificationCount.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload || "Failed to fetch unread notification count";
       });
   },
 });
@@ -157,5 +170,6 @@ export const {
   addNewNotification,
   clearNewNotifications,
   addRealTimeNotification,
+  setUnreadCount,
 } = notificationSlice.actions;
 export default notificationSlice.reducer;

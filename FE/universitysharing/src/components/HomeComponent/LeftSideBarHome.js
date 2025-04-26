@@ -27,10 +27,8 @@ const LeftSidebar = ({ usersProfile }) => {
     { path: "/friend", icon: <FiUser />, label: "Bạn bè" },
     { path: "/MessageView", icon: <FiMessageSquare />, label: "Nhắn tin" },
 
-    { path: "/friends", icon: <FiUser />, label: "Bạn bè" },
-
     { path: "/chatBoxAI", icon: <FiMessageSquare />, label: "ChatBoxAI" },
-//  { path: "/notifications", icon: <FiBell />, label: "Thông báo" },
+    //  { path: "/notifications", icon: <FiBell />, label: "Thông báo" },
 
     { path: "/notify", icon: <FiBell />, label: "Thông báo" },
 

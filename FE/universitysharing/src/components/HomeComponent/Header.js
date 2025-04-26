@@ -16,6 +16,7 @@ import SettingModal from "../SettingModal";
 import { useNavigate } from "react-router-dom";
 import { searchPost } from "../../stores/action/searchAction";
 import { useDispatch } from "react-redux";
+import { fetchUnreadNotificationCount } from "../../stores/action/notificationAction";
 import "animate.css";
 
 const Header = ({ usersProfile }) => {
@@ -27,8 +28,15 @@ const Header = ({ usersProfile }) => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const navigate = useNavigate();
   const [modalPosition, setModalPosition] = useState({});
-
+  const unreadNotificationCount = useSelector(
+    (state) => state.notifications.unreadCount
+  );
   const { signalRService } = useSignalR();
+
+  // Fetch unread notification count on component mount
+  useEffect(() => {
+    dispatch(fetchUnreadNotificationCount());
+  }, [dispatch]);
 
   useEffect(() => {
     const handleUnreadCount = (count) => {
@@ -183,7 +191,7 @@ const Header = ({ usersProfile }) => {
             aria-label="Notifications"
           >
             <FiBell className="icon" />
-            <span className="badge">3</span>
+            <span className="badge">{unreadNotificationCount}</span>
           </button>
 
           <button

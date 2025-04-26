@@ -121,6 +121,8 @@ namespace Domain.Common
             SystemAlert,
             SendFriend,
             AcceptFriend,
+            ReplyComment,
+            LikeComment,
         }
 
     }

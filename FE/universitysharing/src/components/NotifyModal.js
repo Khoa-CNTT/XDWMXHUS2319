@@ -284,12 +284,14 @@ const NotifyModal = ({ isOpen, onClose }) => {
                         />
                         <div className="notification-text">
                           <p className="title">{notif.title}</p>
-                          {notif.type === NOTIFICATION_TYPES.SEND_FRIEND &&
-                            notif.mutualFriendsCount !== undefined && (
-                              <span className="mutual-friends">
-                                {notif.mutualFriendsCount} bạn chung
-                              </span>
-                            )}
+                          {
+                            notif.type === NOTIFICATION_TYPES.SEND_FRIEND
+                            // notif.mutualFriendsCount !== undefined && (
+                            //   <span className="mutual-friends">
+                            //     {notif.mutualFriendsCount} bạn chung
+                            //   </span>
+                            // )
+                          }
                           <span className="time">
                             {formatRelativeTime(notif.createdAt)}
                           </span>

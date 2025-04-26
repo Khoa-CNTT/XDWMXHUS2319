@@ -134,4 +134,58 @@ export const notificationHandlers = {
       };
     },
   },
+  ReceiveReplyCommentNotification: {
+    type: NOTIFICATION_TYPES.REPLY_COMMENT,
+    hasActions: false,
+    mapToNotification: (notificationData) => {
+      console.log(
+        "[notificationHandlers] Dữ liệu nhận được:",
+        notificationData
+      );
+      return {
+        id: notificationData.notificationId || `like-${Date.now()}`,
+        title:
+          notificationData.message || "Ai đó đã phản hồi bình luận của bạn",
+        senderId: notificationData.senderId,
+        senderProfilePicture: notificationData.avatar || avatarWeb,
+        createdAt: notificationData.createdAt || new Date().toISOString(),
+        isRead: false,
+        type: NOTIFICATION_TYPES.REPLY_COMMENT,
+        mutualFriendsCount: notificationData.mutualFriendsCount || 0,
+        url:
+          notificationData.url ||
+          (notificationData.postId
+            ? `/post/${notificationData.postId}`
+            : "/profile"),
+        isRealTime: true,
+      };
+    },
+  },
+
+  ReceiveLikeCommentNotification: {
+    type: NOTIFICATION_TYPES.LIKE_COMMENT,
+    hasActions: false,
+    mapToNotification: (notificationData) => {
+      console.log(
+        "[notificationHandlers] Dữ liệu nhận được:",
+        notificationData
+      );
+      return {
+        id: notificationData.notificationId || `like-${Date.now()}`,
+        title: notificationData.message || "Ai đó đã thích bình luận của bạn",
+        senderId: notificationData.senderId,
+        senderProfilePicture: notificationData.avatar || avatarWeb,
+        createdAt: notificationData.createdAt || new Date().toISOString(),
+        isRead: false,
+        type: NOTIFICATION_TYPES.LIKE_COMMENT,
+        mutualFriendsCount: notificationData.mutualFriendsCount || 0,
+        url:
+          notificationData.url ||
+          (notificationData.postId
+            ? `/post/${notificationData.postId}`
+            : "/profile"),
+        isRealTime: true,
+      };
+    },
+  },
 };
