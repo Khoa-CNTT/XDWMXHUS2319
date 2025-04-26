@@ -7,7 +7,7 @@
   box-sizing: border-box; // Áp dụng cho tất cả các phần tử
 }
 // Bảng màu (Refined Palette)
-$primary-color: #4A55E6; // Slightly adjusted primary blue
+$primary-color: #4a55e6; // Slightly adjusted primary blue
 $secondary-color: #3b82f6; // A complementary blue
 $text-color: #1f2937; // Darker gray for better contrast
 $text-light-gray: #6b7280; // Lighter gray for secondary text
@@ -58,7 +58,7 @@ $sidebar-width: 280px;
   box-shadow: $shadow-medium; // Apply softer shadow
   transition: $transition-base;
   position: relative;
-  z-index: 10;
+  // z-index: 10;
 
   // Custom Scrollbar
   scrollbar-width: thin; // Firefox
@@ -86,7 +86,7 @@ $sidebar-width: 280px;
     position: sticky;
     top: 0;
     background-color: $bg-color;
-    z-index: 11; // Ensure it's above list items
+    z-index: 1; // Ensure it's above list items
     border-bottom: 1px solid $border-color;
     margin-bottom: 10px; // Space below search
 
@@ -108,7 +108,7 @@ $sidebar-width: 280px;
       &::before {
         // content: '\f002'; // Example using Font Awesome unicode
         // font-family: "Font Awesome 5 Free";
-        content: "🔍"; // Keeping emoji for simplicity, but SVG is better
+        // content: "🔍"; // Keeping emoji for simplicity, but SVG is better
         position: absolute;
         left: 15px;
         top: 50%;
@@ -118,7 +118,13 @@ $sidebar-width: 280px;
         z-index: 1;
         pointer-events: none; // Prevent icon from blocking input focus
       }
-
+      .search-icon {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 0.56rem;
+        left: 0.6rem;
+      }
       input {
         width: 100%;
         padding: 10px 15px 10px 40px; // Adjust padding for icon
@@ -184,7 +190,10 @@ $sidebar-width: 280px;
           // box-shadow: $shadow-subtle;
 
           .friend-info img {
-            border-color: rgba($primary-color, 0.5); // Subtle border highlight on avatar
+            border-color: rgba(
+              $primary-color,
+              0.5
+            ); // Subtle border highlight on avatar
           }
         }
 
@@ -234,38 +243,39 @@ $sidebar-width: 280px;
               font-size: 0.9rem; // Consistent font size
             }
 
-            .status {
-              font-size: 0.75rem;
+            .status-container {
               display: flex;
               align-items: center;
+              gap: 6px;
+              font-size: 0.75rem; // Kích thước chữ cho trạng thái
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
 
-              // Status indicator dot
-              &::before {
-                content: "";
-                display: inline-block;
+              .status-dot {
                 width: 8px;
                 height: 8px;
                 border-radius: $radius-round;
-                margin-right: 6px; // Space after dot
-                flex-shrink: 0; // Prevent dot shrinking
-              }
+                flex-shrink: 0; // Ngăn chấm bị co lại
 
-              &.online {
-                color: $online-color;
-                &::before {
+                &.online {
                   background-color: $online-color;
-                  box-shadow: 0 0 5px rgba($online-color, 0.6); // Subtle glow
-                  animation: pulse 2s infinite ease-in-out; // Refined pulse
+                  box-shadow: 0 0 5px rgba($online-color, 0.6); // Hiệu ứng glow
+                  animation: pulse 2s infinite ease-in-out; // Hiệu ứng pulse
+                }
+
+                &.offline {
+                  background-color: $offline-color;
                 }
               }
 
-              &.offline {
-                color: $text-light-gray; // Use lighter gray for offline text
-                &::before {
-                  background-color: $offline-color;
+              .status-text {
+                color: $text-light-gray; // Màu mặc định cho văn bản trạng thái
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+                &.online {
+                  color: $online-color; // Màu xanh cho trạng thái online
                 }
               }
             }
@@ -299,14 +309,27 @@ $sidebar-width: 280px;
 
 // --- Animations ---
 @keyframes pulse {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.1); } // Add subtle scale
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  } // Add subtle scale
 }
 
 // Staggered fade-in animation for list items (keep as is, seems fine)
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .right-sidebar .friends-list ul li {
@@ -314,35 +337,26 @@ $sidebar-width: 280px;
   opacity: 0;
 
   // Apply delay based on item index
-  @for $i from 1 through 30 { // Increased max items if needed
+  @for $i from 1 through 30 {
+    // Increased max items if needed
     &:nth-child(#{$i}) {
       animation-delay: $i * 0.04s; // Slightly faster delay increment
     }
   }
 }
 
-// --- Responsive ---
-@media (max-width: 992px) { // Adjust breakpoint if needed
-  .right-sidebar {
-     // Maybe hide it or make it collapsible on tablets/smaller laptops too
-     // Example: transform: translateX(100%); position: fixed; right: 0; top: 0; height: 100vh;
-  }
+.right-sidebar-message {
+  width: 25%;
+  transition: transform 0.3s ease;
+  background-color: #fff;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+.right-sidebar-message.closed {
+  display: none;
 }
 
-@media (max-width: 768px) {
-  .right-sidebar {
-    width: 100%; // Full width on mobile
-    height: auto; // Adjust height as needed, maybe fixed portion?
-    border-left: none;
-    border-bottom: 1px solid $border-color;
-    box-shadow: none; // Remove side shadow on mobile
-
-    .search-container {
-      padding: $padding-base; // Consistent padding
-    }
-
-    .friends-list {
-      padding: 0 $padding-base / 2; // Adjust padding
-    }
-  }
+.right-sidebar-message.open {
+  display: block;
+  transform: translateX(0);
 }

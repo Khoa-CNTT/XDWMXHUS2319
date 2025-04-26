@@ -1,6 +1,20 @@
-import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { useSelector } from "react-redux";
-import { FiSearch, FiMoreHorizontal, FiVideo, FiMessageSquare, FiX } from "react-icons/fi";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchFriends } from "../../src/stores/action/friendAction";
+import {
+  FiSearch,
+  FiMoreHorizontal,
+  FiVideo,
+  FiMessageSquare,
+  FiX,
+} from "react-icons/fi";
+
 import { BsFilter } from "react-icons/bs";
 import { toast } from "react-toastify";
 import ChatBox from "./MessageComponent/ChatBox";
@@ -8,6 +22,9 @@ import { useSignalR } from "../Service/SignalRProvider";
 import { useAuth } from "../contexts/AuthContext";
 import axiosClient from "../Service/axiosClient";
 import "../styles/MessengerModal.scss";
+
+import "../styles/MoblieReponsive/HomeViewMobile/MessengerModalMobile.scss";
+
 import avatarDefault from "../assets/AvatarDefault.png";
 
 const FriendItem = React.memo(({ conv, unreadCount, onClick }) => {
@@ -34,7 +51,9 @@ const FriendItem = React.memo(({ conv, unreadCount, onClick }) => {
 
   return (
     <div
-      className={`friend-item ${unreadCount > 0 ? "unread" : ""} ${isPulsing ? "pulse" : ""}`}
+      className={`friend-item ${unreadCount > 0 ? "unread" : ""} ${
+        isPulsing ? "pulse" : ""
+      }`}
       onClick={onClick}
     >
       <div className="friend-avatar">
@@ -55,7 +74,9 @@ const FriendItem = React.memo(({ conv, unreadCount, onClick }) => {
                 ? `${conv.lastMessage.substring(0, 20)}...`
                 : conv.lastMessage}
             </span>
-            <span className="message-time">{formatMessageDate(conv.lastMessageDate)}</span>
+            <span className="message-time">
+              {formatMessageDate(conv.lastMessageDate)}
+            </span>
           </div>
         ) : (
           <div className="friend-status">No messages yet</div>
@@ -80,12 +101,16 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [openChats, setOpenChats] = useState([]);
+
   const [conversations, setConversations] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({});
-  const { friends, loading: friendsLoading, error: friendsError } = useSelector((state) => state.friends);
+  const {
+    friends,
+    loading: friendsLoading,
+    error: friendsError,
+  } = useSelector((state) => state.friends);
   const { signalRService } = useSignalR();
   const { token, userId } = useAuth();
-
 
   const fetchConversations = useCallback(async () => {
     if (!token || !userId) {
@@ -108,9 +133,15 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
         }
       });
       setUnreadCounts(initialUnreadCounts);
-      console.log("[MessengerModal] Fetched unique conversations:", uniqueConversations);
+      console.log(
+        "[MessengerModal] Fetched unique conversations:",
+        uniqueConversations
+      );
     } catch (err) {
-      console.error("[MessengerModal] Lỗi khi lấy danh sách hội thoại:", err.message);
+      console.error(
+        "[MessengerModal] Lỗi khi lấy danh sách hội thoại:",
+        err.message
+      );
       toast.error("Không thể tải danh sách hội thoại");
     }
   }, [token, userId]);
@@ -169,8 +200,13 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
           }));
 
           if (!document.hasFocus()) {
-            const sender = conversations.find((conv) => conv.user.id === SenderId);
-            console.log("[MessengerModal] Tab không focus, bắt đầu nhấp nháy:", sender?.user.fullName);
+            const sender = conversations.find(
+              (conv) => conv.user.id === SenderId
+            );
+            console.log(
+              "[MessengerModal] Tab không focus, bắt đầu nhấp nháy:",
+              sender?.user.fullName
+            );
             startTabBlink(
               `${sender?.user.fullName || "Ai đó"} đã gửi bạn 1 tin nhắn`
             );
@@ -209,13 +245,16 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
   const handleOpenChat = (friendId) => {
     if (!openChats.includes(friendId)) {
       setOpenChats((prev) => [...prev, friendId]);
+
       setUnreadCounts((prev) => ({
         ...prev,
         [friendId]: 0,
       }));
       setConversations((prev) =>
         prev.map((conv) =>
-          conv.user.id === friendId ? { ...conv, unreadCount: 0, isSeen: true } : conv
+          conv.user.id === friendId
+            ? { ...conv, unreadCount: 0, isSeen: true }
+            : conv
         )
       );
     }
@@ -256,105 +295,124 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="messenger-modal-overlay"
-      style={{
-        top: `${position?.top || 0}px`,
-        right: `${position?.right || 20}px`,
-      }}
-    >
-      <div className={`messenger-modal ${isOpen ? "open" : ""}`} ref={modalRef}>
-        <div className="modal-header">
-          <div className="header-left">
-            <h2>Chat</h2>
-            <div className="header-actions">
-              <button className="icon-button" title="Video chat">
-                <FiVideo size={18} />
+    <>
+      <div className="messenger-modal-background"> </div>
+      <div
+        className="messenger-modal-overlay"
+        style={{
+          top: `${position?.top || 0}px`,
+          right: `${position?.right || 20}px`,
+        }}
+      >
+        <div
+          className={`messenger-modal ${isOpen ? "open" : ""}`}
+          // ref={modalRef}
+        >
+          <div className="modal-header">
+            <div className="header-left">
+              <h2>Chat</h2>
+              <div className="header-actions">
+                <button className="icon-button" title="Video chat">
+                  <FiVideo size={18} />
+                </button>
+                <button className="icon-button" title="New message">
+                  <FiMessageSquare size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="header-right">
+              <button className="icon-button" title="Options">
+                <FiMoreHorizontal size={18} />
               </button>
-              <button className="icon-button" title="New message">
-                <FiMessageSquare size={18} />
+              <button className="close-button" onClick={onClose} title="Close">
+                <FiX size={20} />
               </button>
             </div>
           </div>
-          <div className="header-right">
-            <button className="icon-button" title="Options">
-              <FiMoreHorizontal size={18} />
-            </button>
-            <button className="close-button" onClick={onClose} title="Close">
-              <FiX size={20} />
-            </button>
-          </div>
-        </div>
 
-        <div className="search-bar">
-          <div className="search-container">
-            <div className="search-icon">
-              <FiSearch size={16} />
-            </div>
-            <input
-              type="text"
-              placeholder="Search Messenger"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button className="filter-button" title="Filter conversations">
-              <BsFilter size={16} />
-            </button>
-          </div>
-        </div>
-
-        <div className="tabs-container">
-          <button
-            className={`tab ${activeTab === "all" ? "active" : ""}`}
-            onClick={() => setActiveTab("all")}
-          >
-            All
-          </button>
-          <button
-            className={`tab ${activeTab === "unread" ? "active" : ""}`}
-            onClick={() => setActiveTab("unread")}
-          >
-            Unread ({Object.values(unreadCounts).reduce((sum, count) => sum + (count || 0), 0)})
-          </button>
-          <button
-            className={`tab ${activeTab === "groups" ? "active" : ""}`}
-            onClick={() => setActiveTab("groups")}
-          >
-            Groups
-          </button>
-        </div>
-
-        <div className="friends-list">
-          {friendsLoading ? (
-            <div className="loading">Loading...</div>
-          ) : friendsError ? (
-            <div className="error">{friendsError}</div>
-          ) : filteredConversations.length === 0 ? (
-            <div className="empty">No conversations</div>
-          ) : (
-            filteredConversations.map((conv) => (
-              <FriendItem
-                key={conv.conversationId}
-                conv={conv}
-                unreadCount={unreadCounts[conv.user.id] || 0}
-                onClick={() => handleOpenChat(conv.user.id)}
+          <div className="search-bar">
+            <div className="search-container">
+              <div className="search-icon">
+                <FiSearch size={16} />
+              </div>
+              <input
+                type="text"
+                placeholder="Search Messenger"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-            ))
-          )}
-        </div>
+              <button className="filter-button" title="Filter conversations">
+                <BsFilter size={16} />
+              </button>
+            </div>
+          </div>
 
-        <div className="chat-boxes-wrapper">
-          {openChats.map((friendId, index) => (
-            <ChatBox
-              key={friendId}
-              friendId={friendId}
-              onClose={() => handleCloseChat(friendId)}
-              index={index}
-            />
-          ))}
+          <div className="tabs-container">
+            <button
+              className={`tab ${activeTab === "all" ? "active" : ""}`}
+              onClick={() => setActiveTab("all")}
+            >
+              All
+            </button>
+            <button
+              className={`tab ${activeTab === "unread" ? "active" : ""}`}
+              onClick={() => setActiveTab("unread")}
+            >
+              Unread (
+              {Object.values(unreadCounts).reduce(
+                (sum, count) => sum + (count || 0),
+                0
+              )}
+              )
+            </button>
+            <button
+              className={`tab ${activeTab === "groups" ? "active" : ""}`}
+              onClick={() => setActiveTab("groups")}
+            >
+              Groups
+            </button>
+          </div>
+
+          <div className="friends-list">
+            {friendsLoading ? (
+              <div className="loading">Loading...</div>
+            ) : friendsError ? (
+              <div className="error">{friendsError}</div>
+            ) : filteredConversations.length === 0 ? (
+              <div className="empty">Không có cuộc trò chuyện nào</div>
+            ) : (
+              filteredConversations.map((conv) => (
+                <FriendItem
+                  key={conv.conversationId}
+                  conv={conv}
+                  unreadCount={unreadCounts[conv.user.id] || 0}
+                  onClick={() => handleOpenChat(conv.user.id)}
+                />
+              ))
+            )}
+          </div>
+
+          {/* <div className="chat-boxes-wrapper">
+            {openChats.map((friendId, index) => (
+              <ChatBox
+                key={friendId}
+                friendId={friendId}
+                onClose={() => handleCloseChat(friendId)}
+                index={index}
+              />
+            ))}
+          </div> */}
         </div>
       </div>
-    </div>
+      {openChats.map((friendId, index) => (
+        <ChatBox
+          key={friendId}
+          friendId={friendId}
+          onClose={() => handleCloseChat(friendId)}
+          index={index}
+        />
+      ))}
+    </>
   );
 };
 

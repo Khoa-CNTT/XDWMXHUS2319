@@ -31,5 +31,10 @@ namespace Domain.Entities
             Content = content;
             Url = url;
         }
+        //Đánh dấu thông báo là đã đọc
+        public void MarkAsRead()
+        {
+            IsRead = true;
+        }
     }
 }

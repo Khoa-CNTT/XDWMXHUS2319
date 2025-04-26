@@ -209,30 +209,38 @@ namespace Infrastructure.Data.Repositories
                            (m.Status == MessageStatus.Sent || m.Status == MessageStatus.Delivered))
                 .FirstOrDefaultAsync();
         }
-        public async Task<List<Message>> GetListMessagesForSeenAsync(Guid messageId, Guid senderId)
+        public async Task<List<Message>> GetListMessagesAsync(Guid messageId, Guid senderId, MessageStatus targetStatus)
         {
-            var targetMessage = await GetByIdAsync(messageId);
-            if (targetMessage == null || targetMessage.SenderId == senderId)
+            // Truy vấn chính với join
+            var query = from m in _context.Messages.AsNoTracking()
+                        join target in _context.Messages.AsNoTracking()
+                            on m.ConversationId equals target.ConversationId
+                        where target.Id == messageId &&
+                              m.SenderId != senderId &&
+                              m.SentAt <= target.SentAt
+                        select m;
+
+            if (targetStatus == MessageStatus.Seen)
+            {
+                query = query.Where(m => m.Status == MessageStatus.Sent || m.Status == MessageStatus.Delivered);
+            }
+            else if (targetStatus == MessageStatus.Delivered)
+            {
+                query = query.Where(m => m.Status == MessageStatus.Sent);
+            }
+
+            var messages = await query.ToListAsync();
+
+            // Kiểm tra targetMessage tồn tại
+            if (!await _context.Messages.AnyAsync(m => m.Id == messageId))
+            {
                 return new List<Message>();
-            return await _context.Messages
-                .Where(m =>
-                    m.ConversationId == targetMessage.ConversationId&&
-                    m.SenderId == senderId &&
-                    (m.Status == MessageStatus.Sent || m.Status == MessageStatus.Delivered) &&
-                    m.SentAt <= targetMessage.SentAt)
-                .ToListAsync();
+            }
+
+            return messages;
         }
 
 
-        //public async Task<Message?> GetMessageByStatusAsync(Guid userId)
-        //{
-        //    return await _context.Messages
-        //        .Include(m => m.Conversation)
-        //        .ThenInclude(c => c.User1)
-        //        .Where(m => m.Conversation.User1Id == userId)
-        //        .OrderByDescending(m => m.SentAt)
-        //        .FirstOrDefaultAsync();
-        //}
     }
 
 }

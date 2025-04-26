@@ -1,5 +1,6 @@
 ﻿using Application.Interface.Hubs;
 using Application.Model.Events;
+using Infrastructure.Service;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -11,15 +12,15 @@ namespace Infrastructure.Hubs
 {
     public class ShareEventHandle : INotificationHandler<ShareEvent>
     {
-        private readonly INotificationService _notificationService;
-        public ShareEventHandle(INotificationService notificationService)
+        private readonly ISignalRNotificationService _signalRNotificationService;
+        public ShareEventHandle(ISignalRNotificationService signalRNotificationService)
         {
-            _notificationService = notificationService;
-        }
-        public async Task Handle(ShareEvent notification, CancellationToken cancellationToken)
-        {
-            await _notificationService.SendShareNotificationAsync(notification.PostId, notification.UserId);
+            _signalRNotificationService = signalRNotificationService;
         }
 
+        public async Task Handle(ShareEvent notification, CancellationToken cancellationToken)
+        {
+            await _signalRNotificationService.SendShareNotificationAsync(notification.UserId,notification.Data);
+        }
     }
 }

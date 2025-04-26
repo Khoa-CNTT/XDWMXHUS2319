@@ -28,7 +28,7 @@ const ContentPostComment = ({ post, onClose }) => {
   const posts = useSelector((state) =>
     state.posts.posts.find((p) => p.id === post.id)
   );
-
+  console.log("Bài viết được chọn>>", post);
   // Like bài viết: bỏ debounce, dispatch trực tiếp
   const handleLikePost = (postId) => {
     dispatch(likePost(postId));

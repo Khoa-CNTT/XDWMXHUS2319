@@ -39,11 +39,11 @@ namespace Application.CQRS.Commands.Shares
             {
                 return ResponseFactory.Fail<ResultSharePostDto>("Không tìm thấy bài viết để chia sẻ", 404);
             }
-            var isSpamming = await _postService.IsUserSpammingSharesAsync(userId, request.PostId);
-            if (isSpamming)
-            {
-                return ResponseFactory.Fail<ResultSharePostDto>("Bạn đã chia sẻ bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
-            }
+            //var isSpamming = await _postService.IsUserSpammingSharesAsync(userId, request.PostId);
+            //if (isSpamming)
+            //{
+            //    return ResponseFactory.Fail<ResultSharePostDto>("Bạn đã chia sẻ bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
+            //}
             // Lấy thông tin người dùng chia sẻ
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
             if (user == null)
@@ -69,9 +69,18 @@ namespace Application.CQRS.Commands.Shares
                 sharedPost.ApproveAI();
                 sharedPost.IsShare();
                 await _unitOfWork.PostRepository.AddAsync(sharedPost);
+                var postOwnerId = await _postService.GetPostOwnerId(originalPost.Id);
+                //Lưu vào Notification
+                var notification = new Notification(postOwnerId, userId, $"{user.FullName} đã chia sẻ bài viết của bạn", NotificationType.PostShared, null, $"/post/{originalPost.Id}");
+                await _unitOfWork.NotificationRepository.AddAsync(notification);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-/*                await _notificationService.SendShareNotificationAsync(request.PostId, userId);*/
+
+                if(userId != originalPost.UserId)
+                {
+                    await _notificationService.SendShareNotificationAsync(request.PostId, userId, postOwnerId, notification.Id);
+                }
+                
                 return ResponseFactory.Success(
                     Mapping.MapToResultSharePostDto(sharedPost, originalPost, user), // ⚠️ Truyền `share` thay vì `sharedPost`
                     "Chia sẻ bài viết thành công",

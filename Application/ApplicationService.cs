@@ -1,4 +1,6 @@
-﻿namespace Application
+﻿using Application.Interface.ChatAI;
+
+namespace Application
 {
     public static class ApplicationService
     {
@@ -34,9 +36,10 @@
             //services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
             //services.AddHostedService<GpsMonitorService>();
-            //services.AddHostedService<LikeCommentEventProcessor>();
+            services.AddHostedService<LikeCommentEventProcessor>();
             //services.AddHostedService<TrustScoreBackgroundService>();
             services.AddHostedService<MessageProcessingService>();
+            //services.AddHostedService<RedisListenerService>();
             //đăng kí hub
             services.AddScoped<INotificationService, NotificationService>();
             // Đăng ký Auth Services
@@ -51,7 +54,9 @@
             services.AddScoped<ISearchAIService, SearchAIService>();
             services.AddScoped<IMessageService,MessageService >();
 
-
+            //chat AI
+            services.AddScoped<IAIChatService, AIChatService>();
+            services.AddScoped<IConversationService, ConversationService>();
 
             // ✅ Đăng ký JwtSettings vào DI container
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
@@ -87,7 +92,7 @@
                             var path = context.HttpContext.Request.Path;
 
                             if (!string.IsNullOrEmpty(accessToken) &&
-                                (path.StartsWithSegments("/notificationHub") || path.StartsWithSegments("/chatHub")))
+                                (path.StartsWithSegments("/notificationHub") || path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/aiHub")))
                             {
                                 context.Token = accessToken;
                             }

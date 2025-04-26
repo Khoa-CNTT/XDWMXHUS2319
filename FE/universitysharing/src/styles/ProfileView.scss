@@ -1,26 +1,37 @@
-.profile-user-view {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow-x: hidden;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 0; // Tạo stacking context mới
-
+.home-vieww {
+  height: unset;
   .header {
     border-bottom: 1px solid #ddd;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    z-index: 100; // Header nên có z-index cao nhất
+    z-index: 10; // Header nên có z-index cao nhất
     background: white; // Thêm background để che phủ
   }
+}
+.profile-user-view {
+  display: flex;
+  flex-direction: column;
+  height: 90vh;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  // z-index: 0; // Tạo stacking context mới
+
+  // .header {
+  //   // border-bottom: 1px solid #ddd;
+  //   // display: flex;
+  //   // align-items: center;
+  //   // justify-content: space-between;
+  //   // z-index: 10; // Header nên có z-index cao nhất
+  //   // background: white; // Thêm background để che phủ
+  // }
 
   &__content {
     position: relative;
-    z-index: 0; // Tạo stacking context mới
+    // z-index: 0; // Tạo stacking context mới
     display: flex;
     flex: 1;
     padding: 10px;
@@ -44,7 +55,7 @@
     flex-direction: column;
     align-items: center;
     position: relative;
-    z-index: 2; // Giảm xuống thấp hơn nút chỉnh sửa
+    z-index: 5; // Giảm xuống thấp hơn nút chỉnh sửa
   }
 
   @media (max-width: 768px) {
@@ -71,20 +82,20 @@
   z-index: 4; // Post input cần cao hơn các phần tử xung quanh
   background: white; // Thêm background để che phủ
 }
+// .all-posts {
+//   z-index: 8;
+// }
 .left-sidebar-container {
-  width: 360px;
   position: relative;
   flex-shrink: 0;
-  // z-index: 3; // Đảm bảo thấp hơn các phần tử modal
 }
 
 .left-sidebar-content {
   position: sticky;
-  top: 20px; /* 60px header + 20px padding */
+  top: 20px;
   height: calc(100vh - 80px);
   overflow-y: auto;
   width: 500px;
-  // z-index: 3; // Thấp hơn các phần tử modal
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -103,7 +114,4 @@
     z-index: 100; // Rất cao để đảm bảo hiển thị trên cùng
     // ... các style khác
   }
-}
-.profile-user-view__right {
-  z-index: 1;
 }

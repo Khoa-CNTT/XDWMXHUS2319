@@ -75,7 +75,7 @@ export const NotificationProvider = ({ children }) => {
 
     const initializeSignalR = async () => {
       try {
-        console.log("[NotificationProvider] Bắt đầu khởi tạo SignalR...");
+        console.log("[NotificationProvider] Bắt đầu khởi tạo SignalR...",userId.toString());
         await signalRService.startConnections(token, userId.toString()); // Chuyển userId thành string
         if (isMounted) {
           setIsConnected(true);

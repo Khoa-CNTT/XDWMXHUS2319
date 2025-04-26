@@ -27,6 +27,12 @@ namespace Infrastructure.Data.Repositories
             await _context.AddRangeAsync(entities);
         }
 
+        public Task BulkUpdateAsync(List<T> entities)
+        {
+             _context.UpdateRange(entities);
+            return Task.CompletedTask;
+        }
+
         public abstract Task<bool> DeleteAsync(Guid id);
 
 

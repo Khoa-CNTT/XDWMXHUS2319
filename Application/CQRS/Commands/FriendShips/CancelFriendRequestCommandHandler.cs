@@ -42,8 +42,6 @@ namespace Application.CQRS.Commands.Friends
                 //Xóa lời mời kết bạn
                 await _unitOfWork.FriendshipRepository.DeleteAsync(friendship.Id);
                 //Xóa thông báo gửi kết bạn trước đó
-                await _unitOfWork.NotificationRepository
-                         .DeletePendingFriendRequestNotificationAsync(friendship.UserId, friendship.FriendId);
                 // Lưu database
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();

@@ -14,6 +14,7 @@ namespace Domain.Interface
         Task<T> AddAsync(T entity);
         Task UpdateAsync(T entity);
         Task<bool> DeleteAsync(Guid id);
+        Task BulkUpdateAsync(List<T> entities);
         //AddRangeAsync
         Task AddRangeAsync(List<T> entities);
 

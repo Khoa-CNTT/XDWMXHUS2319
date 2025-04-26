@@ -1,3 +1,4 @@
+//scss header
 .header {
   display: flex;
   justify-content: space-between;
@@ -7,65 +8,91 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
-  z-index: 100;
-  height: 56px;
+  height: 70px;
 
   .logoWeb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     cursor: pointer;
+
     .logowebsite {
       max-width: 150px;
-
+      // height: 70px;
+      // object-fit: contain;
+    }
+    .btn-search {
+      align-items: center;
+      justify-content: center;
+      width: 40px;
       height: 40px;
-      object-fit: contain;
+      background-color: #eeeeee;
+      border-radius: 50%;
+      display: none;
+      .search-icon-btn {
+        color: #7c7c7c;
+        width: 20px;
+        height: 20px;
+      }
+      &:hover {
+        background-color: #bababa9b;
+      }
     }
   }
-
   .search {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     flex: 1;
     max-width: 600px;
     margin: 0 20px;
 
-    input[type="text"] {
-      width: 29rem;
-      border: none;
-      outline: none;
-      flex-grow: 1;
-      margin-left: 10px;
-      font-size: 1rem;
+    .close-search-btn {
+      display: none;
+    }
 
-      .search-form {
-        width: 100%;
+    .search-form {
+      width: 100%;
+    }
+
+    .search-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      .search-icon {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        left: 12px;
+        color: #000000;
+        pointer-events: none; // icon không ảnh hưởng tới click
       }
 
-      .search-container {
-        position: relative;
-        display: flex;
-        align-items: center;
+      .search-input {
+        width: 100%;
+        padding: 10px 12px 10px 40px;
+        border-radius: 20px;
+        border: 1px solid #e5e7eb;
+        background-color: #eeeeee;
+        color: rgb(0, 0, 0);
 
-        .search-icon {
-          position: absolute;
-          left: 12px;
-          color: #65676b;
+        outline: none;
+        transition: all 0.3s ease;
+
+        &::placeholder {
+          color: #707070;
+          font-size: 0.9rem;
         }
 
-        .search-input {
-          width: 100%;
-          padding: 10px 12px 10px 40px;
-          border-radius: 20px;
-          border: none;
-          background-color: #f0f2f5;
-          font-size: 14px;
-          outline: none;
-          transition: all 0.3s ease;
-
-          &:focus {
-            background-color: #e4e6eb;
-            box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
-          }
+        &:focus {
+          background-color: #e1e1e1;
+          box-shadow: 0 0 0 2px rgb(124, 132, 254);
         }
       }
     }
   }
+
   .rightHeader {
     display: flex;
     align-items: center;
@@ -85,7 +112,7 @@
       transition: all 0.2s ease;
 
       &:hover {
-        background-color: #f0f2f5;
+        background-color: #343434;
         color: #1877f2;
       }
 
@@ -156,36 +183,6 @@
     }
   }
 }
-
-// Responsive adjustments
-@media (max-width: 768px) {
-  .header {
-    padding: 8px 12px;
-
-    .logoWeb {
-      .logowebsite {
-        height: 32px;
-      }
-    }
-
-    .search {
-      margin: 0 12px;
-    }
-
-    .rightHeader {
-      gap: 8px;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .header {
-    .search {
-      display: none;
-    }
-  }
-}
-// Scss left-sidebar
 
 .left-sidebar {
   width: 200px;
@@ -308,6 +305,7 @@ $hover-bg: #f0f2f5;
 $shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 $transition: all 0.2s ease;
 
+//scss all post
 .all-posts {
   max-width: 620px;
   width: 100%;
@@ -364,6 +362,7 @@ $transition: all 0.2s ease;
           display: flex;
           flex-direction: column;
           min-width: 0;
+
           .status-time-post {
             // width: 150px;
             display: flex;
@@ -383,6 +382,10 @@ $transition: all 0.2s ease;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            &:hover {
+              text-decoration: underline;
+              cursor: pointer;
+            }
           }
 
           .timePost {
@@ -586,26 +589,6 @@ $transition: all 0.2s ease;
   }
 }
 
-// Responsive adjustments
-@media (max-width: 768px) {
-  .all-posts {
-    padding: 0 8px;
-
-    .post {
-      .media-container {
-        &.has-both {
-          flex-direction: column;
-
-          .post-media {
-            width: 100%;
-            height: auto;
-            max-height: 300px;
-          }
-        }
-      }
-    }
-  }
-}
 .post-actions-summary {
   display: flex;
   justify-content: space-between;

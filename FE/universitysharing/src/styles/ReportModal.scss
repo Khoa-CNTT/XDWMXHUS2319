@@ -1,0 +1,123 @@
+.report-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); // làm nền tối mờ
+  backdrop-filter: blur(4px); // hiệu ứng làm mờ nền
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.report-modal {
+  background: #ffffff;
+  width: 420px;
+  max-width: 90%;
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
+  position: relative;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+  h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #222;
+    text-align: center;
+  }
+
+  .report-reason {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    padding: 12px;
+    font-size: 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+  }
+
+  .error-message {
+    color: #dc3545;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+
+    .cancel-btn,
+    .submit-btn {
+      min-width: 140px;
+      padding: 10px 20px;
+      height: 44px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      white-space: nowrap;
+    }
+
+    .cancel-btn {
+      background: #e0e0e0;
+      color: #333;
+
+      &:hover {
+        background: #d0d0d0;
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+
+    .submit-btn {
+      background: #007bff;
+      color: #fff;
+
+      &:hover {
+        background: #0069d9;
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      &:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

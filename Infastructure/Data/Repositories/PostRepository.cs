@@ -70,8 +70,8 @@ namespace Infrastructure.Data.Repositories
                      .ThenInclude(s => s.User)
                  .Include(p => p.OriginalPost)
                      .ThenInclude(op => op.User)
-                 .Where(p => !p.IsDeleted && p.Scope == 0 && (p.IsApproved || p.ApprovalStatus == ApprovalStatusEnum.Approved)); // Chỉ lấy bài chưa bị xóa
-
+                 .Where(p => !p.IsDeleted && p.Scope == 0 && (p.IsApproved || p.ApprovalStatus == ApprovalStatusEnum.Approved));// Chỉ lấy bài chưa bị xóa
+                 
 
             // Nếu có LastPostId, chỉ lấy bài viết cũ hơn nó
             if (lastPostId.HasValue)
@@ -99,7 +99,7 @@ namespace Infrastructure.Data.Repositories
                .Include(p => p.Shares.Where(s => !s.IsDeleted))
                .Include(p => p.OriginalPost)
                    .ThenInclude(op => op.User)
-               .Where(p => p.UserId == userId && !p.IsDeleted);
+               .Where(p => p.UserId == userId && !p.IsDeleted && (p.IsApproved || p.ApprovalStatus == ApprovalStatusEnum.Approved));
 
             // Nếu có LastPostId, lấy bài viết cũ hơn bài cuối cùng đã tải
             if (lastPostId.HasValue)
@@ -133,7 +133,7 @@ namespace Infrastructure.Data.Repositories
                     .ThenInclude(s => s.User)
                 .Include(p => p.OriginalPost)
                     .ThenInclude(op => op.User)
-                .Where(p => !p.IsDeleted && p.PostType == postType) // Chỉ lấy bài chưa bị xóa và có loại đúng
+                .Where(p => !p.IsDeleted && p.PostType == postType && (p.IsApproved || p.ApprovalStatus == ApprovalStatusEnum.Approved)) // Chỉ lấy bài chưa bị xóa và có loại đúng
                 .OrderByDescending(p => p.CreatedAt); // Sắp xếp bài mới nhất trước
 
             // Nếu có lastPostId, chỉ lấy bài viết cũ hơn nó
@@ -270,6 +270,38 @@ namespace Infrastructure.Data.Repositories
         public Task<int> GetPostCountAsync(Guid userId)
         {
             return _context.Posts.CountAsync(p => p.UserId == userId);
+        }
+        public async Task<List<Post>> GetAllPostsWithReportsAsync()
+        {
+            return await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Reports)
+                   .ThenInclude(r => r.ReportedByUser) // Load thông tin người báo cáo
+                .Where(p => p.Reports.Any()) // chỉ lấy bài có report
+                .ToListAsync();
+        }
+        public async Task<List<Post>> GetPostImagesByUserAsync(Guid userId)
+        {
+            return await _context.Posts
+                .Where(p => p.UserId == userId &&
+                            !string.IsNullOrEmpty(p.ImageUrl) &&
+                            !p.IsDeleted &&
+                            !p.IsSharedPost &&
+                            p.IsApproved)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+        public async Task<List<Post>> GetTopPostImagesByUserAsync(Guid userId, int count = 3)
+        {
+            return await _context.Posts
+                .Where(p => p.UserId == userId &&
+                            !string.IsNullOrEmpty(p.ImageUrl) &&
+                            !p.IsDeleted &&
+                            !p.IsSharedPost &&
+                            p.IsApproved)
+                .OrderByDescending(p => p.CreatedAt)
+                .Take(count)
+                .ToListAsync();
         }
     }
 }

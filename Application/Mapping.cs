@@ -5,6 +5,7 @@ using Application.DTOs.FriendShips;
 using Application.DTOs.Likes;
 using Application.DTOs.Post;
 using Application.DTOs.Posts;
+using Application.DTOs.Reposts;
 using Application.DTOs.Shares;
 using Application.DTOs.User;
 using Domain.Entities;
@@ -13,6 +14,67 @@ namespace Application
 {
     public static class Mapping
     {
+        public static ReportResponseDto ToResponseRepostDto(Report report)
+        {
+            return new ReportResponseDto
+            {
+                Id = report.Id,
+                PostId = report.Id,
+                Status = report.Status,
+                CreatedAt = report.CreatedAt
+            };
+        }
+        public static ReportDetailsDto ToRepostDetailsDto(Report report)
+        {
+            return new ReportDetailsDto
+            {
+                Id = report.Id,
+                ReportedBy = report.ReportedBy,
+                PostId = report.PostId,
+                Reason = report.Reason,
+                Status = report.Status,
+                CreatedAt = report.CreatedAt,
+                UpdatedAt = report.UpdatedAt,
+                ProcessedByAI = report.ProcessedByAI,
+                ProcessedByAdmin = report.ProcessedByAdmin,
+                ViolationDetails = report.ViolationDetails,
+                PreActionStatus = report.PreActionStatus,
+                PostActionStatus = report.PostActionStatus,
+                ViolationType = report.ViolationType,
+                ActionTaken = report.ActionTaken
+            };
+        }
+
+        public static PostWithReportsDto MapToPostWithReportsDto(Post post)
+        {
+            return new PostWithReportsDto
+            {
+                Id = post.Id,
+                UserId = post.UserId,
+                FullName = post.User?.FullName ?? "",
+                ProfilePicture = post.User?.ProfilePicture,
+                Content = post.Content,
+                ImageUrl = post.ImageUrl,
+                VideoUrl = post.VideoUrl,
+                CreatedAt = post.CreatedAt,
+                UpdateAt = post.UpdateAt,
+                PostType = post.PostType,
+                Scope = post.Scope,
+                Reports = post.Reports.Select(r => new ReportDto
+                {
+                    Id = r.Id,
+                    UserId = r.ReportedBy, // Ánh xạ từ ReportedBy
+                    Username = r.ReportedByUser?.FullName ?? "Người dùng ẩn danh", // Ánh xạ từ ReportedByUser.Username
+                    ProfilePicture = r.ReportedByUser?.ProfilePicture,
+                    Reason = r.Reason,
+                    ViolationDetails = r.ViolationDetails,
+                    ProcessedByAI = r.ProcessedByAI, // Ánh xạ từ entity Report
+                    ProcessedByAdmin = r.ProcessedByAdmin, // Ánh xạ từ entity Report
+                    CreatedAt = r.CreatedAt,
+                    UpdatedAt = r.UpdatedAt
+                }).ToList()
+            };
+        }
 
         //SHARE POST DTO MAPPER
         public static SharePostDto MapToSharePostDto(Share share, Post post, User user)
@@ -26,6 +88,7 @@ namespace Application
                 OriginalPost = new OriginalPostDto(post)
             };
         }
+
         public static ResultSharePostDto MapToResultSharePostDto(Post share, Post originalPost, User user)
         {
             return new ResultSharePostDto
@@ -56,7 +119,7 @@ namespace Application
             {
                 FriendId = otherUserId,
                 FullName = user.FullName,
-                PictureProfile = user.ProfilePicture,
+                PictureProfile = user.ProfilePicture != null ? $"{Constaint.baseUrl}{user.ProfilePicture}" : null,
                 CreatedAt = friendship.CreatedAt,
                 Status = friendship.Status
             };

@@ -1,0 +1,88 @@
+.report-user-site {
+  border: 1px solid #cbcbcb;
+  padding: 16px;
+  background-color: #fff;
+  border-radius: 12px;
+  width: 40%;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  &:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.accept-reject-btn {
+  display: flex;
+  justify-content: start;
+  margin-bottom: 16px;
+  gap: 12px;
+  padding: 20px 0;
+  border-bottom: 1px solid #eaeaea;
+
+  button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &.accept-report {
+      background-color: #ff3b30;
+      color: #fff;
+
+      &:hover {
+        background-color: #e02e24;
+      }
+    }
+
+    &.reject-report {
+      background-color: #e0e0e0;
+      color: #333;
+
+      &:hover {
+        background-color: #c2c2c2;
+      }
+    }
+  }
+}
+
+.report-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 400px;
+  padding-right: 8px;
+}
+
+.report-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eaeaea;
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .name-reason {
+    display: flex;
+    flex-direction: column;
+
+    .name-user-report {
+      font-size: 14px;
+      color: #111;
+      margin-bottom: 4px;
+    }
+
+    .reason-report {
+      font-size: 13px;
+      color: #555;
+    }
+  }
+}
