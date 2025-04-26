@@ -1,17 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-
+import React, { useEffect, useRef } from "react";
 import "../../styles/AllReport.scss";
-
 import { FiHeart, FiMessageSquare, FiShare2, FiClock } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import avatarWeb from "../../../assets/AvatarDefault.png";
-
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchPosts,
-  fetchPostsByOwner,
-  fetchPostsByOtherUser,
-} from "../../../stores/action/listPostActions";
+// Thay đổi: Import fetchReportedPosts thay vì fetchReportPosts
+import { fetchReportedPosts } from "../../../stores/action/adminActions";
 import { openCommentModal } from "../../../stores/reducers/listPostReducers";
 import getUserIdFromToken from "../../../utils/JwtDecode";
 import "react-confirm-alert/src/react-confirm-alert.css";
@@ -20,95 +14,25 @@ import { vi } from "date-fns/locale";
 import { useLocation, useNavigate } from "react-router-dom";
 import AllReportFromUser from "./ReportFromUser";
 
-const AllReport = ({
-  showOwnerPosts = false,
-  isFriendProfile = false,
-  userFriendId = null,
-}) => {
+const AllReport = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const postsEndRef = useRef(null);
 
-  const { posts, hasMoreAllPosts, hasMoreOwnerPosts } = useSelector(
-    (state) => state.posts
+  // Thay đổi: Lấy reportedPosts thay vì reportPosts từ state.reports
+  const { reportedPosts, loading, error } = useSelector(
+    (state) => state.reportAdmintSlice
   );
 
-  // console.log("Selection sercert box>>", selectedPost);
-
-  const hasMorePosts = showOwnerPosts ? hasMoreOwnerPosts : hasMoreAllPosts;
-  const [lastPostId, setLastPostId] = useState(null);
-  const [loadingMore, setLoadingMore] = useState(false);
-
+  // Thay đổi: Dispatch fetchReportedPosts để lấy danh sách bài viết có báo cáo
   useEffect(() => {
-    setLastPostId(null);
+    dispatch(fetchReportedPosts());
+  }, [dispatch]);
 
-    if (showOwnerPosts) {
-      if (isFriendProfile && userFriendId) {
-        // Fetch posts for the specific friend's profile
-        dispatch(fetchPostsByOtherUser({ userId: userFriendId })); // Pass as { userId }
-      } else {
-        dispatch(fetchPostsByOwner());
-      }
-    } else {
-      dispatch(fetchPosts());
-    }
-  }, [dispatch, showOwnerPosts, isFriendProfile, userFriendId]);
-
-  useEffect(() => {
-    if (posts.length > 0) {
-      setLastPostId(posts[posts.length - 1].id);
-    }
-  }, [posts]);
-
-  const loadMorePosts = useCallback(() => {
-    if (loadingMore || !hasMorePosts || !lastPostId) return;
-
-    setLoadingMore(true);
-
-    if (isFriendProfile && userFriendId) {
-      // For friend's profile - use fetchPostsByOtherUser with userId and lastPostId
-      dispatch(
-        fetchPostsByOtherUser({
-          userId: userFriendId,
-          lastPostId: lastPostId,
-        })
-      )
-        .unwrap()
-        .catch(() => {})
-        .finally(() => setLoadingMore(false));
-    } else {
-      // For own profile or home feed
-      const fetchAction = showOwnerPosts ? fetchPostsByOwner : fetchPosts;
-      dispatch(fetchAction(lastPostId))
-        .unwrap()
-        .catch(() => {})
-        .finally(() => setLoadingMore(false));
-    }
-  }, [
-    dispatch,
-    lastPostId,
-    loadingMore,
-    hasMorePosts,
-    showOwnerPosts,
-    isFriendProfile,
-    userFriendId,
-  ]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMorePosts();
-        }
-      },
-      { threshold: 1.0 }
-    );
-    if (postsEndRef.current) observer.observe(postsEndRef.current);
-    return () => {
-      if (postsEndRef.current) observer.unobserve(postsEndRef.current);
-    };
-  }, [loadMorePosts]);
+  // Thay đổi: Loại bỏ logic phân trang (loadMorePosts, lastPostId, IntersectionObserver)
+  // vì API /posts-report hiện tại không hỗ trợ phân trang
+  // Nếu cần phân trang, có thể thêm lại sau khi backend hỗ trợ
 
   const navigateUser = (userId) => {
     if (userId === getUserIdFromToken()) {
@@ -118,20 +42,20 @@ const AllReport = ({
     }
   };
 
-  //mở comment modal
+  // Mở comment modal
   const handleOpenCommentModal = (post, index = 0) => {
     dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
     navigate(`/post/${post.id}`, { state: { background: location } });
   };
 
-  //chuyển đổi ngày sang UTC +77
+  // Chuyển đổi ngày sang UTC+7
   const convertUTCToVNTime = (utcDate) => {
     const date = new Date(utcDate);
     date.setHours(date.getHours() + 7);
     return date;
   };
 
-  //lấy thông hình ảnh và video set lên post nhiều hay 1 ảnh và 1 video
+  // Xác định class cho media container
   const getMediaContainerClass = (post) => {
     const imageCount = post.imageUrl ? post.imageUrl.split(",").length : 0;
     const hasVideo = !!post.videoUrl;
@@ -155,13 +79,12 @@ const AllReport = ({
     return className;
   };
 
-  // Trong AllPosts
+  // Render media items (hình ảnh/video)
   const renderMediaItems = (post) => {
     const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
     const hasVideo = !!post.videoUrl;
     const totalMedia = imageUrls.length + (hasVideo ? 1 : 0);
 
-    // Nếu không có ảnh lẫn video, không render media-container
     if (totalMedia === 0) return null;
 
     return (
@@ -170,12 +93,10 @@ const AllReport = ({
           const fullUrl = url.startsWith("http")
             ? url.trim()
             : `https://localhost:7053${url.trim()}`;
-          // Hiển thị overlay trên ảnh thứ 2 nếu có > 2 media, hoặc trên ảnh đầu tiên nếu có video và > 1 ảnh
           const showOverlay = totalMedia > 2 && index === (hasVideo ? 0 : 1);
 
-          // Hiển thị tối đa 1 ảnh nếu có video, hoặc 2 ảnh nếu không có video
           if (totalMedia > 2 && index > (hasVideo ? 0 : 1)) return null;
-          if (hasVideo && index > 0) return null; // Chỉ hiển thị 1 ảnh nếu có video
+          if (hasVideo && index > 0) return null;
 
           return (
             <div className="media-item" key={index}>
@@ -211,141 +132,131 @@ const AllReport = ({
 
   return (
     <div className="all-posts-report">
-      {Array.isArray(posts) && posts.length > 0 ? (
+      {/* Thay đổi: Hiển thị thông báo lỗi nếu có */}
+      {error && <div className="error-message">{error}</div>}
+      {Array.isArray(reportedPosts) && reportedPosts.length > 0 ? (
         <>
-          {posts.map((post) => (
-            <>
-              <div className="post-container">
-                <div className="post" key={post.id}>
-                  <div className="header-post">
-                    <div className="AvaName">
-                      <img
-                        className="avtardefaut"
-                        src={post.profilePicture || avatarWeb}
-                        alt="Avatar"
-                      />
-                      <div className="user-info">
-                        <strong onClick={() => navigateUser(post.userId)}>
-                          {post.fullName}
-                        </strong>
-                        <div className="status-time-post">
-                          <span className="timePost">
-                            <FiClock size={12} style={{ marginRight: 4 }} />
-                            {formatDistanceToNow(
-                              convertUTCToVNTime(post.createdAt),
-                              {
-                                addSuffix: true,
-                                locale: {
-                                  ...vi,
-                                  formatDistance: (token, count) => {
-                                    switch (token) {
-                                      case "lessThanXSeconds":
-                                        return "vài giây trước";
-                                      case "xSeconds":
-                                        return `${count} giây trước`;
-                                      case "halfAMinute":
-                                        return "30 giây trước";
-                                      case "lessThanXMinutes":
-                                        return `${count} phút trước`;
-                                      case "xMinutes":
-                                        return `${count} phút trước`;
-                                      case "aboutXHours":
-                                        return `${count} giờ trước`;
-                                      case "xHours":
-                                        return `${count} giờ trước`;
-                                      case "xDays":
-                                        return `${count} ngày trước`;
-                                      case "aboutXMonths":
-                                        return `${count} tháng trước`;
-                                      case "xMonths":
-                                        return `${count} tháng trước`;
-                                      case "aboutXYears":
-                                        return `${count} năm trước`;
-                                      case "xYears":
-                                        return `${count} năm trước`;
-                                      default:
-                                        return "";
-                                    }
-                                  },
+          {reportedPosts.map((post) => (
+            <div className="post-container" key={post.id}>
+              <div className="post">
+                <div className="header-post">
+                  <div className="AvaName">
+                    <img
+                      className="avtardefaut"
+                      src={post.profilePicture || avatarWeb}
+                      alt="Avatar"
+                    />
+                    <div className="user-info">
+                      <strong onClick={() => navigateUser(post.userId)}>
+                        {post.fullName}
+                      </strong>
+                      <div className="status-time-post">
+                        <span className="timePost">
+                          <FiClock size={12} style={{ marginRight: 4 }} />
+                          {formatDistanceToNow(
+                            convertUTCToVNTime(post.createdAt),
+                            {
+                              addSuffix: true,
+                              locale: {
+                                ...vi,
+                                formatDistance: (token, count) => {
+                                  switch (token) {
+                                    case "lessThanXSeconds":
+                                      return "vài giây trước";
+                                    case "xSeconds":
+                                      return `${count} giây trước`;
+                                    case "halfAMinute":
+                                      return "30 giây trước";
+                                    case "lessThanXMinutes":
+                                      return `${count} phút trước`;
+                                    case "xMinutes":
+                                      return `${count} phút trước`;
+                                    case "aboutXHours":
+                                      return `${count} giờ trước`;
+                                    case "xHours":
+                                      return `${count} giờ trước`;
+                                    case "xDays":
+                                      return `${count} ngày trước`;
+                                    case "aboutXMonths":
+                                      return `${count} tháng trước`;
+                                    case "xMonths":
+                                      return `${count} tháng trước`;
+                                    case "aboutXYears":
+                                      return `${count} năm trước`;
+                                    case "xYears":
+                                      return `${count} năm trước`;
+                                    default:
+                                      return "";
+                                  }
                                 },
-                                includeSeconds: true,
-                              }
-                            )}
-                          </span>
-                          <span className="status-post">
-                            {" "}
-                            {post.scope === 0 ? "Công khai" : "Riêng tư"}
-                          </span>
-                        </div>
+                              },
+                              includeSeconds: true,
+                            }
+                          )}
+                        </span>
+                        <span className="status-post">
+                          {post.scope === 0 ? "Công khai" : "Riêng tư"}
+                        </span>
                       </div>
                     </div>
-                    <div className="post-actions"></div>
                   </div>
+                  <div className="post-actions"></div>
+                </div>
 
-                  <div className="content-posts">{post.content}</div>
+                <div className="content-posts">{post.content}</div>
 
-                  {!post.isSharedPost && <p></p>}
+                {renderMediaItems(post)}
 
-                  {post.isSharedPost && (
-                    <div className="Share-Post-origigin"></div>
-                  )}
-
-                  {renderMediaItems(post)}
-
-                  <div className="post-actions-summary">
-                    <div className="reactions" style={{ cursor: "pointer" }}>
-                      <FaHeart className="like-icon" size={16} />
-                      <span>{post.likeCount}</span>
-                    </div>
-                    <div className="comments-shares">
-                      <span
-                        onClick={() => handleOpenCommentModal(post, 0)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {post.commentCount} bình luận
-                      </span>
-                      <span style={{ cursor: "pointer" }}>
-                        {post.shareCount} lượt chia sẻ
-                      </span>
-                    </div>
+                <div className="post-actions-summary">
+                  <div className="reactions" style={{ cursor: "pointer" }}>
+                    <FaHeart className="like-icon" size={16} />
+                    <span>{post.likeCount}</span>
                   </div>
-
-                  <div className="actions">
-                    <button
-                      className={`action-btn ${post.hasLiked ? "liked" : ""}`}
-                      // onClick={() => handleLikePost(post.id)}
-                      disabled={post.isLiking}
-                    >
-                      {post.hasLiked ? (
-                        <FaHeart className="like-icon" size={18} />
-                      ) : (
-                        <FiHeart className="like-icon" size={18} />
-                      )}
-                      <span className="action-count">Thích</span>
-                    </button>
-                    <button
-                      className="action-btn"
+                  <div className="comments-shares">
+                    <span
                       onClick={() => handleOpenCommentModal(post, 0)}
+                      style={{ cursor: "pointer" }}
                     >
-                      <FiMessageSquare className="comment-icon" size={18} />
-                      <span className="action-count">Bình luận</span>
-                    </button>
-                    <button
-                      className="action-btn"
-                      // onClick={() => dispatch(openShareModal(post))}
-                    >
-                      <FiShare2 className="share-icon" size={18} />
-                      <span className="action-count">Chia sẻ</span>
-                    </button>
+                      {post.commentCount} bình luận
+                    </span>
+                    <span style={{ cursor: "pointer" }}>
+                      {post.shareCount} lượt chia sẻ
+                    </span>
                   </div>
                 </div>
-                <AllReportFromUser />
-              </div>
-            </>
-          ))}
 
+                <div className="actions">
+                  <button
+                    className={`action-btn ${post.hasLiked ? "liked" : ""}`}
+                    disabled={post.isLiking}
+                  >
+                    {post.hasLiked ? (
+                      <FaHeart className="like-icon" size={18} />
+                    ) : (
+                      <FiHeart className="like-icon" size={18} />
+                    )}
+                    <span className="action-count">Thích</span>
+                  </button>
+                  <button
+                    className="action-btn"
+                    onClick={() => handleOpenCommentModal(post, 0)}
+                  >
+                    <FiMessageSquare className="comment-icon" size={18} />
+                    <span className="action-count">Bình luận</span>
+                  </button>
+                  <button className="action-btn">
+                    <FiShare2 className="share-icon" size={18} />
+                    <span className="action-count">Chia sẻ</span>
+                  </button>
+                </div>
+              </div>
+              {/* Thay đổi: Truyền reports và postId vào AllReportFromUser */}
+              <AllReportFromUser reports={post.reports} postId={post.id} />
+            </div>
+          ))}
+          {/* Thay đổi: Hiển thị trạng thái loading */}
           <div ref={postsEndRef} className="load-more-indicator">
-            {loadingMore && <p>Đang tải thêm bài viết...</p>}
+            {loading && <p>Đang tải thêm bài viết...</p>}
           </div>
         </>
       ) : (
