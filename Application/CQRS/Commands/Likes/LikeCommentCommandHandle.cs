@@ -12,13 +12,15 @@ namespace Application.CQRS.Commands.Likes
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisService _redisService;
+        private readonly INotificationService _notificationService;
         private readonly IUserContextService _userContextService;
 
-        public LikeCommentCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IRedisService redisService)
+        public LikeCommentCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IRedisService redisService, INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _redisService = redisService;
+            _notificationService = notificationService;
         }
 
         public async Task<ResponseModel<bool>> Handle(LikeCommentCommand request, CancellationToken cancellationToken)
@@ -40,30 +42,12 @@ namespace Application.CQRS.Commands.Likes
             }
             try
             {
-                /* // Kiểm tra user đã like comment này chưa
-                 var existingLike = await _unitOfWork.CommentLikeRepository.GetLikeAsync(userId, request.CommentId);
-                 if (existingLike != null)
-                 {
-                     // Nếu đã like, chuyển thành dislike
-                     existingLike.SetLikeStatus(!existingLike.IsLike);
-                     await _unitOfWork.SaveChangesAsync();
-                     await _unitOfWork.CommitTransactionAsync();
-
-                     string message = existingLike.IsLike ? "Bạn đã thích bình luận!" : "Bạn đã bỏ thích bình luận!";
-                     return ResponseFactory.Success(true, message, 200);
-                 }
-                 // Nếu chưa like, thì thêm like mới
-                 var newLike = new CommentLike(userId, request.CommentId);
-                 await _unitOfWork.CommentLikeRepository.AddAsync(newLike);
-                 await _unitOfWork.SaveChangesAsync();
-                 await _unitOfWork.CommitTransactionAsync();
-                 return ResponseFactory.Success(true, "Bạn đã thích bình luận!", 200);*/
-                // 📌 Lưu vào Redis trước, worker sẽ xử lý sau
                 string redisKey = "likeComment_events";
-                var likeEvent = new LikeCommentEvent(userId, request.CommentId);
+                var likeEvent = new CommentLike(userId, request.CommentId);
                 bool isAdded = await _redisService.AddAsync(redisKey, likeEvent, TimeSpan.FromMinutes(10));
                 if (isAdded)
                 {
+                    await _notificationService.SendLikeComentNotificationAsync(post.Id, request.CommentId, userId);
                     return ResponseFactory.Success<bool>("Like/unlike request đã được lưu, sẽ xử lý sau", 202);
                 }
                 return ResponseFactory.Fail<bool>("Không thể lưu like comment vào Redis", 500);

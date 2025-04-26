@@ -13,10 +13,25 @@ namespace Infrastructure.Data.Repositories
         {
         }
 
-        public override Task<bool> DeleteAsync(Guid id)
+        public async override Task<bool> DeleteAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var entity = await _context.Reports.FindAsync(id);
+            if (entity == null)
+                return false;
+
+            _context.Reports.Remove(entity);
+            return true;
         }
+
+        public async Task<IEnumerable<Report>> GetByPostIdAsync(Guid postId)
+        {
+            return await _context.Reports
+            
+            .Where(r => r.PostId == postId)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+        }
+
         public Task<int> GetCorrectReportCountAsync(Guid userId)
         {
             return _context.Reports
@@ -26,6 +41,21 @@ namespace Infrastructure.Data.Repositories
         {
             return _context.Reports
                 .CountAsync(r => r.ReportedBy == userId);
+        }
+
+        public async Task<Report?> GetReportDetailsAsync(Guid reportId)
+        {
+            return await _context.Reports
+                .Include(r => r.Post)
+                .Include(r => r.ReportedByUser)
+                .FirstOrDefaultAsync(r => r.Id == reportId);
+        }
+
+        public async Task<List<Report>> GetReportsByPostIdDeleteAsync(Guid postId)
+        {
+            return await _context.Reports
+                .Where(c => c.PostId == postId)
+                .ToListAsync();
         }
     }
 }

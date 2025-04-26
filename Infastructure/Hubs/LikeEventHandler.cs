@@ -20,7 +20,7 @@ namespace Infrastructure.Hubs
 
         public async Task Handle(LikeEvent notification, CancellationToken cancellationToken)
         {
-            await _signalRNotificationService.SendLikeNotificationSiganlR(notification.PostId, notification.OwnerId,notification.Message);
+            await _signalRNotificationService.SendLikeNotificationSiganlR(notification.OwnerId, notification.Data);
         }
     }
 }

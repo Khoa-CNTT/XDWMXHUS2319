@@ -40,7 +40,7 @@ namespace Application.CQRS.Commands.Posts
             // 🔥 Kiểm tra xem bài viết có bị xóa chưa
             if (post.IsDeleted)
                 {
-                    return ResponseFactory.Fail<bool>("Bình luận này đã bị xóa", 404);
+                    return ResponseFactory.Fail<bool>("Bài viết này đã bị xóa", 404);
                 }
             // 🔥 Bắt đầu giao dịch
             await _unitOfWork.BeginTransactionAsync();

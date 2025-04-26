@@ -65,5 +65,11 @@ namespace Application.Interface
         Task<long> IncrementAsync(string key, TimeSpan? expiry = null);
         Task<bool> IsMemberOfSetAsync(string key, string value);
         Task<List<string>> GetKeysAsync(string pattern);
+        //friends
+        Task AddFriendAsync(string userId, string friendId);
+        Task RemoveFriendAsync(string userId, string friendId);
+        Task<List<string>> GetFriendsAsync(string userId);
+        Task<Dictionary<string, bool>> CheckMultipleUsersOnlineAsync(List<string> userIds);
+        Task SyncFriendsToRedis(string userId);
     }
 }

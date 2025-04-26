@@ -1,34 +1,32 @@
 import React from "react";
 import AuthForm from "../components/AuthForm";
 import { toast } from "react-toastify";
-import axios from "axios";
+import axiosClient from "../Service/axiosClient"; // Thay axios bằng axiosClient
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { useNavigate } from "react-router-dom";
-import { debounce } from "lodash";
-import { useDispatch } from "react-redux";
-import { fetchPosts } from "../stores/action/listPostActions";
+import { useAuth } from "../contexts/AuthContext";
+
 const Login = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate(); // ✅ Gọi hook đúng vị trí
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const baseUrl = process.env.REACT_APP_BASE_URL;
 
   const handleLogin = async (e, formData) => {
     e.preventDefault();
-    NProgress.start(); // 🔥 Bắt đầu hiển thị loading bar
+    NProgress.start();
+
     try {
-      const response = await axios.post(
-        "https://localhost:7053/api/Auth/login",
+      const response = await axiosClient.post("/api/Auth/login", {
+        // Gọi API tương đối vì baseURL đã được thiết lập
+        email: formData.email,
+        password: formData.password,
+      });
 
-        { email: formData.email, password: formData.password }
-      );
-      console.log("Phản hồi từ API:", response.data);
       if (response.data.success) {
-        localStorage.setItem("token", response.data.data); // Lưu token chính xác
-        // window.location.reload();
-        // dispatch(fetchPosts());
+        login(response.data.data);
         toast.success("Đăng nhập thành công!");
-
-        window.location.href = "/home"; // ✅ Điều hướng sau khi đăng nhập
+        navigate("/home");
       } else if (response?.data?.message?.toLowerCase() === "user not found") {
         toast.error("Người dùng không tồn tại trong hệ thống!");
       } else {
@@ -44,7 +42,7 @@ const Login = () => {
         toast.error("Đăng nhập thất bại!");
       }
     } finally {
-      NProgress.done(); // 🔥 Kết thúc loading bar
+      NProgress.done();
     }
   };
 

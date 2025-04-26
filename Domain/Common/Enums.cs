@@ -14,7 +14,7 @@ namespace Domain.Common
         }
         public enum ApprovalStatusEnum
         {
-            Pending, Approved, Rejected
+            Pending,  Approved, Rejected 
         }
         public enum ScopeEnum
         {
@@ -41,9 +41,12 @@ namespace Domain.Common
         }
         public enum ReportStatusEnum
         {
-            Pending,
-            Reviewed,
-            Rejected
+            Pending = 1,           // Chờ xử lý
+            AI_Processed = 2,      // Đã xử lý bởi AI
+            Admin_Approved = 3,    // Admin chấp nhận báo cáo
+            Rejected = 4,    // Admin từ chối báo cáo
+            Auto_Resolved = 5,      // Tự động xử lý (khi AI xử lý xong)
+            Reviewed
         }
         public enum RoleEnum
         {
@@ -81,6 +84,26 @@ namespace Domain.Common
             Good,
             Excellent
         }
+
+        public enum ActionTakenEnum
+        {
+            None = 0,            // Chưa có hành động
+            HidePost = 1,        // Ẩn bài đăng
+            WarnUser = 2,        // Cảnh báo người dùng
+            ReduceTrustScore = 3,// Giảm điểm uy tín
+            BanUser = 4,         // Khóa tài khoản
+            DeleteContent = 5    // Xóa nội dung
+        }
+        public enum ViolationTypeEnum
+        {
+            Spam = 1,               // Nội dung spam
+            InappropriateContent = 2,// Nội dung không phù hợp
+            HateSpeech = 3,          // Ngôn từ gây thù ghét
+            CopyrightInfringement = 4,// Vi phạm bản quyền
+            FakeInformation = 5,     // Thông tin giả mạo
+            Other = 99               // Lý do khác
+        }
+
         public enum MessageStatus
         {
             Sent,      // Đã gửi
@@ -98,7 +121,8 @@ namespace Domain.Common
             SystemAlert,
             SendFriend,
             AcceptFriend,
-            RejectFriend,
+            ReplyComment,
+            LikeComment,
         }
 
     }

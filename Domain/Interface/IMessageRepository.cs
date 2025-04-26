@@ -1,5 +1,7 @@
 ﻿
 
+using static Domain.Common.Enums;
+
 namespace Domain.Interface
 {
     public interface IMessageRepository : IBaseRepository<Message>
@@ -16,6 +18,9 @@ namespace Domain.Interface
             int page,
             int pageSize,
             Guid? lastMessageId = null);
-        //AddRangeAsync
+        Task<List<Message>> GetLatestMessagesForInboxAsync(Guid userId, Guid? cursorMessageId, int pageSize);
+        Task<int> GetUnreadMessageCountAsync(Guid conversationId, Guid userId); // Tách riêng để rõ ràng
+        Task<List<Message>> GetListMessagesAsync(Guid messageId, Guid senderId, MessageStatus targetStatus);
+
     }
 }

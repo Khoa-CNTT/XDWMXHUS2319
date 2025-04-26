@@ -1,10 +1,4 @@
-﻿using Application.Interface.ContextSerivce;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
+﻿
 
 namespace Application.CQRS.Commands.Friends
 {
@@ -12,13 +6,16 @@ namespace Application.CQRS.Commands.Friends
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
+        private readonly IRedisService _redisService;
 
         public RemoveFriendCommandHandle(
             IUnitOfWork unitOfWork,
-            IUserContextService userContextService)
+            IUserContextService userContextService,
+            IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
+            _redisService = redisService;
         }
 
         public async Task<ResponseModel<string>> Handle(RemoveFriendCommand request, CancellationToken cancellationToken)
@@ -48,7 +45,8 @@ namespace Application.CQRS.Commands.Friends
 
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-
+                // Xóa khỏi Redis
+                await _redisService.RemoveFriendAsync(friendship.UserId.ToString(), friendship.FriendId.ToString());
                 return ResponseFactory.Success<string>("Đã hủy kết bạn", 200);
             }
             catch (Exception ex)

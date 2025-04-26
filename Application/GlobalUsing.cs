@@ -27,3 +27,6 @@ global using static Domain.Common.Enums;
 global using Application.DTOs.Message;
 global using Application.Interface.ContextSerivce;
 global using static Domain.Common.Helper;
+global using static Application.Common.Constaint;
+global using Application.DTOs.FriendShips;
+global using Application.DTOs.Post;

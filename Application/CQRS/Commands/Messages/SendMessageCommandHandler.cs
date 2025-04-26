@@ -1,10 +1,4 @@
-﻿using Domain.Entities;
-using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Application.CQRS.Commands.Messages
+﻿namespace Application.CQRS.Commands.Messages
 {
     public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, ResponseModel<MessageDto>>
     {
@@ -12,17 +6,19 @@ namespace Application.CQRS.Commands.Messages
         private readonly IChatService _chatService;
         private readonly IUserContextService _userContextService;
         private readonly IRedisService _redisService;
-
+        private readonly INotificationService _notificationService;
         public SendMessageCommandHandler(
             IUnitOfWork unitOfWork,
             IChatService chatService,
             IUserContextService userContextService,
-            IRedisService redisService)
+            IRedisService redisService,
+            INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _chatService = chatService;
             _userContextService = userContextService;
             _redisService = redisService;
+            _notificationService = notificationService;
         }
 
         public async Task<ResponseModel<MessageDto>> Handle(SendMessageCommand request, CancellationToken cancellationToken)
@@ -67,7 +63,7 @@ namespace Application.CQRS.Commands.Messages
                     ReceiverId = messageEvent.ReceiverId,
                     Content = messageEvent.Content,
                     SentAt = FormatUtcToLocal(messageEvent.SentAt),
-                    Status = MessageStatus.Sent,
+                    Status = MessageStatus.Sent.ToString(),
                     DeliveredAt = null,
                     SeenAt = null
                 };
@@ -86,15 +82,15 @@ namespace Application.CQRS.Commands.Messages
 
                 // Gửi tin nhắn qua SignalR
                 await _chatService.SendMessageAsync(messageDto, user2Id);
-
+                //viết nội dung thông báo message mới
+                await _notificationService.SendNotificationNewMessageAsync(user2Id,$"{_userContextService.FullName()} đã nhắn tin cho bạn");
                 // Log để theo dõi
-                Console.WriteLine($"Tin nhắn {messageId} được gửi tới {user2Id} trong conversation {conversation.Id}");
+                await _notificationService.SendNotificationMessageWithIsSeenFalse(conversation.Id, user2Id);
 
                 return ResponseFactory.Success(messageDto, "Gửi tin nhắn thành công.", 200);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Lỗi khi gửi tin nhắn: {ex.Message}");
                 return ResponseFactory.Fail<MessageDto>("Lỗi hệ thống khi gửi tin nhắn.", 500);
             }
         }

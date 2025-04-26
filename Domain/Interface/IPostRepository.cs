@@ -31,6 +31,8 @@ namespace Domain.Interface
 
         Task<List<Post>> GetAllPostForSearchAI();
         Task<int> GetPostCountAsync(Guid userId);
-
+        Task<List<Post>> GetAllPostsWithReportsAsync();
+        Task<List<Post>> GetPostImagesByUserAsync(Guid userId);
+        Task<List<Post>> GetTopPostImagesByUserAsync(Guid userId, int count = 6);
     }
 }

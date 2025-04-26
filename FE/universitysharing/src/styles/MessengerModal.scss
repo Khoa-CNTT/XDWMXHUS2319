@@ -1,3 +1,6 @@
+.messenger-modal-background {
+  display: none;
+}
 .messenger-modal-overlay {
   position: fixed;
   bottom: 0;
@@ -19,6 +22,7 @@
     transform: translateY(0);
   }
   .messenger-modal {
+    position: relative;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -74,7 +78,8 @@
       .header-right {
         display: flex;
 
-        .icon-button, .close-button {
+        .icon-button,
+        .close-button {
           background: none;
           border: none;
           padding: 6px;
@@ -147,7 +152,7 @@
           color: #1877f2;
 
           &::after {
-            content: '';
+            content: "";
             position: absolute;
             bottom: 0;
             left: 0;
@@ -163,83 +168,229 @@
     .friends-list {
       flex: 1;
       overflow-y: auto;
-
+    
       .friend-item {
         display: flex;
         align-items: center;
-        padding: 8px 12px;
+        padding: 0.5rem 0.75rem;
         cursor: pointer;
-        position: relative;
-
+        transition: background-color 0.2s ease;
+    
         &:hover {
           background: #f0f2f5;
         }
-
+    
+        &.unread {
+          background-color: rgba(24, 119, 242, 0.05);
+    
+          .friend-name {
+            font-weight: 600;
+            color: #1c2526;
+          }
+    
+          .message-preview {
+            font-weight: 500;
+            color: #050505;
+          }
+    
+          .unread-count {
+            background: #1877f2;
+            color: #ffffff;
+            font-weight: 600;
+          }
+        }
+    
+        &.pulse {
+          animation: message-pulse 1.5s ease-in-out 2;
+        }
+    
         .friend-avatar {
           position: relative;
-          margin-right: 12px;
-
+          margin-right: 0.75rem;
+    
           img {
-            width: 36px;
-            height: 36px;
+            width: 2.25rem;
+            height: 2.25rem;
             border-radius: 50%;
             object-fit: cover;
           }
-
+    
           .active-badge {
             position: absolute;
             bottom: 0;
             right: 0;
-            width: 10px;
-            height: 10px;
+            width: 0.625rem;
+            height: 0.625rem;
             background: #31a24c;
             border: 2px solid #fff;
             border-radius: 50%;
           }
         }
-
+    
         .friend-info {
           flex: 1;
           overflow: hidden;
-
+    
           .friend-name {
-            font-size: 14px;
+            font-size: 0.875rem;
             font-weight: 600;
             color: #050505;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
           }
-
+    
           .friend-status {
-            font-size: 12px;
+            font-size: 0.75rem;
             color: #65676b;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
           }
         }
-
+    
         .friend-actions {
           .action-button {
             background: none;
             border: none;
-            padding: 6px;
+            padding: 0.375rem;
             border-radius: 50%;
             cursor: pointer;
             color: #65676b;
             opacity: 0;
-            transition: opacity 0.2s;
-
+            transition: opacity 0.2s, background-color 0.2s;
+    
             &:hover {
               background: #e4e6eb;
             }
           }
         }
-
+    
         &:hover .friend-actions .action-button {
           opacity: 1;
         }
+    
+        .unread-badge {
+          position: relative;
+          margin-right: 0.5rem;
+          padding-left: 30px;
+    
+          .unread-count {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.25rem;
+            height: 1.25rem;
+            padding: 0 0.25rem;
+            background-color: #1877f2;
+            color: #ffffff;
+            border-radius: 0.625rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            animation: badge-pop 0.3s ease-out;
+          }
+    
+          &::before {
+            content: '';
+            position: absolute;
+            top: -0.125rem;
+            right: -0.125rem;
+            width: 0.625rem;
+            height: 0.625rem;
+            background-color: #1877f2;
+            border-radius: 50%;
+            opacity: 0;
+            animation: badge-dot 1.5s ease-out 2;
+          }
+        }
+      }
+    
+      .messenger-modal {
+        .modal-header {
+          position: relative;
+    
+          &.has-unread::after {
+            content: '';
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: #fa3e3e;
+            border-radius: 50%;
+            animation: header-notification 2s infinite;
+          }
+        }
+      }
+    }
+    
+    @keyframes message-pulse {
+      0%, 100% {
+        background-color: rgba(24, 119, 242, 0.05);
+      }
+      50% {
+        background-color: rgba(24, 119, 242, 0.15);
+      }
+    }
+    
+    @keyframes badge-pop {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.1);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes badge-dot {
+      0% {
+        transform: scale(0);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes header-notification {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    .message-time {
+      font-size: 12px;
+      color: #65676b;
+      margin-left: 8px;
+      white-space: nowrap;
+    }
+    
+    // Make sure the preview text and time are aligned properly
+    .friend-preview {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      
+      .message-preview {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }

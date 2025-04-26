@@ -26,6 +26,12 @@ namespace Infrastructure.Data.Repositories
             _context.Friendships.Remove(entity);
             return true;
         }
+        public async Task<int> CountAcceptedFriendsAsync(Guid userId)
+        {
+            return await _context.Friendships
+                .CountAsync(f => f.Status == FriendshipStatusEnum.Accepted &&
+                                (f.UserId == userId || f.FriendId == userId));
+        }
         public async Task<Friendship?> GetFriendshipAsync(Guid userId1, Guid userId2)
         {
             return await _context.Friendships
@@ -50,6 +56,23 @@ namespace Infrastructure.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Friendship>> GetFriendsCursorAsync(Guid userId, DateTime? cursor, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var query = _context.Friendships
+     .Where(f => f.Status == FriendshipStatusEnum.Accepted &&
+                 (f.UserId == userId || f.FriendId == userId));
+
+            if (cursor.HasValue)
+            {
+                query = query.Where(f => f.CreatedAt < cursor.Value);
+            }
+
+            return await query
+                .OrderByDescending(f => f.CreatedAt)
+                .Take(pageSize + 1) // Lấy dư 1 để kiểm tra next
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<Friendship?> GetPendingRequestAsync(Guid senderId, Guid receiverId)
         {
             return await _context.Friendships
@@ -71,6 +94,37 @@ namespace Infrastructure.Data.Repositories
             return await _context.Friendships
                 .Where(f => f.UserId == userId && f.Status == FriendshipStatusEnum.Pending)
                 .ToListAsync();
+        }
+        public async Task<List<Friendship>> GetSentRequestsCursorAsync(Guid userId, DateTime? cursor, int take, CancellationToken cancellationToken)
+        {
+            var query = _context.Friendships
+            .Where(f => f.UserId == userId && f.Status == FriendshipStatusEnum.Pending);
+
+            if (cursor.HasValue)
+            {
+                query = query.Where(f => f.CreatedAt < cursor.Value);
+            }
+
+            return await query
+                .OrderByDescending(f => f.CreatedAt)
+                .Take(take + 1)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<Friendship>> GetReceivedRequestsCursorAsync(Guid userId, DateTime? cursor, int take, CancellationToken cancellationToken)
+        {
+            var query = _context.Friendships
+       .Where(f => f.FriendId == userId && f.Status == FriendshipStatusEnum.Pending);
+
+            if (cursor.HasValue)
+            {
+                query = query.Where(f => f.CreatedAt < cursor.Value);
+            }
+
+            return await query
+                .OrderByDescending(f => f.CreatedAt)
+                .Take(take + 1)
+                .ToListAsync(cancellationToken);
         }
     }
 }

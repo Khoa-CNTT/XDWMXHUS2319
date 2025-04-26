@@ -1,32 +1,24 @@
-﻿using Application.Interface.ContextSerivce;
-using Application.Interface.Hubs;
-using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
-
-namespace Application.CQRS.Commands.Friends
+﻿namespace Application.CQRS.Commands.Friends
 {
     public class AcceptFriendRequestCommandHandle : IRequestHandler<AcceptFriendRequestCommand, ResponseModel<bool>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContext;
         private readonly INotificationService _notificationService;
-        public AcceptFriendRequestCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContext, INotificationService notificationService)
+        private readonly IRedisService _redisService;
+        public AcceptFriendRequestCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContext, INotificationService notificationService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContext = userContext;
             _notificationService = notificationService;
+            _redisService = redisService;
         }
 
         public async Task<ResponseModel<bool>> Handle(AcceptFriendRequestCommand request, CancellationToken cancellationToken)
         {
             var userId = _userContext.UserId();
             var friendship = await _unitOfWork.FriendshipRepository
-                .GetPendingRequestAsync(request.FriendshipId, userId); // Đúng sender và receiver
+                .GetPendingRequestAsync(request.FriendId, userId); // Đúng sender và receiver
             if (friendship == null)
                 return ResponseFactory.Fail<bool>("Lời mời kết bạn không tồn tại", 404);
 
@@ -55,13 +47,15 @@ namespace Application.CQRS.Commands.Friends
                 await _unitOfWork.NotificationRepository.AddAsync(notification);
                 if (friendship.UserId != userId)
                 {
-                    await _notificationService.SendAcceptFriendNotificationAsync(request.FriendshipId, userId);
+                    await _notificationService.SendAcceptFriendNotificationAsync(request.FriendId, userId, notification.Id);
                 }
                 //Xóa thông báo gửi lời mời
                 await _unitOfWork.NotificationRepository
                            .DeletePendingFriendRequestNotificationAsync(friendship.UserId, friendship.FriendId);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
+                // Thêm vào Redis
+                await _redisService.AddFriendAsync(userId.ToString(), friendship.FriendId.ToString());
                 return ResponseFactory.Success(true, "Đã chấp nhận lời mời kết bạn", 200);
             }
             catch(Exception ex)

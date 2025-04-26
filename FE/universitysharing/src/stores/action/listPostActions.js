@@ -3,9 +3,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// const token = localStorage.getItem("token");
-// console.warn("Token khi bắt đầu đăng nhập 1 >>", token);
-//Lấy danh sách bài viết
 export const fetchPosts = createAsyncThunk(
   "posts/fetchPosts",
   async (lastPostId = null, { rejectWithValue }) => {
@@ -196,7 +193,7 @@ export const updatePost = createAsyncThunk(
   ) => {
     const token = localStorage.getItem("token");
     try {
-      console.log("FormData contents:");
+      // console.log("FormData contents:");
       for (let pair of formData.entries()) {
         console.log(pair[0], pair[1]); // In key và value của FormData
       }
@@ -210,7 +207,7 @@ export const updatePost = createAsyncThunk(
           },
         }
       );
-      console.log("Response từ API >>", response.data); // Kiểm tra response trả về
+      console.log("Response từ API Update>>", response.data); // Kiểm tra response trả về
       if (response.data.data) {
         toast.success("Sửa bài viết thành công!");
         return {
@@ -220,7 +217,6 @@ export const updatePost = createAsyncThunk(
           profilePicture,
           createdAt,
         };
-        console.log("respone>>", response.data.data);
       } else {
         toast.error("Sửa bài viết không thành công!");
         return rejectWithValue("Dữ liệu trả về không hợp lệ");
@@ -406,6 +402,37 @@ export const fetchPostsByOwner = createAsyncThunk(
         headers: { Authorization: `Bearer ${tokens}` },
       });
       // Handle case when no more posts are available
+      if (response.data.message === "Không còn bài viết nào để load") {
+        return {
+          posts: [],
+          hasMore: false,
+        };
+      }
+      return {
+        posts: response.data.data.posts,
+        hasMore: response.data.data.nextCursor !== null,
+      };
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Error fetching owner posts"
+      );
+    }
+  }
+);
+
+export const fetchPostsByOtherUser = createAsyncThunk(
+  "posts/fetchPostsByOtherUser",
+  async ({ userId, lastPostId = null }, { rejectWithValue }) => {
+    try {
+      const tokens = localStorage.getItem("token");
+      const url = lastPostId
+        ? `https://localhost:7053/api/Post/GetPostsByOwnerFriend?userId=${userId}&lastPostId=${lastPostId}`
+        : `https://localhost:7053/api/Post/GetPostsByOwnerFriend?userId=${userId}`;
+
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${tokens}` },
+      });
+
       if (response.data.message === "Không còn bài viết nào để load") {
         return {
           posts: [],

@@ -4,6 +4,8 @@ using Application.Interface;
 using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using Application.Interface.Hubs;
+using Application.Services;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,13 +21,15 @@ namespace Application.CQRS.Commands.Comments
         private readonly IGeminiService _geminiService;
         private readonly INotificationService _notificationService;
         private readonly IPublisher _publisher;
-        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher)
+        private readonly IPostService _postService;
+        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher, IPostService postService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _geminiService = geminiService;
             _notificationService = notificationService;
             _publisher = publisher;
+            _postService = postService;
         }
         public async Task<ResponseModel<ResultCommentDto>> Handle(CommentPostCommand request, CancellationToken cancellationToken)
         {
@@ -36,16 +40,7 @@ namespace Application.CQRS.Commands.Comments
             {
                 return ResponseFactory.Fail<ResultCommentDto>("Không tìm thấy bài viết này", 404);
             }
-
-            // Kiểm tra số lần share của user đối với bài viết này
-            var oneMinutesAgo = DateTime.UtcNow.AddMinutes(-1);
-            var commentCount = await _unitOfWork.CommentRepository.CountPostCommentAsync(c =>
-                c.UserId == userId && c.PostId == request.PostId && c.CreatedAt >= oneMinutesAgo);
-
-            if (commentCount >= 10)
-            {
-                return ResponseFactory.Fail<ResultCommentDto>("Bạn đã bình luận bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
-            }
+            var postOwnerId = await _postService.GetPostOwnerId(post.Id);
 
             if(request.Content == null)
             {
@@ -66,16 +61,17 @@ namespace Application.CQRS.Commands.Comments
                     return ResponseFactory.Fail<ResultCommentDto>("Không tìm thấy người dùng này", 404);
                 }
                 var comment = new Comment(userId, request.PostId, request.Content);
-
                 await _unitOfWork.CommentRepository.AddAsync(comment);
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
-
                 // 🔥 Publish sự kiện bình luận để gửi thông báo qua SignalR
                 if (post.UserId != userId)
                 {
-                    await _notificationService.SendCommentNotificationAsync(request.PostId, userId);
+                    var notification = new Notification(postOwnerId, userId, $"{user.FullName} đã bình luận bài viết của bạn.", NotificationType.PostCommented, null, $"/post/{post.Id}");
+                    await _unitOfWork.NotificationRepository.AddAsync(notification);
+                    await _notificationService.SendCommentNotificationAsync(request.PostId, userId, postOwnerId, notification.Id);
                 }
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return ResponseFactory.Success(Mapping.MapToResultCommentPostDto(comment, user.FullName, user.ProfilePicture), "Bình luận bài viết thành công", 200);
             }
             catch(Exception ex)
