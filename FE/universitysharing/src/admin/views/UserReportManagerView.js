@@ -45,7 +45,6 @@ const UserReport = () => {
           <Title level={3}>Báo cáo từ người dùng</Title>
           <Card title="Báo cáo mới của người dùng">
             <AllReport />
-
             {/* <Table
               dataSource={dataSource}
               columns={columns}

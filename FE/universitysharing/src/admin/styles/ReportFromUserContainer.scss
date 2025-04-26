@@ -52,8 +52,8 @@
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
-  max-height: 400px; // thêm dòng này để giới hạn chiều cao và kích hoạt scroll
-  padding-right: 8px; // thêm padding nếu cần tránh che nội dung bởi scrollbar
+  max-height: 400px;
+  padding-right: 8px;
 }
 
 .report-card {
