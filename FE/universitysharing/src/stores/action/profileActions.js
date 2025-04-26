@@ -105,3 +105,61 @@ export const fetchOtherUserProfile = createAsyncThunk(
     }
   }
 );
+
+export const fetchPostImagesPreview = createAsyncThunk(
+  "profile/fetchPostImagesPreview",
+  async (userId, { rejectWithValue }) => {
+    try {
+      if (!userId || userId === "undefined") {
+        throw new Error("Invalid userId");
+      }
+      const token = localStorage.getItem("token");
+      console.log("Fetching images for UserId:", userId);
+      console.log("Token:", token);
+      const response = await axios.get(
+        `https://localhost:7053/api/UserProfile/post-images-preview?UserId=${userId}`, // Sửa endpoint
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("API Response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error:", error.response?.data, error.response?.status);
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Có lỗi xảy ra!"
+      );
+    }
+  }
+);
+
+export const fetchAllPostImages = createAsyncThunk(
+  "profile/fetchAllPostImages",
+  async (userId, { rejectWithValue }) => {
+    try {
+      if (!userId || userId === "undefined") {
+        throw new Error("Invalid userId");
+      }
+      const token = localStorage.getItem("token");
+      console.log("Fetching images for UserId:", userId);
+      console.log("Token:", token);
+      const response = await axios.get(
+        `https://localhost:7053/api/UserProfile/post-images-all?UserId=${userId}`, // Sửa endpoint
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("API Response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error:", error.response?.data, error.response?.status);
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Có lỗi xảy ra!"
+      );
+    }
+  }
+);

@@ -5,6 +5,8 @@ import {
   userProfileDetail,
   updateUserProfile,
   fetchOtherUserProfile,
+  fetchPostImagesPreview,
+  fetchAllPostImages,
 } from "../action/profileActions";
 
 const listUser = createSlice({
@@ -17,6 +19,8 @@ const listUser = createSlice({
     loading: false,
     error: null,
     otherUser: {},
+    postImages: [],
+    allPostImages: [],
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -69,6 +73,31 @@ const listUser = createSlice({
       .addCase(fetchOtherUserProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.otherUser = action.payload; // Store the other user's data in users
+      })
+      // Thêm các case cho fetchPostImagesPreview
+      .addCase(fetchPostImagesPreview.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPostImagesPreview.fulfilled, (state, action) => {
+        state.loading = false;
+        state.postImages = action.payload; // Lưu danh sách ảnh
+      })
+      .addCase(fetchPostImagesPreview.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchAllPostImages.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllPostImages.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allPostImages = action.payload; // Lưu danh sách ảnh
+      })
+      .addCase(fetchAllPostImages.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

@@ -187,8 +187,6 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
   }, [userData?.id, dispatch, isLoading.action]);
 
   // Hàm xử lý hủy kết bạn với xác nhận
-  // Hàm xử lý hủy kết bạn với xác nhận
-  // Hàm xử lý hủy kết bạn với xác nhận
   const handleCancelFriendRequest = useCallback(async () => {
     if (!userData?.id || isLoading.action) return;
 

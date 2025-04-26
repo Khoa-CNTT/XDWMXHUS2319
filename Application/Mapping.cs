@@ -63,8 +63,13 @@ namespace Application
                 Reports = post.Reports.Select(r => new ReportDto
                 {
                     Id = r.Id,
+                    UserId = r.ReportedBy, // Ánh xạ từ ReportedBy
+                    Username = r.ReportedByUser?.FullName ?? "Người dùng ẩn danh", // Ánh xạ từ ReportedByUser.Username
+                    ProfilePicture = r.ReportedByUser?.ProfilePicture,
                     Reason = r.Reason,
                     ViolationDetails = r.ViolationDetails,
+                    ProcessedByAI = r.ProcessedByAI, // Ánh xạ từ entity Report
+                    ProcessedByAdmin = r.ProcessedByAdmin, // Ánh xạ từ entity Report
                     CreatedAt = r.CreatedAt,
                     UpdatedAt = r.UpdatedAt
                 }).ToList()

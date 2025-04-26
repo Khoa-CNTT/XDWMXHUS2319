@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -81,5 +82,9 @@ namespace Infrastructure.Data.Repositories
             return (likedUsers, nextCursor);
         }
 
+        public async Task<bool> CheckLikeComment(Guid commentId, Guid userId)
+        {
+            return await _context.CommentLikes.AnyAsync(l => l.CommentId == commentId && l.UserId == userId);
+        }
     }
 }

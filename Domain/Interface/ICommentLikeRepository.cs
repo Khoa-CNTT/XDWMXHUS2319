@@ -9,6 +9,7 @@ namespace Domain.Interface
     public interface ICommentLikeRepository : IBaseRepository<CommentLike>
     {
         Task<CommentLike?> GetLikeAsync(Guid userId, Guid commentId);
+        Task<bool> CheckLikeComment(Guid commentId, Guid userId);
         Task<int> CountLikesAsync(Guid commentId);
         Task<List<User>> GetLikedUsersAsync(Guid commentId);
         Task<List<User?>> GetLikedByCommentIdAsync(Guid commentId);

@@ -11,12 +11,13 @@ namespace Application.Interface
     public interface IReportService
     {
         Task<Guid> CreateReportAsync(Guid postId, string reason);
+        Task<ResponseModel<bool>> DeleteAllReportsOfPostAsync(Guid postId);
         Task ProcessReportByAIAsync(ProcessReportDto dto);
         Task ProcessReportByAdminAsync(ProcessReportDto dto);
         Task<IEnumerable<ReportResponseDto>> GetAllReportsAsync();
         Task<ReportDetailsDto?> GetReportDetailsAsync(Guid reportId);
         Task<IEnumerable<ReportResponseDto>> GetReportsByPostAsync(Guid postId);
         Task<List<PostWithReportsDto>> GetAllPostsWithReportsAsync();
-
+        Task<ResponseModel<bool>> SoftDeletePostAsync(Guid postId);
     }
 }

@@ -33,10 +33,10 @@ namespace Application
 
             //background services
             //nếu ko làm việc liên quan đến like và LocationUpdate thì comment lại
-            services.AddHostedService<LikeEventProcessor>();
+            //services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
             //services.AddHostedService<GpsMonitorService>();
-            //services.AddHostedService<LikeCommentEventProcessor>();
+            services.AddHostedService<LikeCommentEventProcessor>();
             //services.AddHostedService<TrustScoreBackgroundService>();
             services.AddHostedService<MessageProcessingService>();
             //services.AddHostedService<RedisListenerService>();

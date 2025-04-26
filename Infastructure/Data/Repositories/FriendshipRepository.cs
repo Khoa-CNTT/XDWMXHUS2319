@@ -107,7 +107,7 @@ namespace Infrastructure.Data.Repositories
 
             return await query
                 .OrderByDescending(f => f.CreatedAt)
-                .Take(take)
+                .Take(take + 1)
                 .ToListAsync(cancellationToken);
         }
 
@@ -123,7 +123,7 @@ namespace Infrastructure.Data.Repositories
 
             return await query
                 .OrderByDescending(f => f.CreatedAt)
-                .Take(take)
+                .Take(take + 1)
                 .ToListAsync(cancellationToken);
         }
     }

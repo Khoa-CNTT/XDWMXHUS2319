@@ -16,6 +16,7 @@ import Header from "../components/HomeComponent/Header";
 import AllPosts from "../components/HomeComponent/AllPostHome";
 import PostInput from "../components/HomeComponent/PostInputHome";
 import "../styles/ProfileView.scss";
+import { fetchPostImagesPreview } from "../stores/action/profileActions";
 import ProfileFriendsUserOther from "../components/ProfileUserComponent/ProfileFriendsUserOther";
 
 const FriendProfileView = () => {
@@ -38,6 +39,7 @@ const FriendProfileView = () => {
   useEffect(() => {
     dispatch(userProfile()); // Lấy thông tin user đăng nhập trước
     if (userId) {
+      dispatch(fetchPostImagesPreview(userId));
       dispatch(fetchOtherUserProfile(userId)); // Sau đó lấy thông tin người khác
       dispatch(fetchPostsByOtherUser(userId));
       dispatch(fetchFriendsByUserId(userId));

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.FriendShips
 {
-    public class GetFriendListByUserIdQueryHandler : IRequestHandler<GetFriendListByUserIdQuery, ResponseModel<FriendsListWithCountDto>>
+    public class GetFriendListByUserIdQueryHandler : IRequestHandler<GetFriendListByUserIdQuery, ResponseModel<FriendsListWithCursorDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContext;
@@ -17,14 +17,14 @@ namespace Application.CQRS.Queries.FriendShips
             _unitOfWork = unitOfWork;
             _userContext = userContext;
         }
-        public async Task<ResponseModel<FriendsListWithCountDto>> Handle(GetFriendListByUserIdQuery request, CancellationToken cancellationToken)
+        public async Task<ResponseModel<FriendsListWithCursorDto>> Handle(GetFriendListByUserIdQuery request, CancellationToken cancellationToken)
         {
 
             var friendships = await _unitOfWork.FriendshipRepository.GetFriendsAsync(request.UserId);
 
             if (friendships == null || !friendships.Any())
             {
-                var emptyResult = new FriendsListWithCountDto
+                var emptyResult = new FriendsListWithCursorDto
                 {
                     CountFriend = 0,
                     Friends = new List<FriendDto>()
@@ -50,7 +50,7 @@ namespace Application.CQRS.Queries.FriendShips
              .Select(dto => dto!) // ép kiểu non-null
              .ToList();
 
-            var response = new FriendsListWithCountDto
+            var response = new FriendsListWithCursorDto
             {
                 CountFriend = result.Count,
                 Friends = result

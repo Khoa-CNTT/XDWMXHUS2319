@@ -68,5 +68,17 @@ namespace DuyTanSharingSystem.Controllers
             var postsWithReports = await _reportService.GetAllPostsWithReportsAsync();
             return Ok(postsWithReports);
         }
+        [HttpPatch("delete-post-report/{postId}")]
+        public async Task<IActionResult> DeletePostReport(Guid postId)
+        {
+           var result =  await _reportService.SoftDeletePostAsync(postId);
+            return Ok(result);
+        }
+        [HttpDelete("delete-all-report/{postId}")]
+        public async Task<IActionResult> DeleteAllReport(Guid postId)
+        {
+            var result = await _reportService.DeleteAllReportsOfPostAsync(postId);
+            return Ok(result);
+        }
     }
 }
