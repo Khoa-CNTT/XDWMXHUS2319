@@ -23,11 +23,11 @@ namespace Application.BackgroundServices
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                using var scope = _serviceProvider.CreateScope();
-                var redisService = scope.ServiceProvider.GetRequiredService<ICacheService>();
-                var likeRepository = scope.ServiceProvider.GetRequiredService<ILikeRepository>();
-                var postRepository = scope.ServiceProvider.GetRequiredService<IPostRepository>();
-                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                    using var scope = _serviceProvider.CreateScope();
+                    var redisService = scope.ServiceProvider.GetRequiredService<ICacheService>();
+                    var likeRepository = scope.ServiceProvider.GetRequiredService<ILikeRepository>();
+                    var postRepository = scope.ServiceProvider.GetRequiredService<IPostRepository>();
+                    var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                 string redisKey = "like_events";
                 var likeEvents = await redisService.GetAsync<List<Like>>(redisKey);

@@ -33,28 +33,10 @@ namespace Application.CQRS.Queries.Friends
                 friends = await _redisService.GetFriendsAsync(userId.ToString());
             }
 
-            // Số lượng cần lấy (dư 1 để kiểm tra còn nữa không)
-            var fetchCount = request.PageSize + 1;
-
             var friendships = await _unitOfWork.FriendshipRepository
-                .GetFriendsCursorAsync(userId, request.Cursor, fetchCount, cancellationToken);
+                .GetFriendsAsync(userId);
             var totalFriendCount = await _unitOfWork.FriendshipRepository
                 .CountAcceptedFriendsAsync(userId);
-    
-            if (request.Cursor.HasValue)
-            {
-                friendships = friendships
-                    .Where(f => f.CreatedAt < request.Cursor.Value)
-                    .OrderByDescending(f => f.CreatedAt)
-                    .ToList();
-            }
-
-            // Kiểm tra còn dữ liệu hay không
-            bool hasMore = friendships.Count == fetchCount;
-            if (hasMore)
-            {
-                friendships = friendships.Take(request.PageSize).ToList();
-            }
 
             // Nếu sau khi lọc mà không còn bạn bè nào
             if (friendships == null || !friendships.Any())
@@ -62,10 +44,6 @@ namespace Application.CQRS.Queries.Friends
                 return ResponseFactory.Success<FriendsListWithCountDto>("Không có bạn bè nào", 200);
             }
 
-            // Tính nextCursor
-            DateTime? nextCursor = hasMore
-                ? friendships.Last().CreatedAt
-                : null;
 
             // Lấy danh sách friendId
             var friendIds = friendships
@@ -90,7 +68,6 @@ namespace Application.CQRS.Queries.Friends
             {
                 CountFriend = totalFriendCount,
                 Friends = result,
-                NextCursor = nextCursor
             };
 
             return ResponseFactory.Success(response, "Lấy danh sách bạn bè thành công", 200);

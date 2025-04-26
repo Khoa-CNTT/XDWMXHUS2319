@@ -280,5 +280,28 @@ namespace Infrastructure.Data.Repositories
                 .Where(p => p.Reports.Any()) // chỉ lấy bài có report
                 .ToListAsync();
         }
+        public async Task<List<Post>> GetPostImagesByUserAsync(Guid userId)
+        {
+            return await _context.Posts
+                .Where(p => p.UserId == userId &&
+                            !string.IsNullOrEmpty(p.ImageUrl) &&
+                            !p.IsDeleted &&
+                            !p.IsSharedPost &&
+                            p.IsApproved)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+        public async Task<List<Post>> GetTopPostImagesByUserAsync(Guid userId, int count = 3)
+        {
+            return await _context.Posts
+                .Where(p => p.UserId == userId &&
+                            !string.IsNullOrEmpty(p.ImageUrl) &&
+                            !p.IsDeleted &&
+                            !p.IsSharedPost &&
+                            p.IsApproved)
+                .OrderByDescending(p => p.CreatedAt)
+                .Take(count)
+                .ToListAsync();
+        }
     }
 }

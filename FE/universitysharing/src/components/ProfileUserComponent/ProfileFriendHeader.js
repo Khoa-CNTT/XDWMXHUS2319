@@ -20,6 +20,7 @@ import EditProfileModal from "./EditProfileModal";
 import { userProfileDetail } from "../../stores/action/profileActions";
 import getUserIdFromToken from "../../utils/JwtDecode";
 import "../../styles/ProfileUserView/ProfileHeader.scss";
+import "../../styles/MoblieReponsive/ProfileFriendMobile/ProfileHeaderMobile.scss";
 import avatarDefaut from "../../assets/AvatarDefaultFill.png";
 import logoWeb from "../../assets/Logo.png";
 import { toast } from "react-toastify";
@@ -185,8 +186,6 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
     }
   }, [userData?.id, dispatch, isLoading.action]);
 
-  // Hàm xử lý hủy kết bạn với xác nhận
-  // Hàm xử lý hủy kết bạn với xác nhận
   // Hàm xử lý hủy kết bạn với xác nhận
   const handleCancelFriendRequest = useCallback(async () => {
     if (!userData?.id || isLoading.action) return;

@@ -1,4 +1,5 @@
 ﻿using Application.CQRS.Commands.Users;
+using Application.CQRS.Queries.Post;
 using Application.CQRS.Queries.User;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -40,6 +41,18 @@ namespace DuyTanSharingSystem.Controllers
         public async Task<IActionResult> UpdateUserProfile([FromForm] UpdateUserProfileCommand command)
         {
             var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+        [HttpGet("post-images-preview")]
+        public async Task<IActionResult> GetPostImagePreview([FromQuery] GetPostImagesPreviewQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        [HttpGet("post-images-all")]
+        public async Task<IActionResult> GetAllPostImage([FromQuery] GetAllPostImagesByUserQuery query)
+        {
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
     }
