@@ -7,7 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
 import { TbMoodEmptyFilled } from "react-icons/tb";
 import { cancelRide, rateDriver } from "../../stores/action/ridePostAction";
-import RatingModal from "../../components/RatingModal";
+import RatingModal from "../RatingModal";
 
 import L from "leaflet";
 import { confirmAlert } from "react-confirm-alert";

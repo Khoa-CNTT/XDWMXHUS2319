@@ -35,7 +35,7 @@ namespace Infrastructure.Data.UnitOfWork
             IAIConversationRepository aiConversationRepository,
             IAIChatHistoryRepository aiChatHistoryRepository,
 
-            IUserScoreHistoriesRepository userScoreHistoriesRepository
+            IUserScoreHistoriesRepository userScoreHistoriesRepository,
 
             IUserReportRepository userReportRepository
 

@@ -95,7 +95,7 @@ namespace Application.Services
         {
             return  BCrypt.Net.BCrypt.Verify(providedPassword, hashedPassword);
         }
-    }   
+    
 
 
         public async Task<ResponseModel<UserDto>> BlockUserAsync(Guid userId, DateTime blockUntil)
