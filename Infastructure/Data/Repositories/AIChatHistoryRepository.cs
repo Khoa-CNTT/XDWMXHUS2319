@@ -33,7 +33,7 @@ namespace Infrastructure.Data.Repositories
             }
 
             return await query
-                .OrderByDescending(ch => ch.Timestamp)
+                .OrderBy(ch => ch.Timestamp)
                 .Take(pageSize)
                 .ToListAsync();
         }
@@ -52,7 +52,7 @@ namespace Infrastructure.Data.Repositories
                 .Where(ch => ch.ConversationId == conversationId)
                 .AsQueryable();
             return await query
-                .OrderByDescending(ch => ch.Timestamp)
+                .OrderBy(ch => ch.Timestamp)
                 .ToListAsync();
         }
     }

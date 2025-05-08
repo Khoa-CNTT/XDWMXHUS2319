@@ -10,6 +10,7 @@ namespace Application.CQRS.Commands.Likes
         private readonly IRedisService _redisService;
         private readonly INotificationService _notificationService;
         private readonly IUserContextService _userContextService;
+    
 
         public LikePostCommandHandler(IRedisService redisService, 
             INotificationService notificationService, 
@@ -37,6 +38,11 @@ namespace Application.CQRS.Commands.Likes
             if (isAdded)
             {
                 await _notificationService.SendLikeNotificationAsync(request.PostId, userId);
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
                 return ResponseFactory.Success<bool>("Like/unlike request đã được lưu, sẽ xử lý sau", 202);
             }
 

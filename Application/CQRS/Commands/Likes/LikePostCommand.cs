@@ -9,9 +9,11 @@ namespace Application.CQRS.Commands.Likes
     public class LikePostCommand : IRequest<ResponseModel<bool>>
     {
         public Guid PostId { get; set; }
-        public LikePostCommand(Guid postId)
+        public string? redis_key { get; set; } = string.Empty;
+        public LikePostCommand(Guid postId, string? redis_key)
         {
             PostId = postId;
+            this.redis_key = redis_key;
         }
     }
 }
