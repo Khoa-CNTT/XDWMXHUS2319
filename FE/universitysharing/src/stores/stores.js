@@ -9,6 +9,7 @@ import ridePostReducer from "./reducers/ridePostReducer.js";
 import reportSlice from "./reducers/reportReducers.js";
 
 import reporAdmintSlice from "./reducers/adminReducer.js";
+import dashboardSliceReducer from "./reducers/dashboardSlice.js";
 
 import notificationReducer from "./reducers/notificationReducer.js";
 import friendReducer from "./reducers/friendReducer.js";
@@ -33,12 +34,14 @@ const rootReducer = combineReducers({
   report: reportSlice,
   friends: friendReducer,
   reportAdmintSlice: reporAdmintSlice,
+  dashboard: dashboardSliceReducer,
   onlineUsers: onlineUsersReducer,
   notifications: notificationReducer,
   searchs: searchSlice,
   chatAI: chatAIReducer,
   deeplink: deepLinkReducer,
   auth: authReducer,
+
 });
 
 // 3. Tạo store

@@ -33,6 +33,7 @@ namespace Application.CQRS.Commands.Shares
         {
             // Lấy UserId từ UserContextService
             var userId = _userContextService.UserId();
+
             // Lấy bài Post gốc
             var originalPost = await _unitOfWork.PostRepository.GetByIdOriginalPostAsync(request.PostId);
             if (originalPost == null)
@@ -50,6 +51,8 @@ namespace Application.CQRS.Commands.Shares
             {
                 return ResponseFactory.Fail<ResultSharePostDto>("Không tìm thấy người dùng", 404);
             }
+            if (user.Status == "Suspended")
+                return ResponseFactory.Fail<ResultSharePostDto>("Tài khoản đang bị tạm ngưng", 403);
             await _unitOfWork.BeginTransactionAsync();
             try
             {

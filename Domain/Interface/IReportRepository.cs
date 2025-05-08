@@ -15,6 +15,7 @@ namespace Domain.Interface
         Task<List<Report>> GetReportsByPostIdDeleteAsync(Guid postId);
         Task<IEnumerable<Report>> GetByPostIdAsync(Guid postId);
         Task<Report?> GetReportDetailsAsync(Guid reportId);
+        Task<List<Report>> GetReportsByPostIdsAsync(List<Guid> postIds);
 
     }
 }

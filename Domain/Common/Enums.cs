@@ -124,6 +124,12 @@ namespace Domain.Common
             ReplyComment,
             LikeComment,
         }
-
+        public enum UserStatus
+        {
+            Active,
+            Inactive,
+            Suspended,
+            Blocked
+        }
     }
 }

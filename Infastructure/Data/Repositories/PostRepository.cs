@@ -1,18 +1,9 @@
-﻿using Domain.Common;
-using Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
+﻿using Application.DTOs.DasbroadAdmin;
 
 namespace Infrastructure.Data.Repositories
 {
     public class PostRepository : BaseRepository<Post>, IPostRepository
     {
-
         public PostRepository(AppDbContext context) : base(context)
         {
         }
@@ -35,7 +26,6 @@ namespace Infrastructure.Data.Repositories
                 .FirstOrDefaultAsync(); // ✅ Lấy giá trị đầu tiên (hoặc null nếu không có)
 
         }
-
         public override async Task<Post?> GetByIdAsync(Guid id)
         {
             return await _context.Posts
@@ -60,7 +50,6 @@ namespace Infrastructure.Data.Repositories
                 .Where(x => x.ApprovalStatus == approvalStatusEnum )
                 .ToListAsync();
         }
-
         public async Task<List<Post>> GetAllPostsAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {
 
@@ -94,7 +83,6 @@ namespace Infrastructure.Data.Repositories
                 .Take(PAGE_SIZE)
                 .ToListAsync(cancellationToken);
         }
-
         public async Task<List<Post>> GetPostsByOwnerAsync(Guid userId, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {
             const int PAGE_SIZE = 10;
@@ -280,11 +268,12 @@ namespace Infrastructure.Data.Repositories
         public async Task<List<Post>> GetAllPostsWithReportsAsync()
         {
             return await _context.Posts
-                .Include(p => p.User)
-                .Include(p => p.Reports)
-                   .ThenInclude(r => r.ReportedByUser) // Load thông tin người báo cáo
-                .Where(p => p.Reports.Any()) // chỉ lấy bài có report
-                .ToListAsync();
+    .Include(p => p.User)
+    .Include(p => p.Reports.Where(r => !r.IsDeleted)) // ✅ Chỉ lấy report chưa bị xóa
+        .ThenInclude(r => r.ReportedByUser)
+    .Where(p => !p.IsDeleted) // ✅ Bỏ bài viết đã xóa mềm
+    .Where(p => p.Reports.Any(r => !r.IsDeleted)) // ✅ Chỉ lấy bài có report chưa bị xóa mềm
+    .ToListAsync();
         }
         public async Task<List<Post>> GetPostImagesByUserAsync(Guid userId)
         {
@@ -309,6 +298,7 @@ namespace Infrastructure.Data.Repositories
                 .Take(count)
                 .ToListAsync();
         }
+
         public async Task<List<Post>> GetAllPostsForAdminAsync(int skip, int take, CancellationToken cancellationToken)
         {
             return await _context.Posts
@@ -324,5 +314,6 @@ namespace Infrastructure.Data.Repositories
         {
             return await _context.Posts.CountAsync(cancellationToken);
         }
+
     }
 }

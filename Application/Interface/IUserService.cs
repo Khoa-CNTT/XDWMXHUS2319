@@ -1,12 +1,5 @@
-﻿using Application.CQRS.Commands.Users;
-using Application.CQRS.Queries.User;
+﻿using Application.DTOs.AdminUserManagement;
 using Application.DTOs.User;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Interface
 {
@@ -18,8 +11,16 @@ namespace Application.Interface
         Task<string?> SendVerifiEmailAsync(Guid userId,string email);
         Task<string> GenerateTokenAsync(Guid userId);
         Task<User?> GetByIdAsync(Guid userId);
+
         Task<bool> SendEmailAsync(string email, string subject, string body);
         Task<bool> VerifyPasswordAsync(string hashedPassword, string providedPassword);
+      
+        Task<ResponseModel<UserDto>> BlockUserAsync(Guid userId, DateTime blockUntil);
+        Task<ResponseModel<UserDto>> SuspendUserAsync(Guid userId, DateTime suspendUntil);
+        Task<ResponseModel<UserDto>> UnblockUserAsync(Guid userId);
+        Task<ResponseModel<List<UserDto>>> GetUsersAsync(string? status = null, string? search = null);
+        Task<ResponseModel<UserDto>> GetUserDetailsAsync(Guid userId);
+        Task<ResponseModel<List<UserManagerDto>>> GetAllUsersAsync();
 
     }
 }

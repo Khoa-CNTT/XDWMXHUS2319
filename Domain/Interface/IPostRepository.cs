@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
+﻿using static Domain.Common.Enums;
 
 namespace Domain.Interface
 {
@@ -34,7 +29,9 @@ namespace Domain.Interface
         Task<List<Post>> GetAllPostsWithReportsAsync();
         Task<List<Post>> GetPostImagesByUserAsync(Guid userId);
         Task<List<Post>> GetTopPostImagesByUserAsync(Guid userId, int count = 6);
+
         Task<List<Post>> GetAllPostsForAdminAsync(int skip, int take, CancellationToken cancellationToken);
         Task<int> GetTotalPostCountAsync(CancellationToken cancellationToken);
+
     }
 }

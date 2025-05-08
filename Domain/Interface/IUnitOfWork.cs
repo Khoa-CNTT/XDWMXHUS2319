@@ -13,6 +13,7 @@ namespace Domain.Interface
         IPostRepository PostRepository { get; }
         ILikeRepository LikeRepository { get; }
         IRefreshtokenRepository RefreshtokenRepository { get; }
+        IUserReportRepository UserReportRepository { get; }
 
         IShareRepository ShareRepository { get; }
         ICommentRepository CommentRepository { get; }
