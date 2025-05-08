@@ -15,7 +15,7 @@ namespace Domain.Entities
         public string Content { get; private set; }
         public string? ImageUrl { get; private set; }
         public string? VideoUrl { get; private set; }
-        public PostTypeEnum PostType { get; private set; }
+        public PostTypeEnum PostType { get; private set; } = PostTypeEnum.StudyMaterial;
         public DateTime CreatedAt { get; private set; }
         public DateTime? UpdateAt { get; private set; }
         public bool IsDeleted { get; private set; } // Hỗ trợ xóa mềm
@@ -43,12 +43,12 @@ namespace Domain.Entities
         {
             IsDeleted = true;
         }
-        public Post(Guid userId, string content, PostTypeEnum postType, ScopeEnum scope, string? imageUrl = null, string? videoUrl = null)
+        public Post(Guid userId, string content, ScopeEnum scope, string? imageUrl = null, string? videoUrl = null)
         {
             Id = Guid.NewGuid();
             UserId = userId;
             Content = content;
-            PostType = postType;
+            PostType = PostTypeEnum.StudyMaterial;
             CreatedAt =DateTime.UtcNow;
             Scope = scope;
             ImageUrl = imageUrl;
@@ -151,7 +151,7 @@ namespace Domain.Entities
         {
             if (originalPost == null) throw new ArgumentNullException(nameof(originalPost));
 
-            return new Post(userId, content, originalPost.PostType, ScopeEnum.Public) // Scope mặc định là Public
+            return new Post(userId, content, ScopeEnum.Public) // Scope mặc định là Public
             {
                 OriginalPostId = originalPost.Id
             };

@@ -357,15 +357,31 @@ class SignalRService {
       await this.invoke(this.aiConnection, "LeaveConversation", conversationId);
     }
 
-    onReceiveAnswer(callback) {
-      this.on(this.aiConnection, "ReceiveAnswer", (message) => {
-        console.log("[SignalRService] Nhận sự kiện ReceiveAnswer:", message);
-        callback(message.Data, message.Final);
+    async sendStreamQuery(query, currentConversationId, streamId) {
+      await this.aiConnection.invoke('StreamQuery', query, currentConversationId, streamId);
+    }
+
+    onReceiveChunk(callback) {
+      this.on(this.aiConnection, "ReceiveChunk", (content, streamId) => {
+        console.log("[SignalRService] Nhận sự kiện ReceiveChunk:", content, "StreamId:", streamId);
+        callback(content, streamId);
       });
-      console.log("Đăng ký sự kiện ReceiveAnswer");
+      console.log("Đăng ký sự kiện ReceiveChunk");
+    }
+    onStreamCompleted(callback) {
+      this.on(this.aiConnection, "StreamCompleted", (streamId) => {
+        console.log("[SignalRService] Nhận sự kiện StreamCompleted, StreamId:", streamId);
+        callback(streamId);
+      });
     }
  
-  
+    onReceiveComplete(callback) {
+      this.on(this.aiConnection, "ReceiveComplete", (content, streamId) => {
+        console.log("[SignalRService] Nhận sự kiện ReceiveComplete:", content, "StreamId:", streamId);
+        callback(content, streamId);
+      });
+      console.log("Đăng ký sự kiện ReceiveComplete");
+    }
   async sendNotification(message) {
     await this.invoke(this.notificationConnection, "SendNotification", message);
   }

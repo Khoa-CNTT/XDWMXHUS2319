@@ -24,7 +24,7 @@ namespace Application.CQRS.Commands.ChatAI
                 conversation.UpdateTimestamp();
 
                 // Tạo bản ghi lịch sử chat
-                var chatHistory = new AIChatHistory(request.ConversationId, request.Query, request.Answer, request.TokenCount);
+                var chatHistory = new AIChatHistory(request.ConversationId, request.Query, request.Answer, request.TokenCount,request.Context,"");
                 await _unitOfWork.AIChatHistoryRepository.AddAsync(chatHistory);
 
                 // Giới hạn lịch sử chat (tối đa 10 bản ghi hoặc tổng token <= 1000)

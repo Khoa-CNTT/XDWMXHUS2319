@@ -91,27 +91,40 @@ namespace Domain.Entities
                 UpdatedAt = DateTime.UtcNow;
             }
 
-            /// <summary>
-            /// Cập nhật thông tin cá nhân (Họ tên, ảnh đại diện, tiểu sử).
-            /// </summary>
-            public void UpdateProfile(string fullName, string? profilePicture,string? backgroundPicture, string? bio, string? phone, string? relativePhone)
-            {
-                if (string.IsNullOrWhiteSpace(fullName))
-                    throw new ArgumentException("Full name cannot be empty.");
-
+        /// <summary>
+        /// Cập nhật thông tin cá nhân (Họ tên, ảnh đại diện, tiểu sử).
+        /// </summary>
+        public void UpdateProfile(
+        string? fullName,
+        string? profileImageUrl,
+        string? backgroundImageUrl,
+        string? bio,
+        string? phoneNumber,
+        string? phoneRelativeNumber)
+        {
+            if (!string.IsNullOrWhiteSpace(fullName))
                 FullName = fullName;
-                ProfilePicture = profilePicture;
-                BackgroundPicture = backgroundPicture;
+
+            if (!string.IsNullOrWhiteSpace(profileImageUrl))
+                ProfilePicture = profileImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(backgroundImageUrl))
+                BackgroundPicture = backgroundImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(bio))
                 Bio = bio;
-                Phone = phone;
-                RelativePhone = relativePhone;
-                UpdatedAt = DateTime.UtcNow;
+
+            if (!string.IsNullOrWhiteSpace(phoneNumber))
+                Phone = phoneNumber;
+
+            if (!string.IsNullOrWhiteSpace(phoneRelativeNumber))
+                RelativePhone = phoneRelativeNumber;
         }
 
-            /// <summary>
-            /// Cập nhật mật khẩu mới (đã hash).
-            /// </summary>
-            public void UpdatePassword(string newPasswordHash)
+        /// <summary>
+        /// Cập nhật mật khẩu mới (đã hash).
+        /// </summary>
+        public void UpdatePassword(string newPasswordHash)
             {
                 if (string.IsNullOrWhiteSpace(newPasswordHash))
                     throw new ArgumentException("New password cannot be empty.");

@@ -28,7 +28,6 @@ namespace Infrastructure.Service
             // Gửi tin nhắn đến cả người nhận và người gửi qua cùng sự kiện ReceiveMessage
             await _chatHub.Clients.Users(new[] { recipientId.ToString(), message.SenderId.ToString() })
                 .SendAsync("ReceiveMessage", message);
-
             // Thông báo trạng thái "Delivered" cho người gửi
             await _chatHub.Clients.User(message.SenderId.ToString()).SendAsync("MessageDelivered", message.Id);
         }

@@ -4,6 +4,8 @@ using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using static Domain.Common.Helper;
 using static Domain.Common.Enums;
+using Domain.Entities;
+using StackExchange.Redis;
 
 
 
@@ -15,13 +17,15 @@ namespace Application.CQRS.Commands.Posts
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGeminiService _geminiService;
         private readonly IFileService _fileService;
+        private readonly IRedisService _redisService;
 
-        public CreatePostCommandHandler(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, IFileService fileService)
+        public CreatePostCommandHandler(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, IFileService fileService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _geminiService = geminiService;
             _fileService = fileService;
+            _redisService = redisService;
         }
         public async Task<ResponseModel<ResponsePostDto>> Handle(CreatePostCommand request, CancellationToken cancellationToken)
         {
@@ -58,7 +62,7 @@ namespace Application.CQRS.Commands.Posts
                 }
 
                 // Tạo post
-                var post = new Post(userId, request.Content, request.PostType, request.Scope, imageUrlString, videoUrl);
+                var post = new Post(userId, request.Content, request.Scope, imageUrlString, videoUrl);
 
                 //kiểm tra xem bài đăng có hợp lệ không bằng Genimi
                 var result = await _geminiService.ValidatePostContentAsync(post.Content);
@@ -95,6 +99,12 @@ namespace Application.CQRS.Commands.Posts
                     IsApproved = post.IsApproved,
                     CreatedAt =FormatUtcToLocal(post.CreatedAt),
                 };
+                if(request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
+
 
                 return ResponseFactory.Success(postDto, "Create Post Success", 200);
             }

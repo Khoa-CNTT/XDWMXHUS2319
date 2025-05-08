@@ -1,10 +1,18 @@
 ﻿using Application.DTOs.ChatAI;
+using System.Runtime.CompilerServices;
 
 
 namespace Application.Interface.ChatAI
 {
     public interface IPythonApiService
     {
-        Task<PythonApiResponse> SendQueryAsync(string query, Guid userId, Guid conversationId, string role, List<AIChatHistoryDto> chatHistory, string accessToken, CancellationToken cancellationToken);
+        IAsyncEnumerable<(string Type, object Content)> SendQueryAsync(
+            string query,
+            Guid userId,
+            Guid conversationId,
+            string role,
+            string accessToken,
+            string streamId,
+             CancellationToken cancellationToken);
     }
 }

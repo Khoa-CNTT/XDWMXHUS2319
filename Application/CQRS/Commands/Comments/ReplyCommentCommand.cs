@@ -13,5 +13,6 @@ namespace Application.CQRS.Commands.Comments
         public Guid PostId { get; set; }
         public Guid ParentCommentId { get; set; } // Nếu null → là comment gốc, nếu có giá trị → là reply
         public string Content { get; set; } = string.Empty;
+        public string? redis_key { get; set; } = string.Empty;
     }
 }

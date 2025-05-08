@@ -1,58 +1,43 @@
 ﻿using Application.DTOs.ChatAI;
-using Application.Interface.ChatAI;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
+using Application.Interface.ChatAI;
 
 namespace Infrastructure.Service
 {
+
     public class PythonApiService : IPythonApiService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _pythonApiUrl;
         private readonly ILogger<PythonApiService> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
         public PythonApiService(
             IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
-            ILogger<PythonApiService> logger)
+            ILogger<PythonApiService> logger,
+            IUnitOfWork unitOfWork)
         {
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _pythonApiUrl = configuration["PythonApi:Url"] ?? "http://127.0.0.1:8000/api/query";
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<PythonApiResponse> SendQueryAsync(
+        public async IAsyncEnumerable<(string Type, object Content)> SendQueryAsync(
             string query,
             Guid userId,
             Guid conversationId,
             string role,
-            List<AIChatHistoryDto> chatHistory,
             string accessToken,
-            CancellationToken cancellationToken)
+            string streamId,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                _logger.LogWarning("Query is empty or null");
-                throw new ArgumentException("Query cannot be empty", nameof(query));
-            }
-
-            if (string.IsNullOrWhiteSpace(accessToken))
-            {
-                _logger.LogWarning("Access token is empty");
-                throw new InvalidOperationException("Access token is required");
-            }
-
-            _logger.LogInformation("Sending query to Python API: {Query}, UserId: {UserId}, ConversationId: {ConversationId}", query, userId, conversationId);
-
             var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(60);
+            client.Timeout = TimeSpan.FromSeconds(180);
 
             var payload = new
             {
@@ -60,10 +45,10 @@ namespace Infrastructure.Service
                 user_id = userId.ToString(),
                 conversation_id = conversationId.ToString(),
                 role,
-                chat_history = chatHistory
+                stream_id = streamId
             };
 
-            var content = new StringContent(
+            var contents = new StringContent(
                 JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = false }),
                 Encoding.UTF8,
                 "application/json"
@@ -71,7 +56,7 @@ namespace Infrastructure.Service
 
             var request = new HttpRequestMessage(HttpMethod.Post, _pythonApiUrl)
             {
-                Content = content
+                Content = contents
             };
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -79,61 +64,120 @@ namespace Infrastructure.Service
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync(cancellationToken);
-                _logger.LogError("Python API call failed: {StatusCode}, {Error}", response.StatusCode, error);
+                _logger.LogError("Python API call failed: {StatusCode}, {Error}, StreamId: {StreamId}", response.StatusCode, error, streamId);
                 throw new HttpRequestException($"Python API call failed: {response.ReasonPhrase}, Error: {error}");
             }
 
-            var metadata = new PythonApiMetadata();
-            var answerBuilder = new StringBuilder();
+            var conversation = await _unitOfWork.AIConversationRepository.GetByIdAsync(conversationId);
+            if (conversation != null && conversation.Title.Equals("Curent Chat"))
+            {
+                var title = string.Join(" ", query.Split(' ').Take(10));
+                conversation.UpdateTitle(title);
+                await _unitOfWork.SaveChangesAsync();
+                _logger.LogInformation("Updated conversation title: {Title}, StreamId: {StreamId}", title, streamId);
+            }
 
+            var pythonResponse = new PythonApiResponse();
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             using var reader = new StreamReader(stream, Encoding.UTF8);
             string? chunk;
+
             while ((chunk = await reader.ReadLineAsync()) != null)
             {
                 if (string.IsNullOrWhiteSpace(chunk))
-                {
                     continue;
-                }
 
-                _logger.LogDebug("Received chunk: {Chunk}", chunk);
+                _logger.LogDebug("Received chunk: {Chunk}, StreamId: {StreamId}", chunk, streamId);
+
+                JsonElement jsonChunk;
                 try
                 {
-                    var jsonChunk = JsonSerializer.Deserialize<JsonElement>(chunk);
-                    if (jsonChunk.TryGetProperty("type", out var type) && type.GetString() == "metadata")
-                    {
-                        var headers = jsonChunk.GetProperty("headers");
-                        metadata.NormalizedQuery = headers.TryGetProperty("X-Normalized-Query", out var nq) ? nq.GetString() ?? string.Empty : string.Empty;
-                        metadata.Intent = headers.TryGetProperty("X-Intent", out var intent) ? intent.GetString() ?? string.Empty : string.Empty;
-                        metadata.TableName = headers.TryGetProperty("X-Table-Name", out var tn) ? tn.GetString() ?? string.Empty : string.Empty;
-                        metadata.LastDataTime = headers.TryGetProperty("X-Last-Data-Time", out var ldt) ? ldt.GetString() ?? string.Empty : string.Empty;
-                        metadata.TokenCount = headers.TryGetProperty("X-Token-Count", out var tc) && int.TryParse(tc.GetString(), out int count) ? count : 0;
-                        _logger.LogDebug("Parsed metadata: {Metadata}", JsonSerializer.Serialize(metadata));
-                        continue;
-                    }
-                    // Append non-metadata chunk with normalized whitespace
-                    answerBuilder.Append(jsonChunk.ToString().Trim() + " ");
+                    jsonChunk = JsonSerializer.Deserialize<JsonElement>(chunk);
                 }
                 catch (JsonException)
                 {
-                    // Treat non-JSON chunk as response content
-                    answerBuilder.Append(chunk.Trim() + " ");
+                    _logger.LogWarning("Invalid JSON chunk: {Chunk}, StreamId: {StreamId}", chunk, streamId);
+                    continue;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning("Error processing chunk: {Error}, Chunk: {Chunk}", ex.Message, chunk);
+                    _logger.LogWarning("Error processing chunk: {Error}, Chunk: {Chunk}, StreamId: {StreamId}", ex.Message, chunk, streamId);
                     continue;
                 }
+
+                if (jsonChunk.ValueKind != JsonValueKind.Object || !jsonChunk.TryGetProperty("type", out var type))
+                    continue;
+
+                var typeValue = type.GetString();
+                if (typeValue == "chunk")
+                {
+                    if (jsonChunk.TryGetProperty("content", out var contentProp))
+                    {
+                        var content = contentProp.GetString();
+                        if (!string.IsNullOrEmpty(content))
+                        {
+                            pythonResponse.Answer += content; // Thu thập cho final
+                            yield return ("chunk", content);
+                        }
+                    }
+                }
+                else if (typeValue == "complete")
+                {
+                    if (jsonChunk.TryGetProperty("content", out var contentProp))
+                    {
+                        List<Dictionary<string, object>>? results = null;
+
+                        if (contentProp.ValueKind == JsonValueKind.Array)
+                        {
+                            results = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(contentProp.GetRawText());
+                        }
+                        else if (contentProp.ValueKind == JsonValueKind.Object)
+                        {
+                            var singleResult = JsonSerializer.Deserialize<Dictionary<string, object>>(contentProp.GetRawText());
+                            if (singleResult != null)
+                            {
+                                results = new List<Dictionary<string, object>> { singleResult };
+                                _logger.LogInformation("Converted single object to array: {Result}, StreamId: {StreamId}", JsonSerializer.Serialize(singleResult), streamId);
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Invalid complete content type: {ValueKind}, StreamId: {StreamId}", contentProp.ValueKind, streamId);
+                                results = new List<Dictionary<string, object>>();
+                            }
+                        }
+
+                        _logger.LogDebug("Parsed complete results: {Results}, StreamId: {StreamId}", JsonSerializer.Serialize(results), streamId);
+                        yield return ("complete", results ?? new List<Dictionary<string, object>>());
+                    }
+                }
+                else if (typeValue == "final")
+                {
+                    if (jsonChunk.TryGetProperty("data", out var data))
+                    {
+                        if (data.TryGetProperty("normalized_query", out var nqVal))
+                            pythonResponse.NormalizedQuery = nqVal.GetString() ?? string.Empty;
+                        if (data.TryGetProperty("response", out var responseVal))
+                            pythonResponse.Answer = responseVal.GetString()?.Trim() ?? pythonResponse.Answer;
+                        if (data.TryGetProperty("token_count", out var tcVal) && tcVal.TryGetInt32(out int tokenCount))
+                            pythonResponse.TokenCount = tokenCount;
+                        if (data.TryGetProperty("results", out var resultsProp))
+                        {
+                            var results = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(resultsProp.GetRawText());
+                            if (results != null)
+                                pythonResponse.Results = results;
+                        }
+                        if (data.TryGetProperty("type", out var nqType))
+                            pythonResponse.Type = nqType.GetString() ?? string.Empty;
+                    }
+                    yield return ("final", pythonResponse);
+                }
+                else if (typeValue == "error")
+                {
+                    var message = jsonChunk.TryGetProperty("content", out var msgProp) ? msgProp.GetString() : "Unknown error";
+                    _logger.LogError("Python API error: {Message}, StreamId: {StreamId}", message, streamId);
+                    throw new HttpRequestException($"Python API error: {message}");
+                }
             }
-
-            var answer = answerBuilder.ToString().Trim();
-            _logger.LogInformation("Received response from Python API: Answer length: {AnswerLength}, Metadata: {Metadata}", answer.Length, JsonSerializer.Serialize(metadata));
-
-            return new PythonApiResponse
-            {
-                Answer = answer,
-                Metadata = metadata
-            };
         }
     }
 }

@@ -13,11 +13,13 @@ namespace Application.CQRS.Commands.Comments
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
         private readonly ICommentService _commentService;
-        public SoftDeleteCommentCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, ICommentService commentService)
+        private readonly IRedisService _redisService;
+        public SoftDeleteCommentCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, ICommentService commentService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _commentService = commentService;
+            _redisService = redisService;
         }
         public async Task<ResponseModel<bool>> Handle(SoftDeleteCommentCommand request, CancellationToken cancellationToken)
         {
@@ -61,6 +63,11 @@ namespace Application.CQRS.Commands.Comments
                 await _unitOfWork.SaveChangesAsync();
 
                 await _unitOfWork.CommitTransactionAsync();
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
                 return ResponseFactory.Success(true, "Xóa bình luận và các phản hồi thành công", 200);
             }
             catch (Exception ex)

@@ -1,18 +1,14 @@
 import {
   configureStore,
 } from "@reduxjs/toolkit";
-import listPostReducer from "./reducers/listPostReducers.js";
-import listUser from "./reducers/proFileReducers.js";
-import ridePostReducer from "./reducers/ridePostReducer.js";
-
-import reportSlice from "./reducers/reportReducers.js";
-
-
+import { chatAIReducer } from "./reducers/chatAIReducer.js";
 import friendReducer from "./reducers/friendReducer.js";
+import listPostReducer from "./reducers/listPostReducers.js";
 import onlineUsersReducer from "./reducers/onlineSlice.js";
-
+import listUser from "./reducers/proFileReducers.js";
+import reportSlice from "./reducers/reportReducers.js";
+import ridePostReducer from "./reducers/ridePostReducer.js";
 import searchSlice from "./reducers/searchReducers.js";
-import chatAIReducer from "./reducers/chatAIReducer.js"
 const store = configureStore({
   reducer: {
     posts: listPostReducer,

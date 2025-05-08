@@ -1,16 +1,5 @@
-﻿using Application.DTOs.Comments;
-using Application.DTOs.Post;
+﻿
 using Application.DTOs.Shares;
-using Application.Interface;
-using Application.Interface.Api;
-using Application.Interface.ContextSerivce;
-using Application.Interface.Hubs;
-using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.CQRS.Commands.Shares
 {
@@ -21,13 +10,15 @@ namespace Application.CQRS.Commands.Shares
         private readonly IGeminiService _geminiService;
         private readonly IPostService _postService;
         private readonly INotificationService _notificationService;
-        public SharePostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, IPostService postService, INotificationService notificationService)
+        private readonly IRedisService _redisService;
+        public SharePostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, IPostService postService, INotificationService notificationService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _geminiService = geminiService;
             _postService = postService;
             _notificationService = notificationService;
+            _redisService = redisService;
         }
         public async Task<ResponseModel<ResultSharePostDto>> Handle(SharePostCommand request, CancellationToken cancellationToken)
         {
@@ -71,12 +62,19 @@ namespace Application.CQRS.Commands.Shares
                 await _unitOfWork.PostRepository.AddAsync(sharedPost);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
+
                 var message = $"{user.FullName} đã chia sẻ bài viết của bạn vào lúc {DateTime.Now.ToString("HH:mm dd/MM/yyyy")}";
                 if(userId != originalPost.UserId)
                 {
                     await _notificationService.SendShareNotificationAsync(request.PostId, userId, message);
                 }
-                
+
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
+
                 return ResponseFactory.Success(
                     Mapping.MapToResultSharePostDto(sharedPost, originalPost, user), // ⚠️ Truyền `share` thay vì `sharedPost`
                     "Chia sẻ bài viết thành công",

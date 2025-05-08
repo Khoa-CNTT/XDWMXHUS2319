@@ -3,15 +3,14 @@ namespace Application.DTOs.ChatAI
 {
     public class PythonApiResponse
     {
+        // Câu trả lời từ LLM (response trong chunk final)
         public string Answer { get; set; } = string.Empty;
-        public PythonApiMetadata Metadata { get; set; } = new PythonApiMetadata();
-    }
-    public class PythonApiMetadata
-    {
+        // Truy vấn chuẩn hóa (normalized_query)
         public string NormalizedQuery { get; set; } = string.Empty;
-        public string Intent { get; set; } = string.Empty;
-        public string TableName { get; set; } = string.Empty;
-        public string LastDataTime { get; set; } = string.Empty;
-        public int TokenCount { get; set; } 
+        // Số token (token_count)
+        public int TokenCount { get; set; }
+        // Results thô từ chunk final
+        public List<Dictionary<string, object>> Results { get; set; } = new List<Dictionary<string, object>>();
+        public string Type { get; set; } = string.Empty;
     }
 }
