@@ -34,9 +34,9 @@ namespace DuyTanSharingSystem.Controllers
         }
 
         [HttpPatch("DeleteComment/{id}")]
-        public async Task<IActionResult> UpdatePost([FromRoute]Guid id)
+        public async Task<IActionResult> UpdatePost([FromRoute] Guid id, [FromQuery] string? redis_key)
         {
-            var response = await _mediator.Send(new SoftDeleteCommentCommand(id));
+            var response = await _mediator.Send(new SoftDeleteCommentCommand(id, redis_key));
             return Ok(response);
         }
 

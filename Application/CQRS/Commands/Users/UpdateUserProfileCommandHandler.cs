@@ -1,11 +1,5 @@
 ﻿using Application.DTOs.User;
-using Application.Interface.ContextSerivce;
-using Domain.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Application.CQRS.Commands.Users
 {
@@ -15,12 +9,14 @@ namespace Application.CQRS.Commands.Users
         private readonly IUserContextService _userContextService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileService _fileService;
-        public UpdateUserProfileCommandHandler(IUserRepository userRepository, IUserContextService userContextService, IUnitOfWork unitOfWork, IFileService fileService)
+        private readonly IRedisService _redisService;
+        public UpdateUserProfileCommandHandler(IUserRepository userRepository, IUserContextService userContextService, IUnitOfWork unitOfWork, IFileService fileService, IRedisService redisService)
         {
             _userRepository = userRepository;
             _userContextService = userContextService;
             _unitOfWork = unitOfWork;
             _fileService = fileService;
+            _redisService = redisService;
         }
 
         public async Task<ResponseModel<UserProfileDetailDto>> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
@@ -65,6 +61,11 @@ namespace Application.CQRS.Commands.Users
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
                 // Trả về kết quả sau khi cập nhật
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
                 return ResponseFactory.Success(Mapping.MaptoUserprofileDetailDto(user), "Cập nhật hồ sơ thành công", 200);
             }
             catch (Exception ex)

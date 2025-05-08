@@ -1,11 +1,4 @@
-﻿using Application.Interface.ContextSerivce;
-using Domain.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Application.CQRS.Commands.Posts
 {
     public class SoftDeletePostCommandHandle : IRequestHandler<SoftDeletePostCommand, ResponseModel<bool>>
@@ -13,12 +6,14 @@ namespace Application.CQRS.Commands.Posts
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
         private readonly IPostService _postService;
+        private readonly IRedisService _redisService;
 
-        public SoftDeletePostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IPostService postService)
+        public SoftDeletePostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IPostService postService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _postService = postService;
+            _redisService = redisService;
         }
 
         public async Task<ResponseModel<bool>> Handle(SoftDeletePostCommand request, CancellationToken cancellationToken)
@@ -62,6 +57,11 @@ namespace Application.CQRS.Commands.Posts
                 // 🔥 Lưu thay đổi
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
                 return ResponseFactory.Success(true, "Xóa bài viết và các bài chia sẻ thành công", 200);
             }
             catch (Exception ex)

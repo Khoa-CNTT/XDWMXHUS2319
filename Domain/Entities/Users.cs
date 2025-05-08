@@ -18,6 +18,9 @@ namespace Domain.Entities
             public string? Phone { get; private set; }
             public DateTime? LastActive { get; private set; }
 
+            public DateTime? UpdatedAt { get; private set; }
+
+
             public string? Gender { get; private set; }
             public string Status { get; private set; } = "Active"; // Active, Blocked, Suspended
             public DateTime? BlockedUntil { get; private set; }
@@ -81,6 +84,7 @@ namespace Domain.Entities
             public void VerifyEmail()
             {
                 IsVerifiedEmail = true;
+                UpdatedAt = DateTime.UtcNow;
             }
 
             /// <summary>
@@ -89,9 +93,7 @@ namespace Domain.Entities
             /// <param name="score">Điểm tin cậy mới.</param>
             public void UpdateTrustScore(decimal score)
             {
-                 TrustScore = Math.Max(score, 0);
-
-                
+                 TrustScore = Math.Max(score, 0);         
             }
 
             /// <summary>
@@ -101,11 +103,17 @@ namespace Domain.Entities
             {
                 if (string.IsNullOrWhiteSpace(fullName))
                     throw new ArgumentException("Full name cannot be empty.");
-
                 FullName = fullName;
-                ProfilePicture = profilePicture;
-                BackgroundPicture = backgroundPicture;
+
+            if (!string.IsNullOrWhiteSpace(profileImageUrl))
+                ProfilePicture = profileImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(backgroundImageUrl))
+                BackgroundPicture = backgroundImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(bio))
                 Bio = bio;
+
             }
             public void UpdateInformation(string? phone, string? relativePhone, string gender)
             {

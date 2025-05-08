@@ -8,18 +8,22 @@ namespace Application.CQRS.Commands.ChatAI
     : IRequestHandler<CreateNewConversationAICommand, ResponseModel<AIConversationDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IUserContextService _userContextService;
 
         public CreateNewConversationAICommandHandler(
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IUserContextService userContextService)
         {
             _unitOfWork = unitOfWork;
+            _userContextService = userContextService;
         }
 
         public async Task<ResponseModel<AIConversationDto>> Handle(CreateNewConversationAICommand request, CancellationToken cancellationToken)
         {
             try
             {
-                var conversation = new AIConversation(request.UserId, request.Title);
+                var userId = _userContextService.UserId();
+                var conversation = new AIConversation(userId, "Curent Chat");
                 await _unitOfWork.AIConversationRepository.AddAsync(conversation);
                 await _unitOfWork.SaveChangesAsync();
 
@@ -29,7 +33,7 @@ namespace Application.CQRS.Commands.ChatAI
                     Title = conversation.Title,
                     Messages = new()
                 };
-                return ResponseFactory.Success(conversationDto, "Conversation created", 201);
+                return ResponseFactory.Success(conversationDto, "Conversation created", 200);
             }
             catch (Exception ex)
             {

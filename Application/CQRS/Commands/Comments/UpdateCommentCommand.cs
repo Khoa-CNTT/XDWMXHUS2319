@@ -12,5 +12,6 @@ namespace Application.CQRS.Commands.Comments
         public Guid PostId { get; set; }
         public Guid CommentId { get; set; }
         public string? Content { get; set; }
+        public string? redis_key { get; set; } = string.Empty;
     }
 }
