@@ -25,9 +25,9 @@ namespace DuyTanSharingSystem.Controllers
         }
         [Authorize]
         [HttpPost("like/{id}")]
-        public async Task<IActionResult> LikeComment([FromRoute]Guid id)
+        public async Task<IActionResult> LikeComment([FromRoute]Guid id,string? rediskey)
         {
-            var response = await _mediator.Send(new LikeCommentCommand(id));
+            var response = await _mediator.Send(new LikeCommentCommand(id, rediskey));
             return Ok(response);
         }
     }

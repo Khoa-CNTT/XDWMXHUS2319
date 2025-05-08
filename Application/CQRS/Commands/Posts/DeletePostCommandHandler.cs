@@ -13,12 +13,14 @@ namespace Application.CQRS.Commands.Posts
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
+        private readonly IRedisService _redisService;
 
-        public DeletePostCommandHandler(IPostRepository postRepository, IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public DeletePostCommandHandler(IPostRepository postRepository, IUnitOfWork unitOfWork, IUserContextService userContextService, IRedisService redisService)
         {
             _postRepository = postRepository;
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
+            _redisService = redisService;
         }
 
         public async Task<ResponseModel<bool>> Handle(DeletePostCommand request, CancellationToken cancellationToken)
@@ -36,7 +38,11 @@ namespace Application.CQRS.Commands.Posts
             {
                 await _postRepository.DeleteAsync(post.Id);
                 await _unitOfWork.CommitTransactionAsync();
-
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
                 return ResponseFactory.Success(true, "Xóa bài viết thành công", 200);
             }
             catch (Exception)

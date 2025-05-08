@@ -97,7 +97,7 @@ namespace Infrastructure
             services.AddScoped<IChatStreamSender, ChatStreamSender>();
             //chat AI
             services.AddScoped<IPythonApiService, PythonApiService>();
-            services.AddScoped<IChatStreamService, ChatStreamService>();
+            services.AddScoped<IChatStreamingService, ChatStreamingService>();
             return services;
         }
     }

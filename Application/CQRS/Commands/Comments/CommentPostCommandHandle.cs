@@ -1,16 +1,4 @@
 ﻿using Application.DTOs.Comments;
-using Application.DTOs.Shares;
-using Application.Interface;
-using Application.Interface.Api;
-using Application.Interface.ContextSerivce;
-using Application.Interface.Hubs;
-using Application.Services;
-using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.CQRS.Commands.Comments
 {
@@ -21,15 +9,20 @@ namespace Application.CQRS.Commands.Comments
         private readonly IGeminiService _geminiService;
         private readonly INotificationService _notificationService;
         private readonly IPublisher _publisher;
+        private readonly IRedisService _redisService;
         private readonly IPostService _postService;
-        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher, IPostService postService)
+        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher, IPostService postService, IRedisService redisService)
+
+
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _geminiService = geminiService;
             _notificationService = notificationService;
             _publisher = publisher;
+            _redisService = redisService;
             _postService = postService;
+
         }
         public async Task<ResponseModel<ResultCommentDto>> Handle(CommentPostCommand request, CancellationToken cancellationToken)
         {
@@ -74,8 +67,15 @@ namespace Application.CQRS.Commands.Comments
                     await _notificationService.SendCommentNotificationAsync(request.PostId, userId, postOwnerId, notification.Id);
                 }
 
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
+
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
+
                 return ResponseFactory.Success(Mapping.MapToResultCommentPostDto(comment, user.FullName, user.ProfilePicture), "Bình luận bài viết thành công", 200);
             }
             catch(Exception ex)

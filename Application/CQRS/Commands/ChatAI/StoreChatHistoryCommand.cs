@@ -8,5 +8,6 @@ namespace Application.CQRS.Commands.ChatAI
         public string Query { get; set; } = string.Empty;
         public string Answer { get; set; } = string.Empty;
         public int TokenCount { get; set; }
+        public string Context { get; set; } = string.Empty;
     }
 }

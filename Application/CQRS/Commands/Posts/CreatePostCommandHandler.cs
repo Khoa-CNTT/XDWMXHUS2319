@@ -4,8 +4,12 @@ using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using static Domain.Common.Helper;
 using static Domain.Common.Enums;
-using Application.DTOs.Comments;
+
 using Domain.Entities;
+using StackExchange.Redis;
+
+using Application.DTOs.Comments;
+
 
 namespace Application.CQRS.Commands.Posts
 {
@@ -15,13 +19,15 @@ namespace Application.CQRS.Commands.Posts
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGeminiService _geminiService;
         private readonly IFileService _fileService;
+        private readonly IRedisService _redisService;
 
-        public CreatePostCommandHandler(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, IFileService fileService)
+        public CreatePostCommandHandler(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, IFileService fileService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _geminiService = geminiService;
             _fileService = fileService;
+            _redisService = redisService;
         }
 
         public async Task<ResponseModel<ResponsePostDto>> Handle(CreatePostCommand request, CancellationToken cancellationToken)
@@ -62,7 +68,7 @@ namespace Application.CQRS.Commands.Posts
                 }
 
                 // Tạo post
-                var post = new Post(userId, request.Content, request.PostType, request.Scope, imageUrlString, videoUrl);
+                var post = new Post(userId, request.Content, request.Scope, imageUrlString, videoUrl);
 
                 // Kiểm tra nội dung bằng Gemini
                 var validationResult = await _geminiService.ValidatePostContentWithDetailsAsync(post.Content);
@@ -105,6 +111,12 @@ namespace Application.CQRS.Commands.Posts
                     IsApproved = post.IsApproved,
                     CreatedAt = FormatUtcToLocal(post.CreatedAt),
                 };
+                if(request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
+
 
                 // Trả về phản hồi dựa trên trạng thái
                 if (!validationResult.IsValid)

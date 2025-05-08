@@ -96,7 +96,7 @@ namespace Application.Provider
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddHours(5555),
                 signingCredentials: creds);
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token).Trim();
             // 🔥 Tạo Refresh Token (7 ngày)
