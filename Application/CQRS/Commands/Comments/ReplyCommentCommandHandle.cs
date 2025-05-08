@@ -37,7 +37,10 @@ namespace Application.CQRS.Commands.Comments
             {
                 return ResponseFactory.Fail<ResultCommentDto>("Người dùng không tồn tại", 404);
             }
-
+            if (user.Status == "Suspended")
+            {
+                return ResponseFactory.Fail<ResultCommentDto>("Tài khoản đang bị tạm ngưng", 403);
+            }
             // Kiểm tra bình luận cha có tồn tại không
             var parentComment = await _unitOfWork.CommentRepository.GetByIdAsync(request.ParentCommentId);
             if (parentComment == null)

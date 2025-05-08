@@ -1,0 +1,62 @@
+// @media (max-width: 768px) {
+//   .Container-MessageView {
+//     .message-view {
+//       .chat-list {
+//         width: 100%;
+//       }
+//       .message-view__content {
+//         display: none;
+//       }
+//     }
+//   }
+//   .return-chat-list {
+//     display: block !important;
+//   }
+// }
+@media (max-width: 768px) {
+  .Container-MessageView {
+    .message-view {
+      display: flex;
+
+      .chat-list-wrapper,
+      .message-view__content-wrapper {
+        flex: 1;
+      }
+
+      // Mặc định mobile ẩn phần content
+      @media (max-width: 768px) {
+        .hide-on-mobile {
+          display: none !important;
+        }
+
+        .chat-list-wrapper,
+        .message-view__content-wrapper {
+          width: 100%;
+        }
+
+        .message-view__content-wrapper {
+          display: flex;
+          flex-direction: column;
+        }
+      }
+    }
+    .return-chat-list {
+      display: flex !important;
+    }
+    .chat-list {
+      width: 100%;
+    }
+    .right-sidebar-message.open {
+      position: absolute;
+      width: 100%;
+      height: 100vh;
+      .return-chat {
+        display: block;
+        font-size: 28px;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+      }
+    }
+  }
+}

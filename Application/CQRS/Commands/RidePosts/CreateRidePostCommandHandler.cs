@@ -41,10 +41,12 @@ namespace Application.CQRS.Commands.RidePosts
             var userId = _userContextService.UserId();
             if (userId == Guid.Empty)
                 return ResponseFactory.Fail<ResponseRidePostDto>("User not found", 404);
-
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
             if (user == null)
-                return ResponseFactory.Fail<ResponseRidePostDto>("User not found", 404);
+                return ResponseFactory.Fail<ResponseRidePostDto>("Người dùng không tồn tại", 404);
+            if (user.Status == "Suspended")
+                return ResponseFactory.Fail<ResponseRidePostDto>("Tài khoản đang bị tạm ngưng", 403);
+
 
             await _unitOfWork.BeginTransactionAsync();
             try

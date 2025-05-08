@@ -9,6 +9,11 @@
   &__info {
     display: flex;
     align-items: center;
+    justify-content: center;
+    .return-chat-list {
+      display: none;
+      font-size: 28px;
+    }
   }
 
   &__avatar {

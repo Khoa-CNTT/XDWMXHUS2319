@@ -4,6 +4,8 @@ using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using static Domain.Common.Helper;
 using static Domain.Common.Enums;
+using Application.DTOs.Comments;
+using Domain.Entities;
 
 namespace Application.CQRS.Commands.Posts
 {
@@ -30,7 +32,11 @@ namespace Application.CQRS.Commands.Posts
                 var userId = _userContextService.UserId();
                 if (userId == Guid.Empty)
                     return ResponseFactory.Fail<ResponsePostDto>("User not found", 404);
-
+                var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+                if (user == null)                
+                    return ResponseFactory.Fail<ResponsePostDto>("Người dùng không tồn tại", 404);                
+                if (user.Status == "Suspended")
+                    return ResponseFactory.Fail<ResponsePostDto>("Tài khoản đang bị tạm ngưng", 403);                
                 // Lưu ảnh
                 List<string> imageUrls = new();
                 if (request.Images != null && request.Images.Any())

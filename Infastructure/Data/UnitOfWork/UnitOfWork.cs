@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Domain.Interface;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Infrastructure.Data.UnitOfWork
 {
@@ -41,8 +34,10 @@ namespace Infrastructure.Data.UnitOfWork
 
             IAIConversationRepository aiConversationRepository,
             IAIChatHistoryRepository aiChatHistoryRepository,
-            IUserScoreHistoriesRepository userScoreHistoriesRepository
 
+            IUserScoreHistoriesRepository userScoreHistoriesRepository,
+
+            IUserReportRepository userReportRepository
 
             )
         {
@@ -74,8 +69,12 @@ namespace Infrastructure.Data.UnitOfWork
 
             AIConversationRepository = aiConversationRepository;
             AIChatHistoryRepository = aiChatHistoryRepository;
+
             UserScoreHistoriesRepository = userScoreHistoriesRepository;
+            UserReportRepository = userReportRepository;
+
         }
+        public IUserReportRepository UserReportRepository { get; }
         public IUserRepository UserRepository { get; }
         public IPostRepository PostRepository { get; }
         public IEmailTokenRepository EmailTokenRepository { get; }
