@@ -15,7 +15,7 @@ export const DeeplinkCommentModal = createAsyncThunk(
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.error("API trả về>>", response.data);
+      // console.error("API trả về>>", response.data);
       return { postId, data: response.data.data };
     } catch (error) {
       return rejectWithValue(error.response?.data || "Có lỗi xảy ra");

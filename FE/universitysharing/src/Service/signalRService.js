@@ -537,11 +537,21 @@ class SignalRService {
   // onReceiveMessage: Sửa để dùng on
   onReceiveMessage(callback) {
     this.on(this.chatConnection, "ReceiveMessage", (message) => {
-      console.log("Nhận sự kiện ReceiveMessage:", message);
+      console.error("Nhận sự kiện ReceiveMessage:", message);
       callback(message);
     });
     console.log("Đăng ký sự kiện ReceiveMessage");
   }
+
+  //Nhận data messenger không cần join
+  onReceiveMessageData(callback) {
+    this.on(this.chatConnection, "MessageNotifyData", (message) => {
+      console.error("Nhận sự kiện ReceiveMessageData 🥰:", message);
+      callback(message);
+    });
+    console.log("Đăng ký sự kiện ReceiveMessageData 🥰");
+  }
+
   // onReceiveUnreadCount: Sửa để dùng on
   onReceiveUnreadCount(callback) {
     this.on(

@@ -8,7 +8,7 @@ import defaultPostImage from "../assets/ImgDefault.png"; // Thêm ảnh default 
 import ContentPostComment from "./CommentModel_Component/ContenPostComment";
 import CommentList from "./CommentModel_Component/CommentList";
 import { useDispatch, useSelector } from "react-redux";
-
+import { useNavigate } from "react-router-dom";
 import {
   commentPost,
   addCommentPost,
@@ -16,11 +16,13 @@ import {
 } from "../stores/action/listPostActions";
 import getUserIdFromToken from "../utils/JwtDecode";
 import { FiSend, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { closeCommentModal } from "../stores/reducers/listPostReducers";
 
 const CommentModal = ({ post, onClose, usersProfile }) => {
   // console.log("UserProfile>>>>>>>>", usersProfile);
   // console.log("post sercert box", post);
   const userId = getUserIdFromToken();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const commentTextRef = useRef("");
   const commentEndRef = useRef(null);
@@ -149,6 +151,10 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
   const handleNext = () => {
     setCurrentIndex((prev) => (prev < mediaItems.length - 1 ? prev + 1 : 0));
   };
+  const homeReturn = () => {
+    dispatch(closeCommentModal());
+    navigate("/home");
+  };
 
   if (!post) return null;
 
@@ -157,7 +163,7 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
       {/* Thêm nút đóng modal */}
 
       <div className="logowebsite">
-        <img className="logoUS" src={logoweb} alt="Logo" />
+        <img className="logoUS" src={logoweb} alt="Logo" onClick={homeReturn} />
       </div>
 
       <div className="post-overlay">

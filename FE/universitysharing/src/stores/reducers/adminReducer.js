@@ -7,10 +7,9 @@ import {
   approvePost,
   adDeletePost,
   fetchUserUserReports,
-
 } from "../action/adminActions";
 
-const reportAdminSlice = createSlice({
+const reporAdmintSlice = createSlice({
   name: "reportAdmintSlice",
   initialState: {
     posts: [],
@@ -159,4 +158,3 @@ const reportAdminSlice = createSlice({
 
 export const { clearPostState } = reporAdmintSlice.actions;
 export default reporAdmintSlice.reducer;
-
