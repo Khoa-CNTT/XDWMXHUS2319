@@ -22,6 +22,11 @@ namespace Application.CQRS.Commands.Rides
             var userId = _userContextService.UserId();
             if (userId == Guid.Empty)
                 return ResponseFactory.Fail<ResponseRideDto>("User not found", 404);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null)
+                return ResponseFactory.Fail<ResponseRideDto>("Người dùng không tồn tại", 404);
+            if (user.Status == "Suspended")
+                return ResponseFactory.Fail<ResponseRideDto>("Tài khoản đang bị tạm ngưng", 403);
 
             var ridePost = await _unitOfWork.RidePostRepository.GetByIdAsync(request.RidePostId);
 

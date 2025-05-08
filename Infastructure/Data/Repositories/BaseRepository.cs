@@ -1,9 +1,4 @@
-﻿using Domain.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 
 namespace Infrastructure.Data.Repositories
 {
@@ -31,6 +26,15 @@ namespace Infrastructure.Data.Repositories
         {
              _context.UpdateRange(entities);
             return Task.CompletedTask;
+        }
+
+        public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
+        {
+            if (predicate != null)
+            {
+                return await _dbSet.CountAsync(predicate);
+            }
+            return await _dbSet.CountAsync();
         }
 
         public abstract Task<bool> DeleteAsync(Guid id);

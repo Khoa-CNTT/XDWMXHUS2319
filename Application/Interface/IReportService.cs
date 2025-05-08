@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Reposts;
+using Application.DTOs.User;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,8 @@ namespace Application.Interface
         Task<IEnumerable<ReportResponseDto>> GetReportsByPostAsync(Guid postId);
         Task<List<PostWithReportsDto>> GetAllPostsWithReportsAsync();
         Task<ResponseModel<bool>> SoftDeletePostAsync(Guid postId);
+        Task<IEnumerable<UserReportGroupDto>> GetAllUserReportsAsync();
+        Task<ResponseModel<bool>> DeleteAllUserReportsByUserIdAsync(Guid reportedUserId);
+        Task<ResponseModel<bool>> AcceptUserReportsByUserIdAsync(Guid reportedUserId);
     }
 }

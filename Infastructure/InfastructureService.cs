@@ -55,6 +55,7 @@ namespace Infrastructure
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IAIConversationRepository, AIConversationRepository>();
             services.AddScoped<IAIChatHistoryRepository, AIChatHistoryRepository>();
+            services.AddScoped<IUserReportRepository, UserReportRepository>();
 
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IShareRepository, ShareRepository>();

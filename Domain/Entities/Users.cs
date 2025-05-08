@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
-
-
+﻿using static Domain.Common.Enums;
 namespace Domain.Entities
     {
         public class User
@@ -26,7 +17,12 @@ namespace Domain.Entities
             public string? RelativePhone { get; private set; }
             public string? Phone { get; private set; }
             public DateTime? LastActive { get; private set; }
-           
+            public string Status { get; private set; } = "Active"; // Active, Blocked, Suspended
+            public DateTime? BlockedUntil { get; private set; }
+            public DateTime? SuspendedUntil { get; private set; }
+            public DateTime? LastLoginDate { get; private set; }
+            public int TotalReports { get; private set; } = 0;
+
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
             public virtual ICollection<Comment> Comments { get; private set; } = new HashSet<Comment>();
@@ -56,6 +52,12 @@ namespace Domain.Entities
             public ICollection<Notification> SentNotifications { get; set; } = new List<Notification>();
             // Navigation property cho AIConversation
             public ICollection<AIConversation> AIConversations { get; set; } = new List<AIConversation>();
+        //thanh
+            public ICollection<UserReport> UserReports { get; set; } // Những report mà user là đối tượng bị báo cáo
+            public ICollection<UserReport> UserReportsCreated { get; set; } // Những report do user tạo
+            public ICollection<UserAction> UserActions { get; set; } // Những hành động do user thực hiện
+
+
 
         public User(string fullName, string email, string passwordHash)
             {
@@ -84,8 +86,9 @@ namespace Domain.Entities
             /// <param name="score">Điểm tin cậy mới.</param>
             public void UpdateTrustScore(decimal score)
             {
-                if (score < 0) throw new ArgumentException("Trust score cannot be negative.");
-                TrustScore = score;
+                 TrustScore = Math.Max(score, 0);
+
+                
             }
 
             /// <summary>
@@ -114,10 +117,36 @@ namespace Domain.Entities
 
                 PasswordHash = newPasswordHash;
             }
+        public void BlockUntil(DateTime until)
+        {
+            Status = "Blocked";
+            BlockedUntil = until;
+        }
 
-           
+        public void SuspendUntil(DateTime until)
+        {
+            Status = "Suspended";
+            SuspendedUntil = until;
+        }
+
+        public void MarkAsActive()
+        {
+            Status = "Active";
+            BlockedUntil = null;
+            SuspendedUntil = null;
+        }
+
+        public void UpdateLastLoginDate()
+        {
+            LastLoginDate = DateTime.UtcNow;
+        }
+
+        public void IncreaseReportCount()
+        {
+            TotalReports++;
         }
     }
+}
 
 
 

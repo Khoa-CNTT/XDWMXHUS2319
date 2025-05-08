@@ -32,8 +32,9 @@ namespace Infrastructure
         public DbSet<Rating> Ratings { get; set; }
         public DbSet<AIConversation> AIConversations { get; set; }
         public DbSet<AIChatHistory> AIChatHistories { get; set; }
-
-
+        // thanh       
+        public DbSet<UserReport> UserReports { get; set; }
+        public DbSet<UserAction> UserActions { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Khóa chính
@@ -60,14 +61,16 @@ namespace Infrastructure
             modelBuilder.Entity<Notification>().HasKey(n => n.Id);
             modelBuilder.Entity<AIConversation>().HasKey(a => a.Id);
             modelBuilder.Entity<AIChatHistory>().HasKey(a => a.Id);
-
-
+            //thanh
+            modelBuilder.Entity<UserAction>().HasKey(ua => ua.Id);
+            modelBuilder.Entity<UserReport>().HasKey(ur  =>ur.Id);
             //Dùng HasQueryFilter để tự động loại bỏ dữ liệu đã bị xóa mềm (IsDeleted = true) khi truy vấn.
             //Nếu không sử dụng, cần phải thêm điều kiện IsDeleted = false trong mỗi truy vấn.
             modelBuilder.Entity<Post>().HasQueryFilter(p => !p.IsDeleted);
             modelBuilder.Entity<Comment>().HasQueryFilter(c => !c.IsDeleted);
             modelBuilder.Entity<Like>().HasQueryFilter(l => !l.IsDeleted);
             modelBuilder.Entity<Share>().HasQueryFilter(s => !s.IsDeleted);
+            modelBuilder.Entity<Report>().HasQueryFilter(p => !p.IsDeleted);
             // Cấu hình quan hệ
             modelBuilder.Entity<Post>()
                 .HasOne(p => p.User)
@@ -379,13 +382,26 @@ namespace Infrastructure
                 .WithMany(c => c.ChatHistories)
                 .HasForeignKey(ch => ch.ConversationId)
                 .OnDelete(DeleteBehavior.Cascade);
+            // Quan hệ 1 User - N UserReports (người bị báo cáo)
+            modelBuilder.Entity<UserReport>()
+                .HasOne(ur => ur.ReportedUser)
+                .WithMany(u => u.UserReports)
+                .HasForeignKey(ur => ur.ReportedUserId)
+                .OnDelete(DeleteBehavior.Restrict); // Không xóa User nếu còn báo cáo
 
+            // Quan hệ 1 User - N UserReports (người báo cáo)
+            modelBuilder.Entity<UserReport>()
+                .HasOne(ur => ur.ReportedByUser)
+                .WithMany(u => u.UserReportsCreated)
+                .HasForeignKey(ur => ur.ReportedByUserId)
+                .OnDelete(DeleteBehavior.Restrict); // Không xóa User nếu còn báo cáo
 
-
-
-
-
-
+            // Quan hệ 1 User - N UserActions
+            modelBuilder.Entity<UserAction>()
+                .HasOne(ua => ua.User)
+                .WithMany(u => u.UserActions)
+                .HasForeignKey(ua => ua.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // Xóa hành động khi xóa user (tùy chính sách)
 
         }
     }
