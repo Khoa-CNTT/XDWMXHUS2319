@@ -42,6 +42,10 @@ namespace Application.CQRS.Commands.RidePosts
             if (userId == Guid.Empty)
                 return ResponseFactory.Fail<ResponseRidePostDto>("User not found", 404);
 
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null)
+                return ResponseFactory.Fail<ResponseRidePostDto>("User not found", 404);
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -86,6 +90,9 @@ namespace Application.CQRS.Commands.RidePosts
                     {
                         Id = ridePost.Id,
                         UserId = ridePost.UserId,
+                        UserName = user.FullName ?? "unknown",
+                        UserAvatar = $"{Constaint.baseUrl}{user.ProfilePicture}" ?? "unknown",
+                        Content = ridePost.Content,
                         StartLocation = startLocation,
                         EndLocation = endLocation,
                         LatLonStart = request.StartLocation,

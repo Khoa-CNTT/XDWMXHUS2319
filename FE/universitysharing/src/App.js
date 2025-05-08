@@ -25,10 +25,10 @@ import AccountVerified from "./components/AccountVerified";
 import SearchView from "./views/SearchView";
 import ResultSearchView from "./views/ResultSearchView";
 import Notifications from "./views/Notifications";
-
 import ChatBotAIView from "./views/ChatBotAIView";
-
+import AdminPostManagement from "./admin/views/AdminPostManagement";
 import FriendProfileView from "./views/FriendProfileView";
+import SettingsView from "./views/SettingsView";
 
 import getUserIdFromToken from "./utils/JwtDecode";
 import FriendView from "./views/FriendView";
@@ -110,6 +110,10 @@ function App() {
               <>
                 <Route path="/admin/dashboard" element={<Dashboard />} />
                 <Route path="/admin/userreport" element={<UserReport />} />
+                <Route
+                  path="/admin/postmanager"
+                  element={<AdminPostManagement />}
+                />
                 <Route path="/home" element={<Homeview />} />
                 <Route path="/search" element={<SearchView />} />
                 <Route path="/sharing-ride" element={<SharingRideView />} />
@@ -117,6 +121,7 @@ function App() {
                 <Route path="/post/:id" element={<Homeview />} />
                 <Route path="/MessageView" element={<MessageView />} />
                 <Route path="/ProfileUserView" element={<ProfileUserView />} />
+                <Route path="/settings" element={<SettingsView />} />
                 <Route
                   path="/profile/:userId"
                   element={<FriendProfileView />}
@@ -141,6 +146,10 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgotpassword" element={<ForgotPass />} />
+                <Route
+                  path="/reset-password"
+                  element={<ResetForgotPassword />}
+                />
                 <Route path="/resetFP" element={<ResetForgotPassword />} />
                 <Route path="/AccountVerified" element={<AccountVerified />} />
                 <Route path="*" element={<Navigate to="/login" replace />} />

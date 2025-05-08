@@ -22,7 +22,7 @@ const AppSidebar = () => {
     "/admin/dashboard": "1",
     "/admin/users": "2",
     "/admin/userreport": "3",
-    "/admin/posts": "4",
+    "/admin/postmanager": "4",
   };
 
   // Lấy key tương ứng với route hiện tại
@@ -73,6 +73,7 @@ const AppSidebar = () => {
         <Menu.Item
           key="4"
           icon={<FileTextOutlined />}
+          onClick={() => navigate("/admin/postmanager")}
           // onClick={() => navigate("/admin/posts")}
         >
           <Tooltip title="Quản lý bài viết" placement="right">

@@ -56,7 +56,7 @@ namespace Application.CQRS.Commands.Users
             try
             {
                 // Cập nhật thông tin người dùng
-                user.UpdateProfile(request.FullName, newProfileImageUrl, newBackgroundImageUrl, request.Bio, request.PhoneNumber, request.PhoneRelativeNumber);
+                user.UpdateProfile(request.FullName, newProfileImageUrl, newBackgroundImageUrl, request.Bio);
                 await _userRepository.UpdateAsync(user);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();

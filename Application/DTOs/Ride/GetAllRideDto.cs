@@ -18,11 +18,11 @@ namespace Application.DTOs.Ride
         public string? EndTime { get; set; } = string.Empty;
         public string LatLonStart { get; set; } = string.Empty;
         public string LatLonEnd { get; set; } = string.Empty;
-        
         public int EstimatedDuration { get; set; }
         public string Status { get; set; } = string.Empty;
         public string CreateAt { get; set; } = string.Empty;
         public bool IsSafe { get; set; }
+        public bool IsRating { get; set; }
 
     }
     public class GetAllRideResponseDto

@@ -36,6 +36,7 @@ namespace Domain.Interface
 
         IAIConversationRepository AIConversationRepository { get; }
         IAIChatHistoryRepository AIChatHistoryRepository { get; }
+        IUserScoreHistoriesRepository UserScoreHistoriesRepository { get; }
 
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync(); // ✅ Bắt đầu giao dịch

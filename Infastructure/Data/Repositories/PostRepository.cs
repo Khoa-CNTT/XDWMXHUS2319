@@ -17,9 +17,15 @@ namespace Infrastructure.Data.Repositories
         {
         }
 
-        public override Task<bool> DeleteAsync(Guid id)
+        public async override Task<bool> DeleteAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null)
+                return false;
+
+            _context.Posts.Remove(post);
+            _context.SaveChanges();
+            return true;
         }
         public async Task<Guid> GetPostOwnerIdAsync(Guid postId)
         {
@@ -302,6 +308,21 @@ namespace Infrastructure.Data.Repositories
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(count)
                 .ToListAsync();
+        }
+        public async Task<List<Post>> GetAllPostsForAdminAsync(int skip, int take, CancellationToken cancellationToken)
+        {
+            return await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Reports)
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<int> GetTotalPostCountAsync(CancellationToken cancellationToken)
+        {
+            return await _context.Posts.CountAsync(cancellationToken);
         }
     }
 }

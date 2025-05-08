@@ -6,8 +6,11 @@ import * as signalR from "@microsoft/signalr";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
 import { TbMoodEmptyFilled } from "react-icons/tb";
+import { cancelRide, rateDriver } from "../../stores/action/ridePostAction";
+import RatingModal from "../../components/RatingModal";
 
 import L from "leaflet";
+import { confirmAlert } from "react-confirm-alert";
 import {
   MapContainer,
   TileLayer,
@@ -100,23 +103,25 @@ const defaultIcon = L.icon({
 // Main component for managing user rides
 const YourRide = () => {
   // State declarations
-  const [showHistory, setShowHistory] = useState(false); // Toggle ride history visibility
-  const [routePaths, setRoutePaths] = useState({}); // Store route coordinates for each ride
-  const [notifications, setNotifications] = useState([]); // Store location update notifications
-  const [currentPosition, setCurrentPosition] = useState(null); // Current geolocation
-  const [lastSentPosition, setLastSentPosition] = useState(null); // Last position sent to server
-  const [lastNotifiedPosition, setLastNotifiedPosition] = useState(null); // Last position for notification
-  const [expandedRide, setExpandedRide] = useState(null); // ID of expanded ride card
-  const [userId, setUserId] = useState(null); // User ID from JWT
-  const [smoothedProgress, setSmoothedProgress] = useState(0); // Smoothed ride progress percentage
-  const [isFollowing, setIsFollowing] = useState(true); // Whether map follows current position
-  const [mapBounds, setMapBounds] = useState(null); // Map bounds for current ride
+  const [showHistory, setShowHistory] = useState(false);
+  const [routePaths, setRoutePaths] = useState({});
+  const [notifications, setNotifications] = useState([]);
+  const [currentPosition, setCurrentPosition] = useState(null);
+  const [lastSentPosition, setLastSentPosition] = useState(null);
+  const [lastNotifiedPosition, setLastNotifiedPosition] = useState(null);
+  const [expandedRide, setExpandedRide] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [smoothedProgress, setSmoothedProgress] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(true);
+  const [mapBounds, setMapBounds] = useState(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [selectedRide, setSelectedRide] = useState(null);
 
   // Refs for managing intervals and connections
-  const mapRef = useRef(null); // Reference to Leaflet map instance
-  const intervalRef = useRef(null); // Interval for sending location updates
-  const watchIdRef = useRef(null); // Geolocation watch ID
-  const signalRConnectionRef = useRef(null); // SignalR connection reference
+  const mapRef = useRef(null);
+  const intervalRef = useRef(null);
+  const watchIdRef = useRef(null);
+  const signalRConnectionRef = useRef(null);
 
   // Redux hooks
   const dispatch = useDispatch();
@@ -211,7 +216,7 @@ const YourRide = () => {
 
   // Calculate distance between two points using Haversine formula (in km)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371e3; // Earth's radius in meters
+    const R = 6371e3;
     const φ1 = (lat1 * Math.PI) / 180;
     const φ2 = (lat2 * Math.PI) / 180;
     const Δφ = ((lat2 - lat1) * Math.PI) / 180;
@@ -221,7 +226,7 @@ const YourRide = () => {
       Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
       Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return (R * c) / 1000; // Convert to kilometers
+    return (R * c) / 1000;
   };
 
   // Fetch address from coordinates using OpenStreetMap Nominatim
@@ -254,6 +259,9 @@ const YourRide = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setLastSentPosition({ lat: latitude, lon: longitude });
+      console.log(
+        `Location sent: ${latitude}, ${longitude} - Address: ${location}`
+      );
     } catch (error) {
       console.error("Error sending location:", error);
       toast.error("Failed to send location");
@@ -280,6 +288,7 @@ const YourRide = () => {
       ({ coords: { latitude, longitude } }) => {
         const newPosition = { lat: latitude, lon: longitude };
         setCurrentPosition(newPosition);
+        console.log(`New position received: ${latitude}, ${longitude}`); // Log vị trí mới
         if (
           !lastNotifiedPosition ||
           calculateDistance(
@@ -287,7 +296,7 @@ const YourRide = () => {
             lastNotifiedPosition.lon,
             latitude,
             longitude
-          ) > 0.05
+          ) > 0.01 // Giảm ngưỡng xuống 0.01 km để cập nhật thường xuyên hơn
         ) {
           setLastNotifiedPosition(newPosition);
         }
@@ -319,9 +328,11 @@ const YourRide = () => {
           lastSentPosition.lon,
           lat,
           lon
-        ) < 0.05
-      )
+        ) < 0.01 // Giảm ngưỡng xuống 0.01 km để gửi vị trí thường xuyên hơn
+      ) {
+        console.log("Position unchanged, skipping send...");
         return;
+      }
 
       const distanceToEnd = endLatLon
         ? calculateDistance(lat, lon, endLatLon[0], endLatLon[1])
@@ -329,7 +340,7 @@ const YourRide = () => {
       const isNearDestination = distanceToEnd <= 0.5;
 
       sendLocationToServer(rideId, lat, lon, isNearDestination);
-    }, 10000);
+    }, 5000); // Giảm interval xuống 5 giây để cập nhật nhanh hơn
 
     return () => clearInterval(intervalRef.current);
   }, [currentPosition, driverRides, passengerRides, lastSentPosition]);
@@ -464,7 +475,63 @@ const YourRide = () => {
     }
   };
 
-  // Loading and error states
+  const handleCancelRide = (rideId) => {
+    toast.info("Đang hủy chuyến đi, vui lòng chờ...", { autoClose: 3000 });
+    setTimeout(() => {
+      dispatch(cancelRide(rideId))
+        .unwrap()
+        .then(() => {
+          dispatch(fetchRidesByUserId());
+        })
+        .catch((err) => {
+          toast.error(`Lỗi khi hủy chuyến đi: ${err}`);
+        });
+    }, 3000);
+  };
+
+  const confirmCancelRide = (rideId) => {
+    confirmAlert({
+      title: "Xác nhận hủy",
+      message: "Bạn có chắc chắn muốn hủy chuyến đi này không?",
+      buttons: [
+        { label: "Có", onClick: () => handleCancelRide(rideId) },
+        { label: "Không", onClick: () => {} },
+      ],
+    });
+  };
+
+  const handleRateDriver = (rideId, driverId, rating, comment) => {
+    dispatch(
+      rateDriver({
+        rideId,
+        driverId,
+        rating,
+        comment,
+      })
+    )
+      .unwrap()
+      .then(() => {
+        dispatch(fetchRidesByUserId()); // Fetch rides again to update IsRating
+        toast.success("Đánh giá đã được gửi!");
+      })
+      .catch((err) => {
+        console.error("Rating error:", err);
+        toast.error("Lỗi khi gửi đánh giá!");
+      });
+  };
+
+  const isRideRated = (ride) => ride.isRating; // Use isRating directly from the ride object
+
+  const openRatingModal = (ride) => {
+    setSelectedRide(ride);
+    setShowRatingModal(true);
+  };
+
+  const closeRatingModal = () => {
+    setShowRatingModal(false);
+    setSelectedRide(null);
+  };
+
   if (loading) return <p className="loading">Loading data...</p>;
   if (error) return <p className="error">Error: {error.message || error}</p>;
 
@@ -481,15 +548,13 @@ const YourRide = () => {
     ? calculateRemainingDistance(currentRide, currentPosition)
     : 0;
 
-  // Define city bounds for map restriction (Da Nang area)
   const cityBounds = L.latLngBounds(
-    L.latLng(15.9, 107.9), // Southwest
-    L.latLng(16.2, 108.4) // Northeast
+    L.latLng(15.9, 107.9),
+    L.latLng(16.2, 108.4)
   );
 
   return (
     <div className="rides-app">
-      {/* Header */}
       <div className="rides-header">
         <h2>
           <FiNavigation className="header-icon" /> Chuyến đi của bạn
@@ -497,7 +562,6 @@ const YourRide = () => {
         <div className="header-gradient"></div>
       </div>
 
-      {/* Current Ride Section */}
       {currentRide ? (
         <motion.div
           className={`ride-card ${
@@ -561,6 +625,15 @@ const YourRide = () => {
               <span className="ride-status active">
                 <div className="pulse-dot"></div> Đang di chuyển
               </span>
+              <button
+                className="btn-cancel-ride"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  confirmCancelRide(currentRide.rideId);
+                }}
+              >
+                Hủy chuyến đi
+              </button>
             </div>
             <div className="expand-icon">
               {expandedRide === currentRide.rideId ? (
@@ -571,7 +644,6 @@ const YourRide = () => {
             </div>
           </div>
 
-          {/* Expanded Ride Details */}
           {expandedRide === currentRide.rideId && (
             <motion.div
               className="ride-details"
@@ -624,7 +696,6 @@ const YourRide = () => {
 
               <div className="interactive-section">
                 <div className="map-container">
-                  {/* Map controls - Đã di chuyển nút về phía bên phải */}
                   <div className="map-controls">
                     <button
                       className={`location-button ${
@@ -650,7 +721,7 @@ const YourRide = () => {
                       <MapContainer
                         ref={mapRef}
                         bounds={mapBounds}
-                        style={{ height: "300px", width: "100%" }}
+                        style={{ height: "300px", width: "100%", zIndex: 1 }}
                         minZoom={12}
                         maxBounds={cityBounds}
                         whenCreated={(map) => {
@@ -770,7 +841,6 @@ const YourRide = () => {
         </motion.div>
       )}
 
-      {/* Ride History Section */}
       <div className="history-section">
         <motion.button
           className="history-toggle"
@@ -803,6 +873,7 @@ const YourRide = () => {
               <div className="history-list">
                 {completedRides.map((ride) => {
                   const isDriverHistory = ride.driverId === userId;
+                  const isRated = isRideRated(ride);
                   return (
                     <motion.div
                       className={`history-item ${
@@ -839,7 +910,22 @@ const YourRide = () => {
                         </div>
                       </div>
                       <div className="history-status completed">
-                        <FiCheckCircle /> Hoàn thành
+                        <div className="status-text">
+                          <FiCheckCircle /> Hoàn thành
+                        </div>
+                        {!isDriverHistory && !isRated && (
+                          <button
+                            className="rate-button"
+                            onClick={() => openRatingModal(ride)}
+                          >
+                            Đánh giá
+                          </button>
+                        )}
+                        {isRated && (
+                          <span className="rated-badge">
+                            <FiCheckCircle /> Đã đánh giá
+                          </span>
+                        )}
                       </div>
                     </motion.div>
                   );
@@ -854,6 +940,13 @@ const YourRide = () => {
           </motion.div>
         )}
       </div>
+
+      <RatingModal
+        isOpen={showRatingModal}
+        onClose={closeRatingModal}
+        ride={selectedRide}
+        onSubmit={handleRateDriver}
+      />
     </div>
   );
 };

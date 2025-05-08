@@ -14,6 +14,12 @@ namespace Infrastructure.Data.Repositories
         {
             throw new NotImplementedException();
         }
+        public async Task<RidePost?> FindAsync(Guid id)
+        {
+            return await _dbSet
+            .Include(rp => rp.User)
+            .FirstOrDefaultAsync(rp => rp.Id == id);
+        }
 
         public async Task<List<RidePost>> GetAllRidePostAsync(Guid? lastPostId, int pageSize)
         {
@@ -21,7 +27,8 @@ namespace Infrastructure.Data.Repositories
             const int MAX_PAGE_SIZE = 50;
             pageSize = Math.Min(pageSize, MAX_PAGE_SIZE);
             var query = _context.RidePosts
-                .Where(x=>x.Status == RidePostStatusEnum.open) // Chỉ lấy bài viết đang mở
+                .Include(rp => rp.User) // Lấy thông tin người đăng bài
+                .Where(x=>x.Status == RidePostStatusEnum.open  && !x.IsDeleted) // Chỉ lấy bài viết đang mở và chưa xóa
                 .AsQueryable();
             if (lastPostId.HasValue)
             {

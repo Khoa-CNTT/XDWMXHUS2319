@@ -30,12 +30,21 @@ namespace DuyTanSharingSystem.Controllers
             var response = await _mediator.Send(command);
             return Ok(response);
         }
+        //xóa bài post
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteRidePost([FromQuery] DeleteRidePostCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
         //cập nhật bài post
         [HttpPut("update")]
         public async Task<IActionResult> UpdateRidePost([FromBody] UpdateRidePostCommand command)
         {
             var response = await _mediator.Send(command);
-            return Ok(response);
+            if (response.Success)
+                return Ok(response);
+            return BadRequest(response);
         }
         //lấy tất cả bài post
         [HttpGet("get-all")]

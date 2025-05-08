@@ -102,6 +102,12 @@ namespace Domain.Entities
             IsApproved = true;
             UpdateAt = DateTime.UtcNow;
         }
+        public void AdminApprove()
+        {
+            IsApproved = true;
+            ApprovalStatus = ApprovalStatusEnum.Approved;
+            UpdateAt = DateTime.UtcNow;
+        }
         public void IsNotShare()
         {
             IsSharedPost = false;
@@ -155,6 +161,12 @@ namespace Domain.Entities
         {
             ApprovalStatus = newStatus;
             IsApproved = isApprovedByAI;
+            UpdateAt = DateTime.UtcNow;
+        }
+        public void SetPendingForManualReview()
+        {
+            IsApproved = false;
+            ApprovalStatus = ApprovalStatusEnum.Pending;
             UpdateAt = DateTime.UtcNow;
         }
     }

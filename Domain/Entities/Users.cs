@@ -26,6 +26,7 @@ namespace Domain.Entities
             public string? RelativePhone { get; private set; }
             public string? Phone { get; private set; }
             public DateTime? LastActive { get; private set; }
+            public string? Gender { get; private set; }
            
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
@@ -56,6 +57,7 @@ namespace Domain.Entities
             public ICollection<Notification> SentNotifications { get; set; } = new List<Notification>();
             // Navigation property cho AIConversation
             public ICollection<AIConversation> AIConversations { get; set; } = new List<AIConversation>();
+            public ICollection<UserScoreHistory> UserScoreHistories { get; private set; } = new List<UserScoreHistory>();
 
         public User(string fullName, string email, string passwordHash)
             {
@@ -91,7 +93,7 @@ namespace Domain.Entities
             /// <summary>
             /// Cập nhật thông tin cá nhân (Họ tên, ảnh đại diện, tiểu sử).
             /// </summary>
-            public void UpdateProfile(string fullName, string? profilePicture,string? backgroundPicture, string? bio, string? phone, string? relativePhone)
+            public void UpdateProfile(string fullName, string? profilePicture,string? backgroundPicture, string? bio)
             {
                 if (string.IsNullOrWhiteSpace(fullName))
                     throw new ArgumentException("Full name cannot be empty.");
@@ -100,14 +102,18 @@ namespace Domain.Entities
                 ProfilePicture = profilePicture;
                 BackgroundPicture = backgroundPicture;
                 Bio = bio;
-                Phone = phone;
-                RelativePhone = relativePhone;
+            }
+            public void UpdateInformation(string? phone, string? relativePhone, string gender)
+            {
+                    Phone = phone;
+                    RelativePhone = relativePhone;
+                    Gender = gender;
             }
 
-            /// <summary>
-            /// Cập nhật mật khẩu mới (đã hash).
-            /// </summary>
-            public void UpdatePassword(string newPasswordHash)
+        /// <summary>
+        /// Cập nhật mật khẩu mới (đã hash).
+        /// </summary>
+        public void UpdatePassword(string newPasswordHash)
             {
                 if (string.IsNullOrWhiteSpace(newPasswordHash))
                     throw new ArgumentException("New password cannot be empty.");

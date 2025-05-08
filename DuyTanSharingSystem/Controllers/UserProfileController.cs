@@ -43,6 +43,12 @@ namespace DuyTanSharingSystem.Controllers
             var result = await _mediator.Send(command);
             return Ok(result);
         }
+        [HttpPut("upInformation")]
+        public async Task<IActionResult> UpdateUserInformation([FromBody] UpdateUserInformationCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
         [HttpGet("post-images-preview")]
         public async Task<IActionResult> GetPostImagePreview([FromQuery] GetPostImagesPreviewQuery query)
         {

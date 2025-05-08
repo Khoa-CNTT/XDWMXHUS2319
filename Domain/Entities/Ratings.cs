@@ -4,7 +4,7 @@ namespace Domain.Entities
 {
     public class Rating
     {
-        public Guid Id { get;private set; }
+        public Guid Id { get;private set; } = Guid.Empty;
         public Guid UserId { get; private set; }  // Người được đánh giá
         public Guid RatedByUserId { get; private set; } // Người đánh giá
         public Guid RideId { get; private set; } // Chuyến đi được đánh giá
@@ -12,9 +12,9 @@ namespace Domain.Entities
         public string? Comment { get; private set; } // Bình luận (nếu có)
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public Rating(Guid id, Guid userId, Guid ratedByUserId, Guid rideId, RatingLevelEnum level, string? comment)
+        public Rating(Guid userId, Guid ratedByUserId, Guid rideId, RatingLevelEnum level, string? comment)
         {
-            Id = id;
+            Id = Guid.NewGuid();
             UserId = userId;
             RatedByUserId = ratedByUserId;
             RideId = rideId;
