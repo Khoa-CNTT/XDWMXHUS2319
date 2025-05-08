@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import "../styles/AuthForm.scss";
 import logo from "../assets/Logo.png";
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
 
-const AuthForm = ({ type, onSubmit }) => {
+const AuthForm = ({ type, onSubmit, loading, error }) => {
   const isLogin = type === "login";
   const isForgot = type === "forgotPass";
   const isRegister = type === "register";
@@ -15,6 +14,7 @@ const AuthForm = ({ type, onSubmit }) => {
     password: "",
     confirmPassword: "",
   });
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -45,6 +45,7 @@ const AuthForm = ({ type, onSubmit }) => {
                 placeholder="Họ và tên"
                 required
                 onChange={handleChange}
+                autoComplete="name"
               />
             </>
           )}
@@ -56,6 +57,7 @@ const AuthForm = ({ type, onSubmit }) => {
             placeholder="Email"
             onChange={handleChange}
             required
+            autoComplete="email"
           />
 
           {!isForgot && (
@@ -68,6 +70,7 @@ const AuthForm = ({ type, onSubmit }) => {
                 placeholder="Mật khẩu"
                 onChange={handleChange}
                 required
+                autoComplete={isLogin ? "current-password" : "new-password"}
               />
             </>
           )}
@@ -82,9 +85,12 @@ const AuthForm = ({ type, onSubmit }) => {
                 placeholder="Nhập lại mật khẩu"
                 onChange={handleChange}
                 required
+                autoComplete="new-password"
               />
             </>
           )}
+
+          {error && <p className="text-red-500 mb-4">{error}</p>}
 
           <div className="options">
             {isRegister && (
@@ -94,23 +100,18 @@ const AuthForm = ({ type, onSubmit }) => {
               </label>
             )}
             {isLogin && <NavLink to="/forgotpassword">Quên mật khẩu?</NavLink>}
-            {/* <a href="#"></a> */}
-            {isForgot && (
-              <>
-                <NavLink to="/login">Quay lại Đăng Nhập</NavLink>
-              </>
-            )}
+            {isForgot && <NavLink to="/login">Quay lại Đăng Nhập</NavLink>}
             <a href="#">Chính sách</a>
           </div>
 
-          <button type="submit">
-            {isLogin
+          <button type="submit" disabled={loading}>
+            {loading
+              ? "Đang xử lý..."
+              : isLogin
               ? "Đăng Nhập"
               : isRegister
               ? "Đăng Ký"
-              : isForgot
-              ? "Gửi Email"
-              : "Xác Nhận"}
+              : "Gửi Email"}
           </button>
 
           <p>
@@ -124,9 +125,7 @@ const AuthForm = ({ type, onSubmit }) => {
                 Đã có tài khoản? <NavLink to="/login">Đăng Nhập</NavLink>
               </>
             ) : (
-              <>
-                <NavLink></NavLink>
-              </>
+              <></>
             )}
           </p>
         </form>

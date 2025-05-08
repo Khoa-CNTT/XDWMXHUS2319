@@ -1,4 +1,5 @@
-﻿using static Domain.Common.Enums;
+﻿using System.Linq.Expressions;
+using static Domain.Common.Enums;
 
 namespace Infrastructure.Data.Repositories
 {
@@ -11,6 +12,10 @@ namespace Infrastructure.Data.Repositories
         public override Task<bool> DeleteAsync(Guid id)
         {
             throw new NotImplementedException();
+        }
+        public async Task<bool> AnyAsync(Expression<Func<Rating, bool>> predicate)
+        {
+            return await _context.Ratings.AnyAsync(predicate);
         }
 
         public async Task<int> GetDriverRatingScoreAsync(Guid userId)

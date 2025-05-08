@@ -24,6 +24,7 @@ namespace Application.CQRS.Commands.Comments
             var userId = _userContextService.UserId();
 
             var comment = await _unitOfWork.CommentRepository.GetByIdAsync(request.CommentId);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
 
             if (comment == null)
             {
@@ -44,6 +45,10 @@ namespace Application.CQRS.Commands.Comments
             {
                 return ResponseFactory.Fail<bool>("Bình luận này đã bị xóa", 404);
             }
+            if (user == null)
+                return ResponseFactory.Fail<bool>("Người dùng không tồn tại", 404);
+            if (user.Status == "Suspended")
+                return ResponseFactory.Fail<bool>("Tài khoản đang bị tạm ngưng", 403);
             await _unitOfWork.BeginTransactionAsync();
 
             try

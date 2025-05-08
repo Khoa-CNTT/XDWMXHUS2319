@@ -38,6 +38,10 @@ namespace Application.CQRS.Commands.Users
             {
                 return ResponseFactory.Fail<UserProfileDetailDto>("User not found", 404);
             }
+            if (user.Status == "Suspended")
+            {
+                return ResponseFactory.Fail<UserProfileDetailDto>("Tài khoản đang bị tạm ngưng", 403);
+            }
             // 🔄 Cập nhật thông tin người dùng
             string? newProfileImageUrl = user.ProfilePicture;
 
@@ -56,7 +60,7 @@ namespace Application.CQRS.Commands.Users
             try
             {
                 // Cập nhật thông tin người dùng
-                user.UpdateProfile(request.FullName, newProfileImageUrl, newBackgroundImageUrl, request.Bio, request.PhoneNumber, request.PhoneRelativeNumber);
+                user.UpdateProfile(request.FullName, newProfileImageUrl, newBackgroundImageUrl, request.Bio);
                 await _userRepository.UpdateAsync(user);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();

@@ -9,6 +9,7 @@ import ridePostReducer from "./reducers/ridePostReducer.js";
 import reportSlice from "./reducers/reportReducers.js";
 
 import reporAdmintSlice from "./reducers/adminReducer.js";
+import dashboardSliceReducer from "./reducers/dashboardSlice.js";
 
 import notificationReducer from "./reducers/notificationReducer.js";
 import friendReducer from "./reducers/friendReducer.js";
@@ -17,7 +18,11 @@ import searchSlice from "./reducers/searchReducers.js";
 import chatAIReducer from "./reducers/chatAIReducer.js";
 
 import deepLinkReducer from "./reducers/deepLinkReducer.js";
+
 import messengerReducer from "./reducers/messengerReducer.js";
+
+
+import authReducer from "./reducers/authReducer.js";
 
 // 1. Tạo persist config riêng cho posts
 const postsPersistConfig = {
@@ -34,12 +39,18 @@ const rootReducer = combineReducers({
   report: reportSlice,
   friends: friendReducer,
   reportAdmintSlice: reporAdmintSlice,
+  dashboard: dashboardSliceReducer,
   onlineUsers: onlineUsersReducer,
   notifications: notificationReducer,
   searchs: searchSlice,
   chatAI: chatAIReducer,
   deeplink: deepLinkReducer,
+
   messenges: messengerReducer,
+
+  auth: authReducer,
+
+
 });
 
 // 3. Tạo store

@@ -1,0 +1,257 @@
+$primary: #5a67d8; // Màu chính nhẹ nhàng (xanh tím)
+$accent: #48bb78; // Màu nhấn (xanh lá)
+$danger: #f56565; // Màu cảnh báo (đỏ nhẹ)
+$background: #f7fafc; // Màu nền sáng
+$text-dark: #2d3748; // Màu chữ chính
+$text-light: #718096; // Màu chữ phụ
+$border-radius: 16px; // Bo góc mềm mại hơn
+$box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1); // Bóng nhẹ
+$transition: all 0.3s ease-in-out; // Hiệu ứng mượt mà
+
+.rating-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); // Tăng độ tối của overlay để nổi bật modal
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+.rating-modal {
+  background: $background;
+  width: 100%;
+  max-width: 420px; // Tăng nhẹ kích thước để thoải mái hơn
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  padding: 24px; // Padding rộng rãi hơn
+  position: relative;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif; // Font hiện đại
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h3 {
+      margin: 0;
+      font-size: 22px; // Tăng kích thước tiêu đề
+      font-weight: 700;
+      color: $text-dark;
+      letter-spacing: -0.2px;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: $text-light;
+      cursor: pointer;
+      transition: $transition;
+      padding: 4px;
+
+      &:hover {
+        color: $danger;
+        transform: rotate(90deg); // Hiệu ứng xoay khi hover
+      }
+    }
+  }
+
+  .modal-body {
+    margin-bottom: 24px;
+
+    p {
+      font-size: 15px;
+      color: $text-light;
+      margin-bottom: 16px;
+      line-height: 1.5;
+
+      strong {
+        color: $text-dark;
+        font-weight: 600;
+      }
+    }
+
+    .rating-stars {
+      display: flex;
+      justify-content: center;
+      gap: 12px; // Tăng khoảng cách giữa các ngôi sao
+      margin-bottom: 24px;
+
+      .star {
+        font-size: 32px;
+        cursor: pointer;
+        color: #e2e8f0; // Màu xám nhạt cho ngôi sao chưa chọn
+        transition: $transition;
+
+        &.selected {
+          color: #f6e05e; // Màu vàng sáng cho ngôi sao được chọn
+        }
+
+        &:hover {
+          transform: scale(1.2); // Phóng to nhẹ khi hover
+          color: #f6e05e;
+        }
+      }
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px; // Tăng chiều cao textarea
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      resize: vertical;
+      font-size: 15px;
+      color: $text-dark;
+      background: #fff;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: $transition;
+
+      &:focus {
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1); // Hiệu ứng focus nổi bật
+        outline: none;
+      }
+
+      &::placeholder {
+        color: $text-light;
+        font-style: italic;
+      }
+    }
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    .cancel-button {
+      background: #edf2f7; // Màu nền nhẹ
+      color: $text-dark;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: $transition;
+
+      &:hover {
+        background: #e2e8f0;
+        transform: translateY(-1px); // Nâng nhẹ khi hover
+      }
+    }
+
+    .submit-rating {
+      background: $accent;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: $transition;
+      box-shadow: 0 2px 8px rgba(72, 187, 120, 0.2);
+
+      &:hover {
+        background: darken($accent, 5%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+      }
+
+      &:disabled {
+        background: #e2e8f0;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .rating-modal {
+    width: 90%;
+    padding: 20px;
+    max-width: 380px;
+
+    .modal-header {
+      h3 {
+        font-size: 20px;
+      }
+
+      .close-modal {
+        font-size: 22px;
+      }
+    }
+
+    .modal-body {
+      p {
+        font-size: 14px;
+      }
+
+      .rating-stars {
+        gap: 10px;
+
+        .star {
+          font-size: 28px;
+        }
+      }
+
+      textarea {
+        min-height: 100px;
+        font-size: 14px;
+      }
+    }
+
+    .modal-footer {
+      .cancel-button,
+      .submit-rating {
+        padding: 8px 16px;
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .rating-modal {
+    padding: 16px;
+
+    .modal-header {
+      margin-bottom: 16px;
+
+      h3 {
+        font-size: 18px;
+      }
+    }
+
+    .modal-body {
+      margin-bottom: 16px;
+
+      .rating-stars {
+        gap: 8px;
+
+        .star {
+          font-size: 24px;
+        }
+      }
+    }
+  }
+}

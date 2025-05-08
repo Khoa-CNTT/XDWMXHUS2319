@@ -1,13 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
-
-namespace Infrastructure.Data.Repositories
+﻿namespace Infrastructure.Data.Repositories
 {
     public class UserRepository : BaseRepository<User>, IUserRepository
     {
@@ -23,7 +14,7 @@ namespace Infrastructure.Data.Repositories
         public async Task<List<User>> GetAllUsersAsync()
         {
             return await _context.Users
-                .Where(u => u.IsVerifiedEmail)
+                //.Where(u => u.IsVerifiedEmail)
                 .ToListAsync();
         }
      

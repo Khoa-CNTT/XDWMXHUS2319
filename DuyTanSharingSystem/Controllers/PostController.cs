@@ -5,6 +5,7 @@ using Application.CQRS.Queries.RIdePost;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace DuyTanSharingSystem.Controllers
@@ -74,6 +75,12 @@ namespace DuyTanSharingSystem.Controllers
                 var response = await _mediator.Send(command);
                 return Ok(response);
         }
+        [HttpDelete("ad-delete")]
+        public async Task<IActionResult> AdminDeletePost([FromQuery] DeletePostCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
         [HttpPatch("update-post")]
         public async Task<IActionResult> UpdatePost([FromForm] UpdatePostCommand command)
         {
@@ -85,6 +92,24 @@ namespace DuyTanSharingSystem.Controllers
         public async Task<IActionResult> GetRidePostById([FromQuery] GetPostByIdQueries query)
         {
             var response = await _mediator.Send(query);
+            return Ok(response);
+        }
+        //lấy bài post cho admin
+        [HttpGet("get-posts-by-admin")]
+        public async Task<IActionResult> GetPostsByAdmin([FromQuery] GetAllPostByAdminQuery query)
+        {
+            // Kiểm tra đầu vào
+            if (query.PageNumber < 1 || query.PageSize < 1)
+            {
+                return BadRequest("Số trang và số lượng mỗi trang phải lớn hơn 0");
+            }
+            var response = await _mediator.Send(query);
+            return Ok(response);
+        }
+        [HttpPatch("approve")]
+        public async Task<IActionResult> ApprovePost([FromQuery] ApprovePostByAdminCommand command)
+        {
+            var response = await _mediator.Send(command);
             return Ok(response);
         }
     }

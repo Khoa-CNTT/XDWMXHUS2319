@@ -60,6 +60,10 @@ namespace Application.CQRS.Commands.Comments
                 {
                     return ResponseFactory.Fail<ResultCommentDto>("Không tìm thấy người dùng này", 404);
                 }
+                if (user.Status == "Suspended")
+                {
+                    return ResponseFactory.Fail<ResultCommentDto>("Tài khoản đang bị tạm ngưng", 403);
+                }
                 var comment = new Comment(userId, request.PostId, request.Content);
                 await _unitOfWork.CommentRepository.AddAsync(comment);
                 // 🔥 Publish sự kiện bình luận để gửi thông báo qua SignalR

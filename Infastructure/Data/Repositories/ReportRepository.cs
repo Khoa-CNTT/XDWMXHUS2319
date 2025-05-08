@@ -54,8 +54,16 @@ namespace Infrastructure.Data.Repositories
         public async Task<List<Report>> GetReportsByPostIdDeleteAsync(Guid postId)
         {
             return await _context.Reports
-                .Where(c => c.PostId == postId)
+                .Where(c => c.PostId == postId && !c.IsDeleted)
                 .ToListAsync();
+        }
+
+        public async Task<List<Report>> GetReportsByPostIdsAsync(List<Guid> postIds)
+        {
+            return await _context.Reports
+       .Include(r => r.ReportedByUser)
+       .Where(r => postIds.Contains(r.PostId) && !r.IsDeleted)
+       .ToListAsync();
         }
     }
 }

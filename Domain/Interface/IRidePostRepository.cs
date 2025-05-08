@@ -14,7 +14,7 @@ namespace Domain.Interface
         Task<List<RidePost>> GetAllRidePostForSearchAI();
         Task<int> GetRidePostCountAsync(Guid userId);
         Task<(string start, string end, string startL, string EndL)> GetLatLonByRidePostIdAsync(Guid id);
-
+        Task<RidePost?> FindAsync(Guid id);
 
     }
 }
