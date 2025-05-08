@@ -7,8 +7,6 @@ using static Domain.Common.Enums;
 using Application.DTOs.Comments;
 using Domain.Entities;
 
-
-
 namespace Application.CQRS.Commands.Posts
 {
     public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, ResponseModel<ResponsePostDto>>
@@ -25,9 +23,9 @@ namespace Application.CQRS.Commands.Posts
             _geminiService = geminiService;
             _fileService = fileService;
         }
+
         public async Task<ResponseModel<ResponsePostDto>> Handle(CreatePostCommand request, CancellationToken cancellationToken)
         {
-
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -66,41 +64,60 @@ namespace Application.CQRS.Commands.Posts
                 // Tạo post
                 var post = new Post(userId, request.Content, request.PostType, request.Scope, imageUrlString, videoUrl);
 
-                //kiểm tra xem bài đăng có hợp lệ không bằng Genimi
-                var result = await _geminiService.ValidatePostContentAsync(post.Content);
-                if (!result)
+                // Kiểm tra nội dung bằng Gemini
+                var validationResult = await _geminiService.ValidatePostContentWithDetailsAsync(post.Content);
+
+                // Xử lý trạng thái bài đăng
+                if (!validationResult.IsValid)
                 {
-                    post.RejectAI();
-                    await _unitOfWork.PostRepository.AddAsync(post);
-                    await _unitOfWork.SaveChangesAsync();
-                    await _unitOfWork.CommitTransactionAsync();
-                    return ResponseFactory.Fail<ResponsePostDto>("Warning! Content is not accepted! If you violate it again, your reputation will be deducted!!", 400);
+                    if (validationResult.Reason == "non-standard")
+                    {
+                        // Nội dung không chuẩn (như "haha"), đặt trạng thái Pending
+                        post.SetPendingForManualReview();
+                    }
+                    else
+                    {
+                        // Nội dung vi phạm nghiêm trọng
+                        post.RejectAI();
+                    }
                 }
-                post.ApproveAI();
-                // 🛑 Kiểm duyệt bài đăng bằng ML.NET
-                //bool isValid = PostValidator.IsValid( post.Content , _mLService.Predict);
-                //if (!isValid)
-                //{
-                //    post.RejectAI();
-                //    await _unitOfWork.RollbackTransactionAsync();
-                //    return ResponseFactory.Fail<ResponsePostDto>("Content is not valid", 400);
-                //}
-                //post.Approve();
+                else
+                {
+                    // Nội dung hợp lệ
+                    post.ApproveAI();
+                }
+
+                // Lưu bài đăng
                 await _unitOfWork.PostRepository.AddAsync(post);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync(); // Thêm dòng này để commit nếu hợp lệ
+                await _unitOfWork.CommitTransactionAsync();
+
+                // Tạo DTO cho phản hồi
                 var postDto = new ResponsePostDto
                 {
                     Id = post.Id,
                     UserId = userId,
                     Content = post.Content,
-                    ImageUrl = post.ImageUrl != null ? $"{Constaint.baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
-                    VideoUrl = post.VideoUrl != null ? $"{Constaint.baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
+                    ImageUrl = post.ImageUrl != null ? $"{Constaint.baseUrl}{post.ImageUrl}" : null,
+                    VideoUrl = post.VideoUrl != null ? $"{Constaint.baseUrl}{post.VideoUrl}" : null,
                     PostType = post.PostType,
-                    Scope= post.Scope,
+                    Scope = post.Scope,
                     IsApproved = post.IsApproved,
-                    CreatedAt =FormatUtcToLocal(post.CreatedAt),
+                    CreatedAt = FormatUtcToLocal(post.CreatedAt),
                 };
+
+                // Trả về phản hồi dựa trên trạng thái
+                if (!validationResult.IsValid)
+                {
+                    if (validationResult.Reason == "non-standard")
+                    {
+                        return ResponseFactory.Fail<ResponsePostDto>("The post has not been approved and is pending", 201);
+                    }
+                    return ResponseFactory.Fail<ResponsePostDto>(
+                        "Warning! Content is not accepted! If you violate it again, your reputation will be deducted!!",
+                        400
+                    );
+                }
 
                 return ResponseFactory.Success(postDto, "Create Post Success", 200);
             }

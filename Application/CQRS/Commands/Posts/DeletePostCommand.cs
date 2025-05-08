@@ -10,10 +10,5 @@ namespace Application.CQRS.Commands.Posts
     {
         public Guid PostId { get; set; }
 
-        public DeletePostCommand(Guid postId)
-        {
-            PostId = postId;
-
-        }
     }
 }

@@ -79,10 +79,10 @@ namespace Domain.Common
         }
         public enum RatingLevelEnum
         {
-            Poor,
-            Average,
-            Good,
-            Excellent
+            Poor = 1,
+            Average = 3,
+            Good = 4,
+            Excellent = 5
         }
 
         public enum ActionTakenEnum

@@ -40,6 +40,7 @@ const AllReport = () => {
     }
   };
 
+  // Chuyển đổi ngày sang UTC+7
   const handleOpenCommentModal = (post, index = 0) => {
     dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
     navigate(`/post/${post.id}`, { state: { background: location } });
@@ -94,16 +95,9 @@ const AllReport = () => {
 
           return (
             <div className="media-item" key={index}>
-              <img
-                src={fullUrl}
-                alt={`Post media ${index}`}
-                onClick={() => handleOpenCommentModal(post, index)}
-              />
+              <img src={fullUrl} alt={`Post media ${index}`} />
               {showOverlay && (
-                <div
-                  className="media-overlay"
-                  onClick={() => handleOpenCommentModal(post, index)}
-                >
+                <div className="media-overlay">
                   +{totalMedia - (hasVideo ? 1 : 2)}
                 </div>
               )}
@@ -112,10 +106,7 @@ const AllReport = () => {
         })}
         {hasVideo && (
           <div className="media-item video-item">
-            <video
-              controls
-              onClick={() => handleOpenCommentModal(post, imageUrls.length)}
-            >
+            <video controls>
               <source src={post.videoUrl} type="video/mp4" />
             </video>
           </div>
@@ -209,10 +200,7 @@ const AllReport = () => {
                     <span>{post.likeCount}</span>
                   </div>
                   <div className="comments-shares">
-                    <span
-                      onClick={() => handleOpenCommentModal(post, 0)}
-                      style={{ cursor: "pointer" }}
-                    >
+                    <span style={{ cursor: "pointer" }}>
                       {post.commentCount} bình luận
                     </span>
                     <span style={{ cursor: "pointer" }}>
@@ -233,10 +221,7 @@ const AllReport = () => {
                     )}
                     <span className="action-count">Thích</span>
                   </button>
-                  <button
-                    className="action-btn"
-                    onClick={() => handleOpenCommentModal(post, 0)}
-                  >
+                  <button className="action-btn">
                     <FiMessageSquare className="comment-icon" size={18} />
                     <span className="action-count">Bình luận</span>
                   </button>

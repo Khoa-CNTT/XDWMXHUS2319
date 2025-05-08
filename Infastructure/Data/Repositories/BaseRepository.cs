@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
+
 
 namespace Infrastructure.Data.Repositories
 {
@@ -61,5 +62,6 @@ namespace Infrastructure.Data.Repositories
             _dbSet.Update(entity);
             return Task.CompletedTask;
         }
+
     }
 }

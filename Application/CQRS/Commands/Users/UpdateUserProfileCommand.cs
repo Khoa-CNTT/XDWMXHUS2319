@@ -14,8 +14,5 @@ namespace Application.CQRS.Commands.Users
         public IFormFile? ProfileImage { get; set; }
         public IFormFile? BackgroundImage { get; set; }
         public string? Bio { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? PhoneRelativeNumber { get; set; }
-
     }
 }

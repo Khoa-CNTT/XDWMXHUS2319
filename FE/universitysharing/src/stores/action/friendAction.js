@@ -403,3 +403,33 @@ export const fetchSentRequestsWithCursor = createAsyncThunk(
     }
   }
 );
+
+export const fetchFriendPreview = createAsyncThunk(
+  "friends/fetchFriendPreview",
+  async (userId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const baseURL =
+        process.env.REACT_APP_BASE_URL || "https://localhost:7053";
+      const response = await axios.get(
+        `${baseURL}/api/FriendShip/get-list-friend-preview`,
+        {
+          params: { UserId: userId },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.data.success) {
+        return rejectWithValue(
+          response.data.message || "Failed to fetch friend preview"
+        );
+      }
+
+      return response.data.data; // Array of { friendId, pictureProfile, fullName, status, createdAt }
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Error fetching friend preview"
+      );
+    }
+  }
+);

@@ -236,6 +236,7 @@ namespace Application
                 ProfilePicture = user.ProfilePicture != null ? $"{Constaint.baseUrl}{user.ProfilePicture}" : null,
                 BackgroundPicture = user.BackgroundPicture != null ? $"{Constaint.baseUrl}{user.BackgroundPicture}" : null,
                 Bio = user.Bio,
+                TrustScore = user.TrustScore,
                 CreatedAt = user.CreatedAt
             };
         }
@@ -249,8 +250,21 @@ namespace Application
                 ProfilePicture = user.ProfilePicture != null ? $"{Constaint.baseUrl}{user.ProfilePicture}" : null,
                 BackgroundPicture = user.BackgroundPicture != null ? $"{Constaint.baseUrl}{user.BackgroundPicture}" : null,
                 Bio = user.Bio,
+                Phone = user.Phone,
+                PhoneRelative = user.RelativePhone,
+                Gender = user.Gender,
+                CreatedAt = user.CreatedAt
+            };
+        }
+        public static UserUpdateInformationDto MaptoUserInformationDto(User user)
+        {
+            return new UserUpdateInformationDto
+            {
+                Id = user.Id,
+                FullName = user.FullName,
                 PhoneNumber = user.Phone,
                 PhoneNumberRelative = user.RelativePhone,
+                Gender = user.Gender,
                 CreatedAt = user.CreatedAt
             };
         }

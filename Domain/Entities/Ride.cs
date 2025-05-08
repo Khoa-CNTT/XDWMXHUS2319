@@ -60,7 +60,16 @@ namespace Domain.Entities
                 EndTime = startTime.Value.AddMinutes(EstimatedDuration);
             }
         }
-
-
+        public void CancelRide()
+        {
+            if (Status != StatusRideEnum.Completed) // Chỉ cho phép hủy nếu chưa hoàn thành
+            {
+                Status = StatusRideEnum.Rejected;
+            }
+            else
+            {
+                throw new InvalidOperationException("Cannot cancel a completed ride.");
+            }
+        }
     }
 }

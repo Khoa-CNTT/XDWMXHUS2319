@@ -14,6 +14,7 @@ import PostInput from "../components/HomeComponent/PostInputHome";
 import { fetchListFriend } from "../stores/action/friendAction";
 import getUserIdFromToken from "../utils/JwtDecode";
 import { fetchPostImagesPreview } from "../stores/action/profileActions";
+import FooterHome from "../components/HomeComponent/FooterHome";
 
 const ProfileUserView = () => {
   const dispatch = useDispatch();
@@ -61,6 +62,7 @@ const ProfileUserView = () => {
               />
               <ProfilePhotos usersProfile={users} />
               <ProfileFriends usersProfile={users} />
+              <FooterHome />
             </div>
           </div>
           <div className="profile-user-view__right">

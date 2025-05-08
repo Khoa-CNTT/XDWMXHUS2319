@@ -54,11 +54,15 @@ const ReportModal = ({ postId, onClose }) => {
         {error && <p className="error-message">{error.message}</p>}
 
         <div className="modal-actions">
-          <button className="cancel-btn" onClick={onClose} disabled={loading}>
+          <button
+            className="cancel-btn-report"
+            onClick={onClose}
+            disabled={loading}
+          >
             Hủy
           </button>
           <button
-            className="submit-btn"
+            className="submit-btn-report"
             onClick={handleSubmit}
             disabled={loading}
           >

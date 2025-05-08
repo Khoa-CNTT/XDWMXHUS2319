@@ -64,11 +64,21 @@ namespace Application.Services
                 {
                     return null;
                 }
-
             }
             catch 
             {
                     return null;
+            }
+        }
+        public async Task<bool> SendEmailAsync(string email, string subject, string body)
+        {
+            try
+            {
+                return await _emailService.SendEmailAsync(email, subject, body);
+            }
+            catch
+            {
+                return false;
             }
         }
         public async Task<string> GenerateTokenAsync(Guid userId)
@@ -80,6 +90,13 @@ namespace Application.Services
         {
             return await _unitOfWork.UserRepository.GetByIdAsync(userId);
         }
+
+        public async Task<bool> VerifyPasswordAsync(string hashedPassword, string providedPassword)
+        {
+            return  BCrypt.Net.BCrypt.Verify(providedPassword, hashedPassword);
+        }
+    }   
+
 
         public async Task<ResponseModel<UserDto>> BlockUserAsync(Guid userId, DateTime blockUntil)
         {
@@ -263,4 +280,5 @@ namespace Application.Services
             return ResponseFactory.Success(alluser, "Lấy danh sách người dùng thành công", 200);
         }
     }  
+
 }
