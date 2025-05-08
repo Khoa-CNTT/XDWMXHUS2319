@@ -8,6 +8,7 @@ using System.Security.Claims;
 
 namespace DuyTanSharingSystem.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserProfileController : ControllerBase
@@ -17,29 +18,29 @@ namespace DuyTanSharingSystem.Controllers
         {
             _mediator = mediator;
         }
-        [Authorize]
         [HttpGet("profile")]
-        public async Task<IActionResult> GetUserProfile()
+        public async Task<IActionResult> GetUserProfile([FromQuery] GetUserProfileQuery query)
         {
-            var result = await _mediator.Send(new GetUserProfileQuery());
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
-        [Authorize]
-        [HttpPut("upProfile")]
-        public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileCommand command)
+        [HttpGet("user-profile")]
+        public async Task<IActionResult> GetFriendUserProfile([FromQuery] GetUserFriendProfileQuery query)
         {
-            var uesrid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (uesrid == null)
-            {
-                return Unauthorized("ban chua dang nhap");
-            }
-            command.UserId = Guid.Parse(uesrid);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        [HttpGet("profile-detail")]
+        public async Task<IActionResult> GetUserProfileDetail()
+        {
+            return Ok(await _mediator.Send(new GetUserProfileDetailQuery()));
+        }
+
+        [HttpPut("upProfile")]
+        public async Task<IActionResult> UpdateUserProfile([FromForm] UpdateUserProfileCommand command)
+        {
             var result = await _mediator.Send(command);
-            if (result.Success)
-            {
-                return Ok("cap nhat thanh cong");
-            }
-            return BadRequest("cap nhat that bai");
+            return Ok(result);
         }
     }
 }

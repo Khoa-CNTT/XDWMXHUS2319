@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using static Domain.Common.Enums;
 
 namespace Domain.Entities
@@ -14,7 +10,7 @@ namespace Domain.Entities
         public Guid FriendId { get; private set; } // Không nên nullable
         public DateTime CreatedAt { get; private set; }
         public FriendshipStatusEnum Status { get; private set; } // Trạng thái kết bạn
-
+        public DateTime? UpdatedAt { get; private set; }
         public Friendship(Guid userId, Guid friendId)
         {
             if (userId == Guid.Empty) throw new ArgumentException("UserId cannot be empty.");
@@ -34,6 +30,7 @@ namespace Domain.Entities
         public void Accept()
         {
             Status = FriendshipStatusEnum.Accepted;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -42,6 +39,7 @@ namespace Domain.Entities
         public void Reject()
         {
             Status = FriendshipStatusEnum.Rejected;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -50,9 +48,20 @@ namespace Domain.Entities
         public void Remove()
         {
             Status = FriendshipStatusEnum.Removed;
+            UpdatedAt = DateTime.UtcNow;
+        }
+        public void Reactivate()
+        {
+            if (Status == FriendshipStatusEnum.Removed)
+            {
+                Status = FriendshipStatusEnum.Pending;
+                UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                throw new InvalidOperationException("Không thể kích hoạt lại lời mời kết bạn không ở trạng thái Removed.");
+            }
         }
     }
-
-  
 }
 

@@ -22,6 +22,17 @@ namespace Infrastructure.Data.Repositories
             return entity;
         }
 
+        public async Task AddRangeAsync(List<T> entities)
+        {
+            await _context.AddRangeAsync(entities);
+        }
+
+        public Task BulkUpdateAsync(List<T> entities)
+        {
+             _context.UpdateRange(entities);
+            return Task.CompletedTask;
+        }
+
         public abstract Task<bool> DeleteAsync(Guid id);
 
 
@@ -30,7 +41,7 @@ namespace Infrastructure.Data.Repositories
             return _dbSet;
         }
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<List<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
         }

@@ -1,0 +1,70 @@
+.modal-postOption-overlay {
+  // position: absolute; // Để modal hiện đúng vị trí gần dấu ba chấm
+  z-index: 99999;
+}
+
+.modal-postOption-content {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  min-width: 150px;
+
+  // Điều chỉnh để modal không bị lệch
+  transform: translateY(5px);
+}
+
+.option-item {
+  margin: 0;
+  padding: 8px;
+  cursor: pointer;
+  &:hover {
+    background: #f0f0f0;
+  }
+}
+
+.option-edit {
+  font-weight: bold;
+}
+
+.option-delete,
+.option-report {
+  color: red;
+  font-weight: bold;
+}
+
+// .post-options-modal {
+//   position: absolute; // Để modal di chuyển theo bài post
+//   z-index: 1000;
+//   background: white;
+//   border-radius: 8px;
+//   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+//   min-width: 150px;
+//   padding: 10px;
+// }
+
+// .modal-content {
+//   background: white;
+//   border-radius: 8px;
+//   padding: 12px;
+//   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+// }
+
+// .option-item {
+//   margin: 0;
+//   padding: 8px;
+//   cursor: pointer;
+//   &:hover {
+//     background: #f0f0f0;
+//   }
+// }
+
+// .option-edit {
+//   font-weight: bold;
+// }
+
+// .option-delete,
+// .option-report {
+//   color: red;
+//   font-weight: bold;
+// }

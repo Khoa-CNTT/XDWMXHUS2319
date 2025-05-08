@@ -11,4 +11,9 @@ namespace Infrastructure.Gemini
         public  string ApiKey { get; set; }= string.Empty;
         public string Endpoint { get; set; } = string.Empty;
     }
+    public class GeminiModel2
+    {
+        public string ApiKey2 { get; set; } = string.Empty;
+        public string Endpoint2 { get; set; } = string.Empty;
+    }
 }

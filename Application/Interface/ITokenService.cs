@@ -11,7 +11,8 @@ namespace Application.Interface
     public interface ITokenService
     {
         
-        Task<RefreshToken> AddRefreshTokenAsync(User user, string rerefreshToken, IHttpContextAccessor _httpContextAccessor);
+        Task<RefreshToken> AddRefreshTokenAsync(User user, string rerefreshToken);
         Task<RefreshToken?> GetByTokenAsync(string token);
+        Task RevokeRefreshTokenAsync(string token);
     }
 }

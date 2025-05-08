@@ -1,28 +1,74 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Application.DTOs.User;
+
 
 namespace Application.CQRS.Commands.Users
 {
-    public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfileCommand, ResponseModel<bool>>
+    public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfileCommand, ResponseModel<UserProfileDetailDto>>
     {
+        private readonly IUserRepository _userRepository;
+        private readonly IUserContextService _userContextService;
         private readonly IUnitOfWork _unitOfWork;
-        public UpdateUserProfileCommandHandler(IUnitOfWork unitOfWork)
+        private readonly IFileService _fileService;
+        private readonly IRedisService _redisService;
+        public UpdateUserProfileCommandHandler(IUserRepository userRepository, IUserContextService userContextService, IUnitOfWork unitOfWork, IFileService fileService, IRedisService redisService)
         {
+            _userRepository = userRepository;
+            _userContextService = userContextService;
             _unitOfWork = unitOfWork;
+            _fileService = fileService;
+            _redisService = redisService;
         }
-        public async Task<ResponseModel<bool>> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
+
+        public async Task<ResponseModel<UserProfileDetailDto>> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
         {
-            var user = await _unitOfWork.UserRepository.GetByIdAsync(request.UserId);
+            // 🔐 Lấy UserId từ Token
+            var userIdFromToken = _userContextService.UserId();
+            if (userIdFromToken == Guid.Empty)
+            {
+                return ResponseFactory.Fail<UserProfileDetailDto>("Unauthorized", 401);
+            }
+
+            // 🔍 Lấy thông tin người dùng từ Database
+            var user = await _userRepository.GetUserByIdAsync(userIdFromToken);
             if (user == null)
             {
-                return ResponseFactory.Fail<bool>("User not found", 404);
+                return ResponseFactory.Fail<UserProfileDetailDto>("User not found", 404);
             }
-            user.UpdateProfile(request.FullName, request.Bio, request.ProfilePicture);
-            await _unitOfWork.SaveChangesAsync();
-            return ResponseFactory.Success(true, "Update user profile successfully", 200);
+            // 🔄 Cập nhật thông tin người dùng
+            string? newProfileImageUrl = user.ProfilePicture;
+
+            if (request.ProfileImage != null && _fileService.IsImage(request.ProfileImage))
+            {
+                newProfileImageUrl = await _fileService.SaveFileAsync(request.ProfileImage, "images/profile/avatar", true);
+            }
+            string? newBackgroundImageUrl = user.BackgroundPicture;
+
+            if (request.BackgroundImage != null && _fileService.IsImage(request.BackgroundImage))
+            {
+                newBackgroundImageUrl = await _fileService.SaveFileAsync(request.BackgroundImage, "images/profile/background", true);
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                // Cập nhật thông tin người dùng
+                user.UpdateProfile(request.FullName, newProfileImageUrl, newBackgroundImageUrl, request.Bio, request.PhoneNumber, request.PhoneRelativeNumber);
+                await _userRepository.UpdateAsync(user);
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+                // Trả về kết quả sau khi cập nhật
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
+                return ResponseFactory.Success(Mapping.MaptoUserprofileDetailDto(user), "Cập nhật hồ sơ thành công", 200);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                return ResponseFactory.Fail<UserProfileDetailDto>(ex.Message, 500);
+            }
         }
     }
 }

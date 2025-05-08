@@ -15,7 +15,7 @@ namespace Application.DTOs.Post
         public string? ImageUrl { get;  set; }
         public string? VideoUrl { get;  set; }
         public PostTypeEnum PostType { get;  set; }
-        public DateTime CreatedAt { get;  set; } 
+        public required string CreatedAt { get;  set; } 
         public double? Score { get;  set; }
         public bool IsApproved { get;  set; } 
         public ApprovalStatusEnum ApprovalStatus { get;  set; } 

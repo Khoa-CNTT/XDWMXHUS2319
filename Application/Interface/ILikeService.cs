@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Application.DTOs.Likes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace Application.Interface
 {
     public interface ILikeService
     {
-        Task<bool> AddLikeAsync(Guid userId, Guid postId);
+        Task<GetLikeWithCursorResponse> GetLikesByPostIdWithCursorAsync(Guid postId, Guid? lastUserId);
     }
 }

@@ -1,6 +1,12 @@
-﻿using Application.DTOs.Post;
+﻿using Application.Common;
+using Application.DTOs.Post;
+using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
-using Application.Services;
+using static Domain.Common.Helper;
+using static Domain.Common.Enums;
+using Domain.Entities;
+using StackExchange.Redis;
+
 
 
 namespace Application.CQRS.Commands.Posts
@@ -10,16 +16,20 @@ namespace Application.CQRS.Commands.Posts
         private readonly IUserContextService _userContextService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGeminiService _geminiService;
-        private readonly MLService _mLService;
-        public CreatePostCommandHandler(IUnitOfWork unitOfWork,MLService mLService, IUserContextService userContextService, IGeminiService geminiService)
+        private readonly IFileService _fileService;
+        private readonly IRedisService _redisService;
+
+        public CreatePostCommandHandler(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, IFileService fileService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
-            _mLService = mLService;
             _userContextService = userContextService;
             _geminiService = geminiService;
+            _fileService = fileService;
+            _redisService = redisService;
         }
         public async Task<ResponseModel<ResponsePostDto>> Handle(CreatePostCommand request, CancellationToken cancellationToken)
         {
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -27,11 +37,35 @@ namespace Application.CQRS.Commands.Posts
                 if (userId == Guid.Empty)
                     return ResponseFactory.Fail<ResponsePostDto>("User not found", 404);
 
-                var post = new Post(userId, request.Content, request.PostType,request.Scope, request.ImageUrl, request.VideoUrl);
+                // Lưu ảnh
+                List<string> imageUrls = new();
+                if (request.Images != null && request.Images.Any())
+                {
+                    foreach (var image in request.Images)
+                    {
+                        var imageUrl = await _fileService.SaveFileAsync(image, "images/posts", isImage: true);
+                        if (!string.IsNullOrWhiteSpace(imageUrl))
+                        {
+                            imageUrls.Add(imageUrl);
+                        }
+                    }
+                }
 
-               
+                // Gộp chuỗi ảnh lại bằng dấu phẩy
+                string? imageUrlString = imageUrls.Any() ? string.Join(",", imageUrls) : null;
+
+                // Lưu video (nếu có)
+                string? videoUrl = null;
+                if (request.Video != null)
+                {
+                    videoUrl = await _fileService.SaveFileAsync(request.Video, "videos/posts", isImage: false);
+                }
+
+                // Tạo post
+                var post = new Post(userId, request.Content, request.Scope, imageUrlString, videoUrl);
+
                 //kiểm tra xem bài đăng có hợp lệ không bằng Genimi
-               var result = await _geminiService.ValidatePostContentAsync(post.Content);
+                var result = await _geminiService.ValidatePostContentAsync(post.Content);
                 if (!result)
                 {
                     post.RejectAI();
@@ -53,14 +87,24 @@ namespace Application.CQRS.Commands.Posts
                 await _unitOfWork.PostRepository.AddAsync(post);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync(); // Thêm dòng này để commit nếu hợp lệ
-
                 var postDto = new ResponsePostDto
                 {
-                    Id = userId,
+                    Id = post.Id,
+                    UserId = userId,
                     Content = post.Content,
+                    ImageUrl = post.ImageUrl != null ? $"{Constaint.baseUrl}{post.ImageUrl}" : null, // ✅ Thêm Base URL
+                    VideoUrl = post.VideoUrl != null ? $"{Constaint.baseUrl}{post.VideoUrl}" : null, // ✅ Thêm Base URL
                     PostType = post.PostType,
+                    Scope= post.Scope,
                     IsApproved = post.IsApproved,
+                    CreatedAt =FormatUtcToLocal(post.CreatedAt),
                 };
+                if(request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
+
 
                 return ResponseFactory.Success(postDto, "Create Post Success", 200);
             }
@@ -70,6 +114,5 @@ namespace Application.CQRS.Commands.Posts
                 return ResponseFactory.Fail<ResponsePostDto>(e.Message, 500);
             }
         }
-
     }
 }

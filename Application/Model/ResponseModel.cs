@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace Application.Model
+﻿namespace Application.Model
 {
     public class ResponseModel<T> 
     {
@@ -13,8 +6,6 @@ namespace Application.Model
         public bool Success { get; set; }
         public T? Data { get; set; }
         public int? Code { get; set; }
-        public List<string>? Errors { get; set; }
-        
-       
+        public List<string>? Errors { get; set; }        
     }
 }

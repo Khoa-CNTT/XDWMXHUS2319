@@ -1,4 +1,9 @@
-﻿using Application.Model.Events;
+﻿using Application.Common;
+using Application.DTOs.Likes;
+using Application.DTOs.Post;
+using Application.DTOs.User;
+using Application.Model.Events;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,26 +14,33 @@ namespace Application.Services
 {
     public class LikeService : ILikeService
     {
-        private readonly ICacheService _cacheService;
-        public LikeService(ICacheService cacheService)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public LikeService(IUnitOfWork unitOfWork)
         {
-            _cacheService = cacheService;
+            _unitOfWork = unitOfWork;
         }
-        public async Task<bool> AddLikeAsync(Guid userId, Guid postId)
+        public async Task<GetLikeWithCursorResponse> GetLikesByPostIdWithCursorAsync(Guid postId, Guid? lastUserId)
         {
-            string likeEventKey = "like_events";
+            int pageSize = 10; // 📌 Set cứng lấy 2 người mỗi lần
 
-            // Lấy danh sách like hiện tại từ Redis
-            var likeEvents = await _cacheService.GetAsync<List<LikeEvent>>(likeEventKey) ?? new List<LikeEvent>();
+            var (likes, nextCursor) = await _unitOfWork.LikeRepository.GetLikesByPostIdWithCursorAsync(postId, lastUserId, pageSize);
+            int likeCount = await _unitOfWork.LikeRepository.CountLikesByPostIdAsync(postId);
 
-            // Thêm like mới vào danh sách
-            likeEvents.Add(new LikeEvent(postId,userId));
+            var likedUserDtos = likes
+                .Select(l => new UserPostDto
+                {
+                    UserId = l.User!.Id,
+                    UserName = l.User.FullName,
+                    ProfilePicture = l.User.ProfilePicture != null ? $"{Constaint.baseUrl}{l.User.ProfilePicture}" : null, // ✅ Thêm Base URL
+                }).ToList();
 
-            // Cập nhật lại Redis với danh sách mới
-            await _cacheService.SetAsync(likeEventKey, likeEvents, TimeSpan.FromMinutes(10));
-
-            return true;
+            return new GetLikeWithCursorResponse
+            {
+                LikeCount = likeCount,
+                LikedUsers = likedUserDtos,
+                NextCursor = nextCursor
+            };
         }
-
     }
 }

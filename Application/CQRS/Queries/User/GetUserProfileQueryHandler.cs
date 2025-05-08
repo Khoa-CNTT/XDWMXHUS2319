@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.User;
 using Application.Interface.ContextSerivce;
+using Domain.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,34 +9,34 @@ using System.Threading.Tasks;
 
 namespace Application.CQRS.Queries.User
 {
-    public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, ResponseModel<UserProfileDto>>
+    public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, ResponseModel<MaptoUserprofileDetailDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+  
         private readonly IUserContextService _userContextService;
-        public GetUserProfileQueryHandler(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        
+        private readonly IUnitOfWork _unitOfWork;
+        public GetUserProfileQueryHandler(IUserContextService userContextService, IUnitOfWork unitOfWork)
         {
-            _unitOfWork = unitOfWork;
             _userContextService = userContextService;
+            
+            _unitOfWork = unitOfWork;
         }
-        public async Task<ResponseModel<UserProfileDto>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
-        {
-            var userid = _userContextService.UserId();
-            var user = await _unitOfWork.UserRepository.GetByIdAsync(userid);
 
+        public async Task<ResponseModel<MaptoUserprofileDetailDto>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
+        {
+            var userId = _userContextService.UserId(); // Lấy UserId tại đây
+            if (userId == Guid.Empty)
+            {
+                return ResponseFactory.Fail<MaptoUserprofileDetailDto>("Unauthorized", 401);
+            }
+
+            var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
             if (user == null)
             {
-                throw new ArgumentException("User not found");
+                return ResponseFactory.Fail<MaptoUserprofileDetailDto>("User not found", 404);
             }
-            return ResponseFactory.Success(new UserProfileDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FullName = user.FullName,
-                ProfilePicture = user.ProfilePicture,
-                Bio = user.Bio,
-                CreatedAt = user.CreatedAt,
-                
-             }, "Get user profile success", 200);
-    }
+
+            return ResponseFactory.Success(Mapping.MaptoUserprofileDto(user), "Get user profile success", 200);
+        }
     }
 }

@@ -17,23 +17,46 @@ namespace Domain.Entities
             public string Email { get; private set; }
             public string PasswordHash { get; private set; }
             public string? ProfilePicture { get; private set; }
+            public string? BackgroundPicture { get; private set; }
             public string? Bio { get; private set; }
             public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
             public bool IsVerifiedEmail { get; private set; } = false;
-            public int TrustScore { get; private set; } = 0;
+            public decimal TrustScore { get; private set; } = 0;
             public RoleEnum Role { get; private set; } = RoleEnum.User;
+            public string? RelativePhone { get; private set; }
+            public string? Phone { get; private set; }
+            public DateTime? LastActive { get; private set; }
+            public DateTime? UpdatedAt { get; private set; }
+
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
             public virtual ICollection<Comment> Comments { get; private set; } = new HashSet<Comment>();
             public virtual ICollection<Friendship> SentFriendRequests { get; private set; } = new HashSet<Friendship>();
             public virtual ICollection<Friendship> ReceivedFriendRequests { get; private set; } = new HashSet<Friendship>();
-            public virtual ICollection<Message> MessageSenders { get; private set; } = new List<Message>();
-            public virtual ICollection<Message> MessageReceivers { get; private set; } = new List<Message>();
+           
             public virtual ICollection<Report> Reports { get; private set; } = new HashSet<Report>();
             public virtual ICollection<GroupMember> GroupMembers { get; private set; } = new HashSet<GroupMember>();
+
+            public virtual ICollection<CommentLike> CommentLikes { get; private set; } = new List<CommentLike>();
+
             //CHUPS
             public virtual ICollection<Share> Shares { get; private set; } = new HashSet<Share>();
+            //huy
+            public ICollection<RidePost> RidePosts { get;private set; } = new List<RidePost>();
+            public ICollection<Ride> DrivenRides { get; private set; } = new List<Ride>(); // Những chuyến đi do user làm tài xế
+            public ICollection<Ride> RidesAsPassenger { get; private set; } = new List<Ride>(); // Những chuyến đi user là hành khách
+            public ICollection<LocationUpdate> LocationUpdates { get; private set; } = new List<LocationUpdate>();
+            //tin nhắn
+            // Navigation properties cho Conversation
+            public ICollection<Conversation> ConversationsAsUser1 { get; private set; } = new List<Conversation>();
+            public ICollection<Conversation> ConversationsAsUser2 { get; private set; } = new List<Conversation>();
 
+            // Navigation property cho Message
+            public ICollection<Message> SentMessages { get; set; } = new List<Message>();
+            public ICollection<Notification> ReceivedNotifications { get; set; } = new List<Notification>();
+            public ICollection<Notification> SentNotifications { get; set; } = new List<Notification>();
+            // Navigation property cho AIConversation
+            public ICollection<AIConversation> AIConversations { get; set; } = new List<AIConversation>();
 
         public User(string fullName, string email, string passwordHash)
             {
@@ -54,35 +77,54 @@ namespace Domain.Entities
             public void VerifyEmail()
             {
                 IsVerifiedEmail = true;
+                UpdatedAt = DateTime.UtcNow;
             }
 
             /// <summary>
             /// Cập nhật điểm tin cậy của người dùng.
             /// </summary>
             /// <param name="score">Điểm tin cậy mới.</param>
-            public void UpdateTrustScore(int score)
+            public void UpdateTrustScore(decimal score)
             {
                 if (score < 0) throw new ArgumentException("Trust score cannot be negative.");
                 TrustScore = score;
+                UpdatedAt = DateTime.UtcNow;
             }
 
-            /// <summary>
-            /// Cập nhật thông tin cá nhân (Họ tên, ảnh đại diện, tiểu sử).
-            /// </summary>
-            public void UpdateProfile(string fullName, string? profilePicture, string? bio)
-            {
-                if (string.IsNullOrWhiteSpace(fullName))
-                    throw new ArgumentException("Full name cannot be empty.");
-
+        /// <summary>
+        /// Cập nhật thông tin cá nhân (Họ tên, ảnh đại diện, tiểu sử).
+        /// </summary>
+        public void UpdateProfile(
+        string? fullName,
+        string? profileImageUrl,
+        string? backgroundImageUrl,
+        string? bio,
+        string? phoneNumber,
+        string? phoneRelativeNumber)
+        {
+            if (!string.IsNullOrWhiteSpace(fullName))
                 FullName = fullName;
-                ProfilePicture = profilePicture;
-                Bio = bio;
-            }
 
-            /// <summary>
-            /// Cập nhật mật khẩu mới (đã hash).
-            /// </summary>
-            public void UpdatePassword(string newPasswordHash)
+            if (!string.IsNullOrWhiteSpace(profileImageUrl))
+                ProfilePicture = profileImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(backgroundImageUrl))
+                BackgroundPicture = backgroundImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(bio))
+                Bio = bio;
+
+            if (!string.IsNullOrWhiteSpace(phoneNumber))
+                Phone = phoneNumber;
+
+            if (!string.IsNullOrWhiteSpace(phoneRelativeNumber))
+                RelativePhone = phoneRelativeNumber;
+        }
+
+        /// <summary>
+        /// Cập nhật mật khẩu mới (đã hash).
+        /// </summary>
+        public void UpdatePassword(string newPasswordHash)
             {
                 if (string.IsNullOrWhiteSpace(newPasswordHash))
                     throw new ArgumentException("New password cannot be empty.");

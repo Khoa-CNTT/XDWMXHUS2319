@@ -1,0 +1,86 @@
+.suggested-user-container {
+  background-color: white; // Màu nền tối
+  border-radius: 8px;
+  padding: 16px;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  max-width: 620px; // Điều chỉnh theo kích thước mong muốn
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+// Tiêu đề
+.suggested-user-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: black;
+}
+
+// Danh sách người dùng
+.suggested-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// Mỗi người dùng
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border: 2px solid gray;
+  border-radius: 8px;
+  background-color: white; // Màu nền cho từng item
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgb(235, 235, 235);
+  }
+}
+
+// Ảnh đại diện
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+// Thông tin người dùng
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0;
+  color: black;
+}
+
+.user-bio {
+  font-size: 12px;
+  color: black;
+  margin: 2px 0;
+  line-height: 1.2;
+}
+
+// Nút "Xem tất cả"
+.view-all-btn {
+  width: 100%;
+  padding: 8px;
+  margin-top: 12px;
+  background-color: transparent;
+  border: none;
+  color: #1a73e8;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

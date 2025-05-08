@@ -1,0 +1,51 @@
+.profile-intro {
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 3px;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  &__edit-button {
+    position: relative;
+    z-index: 5; // Tăng cao hơn các phần tử xung quanh
+    transform: translateZ(0); // Tạo layer riêng
+    font-size: 14px;
+    color: #007bff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+  }
+  &__view-all {
+    font-size: 14px;
+    color: #007bff;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+  }
+}

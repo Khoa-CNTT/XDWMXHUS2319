@@ -1,0 +1,117 @@
+.home-vieww {
+  height: unset;
+  .header {
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10; // Header nên có z-index cao nhất
+    background: white; // Thêm background để che phủ
+  }
+}
+.profile-user-view {
+  display: flex;
+  flex-direction: column;
+  height: 90vh;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  // z-index: 0; // Tạo stacking context mới
+
+  .header {
+    // border-bottom: 1px solid #ddd;
+    // display: flex;
+    // align-items: center;
+    // justify-content: space-between;
+    // z-index: 10; // Header nên có z-index cao nhất
+    // background: white; // Thêm background để che phủ
+  }
+
+  &__content {
+    position: relative;
+    // z-index: 0; // Tạo stacking context mới
+    display: flex;
+    flex: 1;
+    padding: 10px;
+    gap: 20px;
+    background-color: #e2e2e2;
+    max-width: 100%; // Constrain the content width
+    box-sizing: border-box;
+  }
+
+  &__left {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    z-index: 2; // Cao hơn right
+  }
+
+  &__right {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 5; // Giảm xuống thấp hơn nút chỉnh sửa
+  }
+
+  @media (max-width: 768px) {
+    &__content {
+      flex-direction: column;
+      padding: 10px;
+    }
+
+    &__left,
+    &__right {
+      flex: 1;
+      z-index: auto; // Trên mobile có thể reset z-index
+    }
+  }
+}
+
+.post-input {
+  width: 100%;
+  max-width: 610px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  z-index: 4; // Post input cần cao hơn các phần tử xung quanh
+  background: white; // Thêm background để che phủ
+}
+// .all-posts {
+//   z-index: 8;
+// }
+.left-sidebar-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.left-sidebar-content {
+  position: sticky;
+  top: 20px;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  width: 500px;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #bcc0c4;
+    border-radius: 3px;
+  }
+}
+
+.profile-intro {
+  position: relative; // Quan trọng
+
+  &__edit-button {
+    position: relative;
+    z-index: 100; // Rất cao để đảm bảo hiển thị trên cùng
+    // ... các style khác
+  }
+}

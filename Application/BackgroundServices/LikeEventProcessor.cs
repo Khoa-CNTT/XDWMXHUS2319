@@ -26,31 +26,54 @@ namespace Application.BackgroundServices
                 using var scope = _serviceProvider.CreateScope();
                 var redisService = scope.ServiceProvider.GetRequiredService<ICacheService>();
                 var likeRepository = scope.ServiceProvider.GetRequiredService<ILikeRepository>();
+                var postRepository = scope.ServiceProvider.GetRequiredService<IPostRepository>();
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-                var likeEvents = await redisService.GetAsync<List<LikeEvent>>("like_events");
-
+                string redisKey = "like_events";
+                var likeEvents = await redisService.GetAsync<List<Like>>(redisKey);
+                
                 if (likeEvents?.Any() == true)
                 {
                     await unitOfWork.BeginTransactionAsync(); // 🛠 Bắt đầu transaction
 
                     try
                     {
-                        var likeEntities = likeEvents.Select(e => new Like(e.UserId, e.PostId)).ToList();
-                        await likeRepository.AddRangeAsync(likeEntities);
+                        foreach (var likeEvent in likeEvents)
+                        {
+                            var existingLike = await likeRepository.GetLikeByPostIdAsync(likeEvent.PostId, likeEvent.UserId);
+
+                            if (existingLike == null)
+                            {
+                                // 🔹 Chưa like -> Thêm mới với trạng thái mặc định là true
+                                existingLike = new Like(likeEvent.UserId, likeEvent.PostId);
+                                await likeRepository.AddAsync(existingLike);
+                            }
+                            else
+                            {
+                                // 🔹 Toggle trạng thái like
+                                existingLike.ToggleLike();
+                                await likeRepository.UpdateAsync(existingLike);
+                            }
+                        }
+
+                        // 📌 Lưu vào database
                         await unitOfWork.SaveChangesAsync();
-                        await unitOfWork.CommitTransactionAsync(); // ✅ Commit transaction
-                        await redisService.RemoveAsync("like_events");
+                        await unitOfWork.CommitTransactionAsync();
+
+                        // ✅ Xóa dữ liệu đã xử lý khỏi Redis
+                        await redisService.RemoveAsync(redisKey);
                     }
                     catch (Exception)
                     {
-                        await unitOfWork.RollbackTransactionAsync(); // ❌ Rollback nếu có lỗi
+                        await unitOfWork.RollbackTransactionAsync(); // ❌ Rollback nếu lỗi
                         throw;
                     }
                 }
-                await Task.Delay(5000, stoppingToken); // Chạy lại sau 1 giây
+
+                await Task.Delay(5000, stoppingToken); // Chạy lại sau 5 giây
             }
         }
+
 
 
     }

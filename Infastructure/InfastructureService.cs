@@ -1,21 +1,6 @@
-﻿using Application.Interface;
-using Application.Interface.ContextSerivce;
-using Application.Model;
-using Application.Services;
-using Infrastructure.Data.Repositories;
-using Infrastructure.Data.UnitOfWork;
-using Infrastructure.Email;
-using Infrastructure.Gemini;
-using Infrastructure.Redis;
-using Infrastructure.Service;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using Application.Interface.ChatAI;
+using Infrastructure.ChatAI;
 
 namespace Infrastructure
 {
@@ -34,8 +19,12 @@ namespace Infrastructure
             );
             // Đăng ký User Secrets
             services.Configure<GeminiModel>(configuration.GetSection("GoogleGeminiApi"));
+            services.Configure<GeminiModel2>(configuration.GetSection("GoogleGeminiApi2"));
+            services.Configure<MapsKeyModel>(configuration.GetSection("GoogleMaps"));
 
+           
             var geminiModel = configuration.GetSection("GoogleGeminiApi").Get<GeminiModel>();
+
             if (geminiModel == null || string.IsNullOrWhiteSpace(geminiModel.ApiKey))
             {
                 throw new Exception("⚠️ Jwt:Key không được để trống! Kiểm tra user-secrets hoặc appsettings.json.");
@@ -46,23 +35,67 @@ namespace Infrastructure
             // Đăng ký Cache Service
             services.AddScoped<ICacheService, RedisCacheService>();
 
+
+            services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IEmailTokenRepository, EmailTokenRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ILikeRepository, LikeRepository>();
             services.AddScoped<IRefreshtokenRepository, RefreshtokenRepository>();
+            services.AddScoped<IRidePostRepository, RidePostRepository>();
+            services.AddScoped<IRideRepository, RideRepository>();
+            services.AddScoped<ILocationUpdateRepository, LocationUpdateRepository>();
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IRideReportRepository, RideReportRepository>();
             services.AddScoped<IUserContextService, UserContextService>();
+            services.AddScoped<IRatingRepository, RatingRepository>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IAIConversationRepository, AIConversationRepository>();
+            services.AddScoped<IAIChatHistoryRepository, AIChatHistoryRepository>();
+
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IShareRepository, ShareRepository>();
+            services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
+            services.AddScoped<IFriendshipRepository, FriendshipRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            //đăng kí cho search AI
+            services.AddScoped<IDataAIService, DataAIService>();
+            services.AddScoped<IApiPythonService, ApiPythonService>();
+            //services.AddScoped<ISearchAIService, ApiPythonService2>();
+            //đăng kí chat
+            services.AddScoped<IChatService, ChatService>();
+            services.AddScoped<IMessageStatusService, MessageStatusService>();
             // ✅ Đăng ký HttpClient
             services.AddHttpClient();
 
             // ✅ Đăng ký GeminiService
             services.AddScoped<IGeminiService, GeminiService>();
+            services.AddScoped<IGeminiService2, GeminiService2>();
+            // Đăng ký Google Maps và HERE Maps nhưng chưa chọn
+            services.AddScoped<GoogleMapsService>();
+            services.AddScoped<HereMapService>();
+            // Đăng ký Factory
+            services.AddScoped<MapServiceFactory>();
+            // Đăng ký IMapService thông qua Factory
+            services.AddScoped<IMapService>(sp => sp.GetRequiredService<MapServiceFactory>().Create());
+
 
             services.AddScoped<IUnitOfWork, UnitOfWork>(); // Đăng ký trước UserService
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IEmailService, EmailService>();
 
-
+            //đăng kí hub
+            services.AddScoped<ISignalRNotificationService, SignalRNotificationService>(); // Dùng SignalR để gửi thông báo
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(LikeEventHandler).Assembly));
+            //đăng kí chat
+            services.AddScoped<IChatStreamSender, ChatStreamSender>();
+            //chat AI
+            services.AddScoped<IPythonApiService, PythonApiService>();
+            services.AddScoped<IChatStreamingService, ChatStreamingService>();
             return services;
         }
     }

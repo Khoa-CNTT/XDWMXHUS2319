@@ -1,46 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Application.Interface.ContextSerivce;
 using Application.Interface.Hubs;
 using Application.Model.Events;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.DependencyInjection;
+
 
 namespace Application.CQRS.Commands.Likes
 {
-    public class LikePostCommandHandler : IRequestHandler<LikePostCommand,ResponseModel<bool>>
+    public class LikePostCommandHandler : IRequestHandler<LikePostCommand, ResponseModel<bool>>
     {
-        private readonly ILikeService _likeService;
-        private readonly IPublisher _publisher; // MediatR để phát sự kiện
+        private readonly IRedisService _redisService;
         private readonly INotificationService _notificationService;
+        private readonly IUserContextService _userContextService;
+    
 
-        public LikePostCommandHandler(ILikeService likeService, IPublisher publisher, INotificationService notificationService)
+        public LikePostCommandHandler(IRedisService redisService, 
+            INotificationService notificationService, 
+            IUserContextService userContextService)
         {
-            _likeService = likeService;
-            _publisher = publisher;
+            _redisService = redisService;
             _notificationService = notificationService;
-
+            _userContextService = userContextService;
         }
 
         public async Task<ResponseModel<bool>> Handle(LikePostCommand request, CancellationToken cancellationToken)
         {
-            if (request.UserId == Guid.Empty || request.PostId == Guid.Empty)
-            {
-                return ResponseFactory.Fail<bool>("Values is requite",400);
-            }
-            // Lưu Like vào Redis
-            if(await _likeService.AddLikeAsync(request.UserId, request.PostId))
-            {
-                // Phát sự kiện Like
-                await _publisher.Publish(new LikeEvent(request.PostId, request.UserId), cancellationToken);
-                // Gửi thông báo real-time qua SignalR
-                await _notificationService.SendLikeNotificationAsync(request.PostId, request.UserId);
-                return ResponseFactory.Success<bool>("Liked", 200);
-            }
-            return ResponseFactory.Fail<bool>("Liked fail", 500);
-        }
-    }
+            var userId = _userContextService.UserId();
 
+            // 🛑 Kiểm tra request hợp lệ
+            if (request.PostId == Guid.Empty)
+            {
+                return ResponseFactory.Fail<bool>("PostId là bắt buộc", 400);
+            }
+
+            // 📌 Lưu vào Redis trước, worker sẽ xử lý sau
+            string redisKey = "like_events";
+            bool isAdded = await _redisService.AddAsync(redisKey,new Like(userId,request.PostId), TimeSpan.FromMinutes(10));
+
+            if (isAdded)
+            {
+                await _notificationService.SendLikeNotificationAsync(request.PostId, userId);
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
+                return ResponseFactory.Success<bool>("Like/unlike request đã được lưu, sẽ xử lý sau", 202);
+            }
+
+            return ResponseFactory.Fail<bool>("Không thể lưu like vào Redis", 500);
+        }
+
+
+    }
 }
+

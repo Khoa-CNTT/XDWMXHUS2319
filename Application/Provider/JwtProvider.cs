@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Application.Provider
@@ -58,7 +59,7 @@ namespace Application.Provider
                 }
 
                 // ✅ Tạo Access Token mới
-                var newAccessToken = await GenerateJwtToken(user);
+                var (newAccessToken,_) =  GenerateJwtToken(user);
 
                 return newAccessToken;
             }
@@ -69,7 +70,7 @@ namespace Application.Provider
         }
 
 
-        public async Task<string> GenerateJwtToken(User user)
+        public (string token,string refreshToken) GenerateJwtToken(User user)
         {
             if (string.IsNullOrEmpty(_jwtSettings.Key) ||
                 string.IsNullOrEmpty(_jwtSettings.Issuer) ||
@@ -81,7 +82,7 @@ namespace Application.Provider
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.FullName),
-                new Claim(ClaimTypes.Role,user.Role.ToString())
+                new Claim(ClaimTypes.Role,user.Role.ToString()),
             };
             //Đây là khóa bí mật để ký token.
             //Dùng thuật toán mã hóa HmacSha256 để đảm bảo token không thể bị giả mạo.
@@ -95,25 +96,35 @@ namespace Application.Provider
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddHours(5555),
                 signingCredentials: creds);
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token).Trim();
             // 🔥 Tạo Refresh Token (7 ngày)
-            var refreshToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-            //chưa lưu rf token vào db
-            await _tokenService.AddRefreshTokenAsync(user, refreshToken, _httpContextAccessor);
+            var refreshToken = GenerateRefreshToken();
+            
+           
             // ✅ Lưu Refresh Token vào Cookie
             _httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,  // 🔐 Chống XSS
-                Secure = true,    // 🔒 Chỉ gửi qua HTTPS
+                Secure = false,    // 🔒 Chỉ gửi qua HTTPS
                 SameSite = SameSiteMode.Strict, // 🛡 Chống CSRF
                 Expires = DateTime.UtcNow.AddDays(7) // ⏳ Refresh Token hết hạn sau 7 ngày
             });
 
-            return tokenString;
+            return (tokenString,refreshToken);
 
         }
+        private static string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+            }
+            return Convert.ToBase64String(randomNumber);
+        }
+
         /*
             Tham số	                            Ý nghĩa
            _configuration["Jwt:Issuer"]	        Ai phát hành token (server).
