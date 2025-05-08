@@ -32,11 +32,11 @@ const deepLinkSlice = createSlice({
         state.loading = false;
         state.postsLink = action.payload.data; // Lưu bài viết
         state.isSelectPostOpen = action.payload.postId; // Tự động mở modal
-        console.error("DeeplinkCommentModal fulfilled, data:", {
-          postId: action.payload.postId,
-          postsLink: action.payload.data,
-          isSelectPostOpen: state.isSelectPostOpen,
-        });
+        // console.error("DeeplinkCommentModal fulfilled, data:", {
+        //   postId: action.payload.postId,
+        //   postsLink: action.payload.data,
+        //   isSelectPostOpen: state.isSelectPostOpen,
+        // });
       })
       .addCase(DeeplinkCommentModal.rejected, (state, action) => {
         state.loading = false;

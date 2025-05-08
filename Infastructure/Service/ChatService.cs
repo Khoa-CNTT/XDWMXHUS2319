@@ -31,6 +31,7 @@ namespace Infrastructure.Service
 
             // Thông báo trạng thái "Delivered" cho người gửi
             await _chatHub.Clients.User(message.SenderId.ToString()).SendAsync("MessageDelivered", message.Id);
+            await _chatHub.Clients.User(message.ReceiverId.ToString()).SendAsync("MessageNotifyData", message);
         }
     }
 }

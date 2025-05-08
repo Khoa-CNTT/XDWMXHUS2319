@@ -46,6 +46,7 @@ import UserReport from "./admin/views/UserReportManagerView";
 
 import { DeeplinkCommentModal } from "./stores/action/deepLinkAction";
 import CommentModalDeepLink from "./components/CommentModalDeepLink";
+import TestDispatchAPI from "./views/TestDispatchAPI";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -57,6 +58,7 @@ function App() {
   const isSelectPostOpen = useSelector(
     (state) => state.deeplink.isSelectPostOpen
   );
+  const selectedPost = useSelector((state) => state.posts.selectedPost);
   const error = useSelector((state) => state.deeplink.error);
 
   // useEffect(() => {
@@ -70,13 +72,15 @@ function App() {
     if (isAuthenticated && location.pathname === "/login") {
       navigate("/home", { replace: true });
     }
-
+    if (selectedPost) {
+      return;
+    }
     // Tách postId từ URL và dispatch action
     const pathMatch = location.pathname.match(/^\/post\/(.+)$/);
     if (pathMatch) {
       const postId = pathMatch[1]; // Ví dụ: 8e9dcfc8-0b5d-4244-a615-e00c0ae7455f
       // Kiểm tra UUID hợp lệ
-      console.error("POST ID TỪ APP:", postId);
+      // console.error("POST ID TỪ APP:", postId);
       const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(postId)) {
@@ -133,6 +137,8 @@ function App() {
                   path="/chatBoxAI/:conversationId?"
                   element={<ChatBotAIView />}
                 />
+                <Route path="/test" element={<TestDispatchAPI />} />
+
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </>
             ) : (

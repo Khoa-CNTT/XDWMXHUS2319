@@ -17,6 +17,7 @@ import searchSlice from "./reducers/searchReducers.js";
 import chatAIReducer from "./reducers/chatAIReducer.js";
 
 import deepLinkReducer from "./reducers/deepLinkReducer.js";
+import messengerReducer from "./reducers/messengerReducer.js";
 
 // 1. Tạo persist config riêng cho posts
 const postsPersistConfig = {
@@ -38,7 +39,7 @@ const rootReducer = combineReducers({
   searchs: searchSlice,
   chatAI: chatAIReducer,
   deeplink: deepLinkReducer,
-
+  messenges: messengerReducer,
 });
 
 // 3. Tạo store
