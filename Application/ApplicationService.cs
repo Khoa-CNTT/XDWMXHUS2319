@@ -22,6 +22,7 @@ namespace Application
             services.AddScoped<IRidePostService, RidePostService>();
             services.AddScoped<IRedisService, RedisService>();
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<IDasbroadAdminService, DasbroadAdminService>();
 
             services.AddScoped<ITrustScoreService, TrustScoreService>();
 

@@ -55,6 +55,7 @@ const AppSidebar = () => {
         <Menu.Item
           key="2"
           icon={<UserOutlined />}
+          onClick={() => navigate("/admin/users")}
           // onClick={() => navigate("/admin/users")}
         >
           <Tooltip title="Quản lý người dùng" placement="right">

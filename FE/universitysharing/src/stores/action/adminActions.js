@@ -36,6 +36,41 @@ export const fetchReportedPosts = createAsyncThunk(
   }
 );
 
+// Lấy danh sách báo cáo người dùng (user-user reports)
+export const fetchUserUserReports = createAsyncThunk(
+  "report/fetchUserUserReports",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return rejectWithValue({ message: "Bạn chưa đăng nhập!" });
+      }
+      const response = await axios.get(
+        "https://localhost:7053/api/report/user-user-report",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data; // Giả định response.data là mảng báo cáo người dùng
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          return rejectWithValue({ message: "Phiên đăng nhập hết hạn" });
+        }
+        return rejectWithValue(
+          error.response.data?.message ||
+            "Có lỗi xảy ra khi lấy danh sách báo cáo người dùng!"
+        );
+      } else if (error.request) {
+        return rejectWithValue({ message: "Không kết nối được với server" });
+      }
+      return rejectWithValue({ message: "Lỗi không xác định" });
+    }
+  }
+);
+
 // Action xóa bài viết
 export const deletePost = createAsyncThunk(
   "report/deletePost",

@@ -1,4 +1,5 @@
 ﻿using Application.Interface.ContextSerivce;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +37,11 @@ namespace Application.CQRS.Commands.Posts
             {
                 return ResponseFactory.Fail<bool>("You are not the owner of this post", 403);
             }
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null)
+                return ResponseFactory.Fail<bool>("Người dùng không tồn tại", 404);
+            if (user.Status == "Suspended")
+                return ResponseFactory.Fail<bool>("Tài khoản đang bị tạm ngưng", 403);
             await _unitOfWork.BeginTransactionAsync();
             try
             {

@@ -17,10 +17,12 @@ import { FaUserPlus, FaUserCheck, FaUserClock } from "react-icons/fa";
 import { BsThreeDots, BsChevronDown } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import EditProfileModal from "./EditProfileModal";
+import UserReportUserModal from "./UserReportUserModal"; // Sửa đường dẫn import
 import { userProfileDetail } from "../../stores/action/profileActions";
 import getUserIdFromToken from "../../utils/JwtDecode";
 import "../../styles/ProfileUserView/ProfileHeader.scss";
 import "../../styles/MoblieReponsive/ProfileFriendMobile/ProfileHeaderMobile.scss";
+import "../../styles/ProfileUserView/UserReportUserModal.scss";
 import avatarDefaut from "../../assets/AvatarDefaultFill.png";
 import logoWeb from "../../assets/Logo.png";
 import { toast } from "react-toastify";
@@ -43,6 +45,7 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
   const userId = getUserIdFromToken();
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [showFriendOptions, setShowFriendOptions] = useState(false);
   const [friendStatus, setFriendStatus] = useState({
     isFriend: false,
@@ -76,17 +79,14 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
       await dispatch(sendFriendRequest(userData.id)).unwrap();
       toast.success("Đã gửi lời mời kết bạn");
 
-      // Cập nhật ngay lập tức UI
       setFriendStatus((prev) => ({
         ...prev,
         isRequestSent: true,
         hasFriendRequest: false,
       }));
 
-      // Thêm delay 5 giây
       await delay(5000);
 
-      // Fetch lại danh sách
       await Promise.all([
         dispatch(fetchListFriendReceive()),
         dispatch(fetchSentFriendRequests()),
@@ -107,17 +107,14 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
       await dispatch(cancelFriendRequest(userData.id)).unwrap();
       toast.success("Đã hủy lời mời kết bạn");
 
-      // Cập nhật ngay lập tức UI
       setFriendStatus((prev) => ({
         ...prev,
         isRequestSent: false,
         hasFriendRequest: false,
       }));
 
-      // Thêm delay 5 giây
       await delay(5000);
 
-      // Fetch lại danh sách
       await Promise.all([
         dispatch(fetchListFriendReceive()),
         dispatch(fetchSentFriendRequests()),
@@ -138,14 +135,12 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
       await dispatch(acceptFriendRequest(userData.id)).unwrap();
       toast.success("Đã chấp nhận lời mời kết bạn");
 
-      // Cập nhật trạng thái ngay lập tức
       setFriendStatus({
         isFriend: true,
         hasFriendRequest: false,
         isRequestSent: false,
       });
 
-      // Fetch lại danh sách bạn bè
       await Promise.all([
         dispatch(fetchListFriend()),
         dispatch(fetchListFriendReceive()),
@@ -167,14 +162,12 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
       await dispatch(rejectFriendRequest(userData.id)).unwrap();
       toast.success("Đã từ chối lời mời kết bạn");
 
-      // Cập nhật trạng thái ngay lập tức
       setFriendStatus({
         isFriend: false,
         hasFriendRequest: false,
         isRequestSent: false,
       });
 
-      // Fetch lại danh sách
       await Promise.all([
         dispatch(fetchListFriendReceive()),
         dispatch(fetchSentFriendRequests()),
@@ -201,14 +194,12 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
           onClick: async () => {
             setIsLoading((prev) => ({ ...prev, action: true }));
             try {
-              // Thực hiện hủy kết bạn
               const result = await dispatch(removeFriend(userData.id));
 
               if (result.error) {
                 throw new Error(result.error.message || "Hủy kết bạn thất bại");
               }
 
-              // Hiển thị toast thành công
               toast.success("Đã hủy kết bạn thành công", {
                 position: "top-right",
                 autoClose: 3000,
@@ -218,17 +209,14 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
                 draggable: true,
               });
 
-              // Cập nhật UI ngay lập tức
               setFriendStatus({
                 isFriend: false,
                 hasFriendRequest: false,
                 isRequestSent: false,
               });
 
-              // Đóng dropdown options
               setShowFriendOptions(false);
 
-              // Fetch lại dữ liệu trong background
               dispatch(fetchListFriend()).catch(console.error);
               dispatch(fetchFriendsByUserId(userData.id)).catch(console.error);
             } catch (error) {
@@ -320,7 +308,7 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
   const handleCloseModal = () => setIsModalOpen(false);
 
   if (isLoading.initialLoad) {
-    return <div className="profile-header loading">Loading...</div>;
+    return <div className="profile-header loading">Đang tải...</div>;
   }
 
   return (
@@ -437,9 +425,20 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
             </button>
           )}
 
-          <button className="profile-header__option-button">
-            <BsThreeDots />
-          </button>
+          <div className="relative">
+            <button
+              className="profile-header__option-button"
+              onClick={() => setIsReportModalOpen(true)}
+            >
+              <BsThreeDots />
+            </button>
+          </div>
+
+          <UserReportUserModal
+            isOpen={isReportModalOpen}
+            onClose={() => setIsReportModalOpen(false)}
+            reportedUserId={userData?.id}
+          />
         </div>
       </div>
       <EditProfileModal

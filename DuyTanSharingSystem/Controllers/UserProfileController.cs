@@ -55,5 +55,14 @@ namespace DuyTanSharingSystem.Controllers
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+        /// <summary>
+        /// Người dùng báo cáo người dùng khác
+        /// </summary>
+        [HttpPost("user-report-user")]
+        public async Task<IActionResult> ReportUserAsync([FromBody] CreateUserReportUserCommand command)
+        {
+            var result = await _mediator.Send(command);          
+            return Ok(result); // thành công
+        }
     }
 }

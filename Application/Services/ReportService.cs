@@ -1,17 +1,5 @@
 ﻿using Application.DTOs.Reposts;
-using Application.Interface;
-using Application.Interface.Api;
-using Application.Interface.ContextSerivce;
-using Domain.Common;
-using Domain.Entities;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
-
+using Application.DTOs.User;
 namespace Application.Services
 {
     public class ReportService : IReportService
@@ -37,6 +25,10 @@ namespace Application.Services
             var userId = _userContextService.UserId();
             var post = await _unitOfWork.PostRepository.GetByIdAsync(postId);
             if (post == null) throw new Exception("Post not found");
+
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null) throw new Exception("User not found");
+            if (user.Status == "Suspended") throw new Exception("Tài khoản đang bị tạm ngưng");
 
             // Khởi tạo báo cáo trước khi kiểm tra AI
             var report = new Report(userId, postId, reason, post.ApprovalStatus);
@@ -149,57 +141,173 @@ namespace Application.Services
         {
             if (postId == Guid.Empty)
             {
-                return ResponseFactory.Fail<bool>("Không được để trống", 204);
+                return ResponseFactory.Fail<bool>("Không được để trống", 400);
             }
+
             var reports = await _unitOfWork.ReportRepository.GetReportsByPostIdDeleteAsync(postId);
 
             if (reports == null || !reports.Any())
             {
-                return ResponseFactory.Fail<bool>("Không có report để xóa", 204);
+                return ResponseFactory.Fail<bool>("Không có báo cáo để xóa", 404);
             }
 
             foreach (var report in reports)
             {
-               await _unitOfWork.ReportRepository.DeleteAsync(report.Id);
+                report.SoftDelete(); 
             }
 
             await _unitOfWork.SaveChangesAsync();
-            return ResponseFactory.Success(true, "Xóa tất cả báo cáo thành công", 204);
+            return ResponseFactory.Success(true, "Đã xóa mềm tất cả báo cáo của bài viết", 200);
         }
         public async Task<ResponseModel<bool>> SoftDeletePostAsync(Guid postId)
         {
             var post = await _unitOfWork.PostRepository.GetByIdAsync(postId);
-            // 🔥 Kiểm tra xem bài viết có tồn tại không
             if (post == null)
             {
                 return ResponseFactory.Fail<bool>("Không tìm thấy bài viết này", 404);
             }
-            // 🔥 Kiểm tra xem bài viết có bị xóa chưa
+
             if (post.IsDeleted)
             {
-                return ResponseFactory.Fail<bool>("Bài viết này đã bị xóa", 404);
+                return ResponseFactory.Fail<bool>("Bài viết này đã bị xóa trước đó", 400);
             }
             var user = await _unitOfWork.UserRepository.GetByIdAsync(post.UserId);
             if (user == null)
             {
                 return ResponseFactory.Fail<bool>("Không tồn tại người dùng", 404);
             }
-                // 🔥 Bắt đầu giao dịch
-                await _unitOfWork.BeginTransactionAsync();
+
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // 🔥 Xóa bài viết
+                // 🔥 Xóa mềm bài viết
                 post.Delete();
+
+                // 🔥 Trừ điểm tin cậy của user
                 user.UpdateTrustScore(user.TrustScore - 20);
-                // 🔥 Lưu thay đổi
+
+                // 🔥 Xóa mềm các báo cáo liên quan bài viết
+                var reports = await _unitOfWork.ReportRepository.GetReportsByPostIdDeleteAsync(postId);
+                if (reports != null && reports.Any())
+                {
+                    foreach (var report in reports)
+                    {
+                        report.SoftDelete(); // ❗ Dùng SoftDelete
+                    }
+                }
+
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-                return ResponseFactory.Success(true, "Xóa bài viết thành công", 200);
+
+                return ResponseFactory.Success(true, "Đã xóa bài viết và các báo cáo liên quan", 200);
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                return ResponseFactory.Error<bool>("Lỗi Error", 500, ex);
+                return ResponseFactory.Error<bool>("Đã xảy ra lỗi trong quá trình xóa", 500, ex);
+            }
+        }
+
+        public async Task<IEnumerable<UserReportGroupDto>> GetAllUserReportsAsync()
+        {
+            var userReports = await _unitOfWork.UserReportRepository.GetAllUserReportAsync();
+
+            return Mapping.MapToUserReportDtoList(userReports);
+        }
+
+        public async Task<ResponseModel<bool>> DeleteAllUserReportsByUserIdAsync(Guid reportedUserId)
+        {
+            if (reportedUserId == Guid.Empty)
+            {
+                return ResponseFactory.Fail<bool>("Không được để trống ID người bị báo cáo", 400);
+            }
+
+            var reports = await _unitOfWork.UserReportRepository.GetReportsByUserIdAsync(reportedUserId);
+
+            if (reports == null || !reports.Any())
+            {
+                return ResponseFactory.Fail<bool>("Không có báo cáo nào để xóa", 404);
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                foreach (var report in reports)
+                {
+                    report.SoftDelete(); // 🔥 Xóa mềm báo cáo
+                    report.UpdateStatus("Deleted"); // 🔥 Cập nhật Status mới
+
+                    // 🔥 Trừ điểm người báo cáo
+                    var reportedByUser = await _unitOfWork.UserRepository.GetByIdAsync(report.ReportedByUserId);
+                    if (reportedByUser != null)
+                    {
+                        reportedByUser.UpdateTrustScore(reportedByUser.TrustScore - 5); // Trừ 5 điểm mỗi lần
+                        await _unitOfWork.UserRepository.UpdateAsync(reportedByUser);
+                    }
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                return ResponseFactory.Success(true, "Đã xóa mềm các báo cáo và cập nhật điểm tin cậy", 200);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                return ResponseFactory.Error<bool>("Đã xảy ra lỗi khi xóa báo cáo và cập nhật điểm", 500, ex);
+            }
+        }
+
+        public  async Task<ResponseModel<bool>> AcceptUserReportsByUserIdAsync(Guid reportedUserId)
+        {
+            if (reportedUserId == Guid.Empty)
+            {
+                return ResponseFactory.Fail<bool>("Không được để trống ID người bị báo cáo", 400);
+            }
+
+            var reports = await _unitOfWork.UserReportRepository.GetReportsByUserIdAsync(reportedUserId);
+
+            if (reports == null || !reports.Any())
+            {
+                return ResponseFactory.Fail<bool>("Không có báo cáo nào để xử lý", 404);
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                foreach (var report in reports)
+                {
+                    // 🔥 Cập nhật trạng thái báo cáo
+                    report.UpdateStatus("Accepted");
+
+                    // 🔥 Cộng điểm cho người báo cáo
+                    var reportedByUser = await _unitOfWork.UserRepository.GetByIdAsync(report.ReportedByUserId);
+                    if (reportedByUser != null)
+                    {
+                        reportedByUser.UpdateTrustScore(reportedByUser.TrustScore + 5); // Cộng 5 điểm
+                        await _unitOfWork.UserRepository.UpdateAsync(reportedByUser);
+                    }
+
+                    // 🔥 Trừ điểm người bị báo cáo
+                    var reportedUser = await _unitOfWork.UserRepository.GetByIdAsync(report.ReportedUserId);
+                    if (reportedUser != null)
+                    {
+                        reportedUser.UpdateTrustScore(reportedUser.TrustScore - 10); // Trừ 10 điểm
+                        await _unitOfWork.UserRepository.UpdateAsync(reportedUser);
+                    }
+
+                    await _unitOfWork.UserReportRepository.UpdateAsync(report); // 🔥 Lưu cập nhật report
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                return ResponseFactory.Success(true, "Đã chấp nhận các báo cáo và cập nhật điểm tin cậy", 200);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                return ResponseFactory.Error<bool>("Đã xảy ra lỗi khi chấp nhận báo cáo", 500, ex);
             }
         }
     }

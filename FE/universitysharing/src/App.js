@@ -46,6 +46,7 @@ import UserReport from "./admin/views/UserReportManagerView";
 
 import { DeeplinkCommentModal } from "./stores/action/deepLinkAction";
 import CommentModalDeepLink from "./components/CommentModalDeepLink";
+import UserManagement from "./admin/views/UserManagement";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -117,6 +118,7 @@ function App() {
                 <Route path="/post/:id" element={<Homeview />} />
                 <Route path="/MessageView" element={<MessageView />} />
                 <Route path="/ProfileUserView" element={<ProfileUserView />} />
+                <Route path="/admin/users" element={<UserManagement />} />
                 <Route
                   path="/profile/:userId"
                   element={<FriendProfileView />}

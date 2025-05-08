@@ -30,6 +30,12 @@ namespace Application.Services
             {
                 return ResponseFactory.Fail<string>("Email is not verified", 404);
             }
+            // 👉 Thêm kiểm tra Status
+            if (isExists.Status == "Blocked")
+            {
+                return ResponseFactory.Fail<string>("Tài khoản đã bị khóa", 403);
+            }
+            
             //kiểm tra mật khẩu 
             bool check = await Task.Run(() => BCrypt.Net.BCrypt.Verify(user.Password,isExists.PasswordHash));
             if (!check)
