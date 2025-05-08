@@ -1,22 +1,46 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import "../../styles/MessageView/MessageArea.scss";
+import avatartDefault from "../../assets/AvatarDefaultFill.png";
+import getUserIdFromToken from "../../utils/JwtDecode";
 
-const MessageArea = () => {
-  const messages = [{ text: "Xin chào bạn", sender: "other" }];
+const MessageArea = ({
+  messagers,
+  refScroll,
+  topRef,
+  scrollContainerRef,
+  avatar,
+}) => {
+  const currentUserID = getUserIdFromToken(); // Lấy ID người dùng hiện tại
+  const reversedMessages = [...messagers].reverse();
 
   return (
-    <div className="message-area">
-      {messages.map((message, index) => (
-        <div
-          key={index}
-          className={`message-area__message ${
-            message.sender === "other" ? "other" : "self"
-          }`}
-        >
-          {message.text}
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="message-area" ref={scrollContainerRef}>
+        {/* <div ref={topRef} style={{ height: "1px" }} /> */}
+        {reversedMessages.map((message, index) => {
+          const isSelf = message.senderId === currentUserID;
+
+          return (
+            <div
+              key={index}
+              className={`message-area__item ${isSelf ? "self" : "other"}`}
+            >
+              {!isSelf && (
+                <div className="message-area__avatar">
+                  <img src={avatar || avatartDefault} alt="Avatar" />
+                </div>
+              )}
+              <div
+                className={`message-area__message ${isSelf ? "self" : "other"}`}
+              >
+                {message.content}
+              </div>
+            </div>
+          );
+        })}
+        <div ref={topRef} style={{ height: "1px" }} />
+      </div>
+    </>
   );
 };
 

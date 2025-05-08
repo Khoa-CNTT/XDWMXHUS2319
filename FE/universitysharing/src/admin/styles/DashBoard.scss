@@ -1,0 +1,16 @@
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; // dùng cái này thay vì justify-self
+  height: 100%; // đảm bảo flex-item chiếm hết chiều cao Header
+  gap: 20px;
+  .Avatar-admin {
+    display: flex;
+    align-items: center;
+    img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+  }
+}

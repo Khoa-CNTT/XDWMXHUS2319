@@ -1,18 +1,29 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createPost, fetchRidePost, createRide, deletePost, updatePost,fetchRidesByUserId } from "../../stores/action/ridePostAction";
+import {
+  createPost,
+  fetchRidePost,
+  createRide,
+  deleteRidePost,
+  updatePost,
+  fetchRidesByUserId,
+  cancelRide,
+  rateDriver,
+} from "../../stores/action/ridePostAction";
 
 const ridePostSlice = createSlice({
   name: "rides",
   initialState: {
     ridePosts: [],
-    driverRides: [], // Đảm bảo là mảng rỗng
-    passengerRides: [], // Đảm bảo là mảng rỗng
+    driverRides: [],
+    passengerRides: [],
     driverNextCursor: null,
     passengerNextCursor: null,
     currentRide: null,
+    ratedRides: [],
     loading: false,
     error: null,
     success: false,
+    isRefreshing: false,
   },
   reducers: {
     resetPostState: (state) => {
@@ -40,20 +51,72 @@ const ridePostSlice = createSlice({
         state.success = false;
       })
       // fetchRidePost
+      .addCase(fetchRidePost.pending, (state) => {
+        state.isRefreshing = true;
+        state.error = null;
+      })
       .addCase(fetchRidePost.fulfilled, (state, action) => {
-        state.loading = false;
+        state.isRefreshing = false;
         state.ridePosts = action.payload;
       })
-      // deletePost
-      .addCase(deletePost.fulfilled, (state, action) => {
-        state.ridePosts = state.ridePosts.filter(post => post.id !== action.payload);
+      .addCase(fetchRidePost.rejected, (state, action) => {
+        state.isRefreshing = false;
+        state.error = action.payload;
+      })
+      // deleteRidePost
+      .addCase(deleteRidePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(deleteRidePost.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        // Filter out the deleted post from the ridePosts array
+        state.ridePosts = state.ridePosts.filter(
+          (post) => post.id !== action.payload
+        );
+      })
+      .addCase(deleteRidePost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
       })
       // updatePost
-      .addCase(updatePost.fulfilled, (state, action) => {
-        const index = state.ridePosts.findIndex(post => post.id === action.payload.id);
-        if (index !== -1) state.ridePosts[index] = action.payload;
+      .addCase(updatePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
       })
-      
+      .addCase(updatePost.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.error = null; // Clear error state on success
+        if (action.payload && action.payload.id) {
+          const index = state.ridePosts.findIndex(
+            (post) => post.id === action.payload.id
+          );
+          if (index !== -1) {
+            state.ridePosts[index] = {
+              ...state.ridePosts[index],
+              ...action.payload,
+            };
+          } else {
+            console.warn(
+              `Post with id ${action.payload.id} not found in ridePosts`
+            );
+          }
+        }
+        // Handle "No changes needed" case
+        if (action.payload?.message === "No changes needed") {
+          state.success = true; // Ensure success is set
+        }
+      })
+      .addCase(updatePost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
       // fetchRidesByUserId
       .addCase(fetchRidesByUserId.pending, (state) => {
         state.loading = true;
@@ -78,13 +141,52 @@ const ridePostSlice = createSlice({
       })
       .addCase(createRide.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentRide = action.payload; // Cập nhật currentRide
-        state.success = true; // Cập nhật success
+        state.currentRide = action.payload;
+        state.success = true;
       })
       .addCase(createRide.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.success = false;
+      })
+      // cancelRide
+      .addCase(cancelRide.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(cancelRide.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.driverRides = state.driverRides.filter(
+          (ride) => ride.rideId !== action.payload
+        );
+        state.passengerRides = state.passengerRides.filter(
+          (ride) => ride.rideId !== action.payload
+        );
+        state.currentRide = null; // Xóa currentRide nếu cần
+      })
+      .addCase(cancelRide.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+      .addCase(rateDriver.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(rateDriver.fulfilled, (state, action) => {
+        state.loading = false;
+        state.ratedRides.push({
+          rideId: action.payload.rideId,
+          driverId: action.payload.driverId,
+          rating: action.payload.rating,
+          comment: action.payload.comment,
+        });
+      })
+      .addCase(rateDriver.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

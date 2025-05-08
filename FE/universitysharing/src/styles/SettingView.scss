@@ -1,0 +1,423 @@
+.settings-view {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #fff;
+  color: #000;
+
+  .settings-container {
+    display: flex;
+    flex: 1;
+  }
+
+  .settings-content {
+    display: flex;
+    flex: 1;
+    padding: 20px;
+  }
+
+  .settings-sidebar {
+    width: 300px;
+    padding: 20px;
+    border-right: 1px solid #e1e8ed;
+
+    h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      background-color: #f5f8fa;
+      transition: border-color 0.3s ease;
+
+      &:focus {
+        border-color: #1da1f2;
+        outline: none;
+      }
+    }
+
+    .menu-list {
+      list-style: none;
+      padding: 0;
+
+      li {
+        padding: 12px 15px;
+        font-size: 16px;
+        color: #000;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background-color: #e1e8ed;
+        }
+
+        &.active {
+          background-color: #d3eafd;
+          font-weight: 600;
+        }
+
+        span {
+          color: #1da1f2;
+        }
+      }
+    }
+  }
+
+  .settings-main {
+    flex: 1;
+    padding: 30px;
+    background-color: #f9fafb;
+    border-radius: 12px;
+    margin-left: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+}
+
+.your-account {
+  h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #1a1a1a;
+  }
+
+  p {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 25px;
+    line-height: 1.5;
+  }
+
+  .account-options {
+    list-style: none;
+    padding: 0;
+
+    li {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: #fff;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        background-color: #f5f8fa;
+        cursor: pointer;
+      }
+
+      .icon {
+        font-size: 20px;
+        color: #1da1f2;
+        margin-right: 15px;
+      }
+
+      .option-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .option-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      .option-description {
+        font-size: 14px;
+        color: #6b7280;
+      }
+
+      .arrow {
+        color: #1da1f2;
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+.change-password {
+  h2 {
+    display: flex;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+  }
+
+  .back-button {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    color: #1da1f2;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #1a91da;
+    }
+  }
+
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+    position: relative;
+    max-width: 400px;
+    width: 100%;
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #1a1a1a;
+    }
+
+    .password-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        padding-right: 40px; /* Tạo khoảng trống cho icon */
+
+        &:focus {
+          border-color: #1da1f2;
+          box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.1);
+          outline: none;
+        }
+      }
+
+      .password-toggle {
+        position: absolute;
+        right: 10px;
+        font-size: 16px;
+        color: #1da1f2;
+        cursor: pointer;
+        transition: color 0.3s ease;
+
+        &:hover {
+          color: #1a91da;
+        }
+      }
+    }
+
+    .forgot-password {
+      display: block;
+      margin-top: 8px;
+      color: #1da1f2;
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #1a91da;
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .info-text {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 25px;
+    line-height: 1.5;
+    max-width: 400px;
+    text-align: center;
+
+    .learn-more {
+      color: #1da1f2;
+      text-decoration: none;
+      font-weight: 500;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .save-button {
+    background-color: #1da1f2;
+    color: #fff;
+    padding: 10px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+
+    &:hover {
+      background-color: #1a91da;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+.update-profile-info {
+  h2 {
+    display: flex;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+  }
+
+  .back-button {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    color: #1da1f2;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #1a91da;
+    }
+  }
+
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+    position: relative;
+    max-width: 400px;
+    width: 100%;
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #1a1a1a;
+    }
+
+    .phone-input-wrapper {
+      display: flex;
+      align-items: center;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+      &:focus-within {
+        border-color: #1da1f2;
+        box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.1);
+      }
+
+      .phone-prefix {
+        padding: 12px 10px;
+        background-color: #f5f8fa;
+        border-right: 1px solid #d1d5db;
+        border-radius: 8px 0 0 8px;
+        font-size: 14px;
+        color: #1a1a1a;
+        font-weight: 500;
+        user-select: none;
+      }
+
+      input {
+        flex: 1;
+        padding: 12px 15px;
+        border: none;
+        border-radius: 0 8px 8px 0;
+        font-size: 14px;
+        background-color: transparent;
+        font-family: monospace;
+        outline: none;
+      }
+    }
+
+    select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      background-color: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+      &:focus {
+        border-color: #1da1f2;
+        box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.1);
+        outline: none;
+      }
+
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231da1f2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 16px;
+      padding-right: 40px;
+    }
+  }
+
+  .save-button {
+    background-color: #1da1f2;
+    color: #fff;
+    padding: 10px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+
+    &:hover {
+      background-color: #1a91da;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+  }
+}

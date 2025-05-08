@@ -10,12 +10,12 @@ namespace Application.Interface.Hubs
     public interface ISignalRNotificationService
     {
         Task SendAlertSignalR(Guid driverId, string message);
-        Task SendLikeNotificationSiganlR(Guid postId, Guid ownerId, string message);
+        Task SendLikeNotificationSiganlR(Guid ownerId, ResponseNotificationModel data);
         Task SendNotificationUpdateLocationSignalR(Guid driverId, Guid passengerId,string message);
 
         
         
-        Task SendShareNotificationAsync(Guid userId, string message);
+        Task SendShareNotificationAsync(Guid userId, ResponseNotificationModel data);
 
 
         Task SendReplyNotificationSignalR(Guid receiverId, ResponseNotificationModel data);

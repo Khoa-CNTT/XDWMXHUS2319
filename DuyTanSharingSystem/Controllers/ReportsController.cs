@@ -1,6 +1,8 @@
 ﻿using Application.CQRS.Commands.Posts;
 using Application.DTOs.Reposts;
+using Application.DTOs.User;
 using Application.Interface;
+using Domain.Interface;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -59,6 +61,48 @@ namespace DuyTanSharingSystem.Controllers
         {
             await _reportService.ProcessReportByAdminAsync(dto);
             return Ok(new { Message = "Processed by Admin successfully" });
+        }
+
+        [HttpGet("posts-report")]
+        public async Task<IActionResult> GetAllPostsWithReports()
+        {
+            var postsWithReports = await _reportService.GetAllPostsWithReportsAsync();
+            return Ok(postsWithReports);
+        }
+        [HttpPatch("delete-post-report/{postId}")]
+        public async Task<IActionResult> DeletePostReport(Guid postId)
+        {
+           var result =  await _reportService.SoftDeletePostAsync(postId);
+            return Ok(result);
+        }
+        [HttpDelete("delete-all-report/{postId}")]
+        public async Task<IActionResult> DeleteAllReport(Guid postId)
+        {
+            var result = await _reportService.DeleteAllReportsOfPostAsync(postId);
+            return Ok(result);
+        }
+        /// <summary>
+        /// Lấy tất cả báo cáo người dùng
+        /// </summary>
+        [HttpGet("user-user-report")]
+        public async Task<ActionResult<IEnumerable<UserReportUserDto>>> GetAllUserReports()
+        {
+            var result = await _reportService.GetAllUserReportsAsync();
+            return Ok(result);
+        }
+
+        [HttpDelete("user-reports/{userId}")]
+        public async Task<IActionResult> DeleteAllUserReportsByUserId(Guid userId)
+        {
+            var result = await _reportService.DeleteAllUserReportsByUserIdAsync(userId);
+            return Ok(result);
+        }
+
+        [HttpPost("accept-by-user/{reportedUserId}")]
+        public async Task<IActionResult> AcceptReportsByUserId(Guid reportedUserId)
+        {
+            var result = await _reportService.AcceptUserReportsByUserIdAsync(reportedUserId);
+            return Ok(result);
         }
     }
 }

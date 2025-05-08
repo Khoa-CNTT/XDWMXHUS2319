@@ -30,6 +30,12 @@ namespace Application.Services
             {
                 return ResponseFactory.Fail<string>("Email is not verified", 404);
             }
+            // 👉 Thêm kiểm tra Status
+            if (isExists.Status == "Blocked")
+            {
+                return ResponseFactory.Fail<string>("Tài khoản đã bị khóa", 403);
+            }
+            
             //kiểm tra mật khẩu 
             bool check = await Task.Run(() => BCrypt.Net.BCrypt.Verify(user.Password,isExists.PasswordHash));
             if (!check)
@@ -44,9 +50,7 @@ namespace Application.Services
             
                 //lưu refresh token vào db
                 await _tokenService.AddRefreshTokenAsync(isExists, refreshToken);
-                return ResponseFactory.Success(token, "Đăng nhập thành công", 200);
-            
-            
+                return ResponseFactory.Success(token, "Đăng nhập thành công", 200);       
         }
 
         public async Task<ResponseModel<string>?> RefreshTokenAsync()
@@ -87,10 +91,5 @@ namespace Application.Services
 
             return ResponseFactory.Success(newAccessToken, "Refresh token successful", 200);
         }
-
-
-
-
-
     }
 }

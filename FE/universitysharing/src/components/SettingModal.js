@@ -19,6 +19,10 @@ const SettingModal = ({ isOpen, onClose, users, UserProfile }) => {
     },
     [onClose]
   );
+  const handleSetting = () => {
+    navigate("/settings");
+    onClose();
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -53,7 +57,9 @@ const SettingModal = ({ isOpen, onClose, users, UserProfile }) => {
           </span>
         </div>
         <div className="setting">
-          <span className="btn-changeProfile">Sửa thông tin cá nhân</span>
+          <span className="btn-changeProfile" onClick={handleSetting}>
+            Cài đặt
+          </span>
           <span className="btn-yourScore">Điểm uy tín</span>
           <span className="btn-logout" onClick={logout}>
             Đăng xuất

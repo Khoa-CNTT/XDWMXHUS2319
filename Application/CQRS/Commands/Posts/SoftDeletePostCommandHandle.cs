@@ -33,10 +33,21 @@ namespace Application.CQRS.Commands.Posts
                     return ResponseFactory.Fail<bool>("Bạn không có quyền xóa bài viết này", 403);
                 }
             // 🔥 Kiểm tra xem bài viết có bị xóa chưa
+
             if (post.IsDeleted)
                 {
-                    return ResponseFactory.Fail<bool>("Bình luận này đã bị xóa", 404);
+                    return ResponseFactory.Fail<bool>("Bài viết này đã bị xóa", 404);
                 }
+            // 🔥 Kiểm tra xem tài khoản người dùng có bị tạm ngưng không
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return ResponseFactory.Fail<bool>("Người dùng không tồn tại", 404);
+            }
+            if (user.Status == "Suspended")
+            {
+                return ResponseFactory.Fail<bool>("Tài khoản đang bị tạm ngưng", 403);
+            }
             // 🔥 Bắt đầu giao dịch
             await _unitOfWork.BeginTransactionAsync();
             try

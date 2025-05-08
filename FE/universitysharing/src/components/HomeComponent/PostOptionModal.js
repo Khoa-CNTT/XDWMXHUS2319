@@ -40,19 +40,21 @@ const PostOptionsModal = ({
     setIsReportModalOpen(false);
     onClose(); // đóng luôn modal options
   };
-  //đóng PostOption
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose(); // Đóng modal nếu click ra ngoài
-      }
-    };
 
-    document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, [onClose]);
+  // //đóng PostOption
+
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (modalRef.current && !modalRef.current.contains(event.target)) {
+  //       onClose(); // Đóng modal nếu click ra ngoài
+  //     }
+  //   };
+
+  //   document.addEventListener("click", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("click", handleClickOutside);
+  //   };
+  // }, [onClose]);
 
   //Tắt modal khi có sự kiện srcoll
   useEffect(() => {
@@ -78,7 +80,7 @@ const PostOptionsModal = ({
       {!isHidden && (
         <div
           className="modal-postOption-overlay"
-          onClick={onClose}
+          // onClick={onClose}
           // style={{ top: `${position.top}px`, left: `${position.left}px` }}
         >
           <div

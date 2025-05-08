@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Application.DTOs.AdminUserManagement;
 using Application.DTOs.CommentLikes;
 using Application.DTOs.Comments;
 using Application.DTOs.FriendShips;
@@ -44,6 +45,38 @@ namespace Application
                 ActionTaken = report.ActionTaken
             };
         }
+
+        public static PostWithReportsDto MapToPostWithReportsDto(Post post)
+        {
+            return new PostWithReportsDto
+            {
+                Id = post.Id,
+                UserId = post.UserId,
+                FullName = post.User?.FullName ?? "",
+                ProfilePicture = post.User?.ProfilePicture,
+                Content = post.Content,
+                ImageUrl = post.ImageUrl,
+                VideoUrl = post.VideoUrl,
+                CreatedAt = post.CreatedAt,
+                UpdateAt = post.UpdateAt,
+                PostType = post.PostType,
+                Scope = post.Scope,
+                Reports = post.Reports.Select(r => new ReportDto
+                {
+                    Id = r.Id,
+                    UserId = r.ReportedBy, // Ánh xạ từ ReportedBy
+                    Username = r.ReportedByUser?.FullName ?? "Người dùng ẩn danh", // Ánh xạ từ ReportedByUser.Username
+                    ProfilePicture = r.ReportedByUser?.ProfilePicture,
+                    Reason = r.Reason,
+                    ViolationDetails = r.ViolationDetails,
+                    ProcessedByAI = r.ProcessedByAI, // Ánh xạ từ entity Report
+                    ProcessedByAdmin = r.ProcessedByAdmin, // Ánh xạ từ entity Report
+                    CreatedAt = r.CreatedAt,
+                    UpdatedAt = r.UpdatedAt
+                }).ToList()
+            };
+        }
+
         //SHARE POST DTO MAPPER
         public static SharePostDto MapToSharePostDto(Share share, Post post, User user)
         {
@@ -127,9 +160,72 @@ namespace Application
                 Email = user?.Email,
                 CreatedAt = user?.CreatedAt ?? DateTime.MinValue, // ✅ Cung cấp giá trị mặc định
                 ProfilePicture = user?.ProfilePicture != null ? $"{Constaint.baseUrl}{user?.ProfilePicture}" : null,
+                status = user?.Status,
+            };
+        }
+        public static UserManagerDto MapToUserAdminDto(User user)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+
+            return new UserManagerDto
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Bio = user.Bio,
+                IsVerifiedEmail = user.IsVerifiedEmail,
+                CreatedAt = user.CreatedAt,
+                TrustScore = user.TrustScore,
+                Role = user.Role,
+                RelativePhone = user.RelativePhone,
+                Phone = user.Phone,
+                LastActive = user.LastLoginDate, 
+                Status = user.Status, 
+                TotalReports = user.TotalReports
+            };
+        }
+        public static UserResponseDto MapUserToUserResponseDto(User user)
+        {
+            return new UserResponseDto
+            {
+                FullName = user.FullName,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt
             };
         }
 
+        public static List<UserResponseDto> MapUsersToUserResponseDtos(List<User> users)
+        {
+            return users.Select(MapUserToUserResponseDto).ToList();
+        }
+        public static UserReportGroupDto MapToUserReportDto(IEnumerable<UserReport> reports)
+        {
+            // Nhóm các báo cáo theo ReportedUserId
+            var firstReport = reports.First(); // Lấy báo cáo đầu tiên trong nhóm
+            return new UserReportGroupDto
+            {
+                ReportedUserId = firstReport.ReportedUserId,
+                ReportedUserName = firstReport.ReportedUser?.FullName ?? "Unknown", // Lấy tên người bị báo cáo
+                TotalReports = reports.Count(),
+                Reports = reports.Select(r => new UserReportUserDto
+                {
+                    Id = r.Id,
+                    ReportedByUserId = r.ReportedByUserId,
+                    ReportedByUserName = r.ReportedByUser?.FullName ?? "Unknown", // Lấy tên người báo cáo
+                    Reason = r.Reason,
+                    ReportDate = r.ReportDate,
+                    Status = r.Status
+                }).ToList()
+            };
+        }
+        public static List<UserReportGroupDto> MapToUserReportDtoList(IEnumerable<UserReport> reports)
+        {
+            // Nhóm các báo cáo theo ReportedUserId
+            return reports
+                .GroupBy(r => r.ReportedUserId) // Nhóm theo ReportedUserId
+                .Select(group => MapToUserReportDto(group)) // Ánh xạ từng nhóm thành DTO
+                .ToList();
+        }
         public static MaptoUserprofileDetailDto MaptoUserprofileDto(User user)
         {
             return new MaptoUserprofileDetailDto
@@ -140,6 +236,7 @@ namespace Application
                 ProfilePicture = user.ProfilePicture != null ? $"{Constaint.baseUrl}{user.ProfilePicture}" : null,
                 BackgroundPicture = user.BackgroundPicture != null ? $"{Constaint.baseUrl}{user.BackgroundPicture}" : null,
                 Bio = user.Bio,
+                TrustScore = user.TrustScore,
                 CreatedAt = user.CreatedAt
             };
         }
@@ -153,8 +250,21 @@ namespace Application
                 ProfilePicture = user.ProfilePicture != null ? $"{Constaint.baseUrl}{user.ProfilePicture}" : null,
                 BackgroundPicture = user.BackgroundPicture != null ? $"{Constaint.baseUrl}{user.BackgroundPicture}" : null,
                 Bio = user.Bio,
+                Phone = user.Phone,
+                PhoneRelative = user.RelativePhone,
+                Gender = user.Gender,
+                CreatedAt = user.CreatedAt
+            };
+        }
+        public static UserUpdateInformationDto MaptoUserInformationDto(User user)
+        {
+            return new UserUpdateInformationDto
+            {
+                Id = user.Id,
+                FullName = user.FullName,
                 PhoneNumber = user.Phone,
                 PhoneNumberRelative = user.RelativePhone,
+                Gender = user.Gender,
                 CreatedAt = user.CreatedAt
             };
         }

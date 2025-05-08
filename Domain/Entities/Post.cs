@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
-using static Domain.Common.Helper;
-
+﻿using static Domain.Common.Enums;
 namespace Domain.Entities
 {
     public class Post
@@ -109,6 +102,12 @@ namespace Domain.Entities
             IsApproved = true;
             UpdateAt = DateTime.UtcNow;
         }
+        public void AdminApprove()
+        {
+            IsApproved = true;
+            ApprovalStatus = ApprovalStatusEnum.Approved;
+            UpdateAt = DateTime.UtcNow;
+        }
         public void IsNotShare()
         {
             IsSharedPost = false;
@@ -162,6 +161,12 @@ namespace Domain.Entities
         {
             ApprovalStatus = newStatus;
             IsApproved = isApprovedByAI;
+            UpdateAt = DateTime.UtcNow;
+        }
+        public void SetPendingForManualReview()
+        {
+            IsApproved = false;
+            ApprovalStatus = ApprovalStatusEnum.Pending;
             UpdateAt = DateTime.UtcNow;
         }
     }

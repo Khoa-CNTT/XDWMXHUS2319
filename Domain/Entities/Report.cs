@@ -1,8 +1,4 @@
-﻿
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using static Domain.Common.Enums;
-
+﻿using static Domain.Common.Enums;
 namespace Domain.Entities
 {
     public class Report
@@ -29,8 +25,8 @@ namespace Domain.Entities
         public ApprovalStatusEnum PostActionStatus { get; private set; }
         public ViolationTypeEnum? ViolationType { get; private set; }
         public ActionTakenEnum? ActionTaken { get; private set; }
+        public bool IsDeleted { get; private set; }
 
-        
 
 
         private Report() { }
@@ -84,8 +80,10 @@ namespace Domain.Entities
             PostActionStatus = newPostStatus;
             UpdatedAt = DateTime.UtcNow;
         }
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+        }
     }
-
- 
 }
 

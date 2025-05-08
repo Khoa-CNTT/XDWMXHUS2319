@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 
@@ -7,7 +6,6 @@ import "../../styles/MoblieReponsive/HomeViewMobile/HeaderHomeReponsive.scss";
 import logoweb from "../../assets/Logo.png";
 import avatarweb from "../../assets/AvatarDefault.png";
 import { useSignalR } from "../../Service/SignalRProvider";
-
 
 import { FiSearch, FiBell, FiMessageSquare, FiArrowLeft } from "react-icons/fi";
 
@@ -18,6 +16,7 @@ import SettingModal from "../SettingModal";
 import { useNavigate } from "react-router-dom";
 import { searchPost } from "../../stores/action/searchAction";
 import { useDispatch } from "react-redux";
+import { fetchUnreadNotificationCount } from "../../stores/action/notificationAction";
 import "animate.css";
 
 const Header = ({ usersProfile }) => {
@@ -29,22 +28,27 @@ const Header = ({ usersProfile }) => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const navigate = useNavigate();
   const [modalPosition, setModalPosition] = useState({});
-
+  const unreadNotificationCount = useSelector(
+    (state) => state.notifications.unreadCount
+  );
   const { signalRService } = useSignalR();
 
-useEffect(() => {
-  const handleUnreadCount = (count) => {
-    setUnreadCount(count);
-  };
+  // Fetch unread notification count on component mount
+  useEffect(() => {
+    dispatch(fetchUnreadNotificationCount());
+  }, [dispatch]);
 
-  signalRService.onReceiveUnreadCount(handleUnreadCount);
+  useEffect(() => {
+    const handleUnreadCount = (count) => {
+      setUnreadCount(count);
+    };
 
-  return () => {
-    // Nếu bạn có hỗ trợ unsubscribe thì thực hiện ở đây
-  };
-}, [signalRService]);
+    signalRService.onReceiveUnreadCount(handleUnreadCount);
 
-
+    return () => {
+      // Nếu bạn có hỗ trợ unsubscribe thì thực hiện ở đây
+    };
+  }, [signalRService]);
 
   const UserProfile = () => {
     navigate("/ProfileUserView");
@@ -103,7 +107,6 @@ useEffect(() => {
     }));
   };
 
-
   //Mở đóng left menu
   const showSearchBox = () => {
     if (window.innerWidth <= 768) {
@@ -112,7 +115,6 @@ useEffect(() => {
       rightRef.current?.classList.add("hide-mobile");
     }
   };
-
 
   const hideSearchBox = () => {
     if (window.innerWidth <= 768) {
@@ -172,9 +174,7 @@ useEffect(() => {
           </form>
         </div>
 
-
         <div className="rightHeader" ref={rightRef}>
-
           <button
             id="messenger-button"
             className={`icon-button ${modalState.messenger ? "active" : ""}`}
@@ -182,20 +182,16 @@ useEffect(() => {
             aria-label="Messenger"
           >
             <FiMessageSquare className="icon" />
-            {unreadCount > 0 && (
-              <span className="badge">{unreadCount}</span>
-            )}
+            {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
           </button>
-
 
           <button
             className={`icon-button ${modalState.notify ? "active" : ""}`}
-
             onClick={() => toggleModal("notify")}
             aria-label="Notifications"
           >
             <FiBell className="icon" />
-            <span className="badge">3</span>
+            <span className="badge">{unreadNotificationCount}</span>
           </button>
 
           <button
@@ -205,10 +201,11 @@ useEffect(() => {
           >
             <img
               className="avatarweb"
-              src={usersProfile.profilePicture || avatarweb}
+              src={usersProfile?.profilePicture || avatarweb}
               alt="Avatar"
             />
-            {modalState.setting && <div className="indicator"></div>}
+            {/* {modalState.setting && <div className="indicator"></div>} */}
+            <div className="indicator"></div>
           </button>
         </div>
       </div>

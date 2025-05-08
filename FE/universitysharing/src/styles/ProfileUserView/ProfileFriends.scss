@@ -49,5 +49,18 @@
   &__name {
     font-size: 14px;
     font-weight: 500;
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+}
+.profile-friends__view-all {
+  font-size: 14px;
+  border: none;
+  background: transparent;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
   }
 }

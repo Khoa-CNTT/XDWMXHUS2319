@@ -79,10 +79,10 @@ namespace Domain.Common
         }
         public enum RatingLevelEnum
         {
-            Poor,
-            Average,
-            Good,
-            Excellent
+            Poor = 1,
+            Average = 3,
+            Good = 4,
+            Excellent = 5
         }
 
         public enum ActionTakenEnum
@@ -121,8 +121,15 @@ namespace Domain.Common
             SystemAlert,
             SendFriend,
             AcceptFriend,
-            RejectFriend,
+            ReplyComment,
+            LikeComment,
         }
-
+        public enum UserStatus
+        {
+            Active,
+            Inactive,
+            Suspended,
+            Blocked
+        }
     }
 }
