@@ -35,6 +35,8 @@ namespace Infrastructure.Data.UnitOfWork
             IAIConversationRepository aiConversationRepository,
             IAIChatHistoryRepository aiChatHistoryRepository,
 
+            IUserScoreHistoriesRepository userScoreHistoriesRepository,
+
             IUserReportRepository userReportRepository
 
             )
@@ -68,7 +70,9 @@ namespace Infrastructure.Data.UnitOfWork
             AIConversationRepository = aiConversationRepository;
             AIChatHistoryRepository = aiChatHistoryRepository;
 
+            UserScoreHistoriesRepository = userScoreHistoriesRepository;
             UserReportRepository = userReportRepository;
+
         }
         public IUserReportRepository UserReportRepository { get; }
         public IUserRepository UserRepository { get; }
@@ -98,6 +102,7 @@ namespace Infrastructure.Data.UnitOfWork
 
         public IAIConversationRepository AIConversationRepository { get; }
         public IAIChatHistoryRepository AIChatHistoryRepository { get; }
+        public IUserScoreHistoriesRepository UserScoreHistoriesRepository { get; }
         public async Task<int> SaveChangesAsync()
         => await _context.SaveChangesAsync();
 

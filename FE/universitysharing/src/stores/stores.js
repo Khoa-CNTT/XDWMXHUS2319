@@ -1,23 +1,36 @@
+import { chatAIReducer } from "./reducers/chatAIReducer.js";
+import friendReducer from "./reducers/friendReducer.js";
+
 import { configureStore } from "@reduxjs/toolkit";
-import { persistStore, persistReducer } from "redux-persist";
-import storage from "redux-persist/lib/storage"; // dùng localStorage
+
 import { combineReducers } from "redux";
+import { persistReducer, persistStore } from "redux-persist";
+import storage from "redux-persist/lib/storage"; // dùng localStorage
+
 
 import listPostReducer from "./reducers/listPostReducers.js";
 import listUser from "./reducers/proFileReducers.js";
 import ridePostReducer from "./reducers/ridePostReducer.js";
+
 import reportSlice from "./reducers/reportReducers.js";
+
 
 import reporAdmintSlice from "./reducers/adminReducer.js";
 import dashboardSliceReducer from "./reducers/dashboardSlice.js";
 
 import notificationReducer from "./reducers/notificationReducer.js";
-import friendReducer from "./reducers/friendReducer.js";
 import onlineUsersReducer from "./reducers/onlineSlice.js";
+
+
 import searchSlice from "./reducers/searchReducers.js";
-import chatAIReducer from "./reducers/chatAIReducer.js";
 
 import deepLinkReducer from "./reducers/deepLinkReducer.js";
+
+import messengerReducer from "./reducers/messengerReducer.js";
+
+
+
+import authReducer from "./reducers/authReducer.js";
 
 // 1. Tạo persist config riêng cho posts
 const postsPersistConfig = {
@@ -40,6 +53,12 @@ const rootReducer = combineReducers({
   searchs: searchSlice,
   chatAI: chatAIReducer,
   deeplink: deepLinkReducer,
+
+  messenges: messengerReducer,
+
+  auth: authReducer,
+
+
 });
 
 // 3. Tạo store

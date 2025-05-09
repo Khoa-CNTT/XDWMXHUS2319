@@ -346,7 +346,7 @@ $sidebar-width: 280px;
 }
 
 .right-sidebar-message {
-  width: 25%;
+  width: 350px;
   transition: transform 0.3s ease;
   background-color: #fff;
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
@@ -359,4 +359,7 @@ $sidebar-width: 280px;
 .right-sidebar-message.open {
   display: block;
   transform: translateX(0);
+  .return-chat {
+    display: none;
+  }
 }

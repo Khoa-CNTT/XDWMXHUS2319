@@ -201,7 +201,7 @@ const Header = ({ usersProfile }) => {
           >
             <img
               className="avatarweb"
-              src={usersProfile.profilePicture || avatarweb}
+              src={usersProfile?.profilePicture || avatarweb}
               alt="Avatar"
             />
             {/* {modalState.setting && <div className="indicator"></div>} */}

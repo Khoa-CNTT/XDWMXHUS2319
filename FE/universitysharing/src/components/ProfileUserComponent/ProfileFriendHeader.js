@@ -56,6 +56,8 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
     action: false,
     initialLoad: true,
   });
+  const [showCreditHistoryModal, setShowCreditHistoryModal] = useState(false); // State để mở/đóng modal lịch sử điểm uy tín
+  const [creditHistory, setCreditHistory] = useState([]); // State để lưu lịch sử điểm uy tín
 
   // Selectors
   const friendsData = useSelector((state) => state.friends.listFriends);
@@ -299,7 +301,7 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
     };
   }, [dispatch, userData?.id]);
 
-  // Cho phép component cha gọi hàm mở modal
+  // Cho phép component cha gọi hàm mở modal EditProfileModal
   useImperativeHandle(ref, () => ({
     openModal: () => setIsModalOpen(true),
   }));
@@ -335,7 +337,7 @@ const ProfileFriendHeader = forwardRef((props, ref) => {
               {friendUserOtherData?.countFriend || 0} bạn bè
             </p>
             <span className="profile-header__trust">
-              Điểm uy tín: {userData?.trustPoints || 0}
+              Điểm uy tín: {userData?.trustScore || 0}
             </span>
           </div>
 

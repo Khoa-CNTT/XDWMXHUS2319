@@ -1,4 +1,6 @@
 ﻿using Application.DTOs.Comments;
+
+
 using Application.DTOs.Shares;
 using Application.Interface;
 using Application.Interface.Api;
@@ -12,6 +14,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+
+
 namespace Application.CQRS.Commands.Comments
 {
     public class CommentPostCommandHandle : IRequestHandler<CommentPostCommand, ResponseModel<ResultCommentDto>>
@@ -21,15 +26,20 @@ namespace Application.CQRS.Commands.Comments
         private readonly IGeminiService _geminiService;
         private readonly INotificationService _notificationService;
         private readonly IPublisher _publisher;
+        private readonly IRedisService _redisService;
         private readonly IPostService _postService;
-        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher, IPostService postService)
+
+        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher,  IPostService postService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _geminiService = geminiService;
             _notificationService = notificationService;
             _publisher = publisher;
+            _redisService = redisService;
             _postService = postService;
+
+
         }
         public async Task<ResponseModel<ResultCommentDto>> Handle(CommentPostCommand request, CancellationToken cancellationToken)
         {
@@ -72,6 +82,12 @@ namespace Application.CQRS.Commands.Comments
                     var notification = new Notification(postOwnerId, userId, $"{user.FullName} đã bình luận bài viết của bạn.", NotificationType.PostCommented, null, $"/post/{post.Id}");
                     await _unitOfWork.NotificationRepository.AddAsync(notification);
                     await _notificationService.SendCommentNotificationAsync(request.PostId, userId, postOwnerId, notification.Id);
+                }
+
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
                 }
 
                 await _unitOfWork.SaveChangesAsync();

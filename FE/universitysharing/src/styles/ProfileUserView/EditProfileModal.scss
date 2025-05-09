@@ -5,70 +5,95 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.65);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    backdrop-filter: blur(4px);
   }
 
-  background-color: #fff;
+  background: linear-gradient(145deg, #ffffff, #f9fafb);
   width: 100%;
-  max-width: 500px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  max-width: 540px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   overflow: hidden;
 
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #ddd;
-    background-color: #f5f5f5;
+    padding: 18px 28px;
+    border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(90deg, #f9fafb, #f3f4f6);
 
     h2 {
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 1.3rem;
+      font-weight: 700;
       margin: 0;
-      color: #333;
+      color: #111827;
+      letter-spacing: 0.3px;
     }
   }
 
   &__close {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 1.3rem;
     cursor: pointer;
-    color: #666;
+    color: #6b7280;
+    transition: color 0.2s ease;
+
     &:hover {
-      color: #333;
+      color: #111827;
     }
   }
 
   &__content {
-    padding: 0 20px 20px 20px; // Adjusted padding to account for the background
+    padding: 20px 28px 28px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: relative; // For positioning the avatar over the background
+    position: relative;
+  }
+
+  &__error {
+    background-color: #fef2f2;
+    color: #dc2626;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  &__warning {
+    background-color: #fff7ed;
+    color: #ea580c;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   }
 
   &__background {
     user-select: none;
     width: 100%;
-    height: 120px; // Height of the background image
+    height: 150px;
     overflow: hidden;
     position: absolute;
     top: 0;
     left: 0;
-    background: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.2),
-      transparent
-    ); // Gradient overlay for better contrast
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent);
+
     &:hover &-edit-container {
-      opacity: 1; // Hiện nút chỉnh sửa khi hover
+      opacity: 1;
     }
   }
 
@@ -76,130 +101,149 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.5s ease;
+
     &:hover {
-      transform: scale(1.05); // Zoom effect on hover
+      transform: scale(1.04);
     }
   }
+
   &__background-edit-container {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
+    bottom: 14px;
+    right: 14px;
     display: flex;
     align-items: center;
-    background-color: white; // Màu nền mặc định
-    border-radius: 6px;
-    padding: 5px 10px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    padding: 8px 14px;
     cursor: pointer;
-    transition: all 0.2s ease; // Hiệu ứng chuyển đổi mượt mà
+    transition: all 0.3s ease;
+    opacity: 0.75;
 
-    // Khi hover
     &:hover {
-      background-color: black; // Nền đen khi hover
+      background-color: #1e3a8a;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 
-      // Đổi màu icon và text khi hover
       .edit-profile-modal__edit-background {
-        filter: brightness(0) invert(1); // Chuyển icon sang màu trắng
+        filter: brightness(0) invert(1);
       }
 
       .edit-profile-modal__edit-background-text {
-        color: white; // Chữ trắng khi hover
+        color: white;
       }
     }
   }
 
   &__edit-background {
-    width: 16px;
-    height: 16px;
-    margin-right: 6px;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
     object-fit: contain;
-    transition: filter 0.2s ease; // Hiệu ứng chuyển màu icon
+    transition: filter 0.3s ease;
   }
 
   &__edit-background-text {
-    color: black; // Màu chữ mặc định
-    font-size: 13px;
+    color: #111827;
+    font-size: 0.9rem;
     font-weight: 500;
-    transition: color 0.2s ease; // Hiệu ứng chuyển màu chữ
+    transition: color 0.3s ease;
   }
+
   &__avatar {
     user-select: none;
     position: relative;
-    margin-top: 60px; // Push the avatar down to overlap the background
-    margin-bottom: 20px;
+    margin-top: 90px;
+    margin-bottom: 28px;
 
     img {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
-      border: 3px solid black;
+      border: 5px solid #ffffff;
       object-fit: cover;
-      background-color: #fff; // White background to cover the overlap with the background image
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Subtle shadow for depth
+      background-color: #fff;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: scale(1.06);
+      }
     }
   }
 
   &__edit-avatar {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    background-color: #fff;
-    border: 2px solid black;
+    bottom: 5px;
+    right: 5px;
+    background: linear-gradient(145deg, #ffffff, #e5e7eb);
+    border: 3px solid #1e3a8a;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 38px;
+    height: 38px;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    font-size: 16px;
-    object-fit: cover;
-    color: black;
-    transition: transform 0.3s ease;
+    font-size: 18px;
+    color: #1e3a8a;
+    transition: all 0.3s ease;
+
     &:hover {
-      background-color: #e7f0ff;
-      transform: scale(1.05); // Zoom effect on hover
+      background: linear-gradient(145deg, #dbeafe, #bfdbfe);
+      transform: scale(1.12);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
     }
   }
 
   &__field {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     width: 100%;
+    max-width: 400px;
 
     label {
       position: absolute;
-      left: 1rem;
+      left: 1.25rem;
       top: 50%;
       transform: translateY(-50%);
-      color: #718096;
-      font-size: 0.9375rem;
-      transition: all 0.2s ease;
+      color: #6b7280;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
       pointer-events: none;
-      background-color: #fff;
-      padding: 0 0.25rem;
+      background: linear-gradient(180deg, #ffffff, #f9fafb);
+      padding: 0 0.3rem;
       opacity: 1;
     }
 
     input {
       width: 350px;
-      padding: 0.75rem 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.375rem;
-      font-size: 0.9375rem;
-      color: #2d3748;
+      padding: 0.9rem 1.25rem;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 1rem;
+      color: #111827;
       outline: none;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
 
       &:focus,
       &:not(:placeholder-shown) {
-        border-color: #4299e1;
+        border-color: #1e3a8a;
+        box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
 
         + label {
-          opacity: 1;
-          transform: translateY(-1.75rem) scale(0.85);
-          color: #4299e1;
+          transform: translateY(-2.25rem) scale(0.85);
+          color: #1e3a8a;
         }
+      }
+
+      &:disabled {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+        color: #9ca3af;
       }
 
       &::placeholder {
@@ -209,44 +253,46 @@
   }
 
   &__submit {
-    width: 100%;
-    padding: 12px;
-    background-color: #007bff;
-    color: #fff;
+    width: 180px;
+    padding: 14px;
+    background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+    color: #ffffff;
     border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    font-weight: 500;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+    margin: 0 auto; // Căn giữa button
+
     &:hover {
-      background-color: #0056b3;
+      background: linear-gradient(90deg, #1e40af, #2563eb);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    &:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
   }
 }
-.edit-profile-modal__submit {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.3s;
-}
 
-.edit-profile-modal__submit:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
 .spinner {
   display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid white;
-  border-top: 2px solid transparent;
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #ffffff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin-right: 8px;
+  margin-right: 10px;
 }
 
 @keyframes spin {

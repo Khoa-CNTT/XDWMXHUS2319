@@ -63,6 +63,7 @@ namespace Infrastructure
             services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
             services.AddScoped<IFriendshipRepository, FriendshipRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IUserScoreHistoriesRepository, UserScoreHistoriesRepository>();
             //đăng kí cho search AI
             services.AddScoped<IDataAIService, DataAIService>();
             services.AddScoped<IApiPythonService, ApiPythonService>();
@@ -96,7 +97,7 @@ namespace Infrastructure
             services.AddScoped<IChatStreamSender, ChatStreamSender>();
             //chat AI
             services.AddScoped<IPythonApiService, PythonApiService>();
-            services.AddScoped<IChatStreamService, ChatStreamService>();
+            services.AddScoped<IChatStreamingService, ChatStreamingService>();
             return services;
         }
     }

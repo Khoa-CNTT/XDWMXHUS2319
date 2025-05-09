@@ -14,6 +14,7 @@ import {
   fetchFriendsWithCursor,
   fetchReceivedRequestsWithCursor,
   fetchSentRequestsWithCursor,
+  fetchFriendPreview,
 } from "../action/friendAction";
 
 const friendSlice = createSlice({
@@ -54,6 +55,7 @@ const friendSlice = createSlice({
       loading: false,
       error: null,
     },
+    friendPreview: [],
   },
   reducers: {
     setActiveFriend: (state, action) => {
@@ -348,6 +350,19 @@ const friendSlice = createSlice({
         state.listFriendsSentCursor.loading = false;
         state.listFriendsSentCursor.error =
           action.payload || "Failed to fetch sent requests";
+      })
+      // Fetch Friend Preview
+      .addCase(fetchFriendPreview.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchFriendPreview.fulfilled, (state, action) => {
+        state.loading = false;
+        state.friendPreview = action.payload;
+      })
+      .addCase(fetchFriendPreview.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

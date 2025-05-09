@@ -47,6 +47,7 @@ namespace Application.CQRS.Commands.RidePosts
             if (user.Status == "Suspended")
                 return ResponseFactory.Fail<ResponseRidePostDto>("Tài khoản đang bị tạm ngưng", 403);
 
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -58,7 +59,7 @@ namespace Application.CQRS.Commands.RidePosts
                     return ResponseFactory.Fail<ResponseRidePostDto>("Invalid location format", 400);
 
                 // Tạo ride post
-                var ridePost = new RidePost(userId, request.Content, startLocation, endLocation, request.StartLocation, request.EndLocation, request.StartTime, request.PostType);
+                var ridePost = new RidePost(userId, request.Content, startLocation, endLocation, request.StartLocation, request.EndLocation, request.StartTime, 0);
 
                 // Validate content
                 string contentToValidate = $"StartLocation: {startLocation} - EndLocation: {endLocation} - StartTime: {request.StartTime}";
@@ -91,6 +92,9 @@ namespace Application.CQRS.Commands.RidePosts
                     {
                         Id = ridePost.Id,
                         UserId = ridePost.UserId,
+                        UserName = user.FullName ?? "unknown",
+                        UserAvatar = $"{Constaint.baseUrl}{user.ProfilePicture}" ?? "unknown",
+                        Content = ridePost.Content,
                         StartLocation = startLocation,
                         EndLocation = endLocation,
                         LatLonStart = request.StartLocation,

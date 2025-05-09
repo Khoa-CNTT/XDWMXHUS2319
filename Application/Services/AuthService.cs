@@ -50,9 +50,7 @@ namespace Application.Services
             
                 //lưu refresh token vào db
                 await _tokenService.AddRefreshTokenAsync(isExists, refreshToken);
-                return ResponseFactory.Success(token, "Đăng nhập thành công", 200);
-            
-            
+                return ResponseFactory.Success(token, "Đăng nhập thành công", 200);       
         }
 
         public async Task<ResponseModel<string>?> RefreshTokenAsync()
@@ -93,10 +91,5 @@ namespace Application.Services
 
             return ResponseFactory.Success(newAccessToken, "Refresh token successful", 200);
         }
-
-
-
-
-
     }
 }

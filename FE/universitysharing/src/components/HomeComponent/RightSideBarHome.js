@@ -9,26 +9,21 @@ import avatarDefault from "../../assets/AvatarDefault.png";
 
 import signalRService from "../../Service/signalRService";
 import { jwtDecode } from "jwt-decode";
-import {
-  FiSearch,
-  FiBell,
-  FiMessageSquare,
-  FiChevronDown,
-  FiX,
-  FiHome,
-} from "react-icons/fi";
-
+import { FiSearch } from "react-icons/fi";
 
 const RightSidebar = () => {
   const dispatch = useDispatch();
 
-  const { friends, loading: friendsLoading, error: friendsError } = useSelector(
-    (state) => state.friends
-  );
-  const { onlineStatus, loading: onlineLoading, error: onlineError } = useSelector(
-    (state) => state.onlineUsers
-  );
-
+  const {
+    friends,
+    loading: friendsLoading,
+    error: friendsError,
+  } = useSelector((state) => state.friends);
+  const {
+    onlineStatus,
+    loading: onlineLoading,
+    error: onlineError,
+  } = useSelector((state) => state.onlineUsers);
 
   const [openChats, setOpenChats] = useState([]);
   const [activeFriend, setActiveFriendLocal] = useState(null);
@@ -118,11 +113,12 @@ const RightSidebar = () => {
           </div>
         </div>
         {onlineError && (
-          <p className="error-message">Lỗi tải trạng thái online: {onlineError}</p>
+          <p className="error-message">
+            Lỗi tải trạng thái online: {onlineError}
+          </p>
         )}
         <div className="friends-list">
           <ul>
-
             {sortedFriends.map((friend) => {
               const isOnline = onlineStatus[friend.friendId] ?? false;
               return (
@@ -137,11 +133,19 @@ const RightSidebar = () => {
                       alt={`${friend.fullName || "Bạn bè"}'s avatar`}
                     />
                     <div className="name-status">
-                      <div className="friend-name">{friend.fullName || "Không tên"}</div>
+                      <div className="friend-name">
+                        {friend.fullName || "Không tên"}
+                      </div>
                       <div className="status-container">
-                        <span className={`status-dot ${isOnline ? "online" : "offline"}`}></span>
+                        <span
+                          className={`status-dot ${
+                            isOnline ? "online" : "offline"
+                          }`}
+                        ></span>
                         <span className="status-text">
-                          {isOnline ? "Online" : getLastSeenText(friend.lastSeen)}
+                          {isOnline
+                            ? "Online"
+                            : getLastSeenText(friend.lastSeen)}
                         </span>
                       </div>
                     </div>

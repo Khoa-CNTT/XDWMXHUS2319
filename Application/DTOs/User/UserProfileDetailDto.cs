@@ -14,8 +14,9 @@ namespace Application.DTOs.User
         public string? ProfilePicture { get; set; }
         public string? BackgroundPicture { get; set; }
         public string? Bio { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? PhoneNumberRelative { get; set; }
+        public string? Phone { get; set; }
+        public string? PhoneRelative { get; set; }
+        public string? Gender { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

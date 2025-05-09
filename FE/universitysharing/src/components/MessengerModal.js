@@ -121,6 +121,8 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
       const response = await axiosClient.get("api/Message/inbox", {
         params: { pageSize: 20 },
       });
+
+      // console.error("Nhận lại từ API Inbox", response);
       const { data } = response.data;
       const uniqueConversations = Array.from(
         new Map(data.inBox.map((conv) => [conv.conversationId, conv])).values()
@@ -163,7 +165,10 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
       });
 
       signalRService.onReceiveMessageNotification((notification) => {
-        console.log("[MessengerModal] Nhận thông báo tin nhắn:", notification);
+        console.warn(
+          "[MessengerModal] Nhận thông báo tin nhắn ddd:",
+          notification
+        );
         const { SenderId, Content, MessageId } = notification;
 
         if (isMounted) {
@@ -391,17 +396,6 @@ const MessengerModal = ({ isOpen, onClose, position }) => {
               ))
             )}
           </div>
-
-          {/* <div className="chat-boxes-wrapper">
-            {openChats.map((friendId, index) => (
-              <ChatBox
-                key={friendId}
-                friendId={friendId}
-                onClose={() => handleCloseChat(friendId)}
-                index={index}
-              />
-            ))}
-          </div> */}
         </div>
       </div>
       {openChats.map((friendId, index) => (

@@ -17,11 +17,19 @@ namespace Domain.Entities
             public string? RelativePhone { get; private set; }
             public string? Phone { get; private set; }
             public DateTime? LastActive { get; private set; }
+
+            public DateTime? UpdatedAt { get; private set; }
+
+
+            public string? Gender { get; private set; }
             public string Status { get; private set; } = "Active"; // Active, Blocked, Suspended
             public DateTime? BlockedUntil { get; private set; }
             public DateTime? SuspendedUntil { get; private set; }
             public DateTime? LastLoginDate { get; private set; }
             public int TotalReports { get; private set; } = 0;
+
+            public DateTime? UpdatedAt { get; private set; }
+
 
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
@@ -52,12 +60,12 @@ namespace Domain.Entities
             public ICollection<Notification> SentNotifications { get; set; } = new List<Notification>();
             // Navigation property cho AIConversation
             public ICollection<AIConversation> AIConversations { get; set; } = new List<AIConversation>();
-        //thanh
+
+            public ICollection<UserScoreHistory> UserScoreHistories { get; private set; } = new List<UserScoreHistory>();
+
             public ICollection<UserReport> UserReports { get; set; } // Những report mà user là đối tượng bị báo cáo
             public ICollection<UserReport> UserReportsCreated { get; set; } // Những report do user tạo
             public ICollection<UserAction> UserActions { get; set; } // Những hành động do user thực hiện
-
-
 
         public User(string fullName, string email, string passwordHash)
             {
@@ -78,6 +86,7 @@ namespace Domain.Entities
             public void VerifyEmail()
             {
                 IsVerifiedEmail = true;
+                UpdatedAt = DateTime.UtcNow;
             }
 
             /// <summary>
@@ -87,30 +96,49 @@ namespace Domain.Entities
             public void UpdateTrustScore(decimal score)
             {
                  TrustScore = Math.Max(score, 0);
-
-                
             }
 
             /// <summary>
             /// Cập nhật thông tin cá nhân (Họ tên, ảnh đại diện, tiểu sử).
             /// </summary>
-            public void UpdateProfile(string fullName, string? profilePicture,string? backgroundPicture, string? bio, string? phone, string? relativePhone)
+            public void UpdateProfile(string fullName, string? profilePicture,string? backgroundPicture, string? bio)
             {
                 if (string.IsNullOrWhiteSpace(fullName))
                     throw new ArgumentException("Full name cannot be empty.");
 
                 FullName = fullName;
-                ProfilePicture = profilePicture;
-                BackgroundPicture = backgroundPicture;
+
+            if (!string.IsNullOrWhiteSpace(profileImageUrl))
+                ProfilePicture = profileImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(backgroundImageUrl))
+                BackgroundPicture = backgroundImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(bio))
                 Bio = bio;
-                Phone = phone;
-                RelativePhone = relativePhone;
+
+            }
+            public void UpdateInformation(string? phone, string? relativePhone, string gender)
+            {
+                    Phone = phone;
+                    RelativePhone = relativePhone;
+                    Gender = gender;
             }
 
-            /// <summary>
-            /// Cập nhật mật khẩu mới (đã hash).
-            /// </summary>
-            public void UpdatePassword(string newPasswordHash)
+
+            }
+            public void UpdateInformation(string? phone, string? relativePhone, string gender)
+            {
+                    Phone = phone;
+                    RelativePhone = relativePhone;
+                    Gender = gender;
+            }
+
+
+        /// <summary>
+        /// Cập nhật mật khẩu mới (đã hash).
+        /// </summary>
+        public void UpdatePassword(string newPasswordHash)
             {
                 if (string.IsNullOrWhiteSpace(newPasswordHash))
                     throw new ArgumentException("New password cannot be empty.");
