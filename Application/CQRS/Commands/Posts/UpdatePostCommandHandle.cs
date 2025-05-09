@@ -23,12 +23,17 @@ namespace Application.CQRS.Commands.Posts
         {
             var userId = _userContextService.UserId();
             var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
 
             if (post == null)
                 return ResponseFactory.NotFound<UpdatePostDto>("Post not found", 404);
 
             if (post.UserId != userId)
                 return ResponseFactory.Fail<UpdatePostDto>("Bạn không có quyền chỉnh sửa bài viết này", 403);
+            if (user == null)
+                return ResponseFactory.Fail<UpdatePostDto>("Người dùng không tồn tại", 404);
+            if (user.Status == "Suspended")
+                return ResponseFactory.Fail<UpdatePostDto>("Tài khoản đang bị tạm ngưng", 403);
 
             await _unitOfWork.BeginTransactionAsync();
             try

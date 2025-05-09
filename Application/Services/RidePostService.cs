@@ -176,6 +176,8 @@ namespace Application.Services
             {
                 Id = x.Id,
                 UserId = x.UserId,
+                UserName = x.User?.FullName ?? "unknown",
+                UserAvatar = $"{Constaint.baseUrl}{x.User?.ProfilePicture}" ?? "unknown",
                 Content = x.Content,
                 StartLocation = x.StartLocation,
                 EndLocation = x.EndLocation,
@@ -277,7 +279,9 @@ namespace Application.Services
             foreach (var ride in driverRidePosts)
             {
                 var (start, end, locationStart, locationEnd) = await _unitOfWork.RidePostRepository.GetLatLonByRidePostIdAsync(ride.RidePostId);
-
+                // Kiểm tra xem chuyến đi đã được đánh giá bởi passenger chưa
+                bool hasRating = ride.PassengerId != Guid.Empty && await _unitOfWork.RatingRepository
+                     .AnyAsync(r => r.RideId == ride.Id && r.RatedByUserId == ride.PassengerId && r.UserId == ride.DriverId);
                 driverRides.Add(new GetAllRideDto
                 {
                     RidePostId = ride.RidePostId,
@@ -293,7 +297,8 @@ namespace Application.Services
                     CreateAt = FormatUtcToLocal(ride.CreatedAt),
                     EstimatedDuration = ride.EstimatedDuration,
                     Status = ride.Status.ToString(),
-                    IsSafe = ride.IsSafetyTrackingEnabled
+                    IsSafe = ride.IsSafetyTrackingEnabled,
+                    IsRating = hasRating
                 });
             }
 
@@ -301,6 +306,9 @@ namespace Application.Services
             foreach (var ride in passengerRidePosts)
             {
                 var (start, end, startL, endL) = await _unitOfWork.RidePostRepository.GetLatLonByRidePostIdAsync(ride.RidePostId);
+                // Kiểm tra xem passenger đã đánh giá chuyến đi chưa
+                bool hasRating = await _unitOfWork.RatingRepository
+                      .AnyAsync(r => r.RideId == ride.Id && r.RatedByUserId == ride.PassengerId && r.UserId == ride.DriverId);
 
                 passengerRides.Add(new GetAllRideDto
                 {
@@ -317,7 +325,8 @@ namespace Application.Services
                     CreateAt = FormatUtcToLocal(ride.CreatedAt),
                     EstimatedDuration = ride.EstimatedDuration,
                     Status = ride.Status.ToString(),
-                    IsSafe = ride.IsSafetyTrackingEnabled
+                    IsSafe = ride.IsSafetyTrackingEnabled,
+                    IsRating = hasRating
                 });
             }
 

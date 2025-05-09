@@ -1,5 +1,4 @@
-﻿
-namespace Application.CQRS.Commands.Friends
+﻿namespace Application.CQRS.Commands.Friends
 {
     public class AcceptFriendRequestCommandHandle : IRequestHandler<AcceptFriendRequestCommand, ResponseModel<bool>>
     {
@@ -48,7 +47,7 @@ namespace Application.CQRS.Commands.Friends
                 await _unitOfWork.NotificationRepository.AddAsync(notification);
                 if (friendship.UserId != userId)
                 {
-                    await _notificationService.SendAcceptFriendNotificationAsync(request.FriendId, userId);
+                    await _notificationService.SendAcceptFriendNotificationAsync(request.FriendId, userId, notification.Id);
                 }
                 //Xóa thông báo gửi lời mời
                 await _unitOfWork.NotificationRepository

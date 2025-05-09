@@ -17,7 +17,7 @@ namespace Domain.Interface
         Task<string?> GetFullNameByIdAsync(Guid id);
         Task<List<User>> GetAllUsersAsync();
         Task<List<User>> GetUsersByIdsAsync(List<Guid> userIds);
-
+        
         Task<bool> ExistUsersAsync(Guid userId);
     }
 }

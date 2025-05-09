@@ -1,25 +1,22 @@
-﻿using Domain.Common;
-using Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
+﻿using Application.DTOs.DasbroadAdmin;
 
 namespace Infrastructure.Data.Repositories
 {
     public class PostRepository : BaseRepository<Post>, IPostRepository
     {
-
         public PostRepository(AppDbContext context) : base(context)
         {
         }
 
-        public override Task<bool> DeleteAsync(Guid id)
+        public async override Task<bool> DeleteAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null)
+                return false;
+
+            _context.Posts.Remove(post);
+            _context.SaveChanges();
+            return true;
         }
         public async Task<Guid> GetPostOwnerIdAsync(Guid postId)
         {
@@ -29,7 +26,6 @@ namespace Infrastructure.Data.Repositories
                 .FirstOrDefaultAsync(); // ✅ Lấy giá trị đầu tiên (hoặc null nếu không có)
 
         }
-
         public override async Task<Post?> GetByIdAsync(Guid id)
         {
             return await _context.Posts
@@ -54,7 +50,6 @@ namespace Infrastructure.Data.Repositories
                 .Where(x => x.ApprovalStatus == approvalStatusEnum )
                 .ToListAsync();
         }
-
         public async Task<List<Post>> GetAllPostsAsync(Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {
 
@@ -88,7 +83,6 @@ namespace Infrastructure.Data.Repositories
                 .Take(PAGE_SIZE)
                 .ToListAsync(cancellationToken);
         }
-
         public async Task<List<Post>> GetPostsByOwnerAsync(Guid userId, Guid? lastPostId, int pageSize, CancellationToken cancellationToken)
         {
             const int PAGE_SIZE = 10;
@@ -271,5 +265,55 @@ namespace Infrastructure.Data.Repositories
         {
             return _context.Posts.CountAsync(p => p.UserId == userId);
         }
+        public async Task<List<Post>> GetAllPostsWithReportsAsync()
+        {
+            return await _context.Posts
+    .Include(p => p.User)
+    .Include(p => p.Reports.Where(r => !r.IsDeleted)) // ✅ Chỉ lấy report chưa bị xóa
+        .ThenInclude(r => r.ReportedByUser)
+    .Where(p => !p.IsDeleted) // ✅ Bỏ bài viết đã xóa mềm
+    .Where(p => p.Reports.Any(r => !r.IsDeleted)) // ✅ Chỉ lấy bài có report chưa bị xóa mềm
+    .ToListAsync();
+        }
+        public async Task<List<Post>> GetPostImagesByUserAsync(Guid userId)
+        {
+            return await _context.Posts
+                .Where(p => p.UserId == userId &&
+                            !string.IsNullOrEmpty(p.ImageUrl) &&
+                            !p.IsDeleted &&
+                            !p.IsSharedPost &&
+                            p.IsApproved)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+        public async Task<List<Post>> GetTopPostImagesByUserAsync(Guid userId, int count = 3)
+        {
+            return await _context.Posts
+                .Where(p => p.UserId == userId &&
+                            !string.IsNullOrEmpty(p.ImageUrl) &&
+                            !p.IsDeleted &&
+                            !p.IsSharedPost &&
+                            p.IsApproved)
+                .OrderByDescending(p => p.CreatedAt)
+                .Take(count)
+                .ToListAsync();
+        }
+
+        public async Task<List<Post>> GetAllPostsForAdminAsync(int skip, int take, CancellationToken cancellationToken)
+        {
+            return await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Reports)
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<int> GetTotalPostCountAsync(CancellationToken cancellationToken)
+        {
+            return await _context.Posts.CountAsync(cancellationToken);
+        }
+
     }
 }

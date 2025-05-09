@@ -17,7 +17,7 @@ const ChatBotAIView = () => {
   return (
     <div className="chatbot-ai-view">
       <div className="chatbot-main-content">
-        <LeftSidebar usersProfile={users} />
+      <LeftSidebar usersProfile={users} />
         <div className="chat-ai-container">
           <ChatLayout />
         </div>

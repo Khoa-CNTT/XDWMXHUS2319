@@ -28,7 +28,10 @@ namespace Application.CQRS.Commands.Comments
             {
                 return ResponseFactory.Fail<ResultCommentDto>("Người dùng không tồn tại", 404);
             }
-
+            if (user.Status == "Suspended")
+            {
+                return ResponseFactory.Fail<ResultCommentDto>("Tài khoản đang bị tạm ngưng", 403);
+            }
             // Kiểm tra bình luận cha có tồn tại không
             var parentComment = await _unitOfWork.CommentRepository.GetByIdAsync(request.ParentCommentId);
             if (parentComment == null)
@@ -76,7 +79,7 @@ namespace Application.CQRS.Commands.Comments
                 // 🔥 Publish sự kiện bình luận để gửi thông báo qua SignalR
                 if (parentComment.UserId != userId)
                 {
-                    await _notificationService.SendReplyNotificationAsync(parentComment.PostId,request.ParentCommentId, userId);
+                    await _notificationService.SendReplyNotificationAsync(parentComment.PostId, request.ParentCommentId, userId);
                 }
                 if (request.redis_key != null)
                 {

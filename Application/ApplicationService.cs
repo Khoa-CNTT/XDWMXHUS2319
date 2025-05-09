@@ -23,6 +23,7 @@ namespace Application
             services.AddScoped<IRidePostService, RidePostService>();
             services.AddScoped<IRedisService, RedisService>();
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<IDasbroadAdminService, DasbroadAdminService>();
 
             services.AddScoped<ITrustScoreService, TrustScoreService>();
 
@@ -37,7 +38,7 @@ namespace Application
             //services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
             //services.AddHostedService<GpsMonitorService>();
-            //services.AddHostedService<LikeCommentEventProcessor>();
+            services.AddHostedService<LikeCommentEventProcessor>();
             //services.AddHostedService<TrustScoreBackgroundService>();
             //services.AddHostedService<MessageProcessingService>();
             //services.AddHostedService<RedisListenerService>();

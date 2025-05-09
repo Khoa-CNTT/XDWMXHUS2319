@@ -16,8 +16,8 @@ const SharedPost = ({ post }) => {
   const userId = getUserIdFromToken();
   //mở comment modal
   const handleOpenCommentModal = (post, index = 0) => {
-    dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
-    navigate(`/post/${post.id}`, { state: { background: location } });
+    // dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
+    navigate(`/post/${post.postId}`, { state: { background: location } });
   };
   const navigateUser = (userId) => {
     if (userId === userId) {

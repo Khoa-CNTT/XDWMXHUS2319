@@ -29,5 +29,17 @@ namespace DuyTanSharingSystem.Controllers
             var response = await _mediator.Send(command);
             return Ok(response);
         }
+        [HttpPatch("cancel-ride")]
+        public async Task<IActionResult> CancelRide([FromQuery] CancelRideCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+        [HttpPost("rate-driver")]
+        public async Task<IActionResult> RateDriver([FromBody] RateDriverCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
     }
 }

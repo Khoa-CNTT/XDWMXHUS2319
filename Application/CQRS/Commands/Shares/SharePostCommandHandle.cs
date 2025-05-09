@@ -24,23 +24,26 @@ namespace Application.CQRS.Commands.Shares
         {
             // Lấy UserId từ UserContextService
             var userId = _userContextService.UserId();
+
             // Lấy bài Post gốc
             var originalPost = await _unitOfWork.PostRepository.GetByIdOriginalPostAsync(request.PostId);
             if (originalPost == null)
             {
                 return ResponseFactory.Fail<ResultSharePostDto>("Không tìm thấy bài viết để chia sẻ", 404);
             }
-            var isSpamming = await _postService.IsUserSpammingSharesAsync(userId, request.PostId);
-            if (isSpamming)
-            {
-                return ResponseFactory.Fail<ResultSharePostDto>("Bạn đã chia sẻ bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
-            }
+            //var isSpamming = await _postService.IsUserSpammingSharesAsync(userId, request.PostId);
+            //if (isSpamming)
+            //{
+            //    return ResponseFactory.Fail<ResultSharePostDto>("Bạn đã chia sẻ bài viết này quá số lần cho phép trong thời gian ngắn. Cảnh báo spam!", 403);
+            //}
             // Lấy thông tin người dùng chia sẻ
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
             if (user == null)
             {
                 return ResponseFactory.Fail<ResultSharePostDto>("Không tìm thấy người dùng", 404);
             }
+            if (user.Status == "Suspended")
+                return ResponseFactory.Fail<ResultSharePostDto>("Tài khoản đang bị tạm ngưng", 403);
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -60,13 +63,17 @@ namespace Application.CQRS.Commands.Shares
                 sharedPost.ApproveAI();
                 sharedPost.IsShare();
                 await _unitOfWork.PostRepository.AddAsync(sharedPost);
+                var postOwnerId = await _postService.GetPostOwnerId(originalPost.Id);
+                //Lưu vào Notification
+                var notification = new Notification(postOwnerId, userId, $"{user.FullName} đã chia sẻ bài viết của bạn", NotificationType.PostShared, null, $"/post/{originalPost.Id}");
+                await _unitOfWork.NotificationRepository.AddAsync(notification);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
                 var message = $"{user.FullName} đã chia sẻ bài viết của bạn vào lúc {DateTime.Now.ToString("HH:mm dd/MM/yyyy")}";
                 if(userId != originalPost.UserId)
                 {
-                    await _notificationService.SendShareNotificationAsync(request.PostId, userId, message);
+                    await _notificationService.SendShareNotificationAsync(request.PostId, userId, postOwnerId, notification.Id);
                 }
 
                 if (request.redis_key != null)

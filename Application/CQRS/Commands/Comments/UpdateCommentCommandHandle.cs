@@ -62,7 +62,11 @@ namespace Application.CQRS.Commands.Comments
                 {
                     return ResponseFactory.Fail<CommentPostDto>("Không tìm thấy người dùng", 404);
                 }
-                await _unitOfWork.BeginTransactionAsync();
+            if (user.Status == "Suspended")
+            {
+                return ResponseFactory.Fail<CommentPostDto>("Tài khoản đang bị tạm ngưng", 403);
+            }
+            await _unitOfWork.BeginTransactionAsync();
                 try
                 {
                 comment.Edit(request.Content);
