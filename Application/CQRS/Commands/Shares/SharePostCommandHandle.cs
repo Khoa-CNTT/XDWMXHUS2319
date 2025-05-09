@@ -70,7 +70,9 @@ namespace Application.CQRS.Commands.Shares
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
+
                 var message = $"{user.FullName} đã chia sẻ bài viết của bạn vào lúc {DateTime.Now.ToString("HH:mm dd/MM/yyyy")}";
+
                 if(userId != originalPost.UserId)
                 {
                     await _notificationService.SendShareNotificationAsync(request.PostId, userId, postOwnerId, notification.Id);

@@ -41,6 +41,7 @@ namespace Domain.Entities
             StartLocation = startLocation;
             EndLocation = endLocation;
             StartTime = startTime;
+
             UpdatedAt = DateTime.UtcNow;
 
         }

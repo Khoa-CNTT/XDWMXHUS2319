@@ -17,6 +17,7 @@ namespace Domain.Entities
             public string? RelativePhone { get; private set; }
             public string? Phone { get; private set; }
             public DateTime? LastActive { get; private set; }
+
             public DateTime? UpdatedAt { get; private set; }
 
 
@@ -93,7 +94,9 @@ namespace Domain.Entities
             public void UpdateTrustScore(decimal score)
             {
 
+
                  TrustScore = Math.Max(score, 0);
+
 
                 
             }
@@ -110,6 +113,15 @@ namespace Domain.Entities
                 ProfilePicture = profilePicture;
                 BackgroundPicture = backgroundPicture;
                 Bio = bio;
+            }
+            public void UpdateInformation(string? phone, string? relativePhone, string gender)
+            {
+                    Phone = phone;
+                    RelativePhone = relativePhone;
+                    Gender = gender;
+            }
+
+
             }
             public void UpdateInformation(string? phone, string? relativePhone, string gender)
             {

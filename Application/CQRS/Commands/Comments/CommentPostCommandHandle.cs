@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.Comments;
 
+
 using Application.DTOs.Shares;
 using Application.Interface;
 using Application.Interface.Api;
@@ -14,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
+
 namespace Application.CQRS.Commands.Comments
 {
     public class CommentPostCommandHandle : IRequestHandler<CommentPostCommand, ResponseModel<ResultCommentDto>>
@@ -25,7 +27,9 @@ namespace Application.CQRS.Commands.Comments
         private readonly IPublisher _publisher;
         private readonly IRedisService _redisService;
         private readonly IPostService _postService;
+
         public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher,IRedisService redisService, IPostService postService)
+
 
         {
             _unitOfWork = unitOfWork;
