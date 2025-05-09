@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 
 
 
+
 namespace Application.CQRS.Commands.Comments
 {
     public class CommentPostCommandHandle : IRequestHandler<CommentPostCommand, ResponseModel<ResultCommentDto>>
@@ -28,19 +29,16 @@ namespace Application.CQRS.Commands.Comments
         private readonly IRedisService _redisService;
         private readonly IPostService _postService;
 
-        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher,IRedisService redisService, IPostService postService)
-
-
+        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher,  IPostService postService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _geminiService = geminiService;
             _notificationService = notificationService;
             _publisher = publisher;
-
             _redisService = redisService;
-
             _postService = postService;
+
 
         }
         public async Task<ResponseModel<ResultCommentDto>> Handle(CommentPostCommand request, CancellationToken cancellationToken)
@@ -92,10 +90,8 @@ namespace Application.CQRS.Commands.Comments
                     await _redisService.RemoveAsync(key);
                 }
 
-
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-
                 return ResponseFactory.Success(Mapping.MapToResultCommentPostDto(comment, user.FullName, user.ProfilePicture), "Bình luận bài viết thành công", 200);
             }
             catch(Exception ex)

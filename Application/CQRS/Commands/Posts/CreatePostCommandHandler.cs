@@ -4,14 +4,10 @@ using Application.Interface.Api;
 using Application.Interface.ContextSerivce;
 using static Domain.Common.Helper;
 using static Domain.Common.Enums;
-
 using Domain.Entities;
 using StackExchange.Redis;
-
 using Application.DTOs.Comments;
 
-
-using Application.DTOs.Comments;
 
 
 namespace Application.CQRS.Commands.Posts

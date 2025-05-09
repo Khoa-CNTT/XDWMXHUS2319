@@ -28,6 +28,8 @@ namespace Domain.Entities
             public DateTime? LastLoginDate { get; private set; }
             public int TotalReports { get; private set; } = 0;
 
+            public DateTime? UpdatedAt { get; private set; }
+
 
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
@@ -93,12 +95,7 @@ namespace Domain.Entities
             /// <param name="score">Điểm tin cậy mới.</param>
             public void UpdateTrustScore(decimal score)
             {
-
-
                  TrustScore = Math.Max(score, 0);
-
-
-                
             }
 
             /// <summary>
@@ -110,9 +107,16 @@ namespace Domain.Entities
                     throw new ArgumentException("Full name cannot be empty.");
 
                 FullName = fullName;
-                ProfilePicture = profilePicture;
-                BackgroundPicture = backgroundPicture;
+
+            if (!string.IsNullOrWhiteSpace(profileImageUrl))
+                ProfilePicture = profileImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(backgroundImageUrl))
+                BackgroundPicture = backgroundImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(bio))
                 Bio = bio;
+
             }
             public void UpdateInformation(string? phone, string? relativePhone, string gender)
             {
