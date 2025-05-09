@@ -1,5 +1,21 @@
 ﻿using Application.DTOs.Comments;
 
+
+using Application.DTOs.Shares;
+using Application.Interface;
+using Application.Interface.Api;
+using Application.Interface.ContextSerivce;
+using Application.Interface.Hubs;
+using Application.Services;
+using Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+
+
 namespace Application.CQRS.Commands.Comments
 {
     public class CommentPostCommandHandle : IRequestHandler<CommentPostCommand, ResponseModel<ResultCommentDto>>
@@ -11,7 +27,8 @@ namespace Application.CQRS.Commands.Comments
         private readonly IPublisher _publisher;
         private readonly IRedisService _redisService;
         private readonly IPostService _postService;
-        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher, IPostService postService, IRedisService redisService)
+
+        public CommentPostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService, INotificationService notificationService, IPublisher publisher,IRedisService redisService, IPostService postService)
 
 
         {
@@ -20,7 +37,9 @@ namespace Application.CQRS.Commands.Comments
             _geminiService = geminiService;
             _notificationService = notificationService;
             _publisher = publisher;
+
             _redisService = redisService;
+
             _postService = postService;
 
         }
@@ -72,6 +91,7 @@ namespace Application.CQRS.Commands.Comments
                     var key = $"{request.redis_key}";
                     await _redisService.RemoveAsync(key);
                 }
+
 
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();

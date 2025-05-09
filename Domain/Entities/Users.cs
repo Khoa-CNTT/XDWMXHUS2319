@@ -93,7 +93,12 @@ namespace Domain.Entities
             /// <param name="score">Điểm tin cậy mới.</param>
             public void UpdateTrustScore(decimal score)
             {
-                 TrustScore = Math.Max(score, 0);         
+
+
+                 TrustScore = Math.Max(score, 0);
+
+
+                
             }
 
             /// <summary>
@@ -103,16 +108,19 @@ namespace Domain.Entities
             {
                 if (string.IsNullOrWhiteSpace(fullName))
                     throw new ArgumentException("Full name cannot be empty.");
+
                 FullName = fullName;
-
-            if (!string.IsNullOrWhiteSpace(profileImageUrl))
-                ProfilePicture = profileImageUrl;
-
-            if (!string.IsNullOrWhiteSpace(backgroundImageUrl))
-                BackgroundPicture = backgroundImageUrl;
-
-            if (!string.IsNullOrWhiteSpace(bio))
+                ProfilePicture = profilePicture;
+                BackgroundPicture = backgroundPicture;
                 Bio = bio;
+            }
+            public void UpdateInformation(string? phone, string? relativePhone, string gender)
+            {
+                    Phone = phone;
+                    RelativePhone = relativePhone;
+                    Gender = gender;
+            }
+
 
             }
             public void UpdateInformation(string? phone, string? relativePhone, string gender)
@@ -121,6 +129,7 @@ namespace Domain.Entities
                     RelativePhone = relativePhone;
                     Gender = gender;
             }
+
 
         /// <summary>
         /// Cập nhật mật khẩu mới (đã hash).
