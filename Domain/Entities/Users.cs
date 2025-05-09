@@ -18,6 +18,9 @@ namespace Domain.Entities
             public string? Phone { get; private set; }
             public DateTime? LastActive { get; private set; }
 
+            public DateTime? UpdatedAt { get; private set; }
+
+
             public string? Gender { get; private set; }
             public string Status { get; private set; } = "Active"; // Active, Blocked, Suspended
             public DateTime? BlockedUntil { get; private set; }
@@ -92,7 +95,7 @@ namespace Domain.Entities
             /// <param name="score">Điểm tin cậy mới.</param>
             public void UpdateTrustScore(decimal score)
             {
-                 TrustScore = Math.Max(score, 0);         
+                 TrustScore = Math.Max(score, 0);
             }
 
             /// <summary>
@@ -121,6 +124,16 @@ namespace Domain.Entities
                     RelativePhone = relativePhone;
                     Gender = gender;
             }
+
+
+            }
+            public void UpdateInformation(string? phone, string? relativePhone, string gender)
+            {
+                    Phone = phone;
+                    RelativePhone = relativePhone;
+                    Gender = gender;
+            }
+
 
         /// <summary>
         /// Cập nhật mật khẩu mới (đã hash).

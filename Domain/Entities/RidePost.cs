@@ -19,7 +19,9 @@ namespace Domain.Entities
         public DateTime CreatedAt { get; private set; }
 
         public DateTime? UpdatedAt { get; private set; }
-        public bool? IsDeleted { get; private set; } = false; // Đánh dấu bài viết đã bị xóa
+
+        public bool IsDeleted { get; private set; } = false; // Đánh dấu bài viết đã bị xóa
+
 
         public User? User { get;private set; }
         public Ride? Ride { get;private set; } // Quan hệ 1-1 với Ride (nếu có người ghép chuyến)
@@ -104,6 +106,7 @@ namespace Domain.Entities
             {
                 throw new InvalidOperationException("Cannot revert to Open status if the post is canceled or deleted.");
             }
+
         }
     }
 }
