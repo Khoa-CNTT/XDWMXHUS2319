@@ -41,6 +41,12 @@ namespace Application.CQRS.Commands.RidePosts
             var userId = _userContextService.UserId();
             if (userId == Guid.Empty)
                 return ResponseFactory.Fail<ResponseRidePostDto>("User not found", 404);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null)
+                return ResponseFactory.Fail<ResponseRidePostDto>("Người dùng không tồn tại", 404);
+            if (user.Status == "Suspended")
+                return ResponseFactory.Fail<ResponseRidePostDto>("Tài khoản đang bị tạm ngưng", 403);
+
 
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -53,7 +59,7 @@ namespace Application.CQRS.Commands.RidePosts
                     return ResponseFactory.Fail<ResponseRidePostDto>("Invalid location format", 400);
 
                 // Tạo ride post
-                var ridePost = new RidePost(userId, request.Content, startLocation, endLocation, request.StartLocation, request.EndLocation, request.StartTime, request.PostType);
+                var ridePost = new RidePost(userId, request.Content, startLocation, endLocation, request.StartLocation, request.EndLocation, request.StartTime, 0);
 
                 // Validate content
                 string contentToValidate = $"StartLocation: {startLocation} - EndLocation: {endLocation} - StartTime: {request.StartTime}";
@@ -86,6 +92,9 @@ namespace Application.CQRS.Commands.RidePosts
                     {
                         Id = ridePost.Id,
                         UserId = ridePost.UserId,
+                        UserName = user.FullName ?? "unknown",
+                        UserAvatar = $"{Constaint.baseUrl}{user.ProfilePicture}" ?? "unknown",
+                        Content = ridePost.Content,
                         StartLocation = startLocation,
                         EndLocation = endLocation,
                         LatLonStart = request.StartLocation,

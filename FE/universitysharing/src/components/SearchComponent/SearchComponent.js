@@ -4,9 +4,13 @@ import { searchPost } from "../../stores/action/searchAction";
 import "../../styles/headerHome.scss";
 import Spinner from "../../utils/Spinner";
 import searchIcon from "../../assets/iconweb/searchIcon.svg";
+import ListUser from "./ListUserComponent";
+import ListPost from "./ListPostComponent";
+import { useNavigate } from "react-router-dom";
 
 const SearchComponent = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { search, loading } = useSelector((state) => state.searchs);
   const [keyword, setKeyword] = useState("");
   const [showResults, setShowResults] = useState(false);
@@ -20,15 +24,20 @@ const SearchComponent = () => {
       } else {
         setShowResults(false);
       }
-    }, 1000);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [keyword, dispatch]);
 
-  const handleResultClick = (item) => {
-    // Xử lý khi click vào kết quả (tuỳ thuộc vào loại kết quả)
-    console.log("Selected item:", item);
+  // Tách dữ liệu thành users và posts
+  const users = search?.data?.filter((item) => item.type === "User") || [];
+  const posts = search?.data?.filter((item) => item.type === "Post") || [];
+
+  // Xử lý khi nhấp vào bài viết
+  const handlePostClick = (postId) => {
+    navigate(`/post/${postId}`);
     setShowResults(false);
+    setKeyword("");
   };
 
   return (
@@ -40,6 +49,7 @@ const SearchComponent = () => {
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           onFocus={() => keyword && setShowResults(true)}
+          onBlur={() => setTimeout(() => setShowResults(false), 200)}
         />
         <img
           src={searchIcon}
@@ -54,36 +64,32 @@ const SearchComponent = () => {
             <div className="search-loading">
               <Spinner size={20} />
             </div>
-          ) : search?.length > 0 ? (
-            search.map((item) => (
-              <div
-                key={item.id}
-                className="result-item"
-                onClick={() => handleResultClick(item)}
-              >
-                {item.type === "User" ? (
-                  <>
-                    <img
-                      src={item.profilePicture || "/default-avatar.png"}
-                      alt={item.fullName}
-                      className="result-avatar"
-                    />
-                    <div className="result-info">
-                      <h4>{item.fullName}</h4>
-                      <p>Người dùng</p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="result-info">
-                      <h4>{item.fullName}</h4>
-                      <p className="post-content">{item.content}</p>
-                      <p>Bài viết</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))
+          ) : search?.data?.length > 0 ? (
+            <>
+              {/* Hiển thị danh sách người dùng */}
+              {users.length > 0 && (
+                <div className="search-users">
+                  <ListUser users={users} />
+                </div>
+              )}
+
+              {/* Hiển thị danh sách bài viết */}
+              {posts.length > 0 && (
+                <div className="search-posts">
+                  <h3 className="search-posts-title">Bài viết</h3>
+                  <ListPost
+                    posts={posts.map((item) => ({
+                      ...item.data,
+                      onClick: () => handlePostClick(item.data.id),
+                    }))}
+                    usersProfile={users.reduce((acc, user) => {
+                      acc[user.data.id] = user.data;
+                      return acc;
+                    }, {})}
+                  />
+                </div>
+              )}
+            </>
           ) : (
             <div className="no-results">
               {keyword ? "Không tìm thấy kết quả" : "Nhập từ khóa để tìm kiếm"}

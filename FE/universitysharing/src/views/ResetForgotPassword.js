@@ -1,17 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/AuthForm.scss";
 import logo from "../assets/Logo.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { resetPassword } from "../stores/action/authAction";
 
 const ResetForgotPassword = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+  const [token, setToken] = useState("");
   const [formData, setFormData] = useState({
-    email: "",
     password: "",
     confirmPassword: "",
     policyAgreed: false,
   });
+
+  const { loading, error } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    const tokenFromUrl = searchParams.get("token");
+    if (!tokenFromUrl) {
+      toast.error("Liên kết đặt lại mật khẩu không hợp lệ");
+      navigate("/login");
+      return;
+    }
+    setToken(tokenFromUrl);
+  }, [searchParams, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -21,7 +43,7 @@ const ResetForgotPassword = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
@@ -31,21 +53,30 @@ const ResetForgotPassword = () => {
         password: "",
         confirmPassword: "",
       }));
-
       return;
     }
 
     if (!formData.policyAgreed) {
-      toast.warning("Mật khẩu nhập lại không khớp!");
+      toast.warning("Vui lòng đồng ý với chính sách!");
       return;
     }
 
-    console.log("Đặt lại mật khẩu thành công:", formData);
-    // test thử với chưa có API
-    setTimeout(() => {
-      toast.success("Đã cập nhật mật khẩu thành công!");
-      navigate("/login");
-    }, 1000);
+    try {
+      const result = await dispatch(
+        resetPassword({
+          Token: token,
+          NewPassword: formData.password,
+          ConfirmPassword: formData.confirmPassword,
+        })
+      ).unwrap();
+
+      if (result.success) {
+        toast.success("Đã cập nhật mật khẩu thành công!");
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Lỗi khi đặt lại mật khẩu:", error);
+    }
   };
 
   return (
@@ -54,18 +85,8 @@ const ResetForgotPassword = () => {
         <div className="logo">
           <img src={logo} alt="University Sharing" />
         </div>
-        <h2>Quên Mật Khẩu</h2>
+        <h2>Chọn mật khẩu mới</h2>
         <form onSubmit={handleSubmit}>
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            required
-            value={formData.email}
-            onChange={handleChange}
-          />
-
           <label>Mật Khẩu mới</label>
           <input
             type="password"
@@ -74,6 +95,8 @@ const ResetForgotPassword = () => {
             required
             value={formData.password}
             onChange={handleChange}
+            disabled={loading}
+            autoComplete="new-password"
           />
 
           <label>Nhập lại mật khẩu mới</label>
@@ -84,7 +107,10 @@ const ResetForgotPassword = () => {
             required
             value={formData.confirmPassword}
             onChange={handleChange}
+            disabled={loading}
+            autoComplete="new-password"
           />
+
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <label className="policy">
               <input
@@ -93,14 +119,18 @@ const ResetForgotPassword = () => {
                 checked={formData.policyAgreed}
                 onChange={handleChange}
                 required
-              />{" "}
+                disabled={loading}
+              />
               Đồng ý với chính sách
             </label>
             <a href="#" style={{ textDecoration: "none", color: "#1497ff" }}>
               Chính sách
             </a>
           </div>
-          <button type="submit">Xác nhận</button>
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Đang xử lý..." : "Xác nhận"}
+          </button>
         </form>
       </div>
     </div>

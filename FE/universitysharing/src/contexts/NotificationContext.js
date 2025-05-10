@@ -1,4 +1,10 @@
-import React, { createContext, useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import signalRService from "../Service/signalRService";
 import { useAuth } from "./AuthContext";
 
@@ -6,6 +12,7 @@ export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
+  const [messData, setmessDatas] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const titleIntervalRef = useRef(null);
   const originalTitleRef = useRef(document.title || "University Sharing");
@@ -27,7 +34,9 @@ export const NotificationProvider = ({ children }) => {
     let isOriginal = true;
     titleIntervalRef.current = setInterval(() => {
       const latestNotification = notifications[notifications.length - 1];
-      const newTitle = isOriginal ? latestNotification : originalTitleRef.current;
+      const newTitle = isOriginal
+        ? latestNotification
+        : originalTitleRef.current;
       document.title = newTitle;
       isOriginal = !isOriginal;
     }, 2000);
@@ -63,10 +72,15 @@ export const NotificationProvider = ({ children }) => {
   // Khởi tạo SignalR
   useEffect(() => {
     if (!isAuthenticated || !token || !userId) {
-      console.log("[NotificationProvider] Thiếu token hoặc userId, ngắt kết nối SignalR");
+      console.log(
+        "[NotificationProvider] Thiếu token hoặc userId, ngắt kết nối SignalR"
+      );
       setIsConnected(false);
       signalRService.stopConnections().catch((err) => {
-        console.error("[NotificationProvider] Lỗi khi ngắt kết nối:", err.message);
+        console.error(
+          "[NotificationProvider] Lỗi khi ngắt kết nối:",
+          err.message
+        );
       });
       return;
     }
@@ -75,7 +89,10 @@ export const NotificationProvider = ({ children }) => {
 
     const initializeSignalR = async () => {
       try {
-        console.log("[NotificationProvider] Bắt đầu khởi tạo SignalR...",userId.toString());
+        console.log(
+          "[NotificationProvider] Bắt đầu khởi tạo SignalR...",
+          userId.toString()
+        );
         await signalRService.startConnections(token, userId.toString()); // Chuyển userId thành string
         if (isMounted) {
           setIsConnected(true);
@@ -83,8 +100,20 @@ export const NotificationProvider = ({ children }) => {
 
           signalRService.onReceiveMessageNotification((notification) => {
             if (!isMounted) return;
-            console.log("[NotificationProvider] Nhận thông báo:", notification);
+            console.warn(
+              "[NotificationProvider] Nhận thông báo heheh:",
+              notification
+            );
             setNotifications((prev) => [...prev, notification]);
+          });
+
+          signalRService.onReceiveMessageData((message) => {
+            if (!isMounted) return;
+            console.warn(
+              "[NotificationProvider] Nhận thông báo data gửi về 🐧:",
+              message
+            );
+            setmessDatas((prev) => [...prev, message]);
           });
         }
       } catch (err) {
@@ -109,9 +138,15 @@ export const NotificationProvider = ({ children }) => {
         retryIntervalRef.current = null;
       }
       console.log("[NotificationProvider] Cleanup: Ngắt kết nối SignalR");
-      signalRService.off("ReceiveMessageNotification", signalRService.notificationConnection);
+      signalRService.off(
+        "ReceiveMessageNotification",
+        signalRService.notificationConnection
+      );
       signalRService.stopConnections().catch((err) => {
-        console.error("[NotificationProvider] Lỗi khi ngắt kết nối:", err.message);
+        console.error(
+          "[NotificationProvider] Lỗi khi ngắt kết nối:",
+          err.message
+        );
       });
       setIsConnected(false);
     };
@@ -123,7 +158,15 @@ export const NotificationProvider = ({ children }) => {
   }, [notifications, updateTitle]);
 
   return (
-    <NotificationContext.Provider value={{ notifications, setNotifications, resetTitle, isConnected }}>
+    <NotificationContext.Provider
+      value={{
+        notifications,
+        setNotifications,
+        resetTitle,
+        isConnected,
+        messData,
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   );

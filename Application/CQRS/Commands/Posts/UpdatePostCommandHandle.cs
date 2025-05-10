@@ -1,13 +1,5 @@
-﻿using Application.Common;
-using Application.DTOs.Post;
-using Application.Interface.Api;
-using Application.Interface.ContextSerivce;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Domain.Common.Enums;
+﻿using Application.DTOs.Post;
+
 
 namespace Application.CQRS.Commands.Posts
 {
@@ -17,30 +9,37 @@ namespace Application.CQRS.Commands.Posts
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGeminiService _geminiService;
         private readonly IFileService _fileService;
+        private readonly IRedisService _redisService;
 
-        public UpdatePostCommandHandle(IUserContextService userContextService, IUnitOfWork unitOfWork, IGeminiService geminiService, IFileService fileService)
+        public UpdatePostCommandHandle(IUserContextService userContextService, IUnitOfWork unitOfWork, IGeminiService geminiService, IFileService fileService, IRedisService redisService)
         {
             _userContextService = userContextService;
             _unitOfWork = unitOfWork;
             _geminiService = geminiService;
             _fileService = fileService;
+            _redisService = redisService;
         }
         public async Task<ResponseModel<UpdatePostDto>> Handle(UpdatePostCommand request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId();
             var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
 
             if (post == null)
                 return ResponseFactory.NotFound<UpdatePostDto>("Post not found", 404);
 
             if (post.UserId != userId)
                 return ResponseFactory.Fail<UpdatePostDto>("Bạn không có quyền chỉnh sửa bài viết này", 403);
+            if (user == null)
+                return ResponseFactory.Fail<UpdatePostDto>("Người dùng không tồn tại", 404);
+            if (user.Status == "Suspended")
+                return ResponseFactory.Fail<UpdatePostDto>("Tài khoản đang bị tạm ngưng", 403);
 
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 // ✅ Kiểm duyệt nội dung AI
-                if (!await _geminiService.ValidatePostContentAsync(request.Content))
+                if (request.Content !=null  && !await _geminiService.ValidatePostContentAsync(request.Content))
                 {
                     post.RejectAI();
                     await _unitOfWork.RollbackTransactionAsync();
@@ -97,7 +96,11 @@ namespace Application.CQRS.Commands.Posts
                 // ✅ Lưu thay đổi vào DB
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
-
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
                 return ResponseFactory.Success(new UpdatePostDto
                 {
                     Id = post.Id,

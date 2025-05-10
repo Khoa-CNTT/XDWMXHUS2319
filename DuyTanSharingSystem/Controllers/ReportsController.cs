@@ -1,5 +1,6 @@
 ﻿using Application.CQRS.Commands.Posts;
 using Application.DTOs.Reposts;
+using Application.DTOs.User;
 using Application.Interface;
 using Domain.Interface;
 using MediatR;
@@ -78,6 +79,29 @@ namespace DuyTanSharingSystem.Controllers
         public async Task<IActionResult> DeleteAllReport(Guid postId)
         {
             var result = await _reportService.DeleteAllReportsOfPostAsync(postId);
+            return Ok(result);
+        }
+        /// <summary>
+        /// Lấy tất cả báo cáo người dùng
+        /// </summary>
+        [HttpGet("user-user-report")]
+        public async Task<ActionResult<IEnumerable<UserReportUserDto>>> GetAllUserReports()
+        {
+            var result = await _reportService.GetAllUserReportsAsync();
+            return Ok(result);
+        }
+
+        [HttpDelete("user-reports/{userId}")]
+        public async Task<IActionResult> DeleteAllUserReportsByUserId(Guid userId)
+        {
+            var result = await _reportService.DeleteAllUserReportsByUserIdAsync(userId);
+            return Ok(result);
+        }
+
+        [HttpPost("accept-by-user/{reportedUserId}")]
+        public async Task<IActionResult> AcceptReportsByUserId(Guid reportedUserId)
+        {
+            var result = await _reportService.AcceptUserReportsByUserIdAsync(reportedUserId);
             return Ok(result);
         }
     }

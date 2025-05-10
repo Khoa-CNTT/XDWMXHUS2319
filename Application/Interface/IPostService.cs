@@ -22,5 +22,6 @@ namespace Application.Interface
         Task SoftDeletePostAndRelatedDataAsync(Guid postId);
         Task SoftDeleteCommentAndRepliesAsync(Guid commentId);
         Task<GetCommentsResponse> GetCommentByPostIdWithCursorAsync(Guid postId, Guid? lastCommentId, CancellationToken cancellationToken);
+        Task<GetPostsResponseAdminDto> GetAllPostsByAdminAsync(int skip, int take, CancellationToken cancellationToken);
     }
 }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using System.Linq.Expressions;
 namespace Domain.Interface
 {
     public interface IBaseRepository<T> where T : class
@@ -17,6 +15,6 @@ namespace Domain.Interface
         Task BulkUpdateAsync(List<T> entities);
         //AddRangeAsync
         Task AddRangeAsync(List<T> entities);
-
+        Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
     }
 }

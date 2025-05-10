@@ -126,5 +126,14 @@ namespace Infrastructure.Data.Repositories
                 .Take(take + 1)
                 .ToListAsync(cancellationToken);
         }
+        public async Task<List<Friendship>> GetFriendsPreviewAsync(Guid userId, int take, CancellationToken cancellationToken = default)
+        {
+            return await _context.Friendships
+                .Where(f => f.Status == FriendshipStatusEnum.Accepted &&
+                            (f.UserId == userId || f.FriendId == userId))
+                .OrderByDescending(f => f.CreatedAt) // Ưu tiên bạn bè mới nhất
+                .Take(take)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

@@ -106,11 +106,9 @@
     }
 
     .action-btn {
-      background: gray;
       border: none;
       border-radius: 6px;
       padding: 6px 12px;
-      color: #e4e6eb;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
@@ -119,13 +117,45 @@
       gap: 6px;
       transition: background 0.2s ease;
 
-      &:hover {
-        background: black; // Brighten on hover
-        color: white;
-      }
-
       [role="img"] {
         font-size: 16px;
+      }
+    }
+
+    // Các màu cố định cho từng loại nút
+    .add-friend-btn {
+      background: #007bff;
+      color: white;
+
+      &:hover {
+        background: #0069d9;
+      }
+    }
+
+    .cancel-request-btn {
+      background: gray;
+      color: white;
+
+      &:hover {
+        background: black;
+      }
+    }
+
+    .accept-btn {
+      background: #28a745;
+      color: white;
+
+      &:hover {
+        background: #218838;
+      }
+    }
+
+    .message-btn {
+      background: #17a2b8;
+      color: white;
+
+      &:hover {
+        background: #138496;
       }
     }
   }

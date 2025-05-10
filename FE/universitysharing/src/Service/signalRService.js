@@ -492,6 +492,33 @@ class SignalRService {
     console.log("Đăng ký sự kiện ReceiveAnswer");
   }
 
+
+    async sendStreamQuery(query, currentConversationId, streamId) {
+      await this.aiConnection.invoke('StreamQuery', query, currentConversationId, streamId);
+    }
+
+    onReceiveChunk(callback) {
+      this.on(this.aiConnection, "ReceiveChunk", (content, streamId) => {
+        console.log("[SignalRService] Nhận sự kiện ReceiveChunk:", content, "StreamId:", streamId);
+        callback(content, streamId);
+      });
+      console.log("Đăng ký sự kiện ReceiveChunk");
+    }
+    onStreamCompleted(callback) {
+      this.on(this.aiConnection, "StreamCompleted", (streamId) => {
+        console.log("[SignalRService] Nhận sự kiện StreamCompleted, StreamId:", streamId);
+        callback(streamId);
+      });
+    }
+ 
+    onReceiveComplete(callback) {
+      this.on(this.aiConnection, "ReceiveComplete", (content, streamId) => {
+        console.log("[SignalRService] Nhận sự kiện ReceiveComplete:", content, "StreamId:", streamId);
+        callback(content, streamId);
+      });
+      console.log("Đăng ký sự kiện ReceiveComplete");
+    }
+
   async sendNotification(message) {
     await this.invoke(this.notificationConnection, "SendNotification", message);
   }
@@ -537,11 +564,21 @@ class SignalRService {
   // onReceiveMessage: Sửa để dùng on
   onReceiveMessage(callback) {
     this.on(this.chatConnection, "ReceiveMessage", (message) => {
-      console.log("Nhận sự kiện ReceiveMessage:", message);
+      console.error("Nhận sự kiện ReceiveMessage:", message);
       callback(message);
     });
     console.log("Đăng ký sự kiện ReceiveMessage");
   }
+
+  //Nhận data messenger không cần join
+  onReceiveMessageData(callback) {
+    this.on(this.chatConnection, "MessageNotifyData", (message) => {
+      console.error("Nhận sự kiện ReceiveMessageData 🥰:", message);
+      callback(message);
+    });
+    console.log("Đăng ký sự kiện ReceiveMessageData 🥰");
+  }
+
   // onReceiveUnreadCount: Sửa để dùng on
   onReceiveUnreadCount(callback) {
     this.on(

@@ -22,7 +22,31 @@ namespace Application.Services
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
         }
+        public async Task<GetPostsResponseAdminDto> GetAllPostsByAdminAsync(int skip, int take, CancellationToken cancellationToken)
+        {
+            var posts = await _unitOfWork.PostRepository.GetAllPostsForAdminAsync(skip, take, cancellationToken);
 
+            var postDtos = posts.Select(post => new PostAdminDto
+            {
+                Id = post.Id,
+                Content = post.Content,
+                Author = post.User?.FullName ?? "Unknown", // Giả sử User có thuộc tính FullName
+                CreatedAt = post.CreatedAt,
+                ApprovalStatus = post.ApprovalStatus,
+                Scope = post.Scope,
+                PostType = post.PostType,
+                IsDeleted = post.IsDeleted,
+                IsSharedPost = post.IsSharedPost,
+                Score = post.Score ?? 0,
+                ReportCount = post.Reports?.Count ?? 0
+            }).ToList();
+
+            return new GetPostsResponseAdminDto
+            {
+                Posts = postDtos,
+                TotalCount = await _unitOfWork.PostRepository.GetTotalPostCountAsync(cancellationToken)
+            };
+        }
         public async Task<Guid> GetPostOwnerId(Guid postId)
         {
            return await _unitOfWork.PostRepository.GetPostOwnerIdAsync(postId);

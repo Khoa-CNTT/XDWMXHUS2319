@@ -18,5 +18,6 @@ namespace Domain.Interface
         Task<Friendship?> GetPendingRequestAsync(Guid senderId, Guid receiverId);
         Task<bool> ExistsAsync(Guid userId, Guid friendId, CancellationToken cancellationToken = default);
         Task<int> CountAcceptedFriendsAsync(Guid userId);
+        Task<List<Friendship>> GetFriendsPreviewAsync(Guid userId, int take, CancellationToken cancellationToken = default);
     }
 }
