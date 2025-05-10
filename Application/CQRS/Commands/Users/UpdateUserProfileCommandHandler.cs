@@ -61,11 +61,7 @@ namespace Application.CQRS.Commands.Users
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
                 // Trả về kết quả sau khi cập nhật
-                if (request.redis_key != null)
-                {
-                    var key = $"{request.redis_key}";
-                    await _redisService.RemoveAsync(key);
-                }
+                
                 return ResponseFactory.Success(Mapping.MaptoUserprofileDetailDto(user), "Cập nhật hồ sơ thành công", 200);
             }
             catch (Exception ex)

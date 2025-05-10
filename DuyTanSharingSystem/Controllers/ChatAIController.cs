@@ -6,12 +6,14 @@ using Application.Interface.ContextSerivce;
 using Azure;
 using Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DuyTanSharingSystem.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ChatAIController : Controller
     {
         private readonly IMediator _mediator;
@@ -81,7 +83,8 @@ namespace DuyTanSharingSystem.Controllers
             var response = await _mediator.Send(new UpdateMessageCommand
             {
                 ChatHistoryId = request.ChatHistoryId,
-                SuccessMessage = request.SuccessMessage
+                SuccessMessage = request.SuccessMessage,
+                RedisKey = request.RedisKey
             });
             return Ok(response);    
         }

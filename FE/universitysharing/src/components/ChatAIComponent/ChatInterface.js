@@ -1,11 +1,12 @@
 import 'highlight.js/styles/atom-one-light.css';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Menu, Mic, Plus, Send, StopCircle } from 'react-feather';
 import ReactMarkdown from 'react-markdown';
 import { useDispatch, useSelector } from 'react-redux';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import { useSignalR } from '../../Service/SignalRProvider';
+import axiosClient from '../../Service/axiosClient';
 import { useAuth } from '../../contexts/AuthContext';
 import { confirmAction, fetchChatHistory, sendQuery, stopAction } from '../../stores/action/chatAIAction';
 import './ChatInterface.scss';
@@ -13,96 +14,193 @@ import ConfirmationModal from './ConfirmationModal';
 // Danh sách tin nhắn thành công ngẫu nhiên cho từng endpoint
 const successMessages = {
   '/api/Post/create': [
-    'Xong rồi, mình đã đăng cho bạn một bài post 😄',
-    'Ok hết rồi nhaaaaa, bài đăng của bạn đã lên sóng 🎉',
-    'Đã đăng bài cho bạn, tha hồ nhận like nè 😉',
-    'Bài post của bạn đã được đăng thành công, tuyệt vời! 🌟',
+    'Xong rồi, mình đã đăng bài viết cho bạn! 😄\n**Chi tiết bài đăng:**',
+    'Bài đăng của bạn đã lên sóng, tha hồ nhận tương tác nè! 🎉\n**Chi tiết bài đăng:**',
+    'Đã đăng bài thành công, bạn đúng là ngôi sao! 🌟\n**Chi tiết bài đăng:**',
   ],
   '/api/Post/update-post': [
-    'Bài post của bạn đã được cập nhật, nhìn xịn hơn rồi nè 😎',
-    'Ok, bài đăng đã được chỉnh sửa xong xuôi! 🎉',
-    'Cập nhật bài post thành công, bạn pro ghê! 😄',
-    'Bài đăng đã được làm mới, quá chất luôn! 🌟',
+    'Bài viết đã được cập nhật, nhìn xịn hơn rồi nè! 😎\n**Chi tiết bài đăng:**',
+    'Ok, bài đăng đã được chỉnh sửa xong xuôi! 🎉\n**Chi tiết bài đăng:**',
+    'Cập nhật bài viết thành công, bạn pro ghê! 😄\n**Chi tiết bài đăng:**',
   ],
   '/api/Post/delete': [
-    'Bài đăng đã bị xóa, gọn gàng rồi nha 🗑️',
-    'Xóa xong bài post rồi, nhẹ cả người ha! 😌',
-    'Ok, bài đăng đã biến mất không dấu vết! 🕵️',
-    'Bài post đã được gỡ, bạn toàn quyền kiểm soát! 🚮',
+    'Bài viết đã bị xóa, gọn gàng rồi nha! 🗑️',
+    'Xóa bài viết xong, nhẹ cả người ha! 😌',
+    'Ok, bài viết đã biến mất không dấu vết! 🕵️',
   ],
   '/api/Comment/CommentPost': [
-    'Bình luận của bạn đã được gửi, hot hòn họt luôn! 🔥',
-    'Xong, mình đã thêm bình luận cho bạn nè 😎',
-    'Bình luận đã được đăng, mọi người sắp đọc rồi nha! 😄',
-    'Ok, bình luận của bạn đã lên bài! 🎊',
+    'Bình luận của bạn đã được đăng, hot hòn họt! 🔥\n**Chi tiết bình luận:**',
+    'Xong, mình đã thêm bình luận cho bạn nè! 😎\n**Chi tiết bình luận:**',
+    'Bình luận đã lên bài, mọi người sắp đọc rồi! 😄\n**Chi tiết bình luận:**',
+  ],
+  '/api/Comment/ReplyComment': [
+    'Trả lời bình luận đã được gửi, bạn đúng là nhanh tay! 😎\n**Chi tiết trả lời:**',
+    'Xong, mình đã đăng câu trả lời cho bạn! 🎉\n**Chi tiết trả lời:**',
+    'Ok, trả lời bình luận đã lên bài! 😄\n**Chi tiết trả lời:**',
   ],
   '/api/Comment/UpdateComment': [
-    'Bình luận của bạn đã được sửa, giờ ổn áp rồi nha! 😊',
-    'Xong, mình đã cập nhật bình luận cho bạn! 🎊',
-    'Ok, bình luận đã được chỉnh sửa, chuẩn luôn! 👍',
-    'Cập nhật bình luận thành công, bạn đỉnh quá! 😄',
+    'Bình luận đã được sửa, giờ ổn áp rồi nha! 😊\n**Chi tiết bình luận:**',
+    'Xong, mình đã cập nhật bình luận cho bạn! 🎊\n**Chi tiết bình luận:**',
+    'Ok, bình luận đã được chỉnh sửa, chuẩn luôn! 👍\n**Chi tiết bình luận:**',
   ],
   '/api/Comment/DeleteComment': [
-    'Bình luận đã bị xóa, gọn như chưa từng có mặt 😶',
-    'Xong, mình đã dọn dẹp bình luận cho bạn rồi nha! 🧹',
+    'Bình luận đã bị xóa, gọn như chưa từng có! 😶',
+    'Xong, mình đã dọn dẹp bình luận cho bạn rồi! 🧹',
     'Bình luận biến mất rồi, sạch sẽ quá trời! 🚫',
-    'Ok, đã gỡ bình luận ra khỏi bài rồi nè! 📤',
   ],
   '/api/UserProfile/upProfile': [
-    'Thông tin cá nhân đã được cập nhật, nhìn cool hơn rồi! 😎',
-    'Xong, hồ sơ của bạn đã được làm mới! 🌟',
-    'Ok, thông tin đã được chỉnh sửa, tuyệt vời! 🎉',
-    'Cập nhật hồ sơ thành công, bạn nổi bật hơn rồi nha! 😄',
+    'Hồ sơ của bạn đã được cập nhật, nhìn cool hơn rồi! 😎\n**Chi tiết hồ sơ:**',
+    'Xong, thông tin cá nhân đã được làm mới! 🌟\n**Chi tiết hồ sơ:**',
+    'Ok, hồ sơ đã được chỉnh sửa, tuyệt vời! 🎉\n**Chi tiết hồ sơ:**',
+  ],
+  '/api/UserProfile/upInformation': [
+    'Thông tin cá nhân đã được cập nhật, bạn nổi bật hơn rồi! 😄\n**Chi tiết thông tin:**',
+    'Xong, thông tin của bạn đã được làm mới! 🌟\n**Chi tiết thông tin:**',
+    'Ok, thông tin đã được chỉnh sửa, quá chất! 🎉\n**Chi tiết thông tin:**',
   ],
   '/api/Like/like': [
-    'Thả tim thành công, + 1 like! ❤️',
-    'Xong, mình đã like bài đăng cho bạn nè 😄',
-    'Like đã được gửi, bài đăng thêm hot rồi! 🔥',
-    'Ok, đã thả like cho bạn, tuyệt lắm! 🌟',
+    'Thả tim thành công, bài viết thêm hot! ❤️',
+    'Xong, mình đã like bài viết cho bạn nè! 😄',
+    'Like đã được gửi, bạn đúng là fan số 1! 🔥',
   ],
   '/api/Like/unlike': [
-    'Trừ 1 like haha 😢',
-    'Xong, đã hủy thả tim, chắc bạn đổi ý nhỉ? 🤔',
-    'Ok, đã gỡ like khỏi bài post, gọn gàng ha! 👍',
-    'Không còn like nữa, người đăng bài chắn bùn lắm he! 💔',
+    'Đã hủy thả tim, chắc bạn đổi ý nhỉ? 😢',
+    'Ok, mình đã gỡ like khỏi bài viết! 👍',
+    'Không còn like nữa, gọn gàng ha! 💔',
   ],
   '/api/CommentLike/like': [
     'Like bình luận xong, bạn đúng là fan số 1! 😍',
-    'Xong, mình đã thả tim cho bình luận nè 😊',
-    'Bình luận đã được like, chuẩn gu luôn! 👍',
+    'Xong, mình đã thả tim cho bình luận nè! 😊',
     'Ok, đã like bình luận cho bạn! 🎉',
   ],
   '/api/FriendShip/send-friend-request': [
-    'Lời mời kết bạn đã gửi, chờ hồi âm nha! 😄',
+    'Lời mời kết bạn đã được gửi, chờ hồi âm nha! 😄',
     'Xong, mình đã gửi yêu cầu kết bạn cho bạn! 🌟',
-    'Yêu cầu kết bạn đã được gửi, bạn sắp có bạn mới! 😎',
-    'Ok, lời mời kết bạn đã bay đi rồi! 🚀',
+    'Yêu cầu kết bạn đã bay đi, sắp có bạn mới! 🚀',
   ],
   '/api/Share/SharePost': [
-    'Bài đăng đã được chia sẻ, lan tỏa ngay thôi! 📢',
-    'Xong, mình đã share bài đăng cho bạn nè 😄',
-    'Ok, bài đăng đã được chia sẻ, hot lắm nha! 🔥',
-    'Đã chia sẻ bài đăng, bạn đúng là trendsetter! 🌟',
+    'Bài viết đã được chia sẻ, lan tỏa ngay thôi! 📢',
+    'Xong, mình đã share bài viết cho bạn nè! 😄',
+    'Ok, bài viết đã được chia sẻ, hot lắm nha! 🔥',
+  ],
+  '/api/Ride/create': [
+    'Chuyến đi đã được tạo, sẵn sàng lên xe thôi! 🚗\n**Chi tiết chuyến đi:**',
+    'Xong, mình đã tạo chuyến đi cho bạn nè! 😄\n**Chi tiết chuyến đi:**',
+    'Ok, chuyến đi đã được xác nhận, quá tuyệt! 🎉\n**Chi tiết chuyến đi:**',
   ],
   'default': [
     'Hành động đã hoàn tất, bạn đỉnh thật! 😄',
     'Xong xuôi hết rồi, mình làm tốt chứ? 😎',
     'Ok, mọi thứ đã được xử lý ngon lành! 🎉',
-    'Đã xong, bạn muốn mình làm gì tiếp nào? 😉',
   ],
 };
+const paramDisplayMap = {
+  '/api/Post/create': {
+    Content: 'Nội dung bài đăng',
+    Images: 'Hình ảnh kèm theo',
+    Video: 'Video kèm theo',
+    Scope: 'Phạm vi bài đăng',
+  },
+  '/api/Post/update-post': {
+    PostId: 'ID bài đăng',
+    Content: 'Nội dung bài đăng',
+    Images: 'Hình ảnh kèm theo',
+    Video: 'Video kèm theo',
+    Scope: 'Phạm vi bài đăng',
+  },
+  '/api/Ride/create': {
+    DriverId: 'ID Tài xế',
+    RidePostId: 'ID bài đăng',
+    IsSafetyTrackingEnabled: 'Chế độ an toàn',
+  },
+  '/api/Comment/CommentPost': {
+    PostId: 'ID bài đăng',
+    Content: 'Nội dung bình luận',
+  },
+  '/api/Comment/ReplyComment': {
+    PostId: 'ID bài đăng',
+    ParentCommentId: 'ID bình luận cha',
+    Content: 'Nội dung trả lời',
+  },
+  '/api/Like/like': {
+    PostId: 'ID bài đăng',
+  },
+  '/api/CommentLike/like': {
+    CommentId: 'ID bình luận',
+  },
+  '/api/FriendShip/send-friend-request': {
+    FriendId: 'ID bạn bè',
+  },
+  '/api/Share/SharePost': {
+    PostId: 'ID bài đăng',
+    Content: 'Nội dung chia sẻ',
+  },
+  '/api/UserProfile/upProfile': {
+    FullName: 'Họ và tên',
+    ProfileImage: 'Ảnh đại diện',
+    BackgroundImage: 'Ảnh bìa',
+    Bio: 'Tiểu sử',
+    PhoneNumber: 'Số điện thoại',
+    PhoneRelativeNumber: 'Số điện thoại người thân',
+  },
+  '/api/UserProfile/upInformation': {
+    PhoneNumber: 'Số điện thoại',
+    PhoneRelativeNumber: 'Số điện thoại người thân',
+    Gender: 'Giới tính',
+  },
+};
+const scopeOptions = [
+  { value: 0, label: 'Công khai' },
+  { value: 1, label: 'Bạn bè' },
+  { value: 2, label: 'Riêng tư' },
+];
 
+const genderOptions = [
+  { value: 'Male', label: 'Nam' },
+  { value: 'Female', label: 'Nữ' },
+  { value: 'Other', label: 'Khác' },
+];
+
+const isSafeOptions = [
+  { value: true, label: 'Đồng ý' },
+  { value: false, label: 'Không đồng ý' },
+];
 // Hàm tiền xử lý markdown
 const preprocessMarkdown = (text) => {
   return text.replace(/^\*(\S)/gm, '* $1').replace(/^\*\*(\S)/gm, '** $1');
 };
 
 // Sửa hàm convertLinksToMarkdown
-const convertLinksToMarkdown = (text) => {
-  return text.replace(/\((\bhttps?:\/\/\S+?)\)/g, (match, url) => {
-    const displayText = url.length > 30 ? url.substring(0, 27) + '...' : url;
-    return `[${displayText}](${url})`;
+const convertLinksToMarkdown = (content) => {
+  // Bảo vệ cú pháp hình ảnh markdown trước khi xử lý liên kết
+  const imagePlaceholder = '___IMAGE___';
+  const images = [];
+  let tempContent = content;
+
+  // Tìm và thay thế các cú pháp hình ảnh bằng placeholder
+  tempContent = tempContent.replace(
+    /!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g,
+    (match) => {
+      images.push(match);
+      return imagePlaceholder;
+    }
+  );
+
+  // Chuyển các URL thành cú pháp liên kết markdown, nhưng không ảnh hưởng đến placeholder
+  const urlRegex = /(?:https?:\/\/[^\s]+)/g;
+  tempContent = tempContent.replace(urlRegex, (url) => {
+    if (tempContent.includes(imagePlaceholder)) {
+      return url; // Bỏ qua nếu URL nằm trong placeholder
+    }
+    return `[${url}](${url})`;
   });
+
+  // Khôi phục các cú pháp hình ảnh
+  images.forEach((image, index) => {
+    tempContent = tempContent.replace(imagePlaceholder, image);
+  });
+
+  return tempContent;
 };
 
 const ChatInterface = ({ conversationId, setConversationId, toggleSidebar, onNewChat }) => {
@@ -282,6 +380,7 @@ const ChatInterface = ({ conversationId, setConversationId, toggleSidebar, onNew
         const filteredHistory = chatHistory
           .filter((history) => {
             const shouldInclude = (
+              //history.answer !== 'Hành động đang thực thi' &&
               !history.isConfirmationModal &&
               !existingMessageIds.has(`user-${history.id}`) &&
               !existingMessageIds.has(`ai-${history.id}`) &&
@@ -409,7 +508,8 @@ const ChatInterface = ({ conversationId, setConversationId, toggleSidebar, onNew
     const handleComplete = (content, streamId) => {
       console.log('[ChatInterface] Received complete data:', JSON.stringify(content, null, 2), 'StreamId:', streamId);
       if (content && content.results && Array.isArray(content.results) && content.results.length > 0) {
-        const finalContent = chunkBufferRef.current.trim() || 'Không nhận được phản hồi từ AI.';
+              console.log('chunkBufferRef.current.trim()',chunkBufferRef.current.trim());
+        const finalContent = chunkBufferRef.current.trim() || 'Tôi cần bạn xem xét lại các thông tin.';
         setMessages((prev) => {
           const aiMessageId = `ai-${streamId}`;
           const updatedMessages = prev.map((msg) => {
@@ -666,95 +766,309 @@ const ChatInterface = ({ conversationId, setConversationId, toggleSidebar, onNew
     setIsWaitingResponse(false); // Đặt lại trạng thái chờ
     onNewChat();
   }, [onNewChat, setConversationId]);
-  const handleModalConfirm = useCallback(
-    async (endpoint, params, redis_key, streamId) => {
-      console.log('[ChatInterface] Confirming action:', { endpoint, params, redis_key, streamId, conversationId });
-      if (!endpoint || !params || !redis_key || !streamId) {
-        console.error('[ChatInterface] Invalid confirm action parameters:', { endpoint, params, redis_key, streamId });
-        setMessages((prev) => {
-          const updatedMessages = prev.filter((msg) => !msg.isConfirmationModal);
-          return [
-            ...updatedMessages,
-            {
-              id: `error-${Date.now()}`,
-              content: 'Thông tin xác nhận không hợp lệ. Vui lòng thử lại.',
-              isUser: false,
-              isStreaming: false,
-              showDots: false,
-              isError: true,
-              timestamp: new Date().toISOString(),
-              conversationId, // Gắn conversationId
-            },
-          ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        });
-        setIsModalOpen(false);
-        setIsWaitingResponse(false);
-        return;
+ 
+const handleModalConfirm = useCallback(
+  async (endpoint, params, redis_key, streamId) => {
+    console.log('[ChatInterface] Confirming action:', { endpoint, params, redis_key, streamId, conversationId });
+    if (!endpoint || !params || !redis_key || !streamId) {
+      console.error('[ChatInterface] Invalid confirm action parameters:', { endpoint, params, redis_key, streamId });
+      setMessages((prev) => {
+        const updatedMessages = prev.filter((msg) => !msg.isConfirmationModal);
+        return [
+          ...updatedMessages,
+          {
+            id: `error-${Date.now()}`,
+            content: 'Thông tin xác nhận không hợp lệ. Vui lòng thử lại.',
+            isUser: false,
+            isStreaming: false,
+            showDots: false,
+            isError: true,
+            timestamp: new Date().toISOString(),
+            conversationId,
+          },
+        ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      });
+      setIsModalOpen(false);
+      setIsWaitingResponse(false);
+      return;
+    }
+
+    // Danh sách thông báo lỗi thân thiện ngẫu nhiên
+    const friendlyErrorMessages = [
+      'Ôi, có vẻ như hệ thống hơi mè nheo rồi! 😅',
+      'Hic, có chút trục trặc nhỏ, thử lại nhé! 🛠️',
+      'Úi, hệ thống đang bận tí xíu, chờ chút nha! ⏳',
+      'Ôi zời, có gì đó không ổn rồi, để mình kiểm tra lại! 😓',
+      'Hệ thống hơi nghịch ngợm tí, thử lại nào! 😜',
+    ];
+
+    try {
+      const confirmationMessage = messages.find((msg) => msg.id === `confirmation-${streamId}`);
+      const chatHistoryId = confirmationMessage?.chatHistoryId || null; // Cung cấp giá trị mặc định
+
+      // Nếu chatHistoryId không tồn tại, ghi log cảnh báo
+      if (!chatHistoryId) {
+        console.warn('[ChatInterface] chatHistoryId is undefined for streamId:', streamId);
       }
-  
-      try {
-        const confirmationMessage = messages.find((msg) => msg.id === `confirmation-${streamId}`);
-        const chatHistoryId = confirmationMessage?.chatHistoryId;
-        const endpointKey = endpoint.replace('https://localhost:7053', '');
-        const messagesForEndpoint = successMessages[endpointKey] || successMessages['default'];
-        const successMessage = messagesForEndpoint[Math.floor(Math.random() * messagesForEndpoint.length)];
-  
-        const result = await dispatch(
-          confirmAction({ endpoint, params, redis_key, conversationId, chatHistoryId, successMessage })
-        ).unwrap();
-        console.log('[ChatInterface] Action confirmed successfully:', result);
-  
-        setMessages((prev) => {
-          const updatedMessages = prev.filter((msg) => msg.id !== `confirmation-${streamId}` && !msg.isConfirmationModal);
-          return [
-            ...updatedMessages,
-            {
-              id: `ai-confirm-${chatHistoryId || Date.now()}`,
-              content: successMessage,
-              isUser: false,
-              isStreaming: false,
-              showDots: false,
-              timestamp: new Date().toISOString(),
-              conversationId, // Gắn conversationId
-            },
-          ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        });
-  
-        if (conversationId) {
-          dispatch(fetchChatHistory({ conversationId, lastMessageId: null }));
+
+      const endpointKey = endpoint.replace('https://localhost:7053', '');
+      const messagesForEndpoint = successMessages[endpointKey] || successMessages['default'];
+      const successMessage = messagesForEndpoint[Math.floor(Math.random() * messagesForEndpoint.length)];
+
+      // Chuẩn hóa params thành một mảng chứa một đối tượng duy nhất
+      // const normalizedParams = [{
+      //   ...params[0], // params đã được chuẩn hóa trong ConfirmationModal.js
+      // }];
+      console.log("paramsHandlerConf",params);
+      // Gọi confirmAction mà không gửi successMessage
+      const result = await dispatch(
+        confirmAction({ endpoint, params, redis_key, conversationId, chatHistoryId })
+      ).unwrap();
+      console.log('[ChatInterface] Action confirmed result:', result);
+
+      // Kiểm tra mã trạng thái từ server
+      if (result.response && result.response.code === 200) {
+  // Thành công: Tạo nội dung tin nhắn bao gồm successMessage và dữ liệu trả về
+  const endpointKey = endpoint.replace('https://localhost:7053', '');
+  const messagesForEndpoint = successMessages[endpointKey] || successMessages['default'];
+  const successMessage = messagesForEndpoint[Math.floor(Math.random() * messagesForEndpoint.length)];
+
+  // Format dữ liệu trả về từ server thành chuỗi dễ đọc
+  let dataMessage = '';
+  if (result.response.data && paramDisplayMap[endpointKey]) {
+    const data = result.response.data;
+    const displayMap = paramDisplayMap[endpointKey];
+
+    // Lọc các trường không phải ID và tạo danh sách chi tiết
+    dataMessage = Object.entries(displayMap)
+      .map(([paramKey, displayName]) => {
+        // Bỏ qua các trường liên quan đến ID
+        if (paramKey.toLowerCase().includes('id')) return null;
+
+        // Lấy giá trị từ data, ưu tiên key từ data nếu có
+        let value = data[paramKey] || data[paramKey.toLowerCase()] || data[paramKey.toUpperCase()];
+        if (value === null || value === undefined) {
+          // Kiểm tra các trường khác trong data nếu không tìm thấy paramKey
+          const fallbackKey = Object.keys(data).find(
+            (key) => key.toLowerCase() === paramKey.toLowerCase()
+          );
+          value = fallbackKey ? data[fallbackKey] : null;
         }
-        setIsModalOpen(false);
-        setIsWaitingResponse(false);
-      } catch (error) {
-        console.error('[ChatInterface] Error confirming action:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status,
-        });
-        const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi xác nhận hành động. Vui lòng thử lại.';
-        
+        if (value === null || value === undefined) return null;
+
+        // Định dạng giá trị phù hợp
+        if (paramKey === 'Scope') {
+          const scopeOption = scopeOptions.find(
+            (opt) => opt.value === value || opt.value.toString() === value.toString()
+          );
+          value = scopeOption ? scopeOption.label : value;
+        } else if (paramKey === 'IsSafetyTrackingEnabled') {
+          const safeOption = isSafeOptions.find((opt) => opt.value === value);
+          value = safeOption ? safeOption.label : value;
+        } else if (paramKey === 'Gender') {
+          const genderOption = genderOptions.find((opt) => opt.value === value);
+          value = genderOption ? genderOption.label : value;
+        } else if (typeof value === 'boolean') {
+          value = value ? 'Thành công' : 'Đã hủy';
+        } else if (paramKey === 'Images' || paramKey === 'ProfileImage' || paramKey === 'BackgroundImage') {
+          // Xử lý hình ảnh
+          if (Array.isArray(value)) {
+            return value
+              .map((img, index) => {
+                const fullUrl = img.startsWith('http') ? img : `https://localhost:7053${img}`;
+                return `- ${displayName} ${index + 1}: ![${displayName} ${index + 1}](${fullUrl})`;
+              })
+              .join('\n');
+          } else if (typeof value === 'string') {
+            const fullUrl = value.startsWith('http') ? value : `https://localhost:7053${value}`;
+            return `- ${displayName}: ![${displayName}](${fullUrl})`;
+          }
+          return null;
+        }
+
+        // Xử lý trường imageUrl (cho các endpoint như /api/Post/update-post)
+        if (paramKey.toLowerCase() === 'imageurl' && typeof value === 'string') {
+          const fullUrl = value.startsWith('http') ? value : `https://localhost:7053${value}`;
+          return `- ${displayName}: ![${displayName}](${fullUrl})`;
+        }
+
+        return `- ${displayName}: ${value}`;
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    // Thêm xử lý trường imageUrl nếu không có trong displayMap
+    if (data.imageUrl && typeof data.imageUrl === 'string') {
+      const fullUrl = data.imageUrl.startsWith('http')
+        ? data.imageUrl
+        : `https://localhost:7053${data.imageUrl}`;
+      dataMessage += `\n- Hình ảnh: ![Hình ảnh](${fullUrl})`;
+    }
+
+    // Thêm tiêu đề chi tiết nếu có dữ liệu
+    if (dataMessage) {
+      dataMessage = `\n${dataMessage}`;
+    }
+  } else if (result.response.data) {
+    // Xử lý các endpoint không có trong paramDisplayMap
+    dataMessage = Object.entries(result.response.data)
+      .map(([key, value]) => {
+        if (value === null || value === undefined || key.toLowerCase().includes('id')) return null;
+        if (key === 'createdAt') return `- Thời gian tạo: ${value}`;
+        if (key === 'fullName') return `- Họ tên: ${value}`;
+        if (key === 'gender') {
+          const genderOption = genderOptions.find((opt) => opt.value === value);
+          return `- Giới tính: ${genderOption ? genderOption.label : value}`;
+        }
+        if (key === 'phoneNumber') return `- Số điện thoại: ${value}`;
+        if (key === 'phoneNumberRelative') return `- Số điện thoại người thân: ${value}`;
+        if (key === 'content') return `- Nội dung: ${value}`;
+        if (key === 'estimatedDuration') return `- Thời gian dự kiến: ${value} phút`;
+        if (key === 'status') return `- Trạng thái: ${value === 1 ? 'Đã xác nhận' : 'Chưa xác nhận'}`;
+        if (key === 'scope') {
+          const scopeOption = scopeOptions.find(
+            (opt) => opt.value === value || opt.value.toString() === value.toString()
+          );
+          return `- Phạm vi: ${scopeOption ? scopeOption.label : value}`;
+        }
+        if (key === 'imageUrl' || key === 'image' || key === 'profileImage' || key === 'backgroundImage') {
+          const fullUrl = value.startsWith('http') ? value : `https://localhost:7053${value}`;
+          return `- Hình ảnh: ![Hình ảnh](${fullUrl})`;
+        }
+        if (key === 'images' && Array.isArray(value)) {
+          return value
+            .map((img, index) => {
+              const fullUrl = img.startsWith('http') ? img : `https://localhost:7053${img}`;
+              return `- Hình ảnh ${index + 1}: ![Hình ảnh ${index + 1}](${fullUrl})`;
+            })
+            .join('\n');
+        }
+        return null;
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    if (dataMessage) {
+      dataMessage = `\n${dataMessage}`;
+    }
+  }
+
+  // Kết hợp successMessage và dataMessage
+  const combinedMessage = `${successMessage}${dataMessage}`;
+
+  // Gửi combinedMessage đến server
+  if (chatHistoryId) {
+    await axiosClient.post(`/api/ChatAI/update-message`, {
+      chatHistoryId,
+      successMessage: combinedMessage,
+      redisKey: redis_key,
+    });
+  } else {
+    console.warn('[ChatInterface] Skipping update-message due to missing chatHistoryId');
+  }
+
+  // Cập nhật messages với combinedMessage
+  setMessages((prev) => {
+    const updatedMessages = prev.filter((msg) => msg.id !== `confirmation-${streamId}` && !msg.isConfirmationModal);
+    return [
+      ...updatedMessages,
+      {
+        id: `ai-confirm-${chatHistoryId || Date.now()}`,
+        content: combinedMessage,
+        isUser: false,
+        isStreaming: false,
+        showDots: false,
+        timestamp: new Date().toISOString(),
+        conversationId,
+      },
+    ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  });
+
+  if (conversationId) {
+    dispatch(fetchChatHistory({ conversationId, lastMessageId: null }));
+  }
+}else {
+        // Lỗi: Tạo thông báo lỗi thân thiện và gửi đến server
+        const serverErrorMessage = result.response?.message || 'Đã xảy ra lỗi không xác định.';
+        const friendlyMessage = friendlyErrorMessages[Math.floor(Math.random() * friendlyErrorMessages.length)];
+        const combinedErrorMessage = `${friendlyMessage} Lỗi: ${serverErrorMessage}`;
+
+        if (chatHistoryId) {
+          await axiosClient.post(`/api/ChatAI/update-message`, {
+            chatHistoryId,
+            successMessage: combinedErrorMessage,
+            redisKey: redis_key,
+          });
+        } else {
+          console.warn('[ChatInterface] Skipping update-message due to missing chatHistoryId');
+        }
+
         setMessages((prev) => {
           const updatedMessages = prev.filter((msg) => !msg.isConfirmationModal);
           return [
             ...updatedMessages,
             {
               id: `error-${Date.now()}`,
-              content: errorMessage,
+              content: combinedErrorMessage,
               isUser: false,
               isStreaming: false,
               showDots: false,
               isError: true,
               timestamp: new Date().toISOString(),
-              conversationId, // Gắn conversationId
+              conversationId,
             },
           ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
         });
-        setIsModalOpen(false);
-        setIsWaitingResponse(false);
       }
-    },
-    [dispatch, conversationId, messages]
-  );
+
+      setIsModalOpen(false);
+      setIsWaitingResponse(false);
+    } catch (error) {
+      // Xử lý lỗi ngoại lệ (ví dụ: lỗi mạng)
+      console.error('[ChatInterface] Error confirming action:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      const serverErrorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi xác nhận hành động.';
+      const friendlyMessage = friendlyErrorMessages[Math.floor(Math.random() * friendlyErrorMessages.length)];
+      const combinedErrorMessage = `${friendlyMessage} Lỗi: ${serverErrorMessage}`;
+
+      const confirmationMessage = messages.find((msg) => msg.id === `confirmation-${streamId}`);
+      const chatHistoryId = confirmationMessage?.chatHistoryId || null;
+
+      if (chatHistoryId) {
+        await axiosClient.post(`/api/ChatAI/update-message`, {
+          chatHistoryId,
+          successMessage: combinedErrorMessage,
+          redisKey: redis_key,
+        });
+      } else {
+        console.warn('[ChatInterface] Skipping update-message due to missing chatHistoryId');
+      }
+
+      setMessages((prev) => {
+        const updatedMessages = prev.filter((msg) => !msg.isConfirmationModal);
+        return [
+          ...updatedMessages,
+          {
+            id: `error-${Date.now()}`,
+            content: combinedErrorMessage,
+            isUser: false,
+            isStreaming: false,
+            showDots: false,
+            isError: true,
+            timestamp: new Date().toISOString(),
+            conversationId,
+          },
+        ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      });
+      setIsModalOpen(false);
+      setIsWaitingResponse(false);
+    }
+  },
+  [dispatch, conversationId, messages]
+);
 
 
 
@@ -849,77 +1163,127 @@ const ChatInterface = ({ conversationId, setConversationId, toggleSidebar, onNew
       setIsWaitingResponse(false);
     }
   }, [dispatch, conversationId, messages]);
-  
-  const renderMessage = useCallback(
-    (message, index) => {
-      console.log('[ChatInterface] Rendering message:', message);
-  
-      if (message.isConfirmationModal) {
-        const modifiedMessage = {
-          ...message,
-          isStreaming: false,
-          showDots: false,
-        };
-  
-        return (
-          <div
-            key={`${modifiedMessage.id}-${index}`}
-            className="message-bubble ai-message confirmation-message"
-            data-testid={`message-${modifiedMessage.id}`}
-          >
-            <ConfirmationModal
-              results={modifiedMessage.results}
-              streamId={modifiedMessage.streamId} 
-              onConfirm={(endpoint, params, redis_key) => handleModalConfirm(endpoint, params, redis_key, modifiedMessage.streamId)}
-              onEdit={handleModalEdit}
-              onCancel={() => handleModalCancel(modifiedMessage.streamId)}
-              conversationId={conversationId}
-              isEditing={modifiedMessage.isEditing || false}
-            />
-            <div className="message-timestamp">
-              {new Date(modifiedMessage.timestamp).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </div>
-          </div>
-        );
-      }
-  
+const extractImageUrl = (content) => {
+  // Tìm kiếm đường dẫn hình ảnh trong nội dung
+  const imagePathMatch = content.match(/Link ảnh: ?[`"]?(\/images\/posts\/[^\s`")\]\n]+)[`"]?/i);
+  if (imagePathMatch) {
+    return `https://localhost:7053${imagePathMatch[1]}`;
+  }
+  return null;
+};
+
+const processContent = (content) => {
+  if (!content) return content;
+
+  const imageUrl = extractImageUrl(content);
+  console.log('[processContent] Extracted image URL:', imageUrl);
+
+  // Thay thế đoạn "Có hình ảnh đính kèm. (Link ảnh: ...)" bằng cú pháp markdown cho hình ảnh trong danh sách
+  let processedContent = content
+    .replace(/\(bạn có thể xem hình ảnh tại đây:.*?\)/g, '')
+    .replace(/\[Đây là link đến hình ảnh bài viết.*?\]/g, '')
+    .replace(
+      /Có hình ảnh đính kèm\.\s*\(Link ảnh:.*?`?\)/g,
+      imageUrl ? `\n* ![Bài đăng](${imageUrl})` : ''
+    )
+    .trim();
+
+  // Xóa các dòng "Hình ảnh: ..." còn lại trước khi thêm cú pháp markdown
+  processedContent = processedContent.replace(/(\*|_)\s*\*\*Hình ảnh:\*\*\s*(?!\!)/g, '');
+
+  console.log('[processContent] Processed content:', processedContent);
+  return processedContent;
+};
+
+const renderMessage = useCallback(
+  (message, index) => {
+    console.log('[ChatInterface] Rendering message:', message);
+
+    if (message.isConfirmationModal) {
+      const modifiedMessage = {
+        ...message,
+        isStreaming: false,
+        showDots: false,
+      };
+
       return (
         <div
-          key={`${message.id}-${index}`}
-          className={`message-bubble ${message.isUser ? 'user-message' : `ai-message ${message.isStreaming ? 'streaming' : ''}`}`}
-          data-testid={`message-${message.id}`}
+          key={`${modifiedMessage.id}-${index}`}
+          className="message-bubble ai-message confirmation-message"
+          data-testid={`message-${modifiedMessage.id}`}
         >
-          <div className="message-content">
-            {message.content ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeHighlight]}>
-                {convertLinksToMarkdown(message.content)}
-              </ReactMarkdown>
-            ) : (
-              <span>{message.isStreaming ? '' : 'Không có nội dung trả lời.'}</span>
-            )}
-            {message.isStreaming && message.showDots && (
-              <span className="streaming-dots" data-testid="streaming-dots">
-                <span>.</span>
-                <span>.</span>
-                <span>.</span>
-              </span>
-            )}
-          </div>
+          <ConfirmationModal
+            results={modifiedMessage.results}
+            streamId={modifiedMessage.streamId} 
+            onConfirm={(endpoint, params, redis_key) => handleModalConfirm(endpoint, params, redis_key, modifiedMessage.streamId)}
+            onEdit={handleModalEdit}
+            onCancel={() => handleModalCancel(modifiedMessage.streamId)}
+            conversationId={conversationId}
+            isEditing={modifiedMessage.isEditing || false}
+          />
           <div className="message-timestamp">
-            {new Date(message.timestamp).toLocaleTimeString([], {
+            {new Date(modifiedMessage.timestamp).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
             })}
           </div>
         </div>
       );
-    },
-    [handleModalConfirm, handleModalEdit, handleModalCancel, conversationId]
-  );
+    }
+
+    return (
+      <div
+        key={`${message.id}-${index}`}
+        className={`message-bubble ${message.isUser ? 'user-message' : `ai-message ${message.isStreaming ? 'streaming' : ''}`}`}
+        data-testid={`message-${message.id}`}
+      >
+        <div className="message-content">
+          {message.content ? (
+            <>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight]}
+                components={{
+                  img: ({ src, alt }) => (
+                    <img
+                      src={src}
+                      alt={alt}
+                      className="post-media-image"
+                      onError={(e) => {
+                        console.error('[renderMessage] Image failed to load:', src);
+                        e.target.onerror = null;
+                        e.target.src = '/placeholder-image.png';
+                      }}
+                      style={{ maxWidth: '100%', maxHeight: '300px', margin: '8px 0' }}
+                    />
+                  ),
+                }}
+              >
+                {convertLinksToMarkdown(processContent(message.content))}
+              </ReactMarkdown>
+            </>
+          ) : (
+            <span>{message.isStreaming ? '' : 'Không có nội dung trả lời.'}</span>
+          )}
+          {message.isStreaming && message.showDots && (
+            <span className="streaming-dots" data-testid="streaming-dots">
+              <span>.</span>
+              <span>.</span>
+              <span>.</span>
+            </span>
+          )}
+        </div>
+        <div className="message-timestamp">
+          {new Date(message.timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </div>
+      </div>
+    );
+  },
+  [handleModalConfirm, handleModalEdit, handleModalCancel, conversationId]
+);
   
 
   const renderedMessages = useMemo(() => {
