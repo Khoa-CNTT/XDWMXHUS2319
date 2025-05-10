@@ -24,5 +24,7 @@ namespace Application.Interface.Hubs
 
         Task SendNotificationNewMessageAsync(Guid receiverId, string message);
         Task SendNotificationMessageWithIsSeenFalse(Guid conversationId, Guid receiverId);
+
+        Task SendReportNotificationToAdmins(Guid reporterId, Guid postId, string reason, string reporterName);
     }
 }

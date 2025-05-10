@@ -1,11 +1,4 @@
-﻿using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.CQRS.Commands.Users
+﻿namespace Application.CQRS.Commands.Users
 {
     public class CreateUserReportUserCommandHandler : IRequestHandler<CreateUserReportUserCommand, ResponseModel<bool>>
     {

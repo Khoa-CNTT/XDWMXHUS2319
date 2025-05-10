@@ -1,12 +1,4 @@
-﻿using Application.Interface.Hubs;
-using Application.Services;
-using Domain.Interface;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using static Domain.Common.Enums;
-
-namespace Application.BackgroundServices
+﻿namespace Application.BackgroundServices
 {
     public class GpsMonitorService : BackgroundService
     {

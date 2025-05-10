@@ -1,4 +1,5 @@
-﻿namespace Infrastructure.Data.Repositories
+﻿
+namespace Infrastructure.Data.Repositories
 {
     public class UserRepository : BaseRepository<User>, IUserRepository
     {
@@ -98,6 +99,19 @@
         public async Task<bool> ExistUsersAsync(Guid userId)
         {
             return await _context.Users.AnyAsync(u => u.Id == userId);
+        }
+
+        public async Task<IEnumerable<User>> GetAdminsAsync()
+        {
+            return await _context.Users
+                .Where(u => u.Role ==RoleEnum.Admin)
+                .ToListAsync();
+        }
+
+        public async Task<User?> GetAdminByIdAsync(Guid adminId)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == adminId && u.Role == RoleEnum.Admin);
         }
     }
 }

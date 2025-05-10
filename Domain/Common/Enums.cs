@@ -50,8 +50,8 @@ namespace Domain.Common
         }
         public enum RoleEnum
         {
-            User,
-            Admin
+            User=0,
+            Admin=1
         }
         public enum StatusRideEnum
         {
@@ -123,6 +123,8 @@ namespace Domain.Common
             AcceptFriend,
             ReplyComment,
             LikeComment,
+            ReportPost,
+            ReportUser,
         }
         public enum UserStatus
         {

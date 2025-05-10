@@ -28,7 +28,7 @@ namespace Domain.Entities
             public DateTime? LastLoginDate { get; private set; }
             public int TotalReports { get; private set; } = 0;
 
-            public DateTime? UpdatedAt { get; private set; }
+            
 
 
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
@@ -108,11 +108,11 @@ namespace Domain.Entities
 
                 FullName = fullName;
 
-            if (!string.IsNullOrWhiteSpace(profileImageUrl))
-                ProfilePicture = profileImageUrl;
+            if (!string.IsNullOrWhiteSpace(profilePicture))
+                ProfilePicture = profilePicture;
 
-            if (!string.IsNullOrWhiteSpace(backgroundImageUrl))
-                BackgroundPicture = backgroundImageUrl;
+            if (!string.IsNullOrWhiteSpace(backgroundPicture))
+                BackgroundPicture = backgroundPicture;
 
             if (!string.IsNullOrWhiteSpace(bio))
                 Bio = bio;
@@ -124,17 +124,6 @@ namespace Domain.Entities
                     RelativePhone = relativePhone;
                     Gender = gender;
             }
-
-
-            }
-            public void UpdateInformation(string? phone, string? relativePhone, string gender)
-            {
-                    Phone = phone;
-                    RelativePhone = relativePhone;
-                    Gender = gender;
-            }
-
-
         /// <summary>
         /// Cập nhật mật khẩu mới (đã hash).
         /// </summary>
