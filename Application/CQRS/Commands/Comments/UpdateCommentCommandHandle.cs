@@ -1,12 +1,5 @@
 ﻿using Application.DTOs.Comments;
-using Application.Interface;
-using Application.Interface.Api;
-using Application.Interface.ContextSerivce;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Application.CQRS.Commands.Comments
 {
@@ -15,11 +8,13 @@ namespace Application.CQRS.Commands.Comments
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
         private readonly IGeminiService _geminiService;
-        public UpdateCommentCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService)
+        private readonly IRedisService _redisService;
+        public UpdateCommentCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IGeminiService geminiService,IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _geminiService = geminiService;
+            _redisService = redisService;
         }
             public async Task<ResponseModel<CommentPostDto>> Handle(UpdateCommentCommand request, CancellationToken cancellationToken)
             {
@@ -67,14 +62,23 @@ namespace Application.CQRS.Commands.Comments
                 {
                     return ResponseFactory.Fail<CommentPostDto>("Không tìm thấy người dùng", 404);
                 }
-                await _unitOfWork.BeginTransactionAsync();
+            if (user.Status == "Suspended")
+            {
+                return ResponseFactory.Fail<CommentPostDto>("Tài khoản đang bị tạm ngưng", 403);
+            }
+            await _unitOfWork.BeginTransactionAsync();
                 try
                 {
                 comment.Edit(request.Content);
                     await _unitOfWork.CommentRepository.UpdateAsync(comment);
                     await _unitOfWork.SaveChangesAsync();
                     await _unitOfWork.CommitTransactionAsync();
-                    return ResponseFactory.Success(Mapping.MapToCommentPostDto(comment, post, user), "Chỉnh sửa bình luận thành công", 200);
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
+                return ResponseFactory.Success(Mapping.MapToCommentPostDto(comment, post, user), "Chỉnh sửa bình luận thành công", 200);
                 }
                 catch (Exception ex)
                 {

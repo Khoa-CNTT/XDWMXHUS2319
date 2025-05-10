@@ -1,0 +1,131 @@
+.user-report-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(17, 24, 39, 0.6); // màu tối hơn, đẹp hơn
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.user-report-modal {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.25s ease-in-out;
+
+  &__title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #1f2937;
+    text-align: center;
+  }
+
+  &__form-group {
+    margin-bottom: 24px;
+
+    label {
+      display: block;
+      font-size: 15px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 10px;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 15px;
+      color: #111827;
+      background-color: #f9fafb;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        background-color: #fff;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px; // Giảm khoảng cách giữa các nút từ 16px xuống 12px
+
+    button {
+      padding: 8px 16px; // Giảm padding từ 10px 20px xuống 8px 16px
+      border-radius: 10px; // Giảm border-radius từ 12px xuống 10px để cân đối
+      font-size: 13px; // Giảm font-size từ 14px xuống 13px
+      font-weight: 600;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+
+      &.cancel-btn-user-report {
+        display: flex;
+        align-items: center;
+        height: 31.2px;
+        margin: 20px;
+
+        &:hover {
+          background-color: #e5e7eb;
+        }
+
+        &:disabled {
+          background-color: #e5e7eb;
+          cursor: not-allowed;
+        }
+      }
+
+      &.submit-btn {
+        background-color: #ef4444;
+        color: #ffffff;
+
+        &:hover {
+          background-color: #dc2626;
+        }
+
+        &:disabled {
+          background-color: #f87171;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// Điều chỉnh media query cho màn hình nhỏ
+@media (max-width: 640px) {
+  .user-report-modal {
+    padding: 20px;
+
+    &__title {
+      font-size: 20px;
+    }
+
+    &__form-group label {
+      font-size: 14px;
+    }
+
+    &__form-group select {
+      font-size: 14px;
+    }
+
+    &__actions button {
+      padding: 6px 12px; // Giảm thêm padding cho màn hình nhỏ
+      font-size: 12px; // Giảm font-size xuống 12px
+      border-radius: 8px; // Giảm border-radius cho phù hợp
+    }
+  }
+}

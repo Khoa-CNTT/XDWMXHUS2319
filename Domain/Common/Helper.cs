@@ -19,5 +19,6 @@ namespace Domain.Common
         {
             return dateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
         }
+
     }
 }

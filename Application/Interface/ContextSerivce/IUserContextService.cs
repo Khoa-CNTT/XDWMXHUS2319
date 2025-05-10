@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Application.Interface.ContextSerivce
 {
@@ -10,6 +6,8 @@ namespace Application.Interface.ContextSerivce
     {
         Guid UserId ();
         string FullName();
-
+        string Role();
+        string AccessToken();
+        bool IsAuthenticated();
     }
 }

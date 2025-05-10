@@ -14,6 +14,7 @@ namespace Application.DTOs.User
         public string? ProfilePicture { get; set; }
         public string? BackgroundPicture { get; set; }
         public string? Bio { get; set; }
+        public decimal TrustScore { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

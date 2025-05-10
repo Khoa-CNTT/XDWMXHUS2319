@@ -14,5 +14,6 @@ namespace Application.DTOs.User
         public string? Email { get; set; }
         public string? Bio { get; set; } // Giới thiệu bản thân
         public DateTime CreatedAt { get; set; }
+        public string? status { get; set; } // Trạng thái tài khoản (Active, Blocked, Suspended)
     }
 }

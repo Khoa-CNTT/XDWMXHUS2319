@@ -1,18 +1,27 @@
 import React from "react";
 import "../../styles/MessageView/ChatHeader.scss";
 import avatartDefault from "../../assets/AvatarDefaultFill.png";
-import { FiPhone, FiVideo, FiMoreHorizontal } from "react-icons/fi";
+import {
+  FiPhone,
+  FiVideo,
+  FiMoreHorizontal,
+  FiArrowLeft,
+} from "react-icons/fi";
 
-const ChatHeader = ({ toggleSidebar }) => {
+const ChatHeader = ({ toggleSidebar, goBack, selectedFriend }) => {
+  // console.error("Tên bạn bè >>", selectedFriend);
   return (
     <div className="chat-header">
       <div className="chat-header__info">
+        <div className="return-chat-list" onClick={goBack}>
+          <FiArrowLeft />
+        </div>
         <img
-          src={avatartDefault}
+          src={selectedFriend?.pictureProfile || avatartDefault}
           alt="Avatar"
           className="chat-header__avatar"
         />
-        <span className="chat-header__name">Nguyễn Trung Đăng</span>
+        <span className="chat-header__name">{selectedFriend?.fullName}</span>
       </div>
       <div className="chat-header__actions">
         <FiPhone className="chat-header__icon" />

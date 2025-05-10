@@ -1,88 +1,172 @@
 .All-ride-post {
   max-width: 600px;
   width: 100%;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid #ddd;
+  background: #ffffff;
+  border-radius: 16px; // Softer corners
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); // Softer, larger shadow
+  padding: 20px;
+  margin: 0 auto 30px; // Centered with more bottom margin
+  border: none; // Remove border for a cleaner look
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+    transform: translateY(-3px); // Slightly more lift on hover
+  }
 
   .header-ride-post {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ececec;
 
     .left-header-post {
       display: flex;
       align-items: center;
 
       .Avata-user {
-        width: 60px;
-        height: 60px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
-        margin-right: 10px;
+        margin-right: 12px;
+        border: 2px solid #1877f2;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+
+        &:hover {
+          transform: scale(1.1);
+        }
       }
 
       .Name-User {
-        font-weight: bold;
-        font-size: 18px;
+        font-weight: 600;
+        font-size: 16px;
+        color: #1a1a1a; // Darker for better contrast
       }
 
       .time-ridePost {
-        font-size: 12px;
-        color: gray;
-        margin-left: 10px;
+        font-size: 13px;
+        color: #8e8e93;
+        margin-left: 12px;
+        font-style: italic;
       }
     }
 
     .right-header-post {
       display: flex;
-      gap: 10px;
+      gap: 12px;
 
-      img {
-        width: 30px;
-        height: 30px;
+      .moreOption {
+        font-size: 24px;
+        color: #8e8e93;
         cursor: pointer;
+        transition: color 0.3s ease;
+
+        &:hover {
+          color: #1877f2;
+        }
       }
     }
   }
 
   .content-ride-post {
-    display: block;
-    margin: 20px 0; // Thêm khoảng cách để nội dung không quá sát nhau
-    font-size: 14px;
-    color: #333; // Màu chữ chính cho nội dung
-    line-height: 1.5; // Cải thiện khoảng cách dòng giúp đọc dễ dàng hơn
-    border-left: 4px solid #4caf50; // Đánh dấu bài viết bằng viền bên trái
-    padding-left: 15px; // Khoảng cách cho văn bản khỏi viền
-    background-color: #f9f9f9; // Nền nhạt giúp bài viết dễ nhìn
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Thêm bóng nhẹ cho phần nội dung
-    border-radius: 8px; // Bo góc nhẹ để mềm mại hơn
-  }
+    margin: 20px 0;
+    padding: 15px;
+    background: linear-gradient(
+      145deg,
+      #f8fafc,
+      #ffffff
+    ); // Subtle gradient for depth
+    border-radius: 12px;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+    border-left: 4px solid #1877f2;
 
-  .post-content {
-    margin-bottom: 10px;
-    font-size: 18px;
-    font-weight: bold; // Làm cho nội dung bài viết nổi bật hơn
-    color: #333; // Màu chữ chính
-  }
+    .post-type-tag {
+      display: inline-block;
+      background: #e7f4ea;
+      color: #34c759;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
 
-  .location-time {
-    display: block;
-    font-size: 14px;
-    color: #777; // Màu nhạt cho thông tin địa điểm và thời gian
-    margin-top: 5px; // Thêm khoảng cách trên giữa nội dung và thông tin địa điểm
-    font-style: italic; // Chữ nghiêng giúp phân biệt với phần nội dung chính
+    .post-content {
+      margin-bottom: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .location-time {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .location-item,
+      .time-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        position: relative;
+        padding-left: 28px;
+      }
+
+      .location-item::before,
+      .time-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        width: 20px;
+        height: 20px;
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      .start-location::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2334c759'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M17.657 16.243L12 10.586 6.343 16.243A4 4 0 008 20h8a4 4 0 001.657-3.757zM12 4v6.586'/%3E%3C/svg%3E");
+      }
+
+      .end-location::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ff3b30'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 2a6 6 0 00-6 6c0 4 6 10 6 10s6-6 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z'/%3E%3C/svg%3E");
+      }
+
+      .time-item::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238e8e93'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 2a10 10 0 100 20 10 10 0 000-20zm0 4v6l4 2'/%3E%3C/svg%3E");
+      }
+
+      .location-label,
+      .time-label {
+        font-weight: 600;
+        color: #1a1a1a;
+        min-width: 80px;
+      }
+
+      .location-value,
+      .time-value {
+        color: #4a4a4a;
+        font-weight: 400;
+        line-height: 1.4;
+        word-break: break-word;
+      }
+    }
   }
 
   .map-ride-post {
-    margin-top: 10px;
-    border-radius: 10px;
+    margin-top: 15px;
+    border-radius: 12px;
     overflow: hidden;
-    border: 1px solid #ddd;
+    border: 1px solid #ececec;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    .leaflet-container {
+      border-radius: 12px;
+    }
   }
 
   .action-ride-post {
@@ -90,26 +174,66 @@
     justify-content: space-between;
     align-items: center;
     margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px solid #eee;
+    padding: 15px 0;
+    border-top: 1px solid #ececec;
 
     .like-number-ride-post,
     .accept-ride-post,
     .see-ride-map {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 8px;
       cursor: pointer;
       font-size: 14px;
-      color: #555;
+      font-weight: 500;
+      color: #4a4a4a;
+      transition: all 0.3s ease;
+
+      &:hover {
+        color: #1877f2;
+      }
 
       img {
-        width: 30px;
-        height: 30px;
+        width: 22px;
+        height: 22px;
+        transition: transform 0.3s ease;
+
+        &:hover {
+          transform: scale(1.2);
+        }
+      }
+
+      .see-map {
+        font-size: 18px;
+      }
+    }
+
+    .accept-ride-post {
+      background: #1877f2;
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 20px;
+      transition: background 0.3s ease;
+
+      &:hover {
+        background: #1877f2;
+        color: #ffffff;
+      }
+    }
+
+    .see-ride-map {
+      background: #f5f5f5;
+      padding: 6px 12px;
+      border-radius: 20px;
+      transition: background 0.3s ease;
+
+      &:hover {
+        background: #ececec;
       }
     }
   }
 }
+
 .safety-modal-overlay {
   position: fixed;
   top: 0;

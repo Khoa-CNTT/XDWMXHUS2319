@@ -4,8 +4,10 @@ import { FiHeart, FiMessageSquare, FiShare2, FiClock } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import avatarWeb from "../../../assets/AvatarDefault.png";
 import { useDispatch, useSelector } from "react-redux";
-// Thay đổi: Import fetchReportedPosts thay vì fetchReportPosts
-import { fetchReportedPosts } from "../../../stores/action/adminActions";
+import {
+  fetchReportedPosts,
+  fetchUserUserReports,
+} from "../../../stores/action/adminActions";
 import { openCommentModal } from "../../../stores/reducers/listPostReducers";
 import getUserIdFromToken from "../../../utils/JwtDecode";
 import "react-confirm-alert/src/react-confirm-alert.css";
@@ -13,6 +15,7 @@ import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useLocation, useNavigate } from "react-router-dom";
 import AllReportFromUser from "./ReportFromUser";
+import UserUserReport from "./UserUserReport";
 
 const AllReport = () => {
   const dispatch = useDispatch();
@@ -20,19 +23,14 @@ const AllReport = () => {
   const location = useLocation();
   const postsEndRef = useRef(null);
 
-  // Thay đổi: Lấy reportedPosts thay vì reportPosts từ state.reports
-  const { reportedPosts, loading, error } = useSelector(
+  const { reportedPosts, userUserReports, loading, error } = useSelector(
     (state) => state.reportAdmintSlice
   );
 
-  // Thay đổi: Dispatch fetchReportedPosts để lấy danh sách bài viết có báo cáo
   useEffect(() => {
     dispatch(fetchReportedPosts());
+    dispatch(fetchUserUserReports());
   }, [dispatch]);
-
-  // Thay đổi: Loại bỏ logic phân trang (loadMorePosts, lastPostId, IntersectionObserver)
-  // vì API /posts-report hiện tại không hỗ trợ phân trang
-  // Nếu cần phân trang, có thể thêm lại sau khi backend hỗ trợ
 
   const navigateUser = (userId) => {
     if (userId === getUserIdFromToken()) {
@@ -42,20 +40,18 @@ const AllReport = () => {
     }
   };
 
-  // Mở comment modal
+  // Chuyển đổi ngày sang UTC+7
   const handleOpenCommentModal = (post, index = 0) => {
     dispatch(openCommentModal({ ...post, initialMediaIndex: index }));
     navigate(`/post/${post.id}`, { state: { background: location } });
   };
 
-  // Chuyển đổi ngày sang UTC+7
   const convertUTCToVNTime = (utcDate) => {
     const date = new Date(utcDate);
     date.setHours(date.getHours() + 7);
     return date;
   };
 
-  // Xác định class cho media container
   const getMediaContainerClass = (post) => {
     const imageCount = post.imageUrl ? post.imageUrl.split(",").length : 0;
     const hasVideo = !!post.videoUrl;
@@ -79,7 +75,6 @@ const AllReport = () => {
     return className;
   };
 
-  // Render media items (hình ảnh/video)
   const renderMediaItems = (post) => {
     const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
     const hasVideo = !!post.videoUrl;
@@ -100,16 +95,9 @@ const AllReport = () => {
 
           return (
             <div className="media-item" key={index}>
-              <img
-                src={fullUrl}
-                alt={`Post media ${index}`}
-                onClick={() => handleOpenCommentModal(post, index)}
-              />
+              <img src={fullUrl} alt={`Post media ${index}`} />
               {showOverlay && (
-                <div
-                  className="media-overlay"
-                  onClick={() => handleOpenCommentModal(post, index)}
-                >
+                <div className="media-overlay">
                   +{totalMedia - (hasVideo ? 1 : 2)}
                 </div>
               )}
@@ -118,10 +106,7 @@ const AllReport = () => {
         })}
         {hasVideo && (
           <div className="media-item video-item">
-            <video
-              controls
-              onClick={() => handleOpenCommentModal(post, imageUrls.length)}
-            >
+            <video controls>
               <source src={post.videoUrl} type="video/mp4" />
             </video>
           </div>
@@ -132,8 +117,10 @@ const AllReport = () => {
 
   return (
     <div className="all-posts-report">
-      {/* Thay đổi: Hiển thị thông báo lỗi nếu có */}
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="error-message">{error.message || error}</div>}
+      {Array.isArray(userUserReports) && userUserReports.length > 0 && (
+        <UserUserReport reports={userUserReports} />
+      )}
       {Array.isArray(reportedPosts) && reportedPosts.length > 0 ? (
         <>
           {reportedPosts.map((post) => (
@@ -213,10 +200,7 @@ const AllReport = () => {
                     <span>{post.likeCount}</span>
                   </div>
                   <div className="comments-shares">
-                    <span
-                      onClick={() => handleOpenCommentModal(post, 0)}
-                      style={{ cursor: "pointer" }}
-                    >
+                    <span style={{ cursor: "pointer" }}>
                       {post.commentCount} bình luận
                     </span>
                     <span style={{ cursor: "pointer" }}>
@@ -237,10 +221,7 @@ const AllReport = () => {
                     )}
                     <span className="action-count">Thích</span>
                   </button>
-                  <button
-                    className="action-btn"
-                    onClick={() => handleOpenCommentModal(post, 0)}
-                  >
+                  <button className="action-btn">
                     <FiMessageSquare className="comment-icon" size={18} />
                     <span className="action-count">Bình luận</span>
                   </button>
@@ -250,11 +231,9 @@ const AllReport = () => {
                   </button>
                 </div>
               </div>
-              {/* Thay đổi: Truyền reports và postId vào AllReportFromUser */}
               <AllReportFromUser reports={post.reports} postId={post.id} />
             </div>
           ))}
-          {/* Thay đổi: Hiển thị trạng thái loading */}
           <div ref={postsEndRef} className="load-more-indicator">
             {loading && <p>Đang tải thêm bài viết...</p>}
           </div>

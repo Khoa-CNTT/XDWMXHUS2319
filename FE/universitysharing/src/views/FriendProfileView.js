@@ -10,14 +10,13 @@ import { fetchFriendsByUserId } from "../stores/action/friendAction";
 import { fetchPostsByOtherUser } from "../stores/action/listPostActions";
 import ProfileFriendsHeader from "../components/ProfileUserComponent/ProfileFriendHeader";
 import ProfilePhotos from "../components/ProfileUserComponent/ProfilePhotos";
-import ProfileFriends from "../components/ProfileUserComponent/ProfileFriends";
 import ProfileIntro from "../components/ProfileUserComponent/ProfileIntro";
 import Header from "../components/HomeComponent/Header";
 import AllPosts from "../components/HomeComponent/AllPostHome";
-import PostInput from "../components/HomeComponent/PostInputHome";
 import "../styles/ProfileView.scss";
 import { fetchPostImagesPreview } from "../stores/action/profileActions";
 import ProfileFriendsUserOther from "../components/ProfileUserComponent/ProfileFriendsUserOther";
+import FooterHome from "../components/HomeComponent/FooterHome";
 
 const FriendProfileView = () => {
   const { userId } = useParams();
@@ -73,6 +72,7 @@ const FriendProfileView = () => {
                 isFriendProfile={true}
               />
               <ProfileFriendsUserOther usersProfile={otherUserProfile} />
+              <FooterHome />
             </div>
           </div>
           <div className="profile-user-view__right">

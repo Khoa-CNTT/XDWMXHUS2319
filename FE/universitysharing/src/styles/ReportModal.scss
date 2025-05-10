@@ -61,8 +61,8 @@
     gap: 16px;
     margin-top: 20px;
 
-    .cancel-btn,
-    .submit-btn {
+    .cancel-btn-report,
+    .submit-btn-report {
       min-width: 140px;
       padding: 10px 20px;
       height: 44px;
@@ -78,7 +78,7 @@
       white-space: nowrap;
     }
 
-    .cancel-btn {
+    .cancel-btn-report {
       background: #e0e0e0;
       color: #333;
 
@@ -91,7 +91,7 @@
       }
     }
 
-    .submit-btn {
+    .submit-btn-report {
       background: #007bff;
       color: #fff;
 

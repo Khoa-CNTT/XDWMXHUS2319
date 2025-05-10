@@ -23,7 +23,7 @@ namespace Application.CQRS.Commands.RidePosts
             StartLocation = startLocation;
             EndLocation = endLocation;
             StartTime = startTime;
-            PostType = postType;
+            PostType = 0;
         }
         private CreateRidePostCommand() { }
     }

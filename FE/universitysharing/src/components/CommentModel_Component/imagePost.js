@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../styles/CommentOverlay.scss";
 import imagePost from "../../assets/ImgDefault.png";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi"; // Sử dụng icon từ react-icons
 
 const ImagePostComment = ({ post }) => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-
+  const navigate = useNavigate();
   // Tạo mảng media chứa cả ảnh và video (nếu có)
   const mediaArray = [
     ...(post.imageUrl ? [{ type: "image", url: post.imageUrl }] : []),
@@ -25,6 +26,9 @@ const ImagePostComment = ({ post }) => {
     setCurrentMediaIndex(
       (prevIndex) => (prevIndex - 1 + mediaArray.length) % mediaArray.length
     );
+  };
+  const homeReturn = () => {
+    navigate("/home");
   };
 
   // Nếu không có media nào, hiển thị ảnh mặc định

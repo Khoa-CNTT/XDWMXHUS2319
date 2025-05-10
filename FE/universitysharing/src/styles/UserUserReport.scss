@@ -1,0 +1,240 @@
+.user-user-report-container-ur {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+
+  .section-title-ur {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #333;
+  }
+
+  .report-list-ur {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .report-card-container-ur {
+    display: flex;
+    gap: 16px;
+  }
+
+  .reported-user-card-ur {
+    flex: 1;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 12px;
+
+    .reported-user-info-ur {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+
+      .avatar-ur {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .reported-user-details-ur {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .reported-user-ur,
+        .total-reports-ur {
+          font-size: 14px;
+          color: #333;
+          margin: 0;
+        }
+
+        .reported-user-ur,
+        .total-reports-ur strong {
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .report-details-card-ur {
+    flex: 1;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 12px;
+
+    .report-details-ur {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .report-info-ur {
+        position: relative;
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+
+        &:not(:last-child)::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          height: 1px;
+          background-color: #e5e7eb; // màu xám nhẹ giống divider-ur
+        }
+      }
+    }
+
+    .report-actions-ur {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+
+      .accept-btn-ur,
+      .reject-btn-ur {
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+        cursor: pointer;
+      }
+
+      .accept-btn-ur {
+        background-color: #ef4444;
+        color: #fff;
+        border: none;
+
+        &:hover {
+          background-color: #dc2626;
+        }
+      }
+
+      .reject-btn-ur {
+        background-color: #e5e7eb;
+        color: #374151;
+        border: none;
+
+        &:hover {
+          background-color: #d1d5db;
+        }
+      }
+    }
+
+    .divider-ur {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 8px 0;
+    }
+
+    .report-info-ur {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+
+      .avatar-ur {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .report-content-ur {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .reported-by-ur,
+        .reason-ur,
+        .report-date-ur,
+        .status-ur {
+          font-size: 14px;
+          color: #333;
+          margin: 0;
+        }
+
+        .reason-ur strong,
+        .report-date-ur strong,
+        .status-ur strong {
+          font-weight: 600;
+        }
+
+        .status-ur {
+          &.pending-ur {
+            color: #f59e0b;
+          }
+          &.accepted-ur {
+            color: #10b981;
+          }
+          &.rejected-ur {
+            color: #ef4444;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 640px) {
+  .user-user-report-container-ur {
+    padding: 16px;
+
+    .section-title-ur {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .report-card-container-ur {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .reported-user-card-ur {
+      padding: 10px;
+    }
+
+    .report-details-card-ur {
+      padding: 10px;
+
+      .report-details-ur {
+        gap: 10px;
+      }
+
+      .report-info-ur {
+        .avatar-ur {
+          width: 20px;
+          height: 20px;
+        }
+
+        .report-content-ur {
+          .reported-by-ur,
+          .reason-ur,
+          .report-date-ur,
+          .status-ur {
+            font-size: 13px;
+          }
+        }
+      }
+
+      .report-actions-ur {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-left: 0;
+
+        .accept-btn-ur,
+        .reject-btn-ur {
+          padding: 6px 12px;
+          font-size: 13px;
+        }
+      }
+    }
+  }
+}

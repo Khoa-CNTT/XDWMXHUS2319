@@ -47,8 +47,17 @@ namespace Application.CQRS.Commands.Likes
                 bool isAdded = await _redisService.AddAsync(redisKey, likeEvent, TimeSpan.FromMinutes(10));
                 if (isAdded)
                 {
+
+                    if (request.redis_key != null)
+                    {
+                        var key = $"{request.redis_key}";
+                        await _redisService.RemoveAsync(key);
+                    }
+
                     await _notificationService.SendLikeComentNotificationAsync(post.Id, request.CommentId, userId);
+
                     return ResponseFactory.Success<bool>("Like/unlike request đã được lưu, sẽ xử lý sau", 202);
+                    
                 }
                 return ResponseFactory.Fail<bool>("Không thể lưu like comment vào Redis", 500);
             }

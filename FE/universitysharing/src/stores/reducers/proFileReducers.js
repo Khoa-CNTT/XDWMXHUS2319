@@ -4,6 +4,7 @@ import {
   getPostOwner,
   userProfileDetail,
   updateUserProfile,
+  updateUserInformation,
   fetchOtherUserProfile,
   fetchPostImagesPreview,
   fetchAllPostImages,
@@ -96,6 +97,18 @@ const listUser = createSlice({
         state.allPostImages = action.payload; // Lưu danh sách ảnh
       })
       .addCase(fetchAllPostImages.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateUserInformation.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateUserInformation.fulfilled, (state, action) => {
+        state.loading = false;
+        state.usersDetail = { ...state.usersDetail, ...action.payload };
+      })
+      .addCase(updateUserInformation.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

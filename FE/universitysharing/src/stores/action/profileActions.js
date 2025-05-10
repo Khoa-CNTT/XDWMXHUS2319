@@ -163,3 +163,28 @@ export const fetchAllPostImages = createAsyncThunk(
     }
   }
 );
+export const updateUserInformation = createAsyncThunk(
+  "profile/updateUserInformation",
+  async (data, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        "https://localhost:7053/api/UserProfile/upInformation",
+        {
+          Phone: data.phoneNumber,
+          PhoneRelative: data.phoneRelative,
+          Gender: data.gender,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);

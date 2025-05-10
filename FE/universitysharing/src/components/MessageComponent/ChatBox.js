@@ -18,12 +18,12 @@ import { useAuth } from "../../contexts/AuthContext";
 import {
   getConversation,
   getMessages,
-  sendMessage, 
+  sendMessage,
 } from "../../stores/action/messageAction";
 import { NotificationContext } from "../../contexts/NotificationContext";
 
 const ChatBox = ({ friendId, onClose }) => {
-  console.log("ChatBox render", { friendId });
+  //console.log("ChatBox render", { friendId });
   const dispatch = useDispatch();
   const { friends } = useSelector((state) => state.friends);
   const { signalRService, isConnected } = useSignalR();
@@ -201,13 +201,14 @@ const ChatBox = ({ friendId, onClose }) => {
       try {
         console.log("[ChatBox] Gửi tin nhắn qua API:", messageDto);
         const sentMessage = await dispatch(sendMessage(messageDto, token));
-
+        console.warn("data", sentMessage);
         if (!sentMessage?.id) {
           throw new Error("Không nhận được tin nhắn từ server");
         }
 
         if (!conversationId && sentMessage.conversationId) {
           setConversationId(sentMessage.conversationId);
+          console.warn("Convestation chat ID >>", setConversationId);
           console.log(
             "[ChatBox] Cập nhật conversationId:",
             sentMessage.conversationId
@@ -286,7 +287,7 @@ const ChatBox = ({ friendId, onClose }) => {
    */
   useEffect(() => {
     signalRService.onMarkAsSeen(({ lastSeenMessageId, seenAt, status }) => {
-      console.log(
+      console.error(
         "Đã nhận MarkMessagesAsSeen:",
         lastSeenMessageId,
         seenAt,
@@ -300,10 +301,8 @@ const ChatBox = ({ friendId, onClose }) => {
         )
       );
     });
-//   }, []);
-
+    //   }, []);
   }, [signalRService]);
-  
 
   const getMessageStatus = useCallback(
     (message, messages) => {

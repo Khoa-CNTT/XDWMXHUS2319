@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  userProfileDetail,
+  userProfile,
   updateUserProfile,
 } from "../../stores/action/profileActions";
 import iconCamera from "../../assets/iconweb/iconCamera.svg";
@@ -16,48 +16,57 @@ const EditProfileModal = ({
   onModalOpened,
 }) => {
   const dispatch = useDispatch();
-  const usersState = useSelector((state) => state.users) || {};
-  const { usersDetail } = usersState;
+  const userProfileData = useSelector((state) => state.users.usersProfile);
   const bioInputRef = useRef();
 
   const [formData, setFormData] = useState({
     fullName: "",
     bio: "",
-    phoneNumber: "",
-    phoneRelativeNumber: "",
     profileImage: null,
     backgroundImage: null,
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [nameChangeWarning, setNameChangeWarning] = useState(null);
 
   useEffect(() => {
     if (isOpen && shouldFocusBio && bioInputRef.current) {
       bioInputRef.current.focus();
-      onModalOpened(); // Thông báo đã focus xong
+      onModalOpened();
     }
   }, [isOpen, shouldFocusBio]);
+
   useEffect(() => {
     if (isOpen) {
-      dispatch(userProfileDetail());
+      dispatch(userProfile());
     }
   }, [isOpen, dispatch]);
 
   useEffect(() => {
-    if (isOpen && usersDetail) {
+    if (isOpen && userProfileData) {
       setFormData({
-        fullName: usersDetail?.fullName || "",
-        bio: usersDetail?.bio || "",
-        phoneNumber: usersDetail?.phoneNumber || "",
-        phoneRelativeNumber: usersDetail?.phoneNumberRelative || "",
-        profileImage: usersDetail?.profilePicture || null,
-        backgroundImage: usersDetail?.backgroundPicture || null,
-        profileImagePreview: usersDetail?.profilePicture || null,
-        backgroundImagePreview: usersDetail?.backgroundPicture || null,
+        fullName: userProfileData?.fullName || "",
+        bio: userProfileData?.bio || "",
+        profileImage: userProfileData?.profilePicture || null,
+        backgroundImage: userProfileData?.backgroundPicture || null,
+        profileImagePreview: userProfileData?.profilePicture || null,
+        backgroundImagePreview: userProfileData?.backgroundPicture || null,
       });
+
+      if (userProfileData?.lastNameUpdated) {
+        const lastUpdated = new Date(userProfileData.lastNameUpdated);
+        const now = new Date();
+        const daysSinceLastChange = (now - lastUpdated) / (1000 * 60 * 60 * 24);
+        if (daysSinceLastChange < 7) {
+          const daysLeft = Math.ceil(7 - daysSinceLastChange);
+          setNameChangeWarning(
+            `Bạn chỉ có thể đổi tên sau ${daysLeft} ngày nữa.`
+          );
+        }
+      }
     }
-  }, [isOpen, usersDetail]);
+  }, [isOpen, userProfileData]);
 
   const handleImageChange = (event, field) => {
     const file = event.target.files[0];
@@ -77,20 +86,17 @@ const EditProfileModal = ({
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Ngăn hành vi mặc định của form trong quá trình xử lý
+    console.log("Form submitted, preventing default reload");
+
     setLoading(true);
     setError(null);
 
     try {
       const profileData = new FormData();
-
-      // Append all fields
       profileData.append("FullName", formData.fullName);
       profileData.append("Bio", formData.bio);
-      profileData.append("PhoneNumber", formData.phoneNumber);
-      profileData.append("PhoneRelativeNumber", formData.phoneRelativeNumber);
 
-      // Append images only if they're new files
       if (formData.profileImage instanceof File) {
         profileData.append("ProfileImage", formData.profileImage);
       }
@@ -98,23 +104,23 @@ const EditProfileModal = ({
         profileData.append("BackgroundImage", formData.backgroundImage);
       }
 
-      // Debug: Log FormData contents
-      for (let [key, value] of profileData.entries()) {
-        console.log(`${key}:`, value);
-      }
-
+      console.log("Dispatching updateUserProfile");
       const result = await dispatch(updateUserProfile(profileData));
 
       if (updateUserProfile.fulfilled.match(result)) {
-        await dispatch(userProfileDetail());
-        window.location.reload(); // Reload lại trang sau khi cập nhật thành công
+        console.log("Update successful, dispatching userProfile");
+        await dispatch(userProfile()); // Cập nhật dữ liệu người dùng
+        console.log("Reloading page to fetch updated images");
+        window.location.reload(); // Reload trang để lấy hình ảnh từ bài viết
       } else {
+        console.log("Update failed:", result.error?.message);
         setError(result.error?.message || "Cập nhật thất bại");
       }
     } catch (err) {
-      console.error("Update error:", err);
+      console.error("Error during update:", err);
       setError(err.message || "Có lỗi xảy ra khi cập nhật");
     } finally {
+      console.log("Setting loading to false");
       setLoading(false);
     }
   };
@@ -125,7 +131,7 @@ const EditProfileModal = ({
     <div className="edit-profile-modal__overlay">
       <div className="edit-profile-modal">
         <div className="edit-profile-modal__header">
-          <h2>Chỉnh sửa thông tin</h2>
+          <h2>Chỉnh sửa trang cá nhân</h2>
           <button className="edit-profile-modal__close" onClick={onClose}>
             ✕
           </button>
@@ -133,6 +139,11 @@ const EditProfileModal = ({
 
         <div className="edit-profile-modal__content">
           {error && <div className="edit-profile-modal__error">{error}</div>}
+          {nameChangeWarning && (
+            <div className="edit-profile-modal__warning">
+              {nameChangeWarning}
+            </div>
+          )}
 
           <div className="edit-profile-modal__background">
             <img
@@ -201,6 +212,7 @@ const EditProfileModal = ({
                 onChange={handleChange}
                 required
                 placeholder=" "
+                disabled={nameChangeWarning !== null}
               />
               <label>Tên người dùng</label>
             </div>
@@ -217,38 +229,18 @@ const EditProfileModal = ({
               <label>Tiểu sử</label>
             </div>
 
-            <div className="edit-profile-modal__field">
-              <input
-                type="tel"
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                pattern="[0-9]{10,12}"
-                title="Số điện thoại phải có 10-12 chữ số"
-                placeholder=" "
-              />
-              <label>Số điện thoại</label>
-            </div>
-
-            <div className="edit-profile-modal__field">
-              <input
-                type="tel"
-                name="phoneRelativeNumber"
-                value={formData.phoneRelativeNumber}
-                onChange={handleChange}
-                pattern="[0-9]{10,12}"
-                title="Số điện thoại phải có 10-12 chữ số"
-                placeholder=" "
-              />
-              <label>Số điện thoại liên hệ</label>
-            </div>
-
             <button
               type="submit"
               className="edit-profile-modal__submit"
               disabled={loading}
             >
-              {loading ? "Đang cập nhật..." : "Cập nhật"}
+              {loading ? (
+                <>
+                  <span className="spinner"></span>Đang cập nhật...
+                </>
+              ) : (
+                "Cập nhật"
+              )}
             </button>
           </form>
         </div>

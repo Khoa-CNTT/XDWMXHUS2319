@@ -1,11 +1,4 @@
-﻿using Application.Interface.ContextSerivce;
-using Domain.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Application.CQRS.Commands.Posts
 {
     public class SoftDeletePostCommandHandle : IRequestHandler<SoftDeletePostCommand, ResponseModel<bool>>
@@ -13,12 +6,14 @@ namespace Application.CQRS.Commands.Posts
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContextService _userContextService;
         private readonly IPostService _postService;
+        private readonly IRedisService _redisService;
 
-        public SoftDeletePostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IPostService postService)
+        public SoftDeletePostCommandHandle(IUnitOfWork unitOfWork, IUserContextService userContextService, IPostService postService, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _userContextService = userContextService;
             _postService = postService;
+            _redisService = redisService;
         }
 
         public async Task<ResponseModel<bool>> Handle(SoftDeletePostCommand request, CancellationToken cancellationToken)
@@ -38,10 +33,21 @@ namespace Application.CQRS.Commands.Posts
                     return ResponseFactory.Fail<bool>("Bạn không có quyền xóa bài viết này", 403);
                 }
             // 🔥 Kiểm tra xem bài viết có bị xóa chưa
+
             if (post.IsDeleted)
                 {
                     return ResponseFactory.Fail<bool>("Bài viết này đã bị xóa", 404);
                 }
+            // 🔥 Kiểm tra xem tài khoản người dùng có bị tạm ngưng không
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return ResponseFactory.Fail<bool>("Người dùng không tồn tại", 404);
+            }
+            if (user.Status == "Suspended")
+            {
+                return ResponseFactory.Fail<bool>("Tài khoản đang bị tạm ngưng", 403);
+            }
             // 🔥 Bắt đầu giao dịch
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -51,6 +57,11 @@ namespace Application.CQRS.Commands.Posts
                 // 🔥 Lưu thay đổi
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
+                if (request.redis_key != null)
+                {
+                    var key = $"{request.redis_key}";
+                    await _redisService.RemoveAsync(key);
+                }
                 return ResponseFactory.Success(true, "Xóa bài viết và các bài chia sẻ thành công", 200);
             }
             catch (Exception ex)
