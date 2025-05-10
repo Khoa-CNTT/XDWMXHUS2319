@@ -14,7 +14,7 @@ import {
   likeComment,
 } from "../../stores/action/listPostActions";
 import getUserIdFromToken from "../../utils/JwtDecode";
-import { FiSend } from "react-icons/fi"; // Thêm icon gửi
+import { FiSend } from "react-icons/fi";
 
 const CommentModalNoImg = ({ post, onClose, usersProfile }) => {
   const userId = getUserIdFromToken();
@@ -23,12 +23,11 @@ const CommentModalNoImg = ({ post, onClose, usersProfile }) => {
   const commentEndRef = useRef(null);
   const comments = useSelector((state) => state.posts.comments[post.id] || []);
 
-  const [isSending, setIsSending] = useState(false); // Thêm trạng thái loading khi gửi
-
+  const [isSending, setIsSending] = useState(false);
   const [lastCommentId, setLastCommentId] = useState(null);
   const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   const [hasMoreComments, setHasMoreComments] = useState(true);
-  //console.log("Data bài viết được lưạ chọn>> ", post);
+  const [hasFetchedComments, setHasFetchedComments] = useState(false); // Thêm state để kiểm tra
 
   useEffect(() => {
     const handleKeyClose = (event) => {
@@ -44,10 +43,11 @@ const CommentModalNoImg = ({ post, onClose, usersProfile }) => {
 
   // Load initial comments
   useEffect(() => {
-    if (post?.id) {
+    if (post?.id && !hasFetchedComments) {
       dispatch(commentPost({ postId: post.id }));
+      setHasFetchedComments(true); // Đánh dấu đã gọi API
     }
-  }, [dispatch, post?.id]);
+  }, [dispatch, post?.id, hasFetchedComments]);
 
   // Load more comments function
   const loadMoreComments = useCallback(() => {
@@ -65,7 +65,7 @@ const CommentModalNoImg = ({ post, onClose, usersProfile }) => {
         setHasMoreComments(response.hasMore);
       })
       .finally(() => setLoadingMoreComments(false));
-  }, [post.id, lastCommentId, loadingMoreComments, hasMoreComments]);
+  }, [post.id, lastCommentId, loadingMoreComments, hasMoreComments, dispatch]);
 
   // Set up intersection observer
   useEffect(() => {
@@ -95,7 +95,6 @@ const CommentModalNoImg = ({ post, onClose, usersProfile }) => {
       setLastCommentId(comments[comments.length - 1].id);
     }
   }, [comments]);
-  //Để gõ text
 
   const handleInputChange = (e) => {
     commentTextRef.current = e.target.value;
@@ -136,12 +135,6 @@ const CommentModalNoImg = ({ post, onClose, usersProfile }) => {
   if (!post) return null;
   return (
     <div className="comment-modal-overlay-noImg">
-      {/* Thêm nút đóng modal */}
-
-      {/* <div className="logowebsite">
-        <img className="logoUS" src={logoweb} alt="Logo" />
-      </div> */}
-
       <div className="post-overlay">
         <div className="content-post">
           <ContentPostComment post={post} onClose={onClose} />

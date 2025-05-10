@@ -8,6 +8,7 @@ import {
   fetchOtherUserProfile,
   fetchPostImagesPreview,
   fetchAllPostImages,
+  fetchTrustScoreHistories,
 } from "../action/profileActions";
 
 const listUser = createSlice({
@@ -17,6 +18,10 @@ const listUser = createSlice({
     usersDetail: {},
     usersProfile: {},
     post: [],
+    trustScoreHistories: {
+      histories: [],
+      nextCursor: null,
+    },
     loading: false,
     error: null,
     otherUser: {},
@@ -109,6 +114,24 @@ const listUser = createSlice({
         state.usersDetail = { ...state.usersDetail, ...action.payload };
       })
       .addCase(updateUserInformation.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchTrustScoreHistories.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTrustScoreHistories.fulfilled, (state, action) => {
+        state.loading = false;
+        state.trustScoreHistories = {
+          histories: [
+            ...(state.trustScoreHistories.histories || []),
+            ...(action.payload.histories || []),
+          ],
+          nextCursor: action.payload.nextCursor,
+        };
+      })
+      .addCase(fetchTrustScoreHistories.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

@@ -1,4 +1,5 @@
-﻿using static Domain.Common.Enums;
+﻿using System.Text.Json.Nodes;
+using static Domain.Common.Enums;
 namespace Domain.Entities
     {
         public class User
@@ -28,7 +29,6 @@ namespace Domain.Entities
             public DateTime? LastLoginDate { get; private set; }
             public int TotalReports { get; private set; } = 0;
 
-            public DateTime? UpdatedAt { get; private set; }
 
 
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
@@ -63,22 +63,22 @@ namespace Domain.Entities
 
             public ICollection<UserScoreHistory> UserScoreHistories { get; private set; } = new List<UserScoreHistory>();
 
-            public ICollection<UserReport> UserReports { get; set; } // Những report mà user là đối tượng bị báo cáo
-            public ICollection<UserReport> UserReportsCreated { get; set; } // Những report do user tạo
-            public ICollection<UserAction> UserActions { get; set; } // Những hành động do user thực hiện
+            public ICollection<UserReport> UserReports { get; set; } = new List<UserReport>(); // Những report mà user là đối tượng bị báo cáo
+            public ICollection<UserReport> UserReportsCreated { get; set; } = new List<UserReport>(); // Những report do user tạo
+            public ICollection<UserAction> UserActions { get; set; } = new List<UserAction>(); // Những hành động do user thực hiện
 
-        public User(string fullName, string email, string passwordHash)
-            {
-                if (string.IsNullOrWhiteSpace(fullName)) throw new ArgumentException("Full name is required.");
-                if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email is required.");
-                if (string.IsNullOrWhiteSpace(passwordHash)) throw new ArgumentException("Password is required.");
+            public User(string fullName, string email, string passwordHash)
+                {
+                    if (string.IsNullOrWhiteSpace(fullName)) throw new ArgumentException("Full name is required.");
+                    if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email is required.");
+                    if (string.IsNullOrWhiteSpace(passwordHash)) throw new ArgumentException("Password is required.");
 
-                Id = Guid.NewGuid();
-                FullName = fullName;
-                Email = email;
-                PasswordHash = passwordHash;
-                CreatedAt = DateTime.UtcNow;
-            }
+                    Id = Guid.NewGuid();
+                    FullName = fullName;
+                    Email = email;
+                    PasswordHash = passwordHash;
+                    CreatedAt = DateTime.UtcNow;
+                }
 
             /// <summary>
             /// Xác minh email của người dùng.
@@ -108,11 +108,11 @@ namespace Domain.Entities
 
                 FullName = fullName;
 
-            if (!string.IsNullOrWhiteSpace(profileImageUrl))
-                ProfilePicture = profileImageUrl;
+            if (!string.IsNullOrWhiteSpace(profilePicture))
+                ProfilePicture = profilePicture;
 
-            if (!string.IsNullOrWhiteSpace(backgroundImageUrl))
-                BackgroundPicture = backgroundImageUrl;
+            if (!string.IsNullOrWhiteSpace(backgroundPicture))
+                BackgroundPicture = backgroundPicture;
 
             if (!string.IsNullOrWhiteSpace(bio))
                 Bio = bio;
@@ -125,14 +125,6 @@ namespace Domain.Entities
                     Gender = gender;
             }
 
-
-            }
-            public void UpdateInformation(string? phone, string? relativePhone, string gender)
-            {
-                    Phone = phone;
-                    RelativePhone = relativePhone;
-                    Gender = gender;
-            }
 
 
         /// <summary>

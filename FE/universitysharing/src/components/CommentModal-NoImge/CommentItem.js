@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-// import "../../styles/CommentOverlay.scss";
 import "../../styles/CommentModalNoImg.scss";
 import avatarDefaut from "../../assets/AvatarDefault.png";
 import {
@@ -15,6 +14,7 @@ import { useDispatch } from "react-redux";
 import { debounce } from "lodash";
 import CommentOption from "./CommentOption";
 import getUserIdFromToken from "../../utils/JwtDecode";
+import { updateComment } from "../../stores/action/listPostActions";
 
 const CommentItem = ({
   comments,
@@ -29,8 +29,11 @@ const CommentItem = ({
   const [replyingCommentId, setReplyingCommentId] = useState(null);
   const [replyingTo, setReplyingTo] = useState("");
   const [openOptionId, setOpenOptionId] = useState(null);
-  const [visibleReplies, setVisibleReplies] = useState(1); // Chỉ hiển thị 1 reply ban đầu
-  const [isRepliesHidden, setIsRepliesHidden] = useState(false); // Trạng thái ẩn/hiện replies
+  const [visibleReplies, setVisibleReplies] = useState(1);
+  const [isRepliesHidden, setIsRepliesHidden] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editCommentId, setEditCommentId] = useState(null);
+  const [editContent, setEditContent] = useState(comments.content);
 
   const replyInputRef = useRef(null);
   const moreReplyRef = useRef(null);
@@ -38,14 +41,12 @@ const CommentItem = ({
   const repliesContainerRef = useRef(null);
   const userId = getUserIdFromToken();
 
-  // Xử lý khi click nút trả lời
   const handleReplyClick = (commentId, userName) => {
     setReplyingTo(userName);
     setReplyingCommentId(commentId);
     setIsReplying(!isReplying);
     setReplyText(`@${userName} `);
 
-    // Mở replies nếu đang ẩn
     if (isRepliesHidden) {
       setIsRepliesHidden(false);
     }
@@ -58,7 +59,6 @@ const CommentItem = ({
     }, 100);
   };
 
-  // Gửi reply
   const handleSendReply = () => {
     if (!replyingCommentId || !replyText.trim()) return;
     handleReplyComment(replyingCommentId, replyText);
@@ -66,17 +66,14 @@ const CommentItem = ({
     setReplyText("");
   };
 
-  // Xử lý thay đổi nội dung reply
   const handleChange = (e) => {
     setReplyText(e.target.value);
   };
 
-  // Load thêm replies
   const handleLoadMoreReplies = debounce(() => {
     if (comments.hasMoreReplies) {
       dispatch(getReplyComment(comments.id));
     } else {
-      // Hiển thị thêm replies đã load
       setVisibleReplies((prev) => prev + 3);
     }
 
@@ -88,12 +85,10 @@ const CommentItem = ({
     }, 300);
   }, 500);
 
-  // Toggle ẩn/hiện replies
   const toggleRepliesVisibility = () => {
     setIsRepliesHidden(!isRepliesHidden);
   };
 
-  // Đóng menu khi click bên ngoài
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -104,7 +99,6 @@ const CommentItem = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Tự động mở rộng textarea khi nội dung nhiều
   useEffect(() => {
     if (replyInputRef.current) {
       const textarea = replyInputRef.current.querySelector("textarea");
@@ -115,15 +109,62 @@ const CommentItem = ({
     }
   }, [replyText]);
 
-  // Lấy số lượng replies hiển thị
   const displayedReplies = comments.replies?.slice(0, visibleReplies) || [];
   const hasHiddenReplies =
     comments.replies?.length > visibleReplies || comments.hasMoreReplies;
   const totalReplyCount = comments.replyCount || comments.replies?.length || 0;
 
+  const handleEdit = (commentId) => {
+    setEditCommentId(commentId);
+    setEditContent(
+      comments.replies
+        ? comments.replies.find((r) => r.id === commentId)?.content ||
+            comments.content
+        : comments.content
+    );
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (
+      editContent.trim() ===
+      (comments.replies?.find((r) => r.id === editCommentId)?.content ||
+        comments.content)
+    ) {
+      setIsEditing(false);
+      setEditCommentId(null);
+      return;
+    }
+    if (editContent.trim()) {
+      dispatch(
+        updateComment({
+          postId: post.id,
+          commentId: editCommentId,
+          content: editContent,
+        })
+      );
+    }
+    setIsEditing(false);
+    setEditCommentId(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditContent(
+      comments.replies
+        ? comments.replies.find((r) => r.id === editCommentId)?.content ||
+            comments.content
+        : comments.content
+    );
+    setIsEditing(false);
+    setEditCommentId(null);
+  };
+
+  const handleContentChange = (e) => {
+    setEditContent(e.target.value);
+  };
+
   return (
     <div className="comment-item">
-      {/* Comment chính */}
       <div className="comment-main">
         <img
           className="comment-avatar"
@@ -153,12 +194,35 @@ const CommentItem = ({
                   onClose={() => setOpenOptionId(null)}
                   idComment={comments.id}
                   post={post}
+                  onEdit={() => handleEdit(comments.id)}
                 />
               </div>
             )}
           </div>
 
-          <div className="comment-content">{comments.content}</div>
+          {isEditing && editCommentId === comments.id ? (
+            <div className="comment-content editing">
+              <textarea
+                value={editContent}
+                onChange={handleContentChange}
+                placeholder="Chỉnh sửa bình luận..."
+                autoFocus
+                rows="1"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSaveEdit();
+                  }
+                }}
+              />
+              <div className="edit-actions">
+                <button onClick={handleSaveEdit}>Lưu</button>
+                <button onClick={handleCancelEdit}>Hủy</button>
+              </div>
+            </div>
+          ) : (
+            <div className="comment-content">{comments.content}</div>
+          )}
 
           <div className="comment-actions">
             <button
@@ -184,7 +248,6 @@ const CommentItem = ({
         </div>
       </div>
 
-      {/* Nút hiển thị/ẩn replies */}
       {totalReplyCount > 0 && (
         <button
           className="toggle-replies-btn"
@@ -204,7 +267,6 @@ const CommentItem = ({
         </button>
       )}
 
-      {/* Các reply - chỉ hiển thị khi không bị ẩn */}
       {!isRepliesHidden && displayedReplies.length > 0 && (
         <div className="replies-container" ref={repliesContainerRef}>
           {displayedReplies.map((reply) => (
@@ -237,12 +299,35 @@ const CommentItem = ({
                         onClose={() => setOpenOptionId(null)}
                         idComment={reply.id}
                         post={post}
+                        onEdit={() => handleEdit(reply.id)}
                       />
                     </div>
                   )}
                 </div>
 
-                <div className="reply-content">{reply.content}</div>
+                {isEditing && editCommentId === reply.id ? (
+                  <div className="reply-content editing">
+                    <textarea
+                      value={editContent}
+                      onChange={handleContentChange}
+                      placeholder="Chỉnh sửa bình luận..."
+                      autoFocus
+                      rows="1"
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSaveEdit();
+                        }
+                      }}
+                    />
+                    <div className="edit-actions">
+                      <button onClick={handleSaveEdit}>Lưu</button>
+                      <button onClick={handleCancelEdit}>Hủy</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="reply-content">{reply.content}</div>
+                )}
 
                 <div className="reply-actions">
                   <button
@@ -274,7 +359,6 @@ const CommentItem = ({
         </div>
       )}
 
-      {/* Nút xem thêm reply - chỉ hiển thị khi không bị ẩn */}
       {!isRepliesHidden && hasHiddenReplies && (
         <button className="view-more-replies" onClick={handleLoadMoreReplies}>
           {comments.hasMoreReplies
@@ -283,7 +367,6 @@ const CommentItem = ({
         </button>
       )}
 
-      {/* Ô nhập reply */}
       {isReplying && (
         <div className="reply-input-container" ref={replyInputRef}>
           <div className="reply-input-avatar">

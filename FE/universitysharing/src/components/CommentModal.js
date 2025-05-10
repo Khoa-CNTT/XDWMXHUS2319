@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import "../styles/CommentOverlay.scss";
 import "../styles/MoblieReponsive/CommentModalMobile/CommentModalMobile.scss";
-// import logoweb from "../assets/Logo.png";
 import logoweb from "../assets/Logo white.png";
 import avatarDefaut from "../assets/AvatarDefault.png";
-import defaultPostImage from "../assets/ImgDefault.png"; // Thêm ảnh default vào assets
+import defaultPostImage from "../assets/ImgDefault.png";
 import ContentPostComment from "./CommentModel_Component/ContenPostComment";
 import CommentList from "./CommentModel_Component/CommentList";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,8 +18,6 @@ import { FiSend, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { closeCommentModal } from "../stores/reducers/listPostReducers";
 
 const CommentModal = ({ post, onClose, usersProfile }) => {
-  // console.log("UserProfile>>>>>>>>", usersProfile);
-  // console.log("post sercert box", post);
   const userId = getUserIdFromToken();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -28,12 +25,12 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
   const commentEndRef = useRef(null);
   const comments = useSelector((state) => state.posts.comments[post.id] || []);
 
-  const [isSending, setIsSending] = useState(false); // Thêm trạng thái loading khi gửi
-
+  const [isSending, setIsSending] = useState(false);
   const [lastCommentId, setLastCommentId] = useState(null);
   const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   const [hasMoreComments, setHasMoreComments] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(post.initialMediaIndex || 0);
+  const [hasFetchedComments, setHasFetchedComments] = useState(false); // Thêm state để kiểm tra
 
   const imageUrls = post.imageUrl ? post.imageUrl.split(",") : [];
   const hasVideo = !!post.videoUrl;
@@ -59,10 +56,11 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
   }, [onClose]);
 
   useEffect(() => {
-    if (post?.id) {
+    if (post?.id && !hasFetchedComments) {
       dispatch(commentPost({ postId: post.id }));
+      setHasFetchedComments(true); // Đánh dấu đã gọi API
     }
-  }, [dispatch, post?.id]);
+  }, [dispatch, post?.id, hasFetchedComments]);
 
   const loadMoreComments = useCallback(() => {
     if (loadingMoreComments || !hasMoreComments || !lastCommentId) return;
@@ -79,7 +77,7 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
         setHasMoreComments(response.hasMore);
       })
       .finally(() => setLoadingMoreComments(false));
-  }, [post.id, lastCommentId, loadingMoreComments, hasMoreComments]);
+  }, [post.id, lastCommentId, loadingMoreComments, hasMoreComments, dispatch]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -151,6 +149,7 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
   const handleNext = () => {
     setCurrentIndex((prev) => (prev < mediaItems.length - 1 ? prev + 1 : 0));
   };
+
   const homeReturn = () => {
     dispatch(closeCommentModal());
     navigate("/home");
@@ -160,8 +159,6 @@ const CommentModal = ({ post, onClose, usersProfile }) => {
 
   return (
     <div className="comment-modal-overlay">
-      {/* Thêm nút đóng modal */}
-
       <div className="logowebsite">
         <img className="logoUS" src={logoweb} alt="Logo" onClick={homeReturn} />
       </div>

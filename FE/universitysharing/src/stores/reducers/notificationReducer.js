@@ -36,18 +36,19 @@ const notificationSlice = createSlice({
       state.notifications = [];
       state.unreadNotifications = [];
       state.readNotifications = [];
+      state.hasMore = true; // Reset hasMore khi làm mới
     },
     addRealTimeNotification(state, action) {
       const newNotification = action.payload;
       if (
         !state.notifications.some((notif) => notif.id === newNotification.id)
       ) {
-        state.notifications.unshift(newNotification); // Add new notification to the start
-        state.unreadCount += 1; // Increment unread count for new notification
+        state.notifications.unshift(newNotification);
+        state.unreadCount += 1;
       }
     },
     setUnreadCount(state, action) {
-      state.unreadCount = action.payload; // Set unread count directly
+      state.unreadCount = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -66,11 +67,14 @@ const notificationSlice = createSlice({
           ? [...state.notifications, ...newNotifications]
           : action.payload.notifications || [];
         state.nextCursor = action.payload.nextCursor;
-        state.hasMore = !!action.payload.nextCursor;
+        // Nếu không có dữ liệu và không có nextCursor, đặt hasMore = false
+        state.hasMore =
+          newNotifications.length > 0 && !!action.payload.nextCursor;
       })
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.hasMore = false; // Dừng tải nếu có lỗi
       })
       .addCase(fetchNotificationsUnread.pending, (state) => {
         state.loading = true;
@@ -90,11 +94,13 @@ const notificationSlice = createSlice({
           ? [...state.unreadNotifications, ...newUnreadNotifications]
           : action.payload.notifications || [];
         state.nextCursor = action.payload.nextCursor;
-        state.hasMore = !!action.payload.nextCursor;
+        state.hasMore =
+          newUnreadNotifications.length > 0 && !!action.payload.nextCursor;
       })
       .addCase(fetchNotificationsUnread.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.hasMore = false;
       })
       .addCase(fetchNotificationsRead.pending, (state) => {
         state.loading = true;
@@ -114,11 +120,13 @@ const notificationSlice = createSlice({
           ? [...state.readNotifications, ...newReadNotifications]
           : action.payload.notifications || [];
         state.nextCursor = action.payload.nextCursor;
-        state.hasMore = !!action.payload.nextCursor;
+        state.hasMore =
+          newReadNotifications.length > 0 && !!action.payload.nextCursor;
       })
       .addCase(fetchNotificationsRead.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.hasMore = false;
       })
       .addCase(markNotificationAsRead.pending, (state) => {
         state.loading = true;
@@ -156,7 +164,7 @@ const notificationSlice = createSlice({
       })
       .addCase(fetchUnreadNotificationCount.fulfilled, (state, action) => {
         state.loading = false;
-        state.unreadCount = action.payload; // Set the fetched unread count
+        state.unreadCount = action.payload;
       })
       .addCase(fetchUnreadNotificationCount.rejected, (state, action) => {
         state.loading = false;
