@@ -17,5 +17,6 @@ namespace Domain.Interface
        // Task AddRangeAsync(List<LocationUpdate> locationUpdates);
         Task<DateTime?> GetTimestampByRideIdAsync(Guid rideId);
         Task<DateTime?> GetPassengerLocationTimestampAsync(Guid passengerId);
+        Task<IEnumerable<LocationUpdate>> GetAllByRideIdAsync(Guid rideId);
     }
 }

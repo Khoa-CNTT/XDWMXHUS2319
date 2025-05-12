@@ -1,36 +1,36 @@
-import React, { useState, useEffect } from "react";
-import "../../styles/AllSharingCar.scss";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  Polyline,
-  useMap,
-} from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import { jwtDecode } from "jwt-decode";
 import L from "leaflet";
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
 import markerShadowPng from "leaflet/dist/images/marker-shadow.png";
+import "leaflet/dist/leaflet.css";
+import { useEffect, useState } from "react";
+import { confirmAlert } from "react-confirm-alert";
+import { FaMapLocationDot } from "react-icons/fa6";
+import { PiDotsThreeLight } from "react-icons/pi";
+import {
+  MapContainer,
+  Marker,
+  Polyline,
+  Popup,
+  TileLayer,
+  useMap,
+} from "react-leaflet";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import avatarDefault from "../../assets/AvatarDefault.png";
 import checkIcon from "../../assets/iconweb/checkIcon.svg";
 import likeFillIcon from "../../assets/iconweb/likefillIcon.svg";
-import { PiDotsThreeLight } from "react-icons/pi";
-import { FaMapLocationDot } from "react-icons/fa6";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useDispatch, useSelector } from "react-redux";
+import { userProfile } from "../../stores/action/profileActions";
 import {
-  fetchRidePost,
   createRide,
   deleteRidePost,
+  fetchRidePost,
   updatePost,
 } from "../../stores/action/ridePostAction";
 import { resetPostState } from "../../stores/reducers/ridePostReducer";
-import { jwtDecode } from "jwt-decode";
+import "../../styles/AllSharingCar.scss";
 import UpdateRidePost from "./UpdateRidePost";
-import { userProfile } from "../../stores/action/profileActions";
-import { confirmAlert } from "react-confirm-alert";
 
 const defaultIcon = L.icon({
   iconUrl: markerIconPng,
@@ -217,7 +217,7 @@ const AllSharingRide = () => {
         driverId: selectedRidePost.userId,
         RidePostId: selectedRidePost.id,
         EstimatedDuration: 8,
-        isSafe: true,
+        IsSafetyTrackingEnabled: true,
         Fare: null,
       };
       dispatch(createRide(rideData))
@@ -239,7 +239,7 @@ const AllSharingRide = () => {
         driverId: selectedRidePost.userId,
         RidePostId: selectedRidePost.id,
         EstimatedDuration: 8,
-        isSafe: false,
+        IsSafetyTrackingEnabled: false,
         Fare: null,
       };
       dispatch(createRide(rideData))
@@ -512,7 +512,7 @@ const AllSharingRide = () => {
                       src={checkIcon}
                       alt="Check"
                     />
-                    <span className="accept-ride">Chấp nhận</span>
+                    <span className="accept-ride">Tham gia</span>
                   </div>
                 )}
                 <div

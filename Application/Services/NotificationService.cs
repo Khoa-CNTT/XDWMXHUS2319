@@ -201,37 +201,52 @@ namespace Application.Services
         {
                 await _publisher.Publish(new SendMessageNotificationEvent(receiverId, message));
         }
-        public async Task SendNotificationUpdateLocationAsync(Guid driverId, Guid passengerId, float lat, float lng, string location, bool isEnd)
+        public async Task SendNotificationUpdateLocationAsync(Guid driverId, Guid? passengerId, float lat, float lng, string location, bool isEnd)
         {
-            var driver = await _unitOfWork.UserRepository.GetByIdAsync(driverId);
-            var passenger = await _unitOfWork.UserRepository.GetByIdAsync(passengerId);
-            if (driver == null || passenger == null) return;
-
+            // Khi chuyến đi kết thúc, gửi thông báo và email cho cả hai
             if (isEnd)
             {
-                string endMessage = $"Chuyến đi đã kết thúc tại: {location}";
-                await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, endMessage));
-                //await _signalRNotificationService.SendNotificationUpdateLocationSignalR(driverId, passengerId, endMessage); // Gọi SignalR
-                await _emailService.SendEmailAsync(
-                    driver.Email,
-                    "Thông báo!!",
-                    $"Chuyến đi đã kết thúc!! vào lúc {FormatUtcToLocal(DateTime.UtcNow)} - Hãy nhắc nhở hành khách đánh giá bạn nhé!!"
-                );
-                await _emailService.SendEmailAsync(
-                    passenger.Email,
-                    "Thông báo!!",
-                    $"Chuyến đi đã kết thúc!! vào lúc {FormatUtcToLocal(DateTime.UtcNow)} - Bạn có cảm thấy hài lòng về tài xế này không??"
-                );
+                var driver = await _unitOfWork.UserRepository.GetByIdAsync(driverId);
+                var passenger = passengerId.HasValue ? await _unitOfWork.UserRepository.GetByIdAsync(passengerId.Value) : null;
+
+                if (driver == null || (passengerId.HasValue && passenger == null))
+                    return;
+
+                await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, location));
+
+                // Gửi email cho tài xế
+                if (driver != null)
+                {
+                    await _emailService.SendEmailAsync(
+                        driver.Email,
+                        "Thông báo!!",
+                        $"Chuyến đi đã kết thúc!! vào lúc {FormatUtcToLocal(DateTime.UtcNow)} - Hãy nhắc nhở hành khách đánh giá bạn nhé!!"
+                    );
+                }
+
+                // Gửi email cho hành khách
+                if (passenger != null)
+                {
+                    await _emailService.SendEmailAsync(
+                        passenger.Email,
+                        "Thông báo!!",
+                        $"Chuyến đi đã kết thúc!! vào lúc {FormatUtcToLocal(DateTime.UtcNow)} - Bạn có cảm thấy hài lòng về tài xế này không??"
+                    );
+                }
             }
+            // Khi cập nhật vị trí, gửi thông báo đến cả tài xế và hành khách
             else
             {
-                string locationMessage = $"Bạn đang ở: {location}";
-                await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, locationMessage));
-                //await _signalRNotificationService.SendNotificationUpdateLocationSignalR(driverId, passengerId, locationMessage); // Gọi SignalR
+                var driver = await _unitOfWork.UserRepository.GetByIdAsync(driverId);
+                var passenger = passengerId.HasValue ? await _unitOfWork.UserRepository.GetByIdAsync(passengerId.Value) : null;
+
+                if (driver == null || (passengerId.HasValue && passenger == null))
+                    return;
+
+                // Gửi thông báo đến cả tài xế và hành khách
+                await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, location));
             }
         }
-
-
         public async Task SendReplyNotificationAsync(Guid postId, Guid commentId, Guid responderId)
         {
             var postOwnerId = await _postService.GetPostOwnerId(postId);
