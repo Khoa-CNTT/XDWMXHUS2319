@@ -492,32 +492,49 @@ class SignalRService {
     console.log("Đăng ký sự kiện ReceiveAnswer");
   }
 
+  async sendStreamQuery(query, currentConversationId, streamId) {
+    await this.aiConnection.invoke(
+      "StreamQuery",
+      query,
+      currentConversationId,
+      streamId
+    );
+  }
 
-    async sendStreamQuery(query, currentConversationId, streamId) {
-      await this.aiConnection.invoke('StreamQuery', query, currentConversationId, streamId);
-    }
+  onReceiveChunk(callback) {
+    this.on(this.aiConnection, "ReceiveChunk", (content, streamId) => {
+      console.log(
+        "[SignalRService] Nhận sự kiện ReceiveChunk:",
+        content,
+        "StreamId:",
+        streamId
+      );
+      callback(content, streamId);
+    });
+    console.log("Đăng ký sự kiện ReceiveChunk");
+  }
+  onStreamCompleted(callback) {
+    this.on(this.aiConnection, "StreamCompleted", (streamId) => {
+      console.log(
+        "[SignalRService] Nhận sự kiện StreamCompleted, StreamId:",
+        streamId
+      );
+      callback(streamId);
+    });
+  }
 
-    onReceiveChunk(callback) {
-      this.on(this.aiConnection, "ReceiveChunk", (content, streamId) => {
-        console.log("[SignalRService] Nhận sự kiện ReceiveChunk:", content, "StreamId:", streamId);
-        callback(content, streamId);
-      });
-      console.log("Đăng ký sự kiện ReceiveChunk");
-    }
-    onStreamCompleted(callback) {
-      this.on(this.aiConnection, "StreamCompleted", (streamId) => {
-        console.log("[SignalRService] Nhận sự kiện StreamCompleted, StreamId:", streamId);
-        callback(streamId);
-      });
-    }
- 
-    onReceiveComplete(callback) {
-      this.on(this.aiConnection, "ReceiveComplete", (content, streamId) => {
-        console.log("[SignalRService] Nhận sự kiện ReceiveComplete:", content, "StreamId:", streamId);
-        callback(content, streamId);
-      });
-      console.log("Đăng ký sự kiện ReceiveComplete");
-    }
+  onReceiveComplete(callback) {
+    this.on(this.aiConnection, "ReceiveComplete", (content, streamId) => {
+      console.log(
+        "[SignalRService] Nhận sự kiện ReceiveComplete:",
+        content,
+        "StreamId:",
+        streamId
+      );
+      callback(content, streamId);
+    });
+    console.log("Đăng ký sự kiện ReceiveComplete");
+  }
 
   async sendNotification(message) {
     await this.invoke(this.notificationConnection, "SendNotification", message);
@@ -739,6 +756,33 @@ class SignalRService {
     );
     console.log("Đã đăng ký sự kiện ReceiveLikeCommentNotification");
   }
+
+  // Thêm phương thức để xử lý sự kiện khi bị cảnh báo
+  onReceiveAlert(callback) {
+    this.on(this.notificationConnection, "ReceiveAlert", (message) => {
+      console.log("Nhận được thông báo thích bình luận:", message);
+      callback(message);
+    });
+    console.log("Đã đăng ký sự kiện ReceiveAlert");
+  }
+
+   onReceiveAcceptRide(callback) {
+    this.on(
+      this.notificationConnection,
+      "ReceiveAcceptRide",
+      (notificationData) => {
+        console.log(
+          "Nhận được thông báo chấp nhận chuyến đi",
+          notificationData
+        );
+        callback(notificationData);
+      }
+    );
+    console.log("Đã đăng ký sự kiện ReceiveAcceptRide");
+  }
+}
+
+
     // Đăng ký sự kiện nhận thông báo cập nhật vị trí
   onReceiveLocationUpdateNotification(callback) {
     this.on(
@@ -766,6 +810,7 @@ class SignalRService {
       }
     );
     console.log("Đã đăng ký sự kiện ReceiveNotificationUpdateLocation");
+
   }
 }
 

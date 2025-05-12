@@ -1,5 +1,15 @@
 import axios from "axios";
+
+import * as signalR from "@microsoft/signalr";
+import { jwtDecode } from "jwt-decode";
+import { toast } from "react-toastify";
+import { TbMoodEmptyFilled } from "react-icons/tb";
+import { cancelRide, rateDriver } from "../../stores/action/ridePostAction";
+import RatingModal from "../RatingModal";
+import { useNavigate } from "react-router-dom";
+
 import { motion } from "framer-motion";
+
 import L from "leaflet";
 import { useEffect, useRef, useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
@@ -113,9 +123,13 @@ const YourRide = () => {
   const [mapBounds, setMapBounds] = useState(null);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedRide, setSelectedRide] = useState(null);
+
+  const navigate = useNavigate();
+
   const { signalRService, isConnected } = useSignalR();
   const displayedToasts = useRef(new Set());
   const [mapReady, setMapReady] = useState(false); // Thêm state để kiểm tra bản đồ sẵn sàng
+
   // Refs for managing intervals and connections
   const mapRef = useRef(null);
   const intervalRef = useRef(null);
@@ -557,7 +571,7 @@ useEffect(() => {
         toast.error("Lỗi khi gửi đánh giá!");
       });
   };
-
+  const handleSearchRide = () => navigate("/sharing-ride");
   const isRideRated = (ride) => ride.isRating; // Use isRating directly from the ride object
 
   const openRatingModal = (ride) => {
@@ -879,7 +893,7 @@ const isDriver = currentRide && currentRide.driverId === userId;
           </div>
           <h3>Không có chuyến đi hiện tại</h3>
           <p>Bắt đầu chuyến đi mới để bắt đầu!</p>
-          <button className="find-ride-btn">
+          <button className="find-ride-btn" onClick={handleSearchRide}>
             <FiSearch /> Tìm chuyến đi
           </button>
         </motion.div>

@@ -49,6 +49,31 @@ namespace Application.Services
             await _publisher.Publish(new AnswerFriendEvent(friendId, data));
         }
 
+        public async Task SendAcceptRideNotificationAsync(Guid passengerId, Guid userId, Guid notificationId)
+        {
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null || passengerId == userId) return;
+
+            string? avatar = null;
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                avatar = $"{Constaint.baseUrl}{user.ProfilePicture}";
+            }
+            var message = $"{user.FullName} đã chấp nhận chuyến đi với bạn";
+
+            var data = new ResponseNotificationModel
+            {
+                NotificationId = notificationId,
+                Message = message,
+                Avatar = avatar ?? "",
+                Url = $"/your-ride",
+                SenderId = userId,
+                CreatedAt = FormatUtcToLocal(DateTime.UtcNow)
+            };
+
+            await _publisher.Publish(new AcceptRideEvent(passengerId, data));
+        }
+
         public async Task SendAlertAsync(Guid driverId, string message)
         {
             var user = await _unitOfWork.UserRepository.GetByIdAsync(driverId);

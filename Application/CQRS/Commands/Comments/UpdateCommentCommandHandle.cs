@@ -62,29 +62,29 @@ namespace Application.CQRS.Commands.Comments
                 {
                     return ResponseFactory.Fail<CommentPostDto>("Không tìm thấy người dùng", 404);
                 }
-            if (user.Status == "Suspended")
-            {
-                return ResponseFactory.Fail<CommentPostDto>("Tài khoản đang bị tạm ngưng", 403);
-            }
-            await _unitOfWork.BeginTransactionAsync();
-                try
+                if (user.Status == "Suspended")
                 {
-                comment.Edit(request.Content);
-                    await _unitOfWork.CommentRepository.UpdateAsync(comment);
-                    await _unitOfWork.SaveChangesAsync();
-                    await _unitOfWork.CommitTransactionAsync();
-                if (request.redis_key != null)
-                {
-                    var key = $"{request.redis_key}";
-                    await _redisService.RemoveAsync(key);
+                    return ResponseFactory.Fail<CommentPostDto>("Tài khoản đang bị tạm ngưng", 403);
                 }
-                return ResponseFactory.Success(Mapping.MapToCommentPostDto(comment, post, user), "Chỉnh sửa bình luận thành công", 200);
-                }
-                catch (Exception ex)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return ResponseFactory.Fail<CommentPostDto>(ex.Message, 500);
-                }       
+                await _unitOfWork.BeginTransactionAsync();
+                    try
+                    {
+                    comment.Edit(request.Content);
+                        await _unitOfWork.CommentRepository.UpdateAsync(comment);
+                        await _unitOfWork.SaveChangesAsync();
+                        await _unitOfWork.CommitTransactionAsync();
+                    if (request.redis_key != null)
+                    {
+                        var key = $"{request.redis_key}";
+                        await _redisService.RemoveAsync(key);
+                    }
+                    return ResponseFactory.Success(Mapping.MapToCommentPostDto(comment, post, user), "Chỉnh sửa bình luận thành công", 200);
+                    }
+                    catch (Exception ex)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return ResponseFactory.Fail<CommentPostDto>(ex.Message, 500);
+                    }       
         }
     }
 }

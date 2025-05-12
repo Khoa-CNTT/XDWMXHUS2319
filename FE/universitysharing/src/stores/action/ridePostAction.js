@@ -210,6 +210,39 @@ export const rateDriver = createAsyncThunk(
     }
   }
 );
+
+export const fetchCompletedRidesWithRating = createAsyncThunk(
+  "ride/fetchCompletedRidesWithRating",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
+      const response = await axios.get(
+        "https://localhost:7053/api/Ride/get-all-ride-rating",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to fetch rated rides");
+      }
+
+      return response.data.data || [];
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Lỗi khi lấy danh sách chuyến đi có đánh giá";
+      toast.error(errorMessage);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 // Fetch danh sách bài đăng
 export const fetchLocation = createAsyncThunk(
   "ride/fetchLocation",
@@ -222,3 +255,4 @@ export const fetchLocation = createAsyncThunk(
     }
   }
 );
+

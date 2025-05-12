@@ -41,7 +41,7 @@ namespace Domain.Entities
             Id = Guid.NewGuid();
             UserId = userId;
             Content = content;
-            PostType = PostTypeEnum.StudyMaterial;
+            PostType = PostTypeEnum.Discussion;
             CreatedAt =DateTime.UtcNow;
             Scope = scope;
             ImageUrl = imageUrl;

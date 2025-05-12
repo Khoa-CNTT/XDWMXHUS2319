@@ -160,7 +160,7 @@
   }
 }
 
-.empty-state {
+.empty-score-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -198,4 +198,16 @@
       background: #3267d6;
     }
   }
+}
+.loading-state {
+  text-align: center;
+  padding: 10px;
+  color: #666;
+}
+
+.end-of-list {
+  text-align: center;
+  padding: 10px;
+  color: #999;
+  font-style: italic;
 }
