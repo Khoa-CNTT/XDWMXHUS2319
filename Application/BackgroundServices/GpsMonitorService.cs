@@ -45,13 +45,15 @@
                             }
                         }
                             // (1) Tài xế tắt GPS hơn 30 phút
-                            if (lastDriverUpdate != null && (currentUtc - lastDriverUpdate) > TimeSpan.FromMinutes(2))
+
+                            if (lastDriverUpdate != null && (currentUtc - lastDriverUpdate) > TimeSpan.FromMinutes(10))
+
                             {
-                            await notificationService.SendAlertAsync(ride.PassengerId, "🚨 Cảnh giác! Tài xế của bạn đã tắt GPS hơn 30 phút.");
+                            await notificationService.SendAlertAsync(ride.PassengerId, "🚨 Cảnh giác! Tài xế của bạn đã tắt GPS hơn 10 phút.");
 
                             try
                             {
-                                var report = new RideReport(ride.Id, ride.PassengerId,AlertTypeEnums.DriverGPSOff, "🚨 Tài xế đã tắt GPS hơn 30 phút.");
+                                var report = new RideReport(ride.Id, ride.PassengerId,AlertTypeEnums.DriverGPSOff, "🚨 Tài xế đã tắt GPS hơn 10 phút.");
                                 await _unitOfWork.RideReportRepository.AddAsync(report);
                                 await _unitOfWork.SaveChangesAsync();
                             }

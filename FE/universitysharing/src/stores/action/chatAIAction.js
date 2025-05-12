@@ -80,9 +80,10 @@ export const fetchChatHistory = createAsyncThunk(
     }
   }
 );
+
 export const confirmAction = createAsyncThunk(
   'chatAI/confirmAction',
-  async ({ endpoint, params, redis_key, conversationId, chatHistoryId,successMessage }, { rejectWithValue }) => {
+  async ({ endpoint, params, redis_key, conversationId, chatHistoryId, successMessage }, { rejectWithValue }) => {
     try {
       let dataToSend = null;
       let config = {};
@@ -91,16 +92,50 @@ export const confirmAction = createAsyncThunk(
 
       console.log('[confirmAction] Received params:', JSON.stringify(params, null, 2));
 
-      // Chuẩn hóa params thành mảng
-      const normalizedParams = Array.isArray(params) ? params : [params];
+      // Đảm bảo params là object, không phải mảng
+      let normalizedParams = params;
+      if (Array.isArray(params)) {
+        console.warn('[confirmAction] Params is an array, taking first element:', params);
+        if (params.length === 0 || Object.keys(params[0]).length === 0) {
+          console.error('[confirmAction] Invalid params: empty array or empty object');
+          throw new Error('Invalid params: empty array or empty object');
+        }
+        normalizedParams = params[0];
+      }
+
+      // Kiểm tra params có phải object hợp lệ không
+      if (!normalizedParams || typeof normalizedParams !== 'object') {
+        console.error('[confirmAction] Invalid params: not an object', normalizedParams);
+        throw new Error('Invalid params: not an object');
+      }
+
+      // Tạo jsonParams từ normalizedParams, loại bỏ giá trị null/undefined/'null'
+      let jsonParams = Object.entries(normalizedParams).reduce((acc, [key, value]) => {
+        if (value !== null && value !== undefined && value !== 'null') {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
+      // Kiểm tra các trường bắt buộc cho /api/Ride/create
+      if (endpoint.includes('/api/Ride/create')) {
+        if (!jsonParams.driverId || !jsonParams.ridePostId) {
+          console.error('[confirmAction] Missing required fields:', jsonParams);
+          throw new Error('Missing required fields: driverId or ridePostId');
+        }
+      }
+
+      console.log('[confirmAction] Prepared jsonParams:', JSON.stringify(jsonParams, null, 2));
 
       // Xác định phương thức HTTP phù hợp
       if (
-        endpoint.includes('/Post/update-post') ||
         endpoint.includes('/UserProfile/upProfile') ||
-        endpoint.includes('/Comment/UpdateComment')
+        endpoint.includes('/Comment/UpdateComment') ||
+        endpoint.includes('/UserProfile/upInformation')
       ) {
         method = 'put';
+      } else if (endpoint.includes('/Post/update-post')) {
+        method = 'patch';
       } else if (endpoint.includes('/Post/delete')) {
         method = 'delete';
       } else if (endpoint.includes('/Comment/DeleteComment')) {
@@ -109,13 +144,11 @@ export const confirmAction = createAsyncThunk(
 
       // Xử lý {placeholder} trong URL
       if (url.includes('{')) {
-        normalizedParams.forEach((paramObj) => {
-          Object.entries(paramObj).forEach(([key, value]) => {
-            const placeholder = `{${key}}`;
-            if (url.includes(placeholder)) {
-              url = url.replace(placeholder, encodeURIComponent(value));
-            }
-          });
+        Object.entries(jsonParams).forEach(([key, value]) => {
+          const placeholder = `{${key}}`;
+          if (url.includes(placeholder)) {
+            url = url.replace(placeholder, encodeURIComponent(value));
+          }
         });
       }
 
@@ -126,49 +159,36 @@ export const confirmAction = createAsyncThunk(
         endpoint.includes('/UserProfile/upProfile')
       ) {
         const formData = new FormData();
-        normalizedParams.forEach((paramObj) => {
-          Object.entries(paramObj).forEach(([key, value]) => {
-            console.log('[confirmAction] Processing param:', { key, value });
-            if (key === 'Images' && value && value !== 'null' && Array.isArray(value)) {
-              for (const img of value) {
-                formData.append('Images', img);
-              }
-            } else if (key === 'Video' && value && value !== 'null') {
-                formData.append('Video', value);
-            } else if (value !== null && value !== undefined && value !== 'null') {
-                formData.append(key, value);
+        Object.entries(jsonParams).forEach(([key, value]) => {
+          console.log('[confirmAction] Processing param:', { key, value });
+          if (key === 'Images' && value && value !== 'null' && Array.isArray(value)) {
+            for (const img of value) {
+              formData.append('Images', img);
             }
-          });
+          } else if (key === 'Video' && value && value !== 'null') {
+            formData.append('Video', value);
+          } else if (value !== null && value !== undefined && value !== 'null') {
+            formData.append(key, value.toString());
+          }
         });
         formData.append('redis_key', redis_key);
         dataToSend = formData;
         config.headers = { 'Content-Type': 'multipart/form-data' };
-      } else if (method === 'delete' || method === 'patch') {
+      } else if (method === 'delete' || (method === 'patch' && !endpoint.includes('/Post/update-post'))) {
         dataToSend = null;
-        const queryParams = normalizedParams.reduce((acc, paramObj) => {
-          Object.entries(paramObj).forEach(([key, value]) => {
-            if (value !== null && value !== undefined && value !== 'null') {
-              acc[key] = value;
-            }
-          });
+        const queryParams = Object.entries(jsonParams).reduce((acc, [key, value]) => {
+          if (value !== null && value !== undefined && value !== 'null') {
+            acc[key] = value;
+          }
           return acc;
         }, {});
         config.params = { ...queryParams, redis_key };
       } else {
-        const jsonParams = normalizedParams.reduce((acc, paramObj) => {
-          Object.entries(paramObj).forEach(([key, value]) => {
-            if (value !== null && value !== undefined && value !== 'null') {
-              acc[key] = value;
-            }
-          });
-          return acc;
-        }, {});
-        dataToSend = {
-          ...jsonParams,
-          redis_key,
-        };
+        dataToSend = jsonParams;
         config.headers = { 'Content-Type': 'application/json' };
       }
+
+      console.log('[confirmAction] Sending dataToSend:', JSON.stringify(dataToSend, null, 2));
 
       // Gửi request tới endpoint
       let response;
@@ -181,15 +201,7 @@ export const confirmAction = createAsyncThunk(
       } else if (method === 'delete') {
         response = await axiosClient.delete(url, config);
       }
-
-      // Gửi successMessage và chatHistoryId về BE để cập nhật AIChatHistory
-      const updateResponse = await axiosClient.post(`/api/ChatAI/update-message`, {
-        chatHistoryId,
-        successMessage,
-      });
-
-      console.log('[confirmAction] Request sent successfully:', response.data);
-      console.log('[confirmAction] Update message response:', updateResponse.data);
+      console.log('[confirmAction] rediskey:', redis_key);
 
       return {
         conversationId,

@@ -34,12 +34,14 @@ namespace Infrastructure.Service
                 .SendAsync("ReceiveLikeNotification", data);
         }
 
-        public async Task SendNotificationUpdateLocationSignalR(Guid driverId, Guid passengerId, string message)
+        public async Task SendNotificationUpdateLocationSignalR(Guid recipientId, Guid passengerId, string message)
         {
-            await _hubContext.Clients.User(driverId.ToString())
-                .SendAsync("ReceiveNotificationUpdateLocation", message);
-            await _hubContext.Clients.User(passengerId.ToString())
-                .SendAsync("ReceiveNotificationUpdateLocation", message);
+            // Chỉ gửi đến recipientId, bỏ qua passengerId nếu là Guid.Empty
+            if (recipientId != Guid.Empty)
+            {
+                await _hubContext.Clients.User(recipientId.ToString())
+                    .SendAsync("ReceiveNotificationUpdateLocation", message);
+            }
         }
 
 

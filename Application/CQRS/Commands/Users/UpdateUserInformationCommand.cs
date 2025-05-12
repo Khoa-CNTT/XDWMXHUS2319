@@ -9,9 +9,9 @@ namespace Application.CQRS.Commands.Users
 {
     public class UpdateUserInformationCommand : IRequest<ResponseModel<UserUpdateInformationDto>>
     {
-        public required string Phone { get; set; }
-        public required string PhoneRelative { get; set; }
-        public required string Gender { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? PhoneRelativeNumber { get; set; }
+        public string? Gender { get; set; }
     }
 }
 

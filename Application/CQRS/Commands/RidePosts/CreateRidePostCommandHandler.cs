@@ -31,9 +31,11 @@ namespace Application.CQRS.Commands.RidePosts
             // Validate request cơ bản
             if (request == null)
                 return ResponseFactory.Fail<ResponseRidePostDto>("Request is null", 400);
+            if (request.StartTime.Kind == DateTimeKind.Unspecified)
+                request.StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc);
 
-            if (request.StartTime < DateTime.UtcNow)
-                return ResponseFactory.Fail<ResponseRidePostDto>("Start time must be greater than current time", 400);
+            //if (request.StartTime < DateTime.UtcNow)
+            //    return ResponseFactory.Fail<ResponseRidePostDto>("Start time must be greater than current time", 400);
 
             if (request.StartLocation == request.EndLocation)
                 return ResponseFactory.Fail<ResponseRidePostDto>("Start and end locations must be different", 400);
