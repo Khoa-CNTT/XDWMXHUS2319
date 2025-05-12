@@ -28,6 +28,8 @@ namespace Domain.Entities
             public DateTime? LastLoginDate { get; private set; }
             public int TotalReports { get; private set; } = 0;
 
+            
+
 
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
@@ -104,6 +106,8 @@ namespace Domain.Entities
             if (!string.IsNullOrWhiteSpace(fullName) && FullName != fullName)
                 FullName = fullName;
 
+
+
             if (!string.IsNullOrWhiteSpace(profilePicture) && ProfilePicture != profilePicture)
                 ProfilePicture = profilePicture;
 
@@ -126,6 +130,8 @@ namespace Domain.Entities
             if (!string.IsNullOrWhiteSpace(gender) && Gender != gender)
                 Gender = gender;
         }
+
+
 
 
 

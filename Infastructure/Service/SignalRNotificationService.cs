@@ -1,10 +1,5 @@
-using Application.DTOs.FriendShips;
 using Application.Model;
-
 using Application.Model.Events;
-
-using Microsoft.AspNetCore.SignalR;
-using MimeKit;
 
 namespace Infrastructure.Service
 {
@@ -76,6 +71,13 @@ namespace Infrastructure.Service
         {
             await _hubContext.Clients.User(sendMessageNotificationEvent.ReceiverId.ToString())
                 .SendAsync("ReceiveMessageNotification", sendMessageNotificationEvent.Message);
+        }
+
+        public async Task SendAdminNotificationSignalR(AdminNotificationEvent adminNotificationEvent)
+        {
+            // Gửi thông báo đến admin qua SignalR
+            await _hubContext.Clients.User(adminNotificationEvent.AdminId.ToString())
+                .SendAsync("ReceiveAdminNotification", adminNotificationEvent);
         }
     }
 }

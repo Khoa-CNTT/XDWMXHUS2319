@@ -17,12 +17,43 @@ const { Content } = Layout;
 const { Title } = Typography;
 
 const columns = [
-  { title: "Người dùng", dataIndex: "user", key: "user" },
-  { title: "Nội dung bài viết", dataIndex: "content", key: "content" },
-  { title: "Trạng thái bài viết", dataIndex: "status", key: "status" },
-  { title: "Lượt thích", dataIndex: "likes", key: "likes" },
-  { title: "Lượt bình luận", dataIndex: "comments", key: "comments" },
-  { title: "Lượt chia sẻ", dataIndex: "shares", key: "shares" },
+  {
+    title: "Tác giả",
+    dataIndex: "author",
+    key: "author",
+  },
+  {
+    title: "Nội dung bài viết",
+    dataIndex: "content",
+    key: "content",
+    render: (text) => <span>{text.replace(/\r\n/g, " ")}</span>, // Xử lý ký tự xuống dòng
+  },
+  {
+    title: "Trạng thái",
+    dataIndex: "approvalStatus",
+    key: "approvalStatus",
+    render: (status) => {
+      switch (status) {
+        case 1:
+          return "Đã duyệt";
+        case 0:
+          return "Chờ duyệt";
+        default:
+          return "Không xác định";
+      }
+    },
+  },
+  {
+    title: "Thời gian tạo",
+    dataIndex: "createdAt",
+    key: "createdAt",
+    render: (date) => new Date(date).toLocaleString("vi-VN"), // Định dạng ngày giờ
+  },
+  {
+    title: "Số báo cáo",
+    dataIndex: "reportCount",
+    key: "reportCount",
+  },
 ];
 
 const Dashboard = () => {
@@ -36,7 +67,7 @@ const Dashboard = () => {
     dispatch(fetchDashboardOverview());
     dispatch(fetchUserStats());
     dispatch(fetchReportStats());
-    dispatch(fetchRecentPosts());
+    dispatch(fetchRecentPosts({ pageNumber: 1, pageSize: 5 }));
   }, [dispatch]);
 
   // Hiển thị lỗi nếu có

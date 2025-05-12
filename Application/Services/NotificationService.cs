@@ -1,5 +1,3 @@
-using Domain.Entities;
-
 namespace Application.Services
 {
     public class NotificationService : INotificationService
@@ -301,6 +299,49 @@ namespace Application.Services
             }
             await _unitOfWork.SaveChangesAsync();
         }
+
+        public async Task SendReportNotificationToAdmins(Guid reporterId, Guid postId, string reason, string reporterName)
+        {
+            var admins = await _unitOfWork.UserRepository.GetAdminsAsync();
+            if (admins == null || !admins.Any()) return;
+
+            // Lấy thông tin người report
+            var reporter = await _unitOfWork.UserRepository.GetByIdAsync(reporterId);
+            string avatar = !string.IsNullOrEmpty(reporter?.ProfilePicture)
+            ? $"{Constaint.baseUrl}{reporter.ProfilePicture}": "";
+
+
+            var message = $"{reporterName} đã báo cáo bài viết {postId}. Lý do: {reason}";
+
+            foreach (var admin in admins)
+            {
+                if (admin.Id == reporterId) continue; // Bỏ qua nếu admin tự report
+
+                var notification = new Notification(
+                    admin.Id,
+                    reporterId,
+                    message,
+                    NotificationType.ReportPost,
+                    null,
+                    $"/admin/userreport" // URL đến trang quản lý report
+                );
+
+                await _unitOfWork.NotificationRepository.AddAsync(notification);
+
+                var data = new ResponseNotificationModel
+                {
+                    NotificationId = notification.Id,
+                    Message = message,
+                    Avatar = avatar ?? "",
+                    Url = $"/admin/userreport",
+                    CreatedAt = FormatUtcToLocal(DateTime.UtcNow),
+                    SenderId = reporterId,
+                };
+
+                await _publisher.Publish(new AdminNotificationEvent(admin.Id, data));
+            }
+        }
+
         public async Task SendShareNotificationAsync(Guid postId, Guid userId, Guid postOwnerId, Guid notificationId)
         {
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
