@@ -1,13 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+  cancelRide,
   createPost,
-  fetchRidePost,
   createRide,
   deleteRidePost,
-  updatePost,
+  fetchLocation,
+  fetchRidePost,
   fetchRidesByUserId,
-  cancelRide,
   rateDriver,
+  updatePost
 } from "../../stores/action/ridePostAction";
 
 const ridePostSlice = createSlice({
@@ -16,6 +17,7 @@ const ridePostSlice = createSlice({
     ridePosts: [],
     driverRides: [],
     passengerRides: [],
+    locations: [],
     driverNextCursor: null,
     passengerNextCursor: null,
     currentRide: null,
@@ -187,7 +189,20 @@ const ridePostSlice = createSlice({
       .addCase(rateDriver.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(fetchLocation.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchLocation.fulfilled, (state, action) => {
+        state.loading = false;
+        state.locations = action.payload; // Lưu danh sách vị trí
+      })
+      .addCase(fetchLocation.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
+      
   },
 });
 

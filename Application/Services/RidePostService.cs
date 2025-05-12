@@ -183,7 +183,7 @@ namespace Application.Services
                 EndLocation = x.EndLocation,
                 LatLonStart = x.LatLonStart,
                 LatLonEnd = x.LatLonEnd,
-                StartTime =FormatUtcToLocal(x.StartTime),
+                StartTime =x.StartTime.ToString(),
                 Status = x.Status,
                 CreatedAt =FormatUtcToLocal(x.CreatedAt)
             }).ToList();
@@ -218,7 +218,7 @@ namespace Application.Services
                     CreateAt = FormatUtcToLocal(ride.CreatedAt),
                     EstimatedDuration = ride.EstimatedDuration,
                     Status = ride.Status.ToString(),
-                    IsSafe = ride.IsSafetyTrackingEnabled
+                    IsSafetyTrackingEnabled = ride.IsSafetyTrackingEnabled
                 });
             }
             var nextCursor = result.Count > 0 ? (Guid?)result.Last().RideId : null;
@@ -253,7 +253,7 @@ namespace Application.Services
                     CreateAt = FormatUtcToLocal(ride.CreatedAt),
                     EstimatedDuration = ride.EstimatedDuration,
                     Status = ride.Status.ToString(),
-                    IsSafe = ride.IsSafetyTrackingEnabled
+                    IsSafetyTrackingEnabled = ride.IsSafetyTrackingEnabled
                 });
             }
 
@@ -297,7 +297,7 @@ namespace Application.Services
                     CreateAt = FormatUtcToLocal(ride.CreatedAt),
                     EstimatedDuration = ride.EstimatedDuration,
                     Status = ride.Status.ToString(),
-                    IsSafe = ride.IsSafetyTrackingEnabled,
+                    IsSafetyTrackingEnabled = ride.IsSafetyTrackingEnabled,
                     IsRating = hasRating
                 });
             }
@@ -325,7 +325,7 @@ namespace Application.Services
                     CreateAt = FormatUtcToLocal(ride.CreatedAt),
                     EstimatedDuration = ride.EstimatedDuration,
                     Status = ride.Status.ToString(),
-                    IsSafe = ride.IsSafetyTrackingEnabled,
+                    IsSafetyTrackingEnabled = ride.IsSafetyTrackingEnabled,
                     IsRating = hasRating
                 });
             }

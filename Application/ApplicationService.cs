@@ -38,7 +38,7 @@ namespace Application
             //services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
             //services.AddHostedService<GpsMonitorService>();
-            services.AddHostedService<LikeCommentEventProcessor>();
+            //services.AddHostedService<LikeCommentEventProcessor>();
             //services.AddHostedService<TrustScoreBackgroundService>();
             //services.AddHostedService<MessageProcessingService>();
             //services.AddHostedService<RedisListenerService>();
