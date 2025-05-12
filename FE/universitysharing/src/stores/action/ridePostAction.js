@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
-import axiosClient from '../../Service/axiosClient';
+import axiosClient from "../../Service/axiosClient";
 // Tạo bài đăng
 export const createPost = createAsyncThunk(
   "ride/createPost",
@@ -14,7 +14,13 @@ export const createPost = createAsyncThunk(
       console.log("startTimeUtc", startTimeUtc);
       const response = await axiosClient.post(
         "/api/ridepost/create",
-        { content, startLocation, endLocation, startTime: startTimeUtc, postType },
+        {
+          content,
+          startLocation,
+          endLocation,
+          startTime: startTimeUtc,
+          postType,
+        },
         {
           headers: {
             "Content-Type": "application/json",
@@ -63,15 +69,11 @@ export const updatePost = createAsyncThunk(
       };
 
       console.log("Sending updatePost payload:", payload);
-      const response = await axiosClient.put(
-        "/api/RidePost/update",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axiosClient.put("/api/RidePost/update", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       console.log("updatePost response:", response.data);
 
@@ -218,7 +220,7 @@ export const fetchCompletedRidesWithRating = createAsyncThunk(
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
-      const response = await axios.get(
+      const response = await axiosClient.get(
         "https://localhost:7053/api/Ride/get-all-ride-rating",
         {
           headers: {
@@ -248,11 +250,14 @@ export const fetchLocation = createAsyncThunk(
   "ride/fetchLocation",
   async (rideId, { rejectWithValue }) => {
     try {
-      const response = await axiosClient.get(`/api/UpdateLocation/get-all-by-ride-id?rideId=${rideId}`);
+      const response = await axiosClient.get(
+        `/api/UpdateLocation/get-all-by-ride-id?rideId=${rideId}`
+      );
       return response.data?.data || []; // Trả về danh sách UpdateLocationDto
     } catch (error) {
-      return rejectWithValue(error.response?.data?.data || "Lỗi không xác định");
+      return rejectWithValue(
+        error.response?.data?.data || "Lỗi không xác định"
+      );
     }
   }
 );
-
