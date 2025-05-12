@@ -22,14 +22,8 @@ import avatarDefault from "../../assets/AvatarDefault.png";
 import checkIcon from "../../assets/iconweb/checkIcon.svg";
 import likeFillIcon from "../../assets/iconweb/likefillIcon.svg";
 
-import { PiDotsThreeLight } from "react-icons/pi";
-import { FaMapLocationDot } from "react-icons/fa6";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import getUserIdFromToken from "../../utils/JwtDecode";
-
 import { userProfile } from "../../stores/action/profileActions";
 
 import {

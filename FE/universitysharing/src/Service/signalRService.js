@@ -766,7 +766,7 @@ class SignalRService {
     console.log("Đã đăng ký sự kiện ReceiveAlert");
   }
 
-   onReceiveAcceptRide(callback) {
+  onReceiveAcceptRide(callback) {
     this.on(
       this.notificationConnection,
       "ReceiveAcceptRide",
@@ -780,17 +780,15 @@ class SignalRService {
     );
     console.log("Đã đăng ký sự kiện ReceiveAcceptRide");
   }
-}
 
-
-    // Đăng ký sự kiện nhận thông báo cập nhật vị trí
+  // Đăng ký sự kiện nhận thông báo cập nhật vị trí
   onReceiveLocationUpdateNotification(callback) {
     this.on(
       this.notificationConnection,
       "ReceiveNotificationUpdateLocation",
       (notificationData) => {
         console.log("Nhận được thông báo cập nhật vị trí:", notificationData);
-        
+
         // Gọi callback với dữ liệu thông báo
         callback(notificationData);
 
@@ -810,7 +808,6 @@ class SignalRService {
       }
     );
     console.log("Đã đăng ký sự kiện ReceiveNotificationUpdateLocation");
-
   }
 }
 
