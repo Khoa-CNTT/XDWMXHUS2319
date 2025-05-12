@@ -768,7 +768,7 @@ const ChatInterface = ({ conversationId, setConversationId, toggleSidebar, onNew
   }, [onNewChat, setConversationId]);
  
 const handleModalConfirm = useCallback(
-  async (endpoint, params, redis_key, streamId) => {
+  async (endpoint, params, redis_key, streamId,setIsLoading) => {
     console.log('[ChatInterface] Confirming action:', { endpoint, params, redis_key, streamId, conversationId });
     if (!endpoint || !params || !redis_key || !streamId) {
       console.error('[ChatInterface] Invalid confirm action parameters:', { endpoint, params, redis_key, streamId });
@@ -790,6 +790,7 @@ const handleModalConfirm = useCallback(
       });
       setIsModalOpen(false);
       setIsWaitingResponse(false);
+      setIsLoading(false);
       return;
     }
 
@@ -1023,6 +1024,7 @@ const handleModalConfirm = useCallback(
 
       setIsModalOpen(false);
       setIsWaitingResponse(false);
+      setIsLoading(false);
     } catch (error) {
       // Xử lý lỗi ngoại lệ (ví dụ: lỗi mạng)
       console.error('[ChatInterface] Error confirming action:', {
@@ -1065,6 +1067,7 @@ const handleModalConfirm = useCallback(
       });
       setIsModalOpen(false);
       setIsWaitingResponse(false);
+      setIsLoading(false);
     }
   },
   [dispatch, conversationId, messages]
@@ -1215,7 +1218,7 @@ const renderMessage = useCallback(
           <ConfirmationModal
             results={modifiedMessage.results}
             streamId={modifiedMessage.streamId} 
-            onConfirm={(endpoint, params, redis_key) => handleModalConfirm(endpoint, params, redis_key, modifiedMessage.streamId)}
+            onConfirm={handleModalConfirm}
             onEdit={handleModalEdit}
             onCancel={() => handleModalCancel(modifiedMessage.streamId)}
             conversationId={conversationId}

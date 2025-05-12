@@ -1,4 +1,5 @@
 ﻿using Application.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,6 +7,7 @@ namespace DuyTanSharingSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = "Admin")]
     public class AdminDashboardController : ControllerBase
     {
         private readonly IDasbroadAdminService _adminDashboardService;

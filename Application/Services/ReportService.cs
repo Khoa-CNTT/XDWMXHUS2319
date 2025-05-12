@@ -1,11 +1,14 @@
 ﻿using Application.DTOs.Reposts;
 using Application.DTOs.User;
+using Application.Interface.Hubs;
+using Domain.Interface;
+using MediatR;
 namespace Application.Services
 {
     public class ReportService : IReportService
     {
         private readonly IReportRepository _reportRepository;
-        
+        private readonly IPublisher _publisher;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGeminiService _geminiService;
         private readonly IUserContextService _userContextService;
@@ -13,11 +16,13 @@ namespace Application.Services
             IReportRepository reportRepository,
             IUnitOfWork unitOfWork,
             IGeminiService geminiService,
+            IPublisher publisher,
             IUserContextService userContextService)
         {
             _reportRepository = reportRepository;
             _unitOfWork = unitOfWork;
             _geminiService = geminiService;
+            _publisher = publisher;
             _userContextService = userContextService;
         }
         public async Task<Guid> CreateReportAsync(Guid postId, string reason)
@@ -32,7 +37,37 @@ namespace Application.Services
 
             // Khởi tạo báo cáo trước khi kiểm tra AI
             var report = new Report(userId, postId, reason, post.ApprovalStatus);
+            var admins = await _unitOfWork.UserRepository.GetAdminsAsync();
 
+            foreach (var admin in admins)
+            {
+                // Thông báo cho admin về báo cáo mới
+                var message = $"Có báo cáo mới ";
+
+                // Tạo dữ liệu thông báo
+                var notificationData = new ResponseNotificationModel
+                {
+                    Message = message,
+                    Url = $"/admin/userreport",
+                    CreatedAt = DateTime.UtcNow.ToString(),
+                    SenderId = userId
+                };
+
+                // Gửi sự kiện AdminNotificationEvent qua SignalR
+                await _publisher.Publish(new AdminNotificationEvent(admin.Id, notificationData));
+
+                // Lưu thông báo vào database
+                var notification = new Notification(
+                    admin.Id,
+                    userId,
+                    message,
+                    NotificationType.ReportPost,
+                    null,
+                    notificationData.Url
+                );
+
+                await _unitOfWork.NotificationRepository.AddAsync(notification);
+            }
             // Gửi nội dung bài viết cho AI kiểm duyệt
             var isViolated = await _geminiService.ValidatePostContentAsync(post.Content);
 

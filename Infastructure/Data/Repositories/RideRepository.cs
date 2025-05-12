@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Threading;
 using static Domain.Common.Enums;
 
 namespace Infrastructure.Data.Repositories
@@ -83,12 +84,29 @@ namespace Infrastructure.Data.Repositories
                             (!r.EndTime.HasValue || r.EndTime > DateTime.UtcNow))
                 .ToListAsync();
         }
+        public async Task<IEnumerable<Ride>> GetActiveRidesByDriverIdIdAsync(Guid driverId)
+        {
+            return await _context.Rides
+                .Where(r => r.DriverId == driverId &&
+                            r.Status == StatusRideEnum.Accepted &&
+                            (!r.EndTime.HasValue || r.EndTime > DateTime.UtcNow))
+                .ToListAsync();
+        }
         public async Task<List<Ride>> GetActiveRidesByDriverIdAsync(Guid driverId)
         {
             return await _context.Rides
                 .Where(r => r.DriverId == driverId && r.Status == StatusRideEnum.Accepted)
                 .ToListAsync();
         }
-
+        public async Task<List<Ride>> GetCompletedRidesWithRatingAsync()
+        {
+            return await _context.Rides
+                .Where(r => r.Status == StatusRideEnum.Completed && r.Rating != null)
+                .Include(r => r.RidePost)
+                .Include(r => r.Driver)
+                .Include(r => r.Rating!)
+                    .ThenInclude(rt => rt.RatedByUser)
+                .ToListAsync();
+        }
     }
 }

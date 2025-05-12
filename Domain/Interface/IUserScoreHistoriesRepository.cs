@@ -10,5 +10,6 @@ namespace Domain.Interface
     public interface IUserScoreHistoriesRepository : IBaseRepository<UserScoreHistory>
     {
         Task<bool> AnyAsync(Expression<Func<UserScoreHistory, bool>> predicate);
+        Task<List<UserScoreHistory>> GetTrustScoreHistoriesCursorAsync(Guid userId, DateTime? cursor, int take, CancellationToken cancellationToken);
     }
 }

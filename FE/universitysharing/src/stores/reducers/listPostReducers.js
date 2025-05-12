@@ -14,6 +14,7 @@ import {
   replyComments,
   updatePost,
   sharePost,
+  updateComment,
 } from "../action/listPostActions";
 import { fetchLikes } from "../action/likeAction";
 import { fetchShares } from "../action/shareAction";
@@ -291,6 +292,36 @@ const listPostSlice = createSlice({
         const postIndex = state.posts.findIndex((post) => post.id === postId);
         if (postIndex !== -1) {
           state.posts[postIndex].commentCount += 1;
+        }
+      })
+      .addCase(updateComment.fulfilled, (state, action) => {
+        const { postId, commentId, content } = action.payload;
+
+        if (state.comments[postId]) {
+          state.comments[postId] = state.comments[postId].map((comment) => {
+            if (comment.id === commentId) {
+              return {
+                ...comment,
+                content: content,
+              };
+            }
+
+            const updatedReplies = Array.isArray(comment.replies)
+              ? comment.replies.map((reply) =>
+                  reply.id === commentId
+                    ? {
+                        ...reply,
+                        content: content,
+                      }
+                    : reply
+                )
+              : [];
+
+            return {
+              ...comment,
+              replies: updatedReplies,
+            };
+          });
         }
       })
       .addCase(fetchLikes.pending, (state) => {

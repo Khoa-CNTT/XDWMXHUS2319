@@ -188,4 +188,50 @@ export const notificationHandlers = {
       };
     },
   },
+  ReceiveAcceptRide: {
+    type: NOTIFICATION_TYPES.ACCEPT_RIDE,
+    hasActions: false,
+    mapToNotification: (notificationData) => {
+      console.log(
+        "[notificationHandlers] Dữ liệu nhận được:",
+        notificationData
+      );
+      return {
+        id: notificationData.notificationId || `like-${Date.now()}`,
+        title:
+          notificationData.message || "Ai đó đã chấp nhận chuyến đi với bạn",
+        senderId: notificationData.senderId,
+        senderProfilePicture: notificationData.avatar || avatarWeb,
+        createdAt: notificationData.createdAt || new Date().toISOString(),
+        isRead: false,
+        type: NOTIFICATION_TYPES.ACCEPT_RIDE,
+        mutualFriendsCount: notificationData.mutualFriendsCount || 0,
+        url:
+          notificationData.url ||
+          (notificationData.url ? `/your-ride` : "/your-ride"),
+        isRealTime: true,
+      };
+    },
+  },
+  ReceiveAlert: {
+    type: NOTIFICATION_TYPES.ALERT,
+    hasActions: false,
+    mapToNotification: (message) => {
+      console.log(
+        "[notificationHandlers] Dữ liệu cảnh báo nhận được:",
+        message
+      );
+      return {
+        id: `alert-${Date.now()}`,
+        title: message || "Thông báo cảnh báo từ hệ thống",
+        senderId: null, //
+        senderProfilePicture: avatarWeb,
+        createdAt: new Date().toISOString(),
+        isRead: false, // Mặc định chưa đọc
+        type: NOTIFICATION_TYPES.ALERT,
+        url: "/your-ride",
+        isRealTime: true,
+      };
+    },
+  },
 };

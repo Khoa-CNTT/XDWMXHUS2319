@@ -188,3 +188,28 @@ export const updateUserInformation = createAsyncThunk(
     }
   }
 );
+export const fetchTrustScoreHistories = createAsyncThunk(
+  "profile/fetchTrustScoreHistories",
+  async (cursor = null, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "https://localhost:7053/api/UserProfile/trust-score-histories",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            cursor: cursor || undefined,
+          },
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Có lỗi xảy ra khi lấy lịch sử điểm uy tín!"
+      );
+    }
+  }
+);

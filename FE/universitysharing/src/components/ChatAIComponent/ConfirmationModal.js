@@ -72,15 +72,10 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
   const firstResult = results[0] || {};
   const { endpoint, params: rawParams, redis_key } = firstResult;
 
-  // Chuẩn hóa params thành một mảng chứa một object duy nhất
-  const initialParams = (() => {
-    if (!rawParams) {
-      return [{}];
-    }
+  const [params, setParams] = useState(() => {
+    if (!rawParams) return [{}];
     if (Array.isArray(rawParams)) {
-      if (rawParams.length === 0) {
-        return [{}];
-      }
+      if (rawParams.length === 0) return [{}];
       return [
         rawParams.reduce((acc, item) => {
           if (item && typeof item === 'object') {
@@ -102,36 +97,35 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
     }
     console.warn('Invalid rawParams format:', rawParams);
     return [{}];
-  })();
+  });
 
-  const [params, setParams] = useState(initialParams);
   const [newImages, setNewImages] = useState([]);
   const [newVideo, setNewVideo] = useState(null);
   const [newProfileImage, setNewProfileImage] = useState(null);
   const [newBackgroundImage, setNewBackgroundImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // Thêm trạng thái isLoading
 
   const displayMap = paramDisplayMap[endpoint.replace('https://localhost:7053', '')] || {};
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    setIsLoading(true); // Bật trạng thái loading
     let updatedParams;
     if (endpoint.includes('/api/Ride/create')) {
-      // Ánh xạ tên trường cho /api/Ride/create
       updatedParams = {
         driverId: params[0].DriverId || null,
         ridePostId: params[0].RidePostId || null,
         estimatedDuration: params[0].EstimatedDuration || 0,
-        isSafe: params[0].IsSafetyTrackingEnabled || false,
+        IsSafetyTrackingEnabled: params[0].IsSafetyTrackingEnabled || false,
         fare: params[0].Fare || null,
       };
 
-      // Kiểm tra các trường bắt buộc
       if (!updatedParams.driverId || !updatedParams.ridePostId) {
         console.error('Missing required fields:', updatedParams);
         alert('Vui lòng cung cấp đầy đủ thông tin chuyến đi (ID tài xế và ID bài đăng).');
+        setIsLoading(false); // Tắt loading nếu có lỗi
         return;
       }
     } else {
-      // Giữ nguyên logic cho các endpoint khác
       updatedParams = {
         ...params[0],
         Images: endpoint.includes('/Post/') ? (newImages.length > 0 ? newImages : null) : params[0].Images,
@@ -142,19 +136,22 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
     }
 
     console.log('[ConfirmationModal] Sending updatedParams:', JSON.stringify(updatedParams, null, 2));
-    onConfirm(endpoint, updatedParams, redis_key, streamId);
+    await onConfirm(endpoint, updatedParams, redis_key, streamId, setIsLoading); // Truyền setIsLoading
+    // setIsLoading sẽ được tắt trong handleModalConfirm
   };
 
   const handleEdit = () => {
-    onEdit(streamId);
+    if (!isLoading) onEdit(streamId); // Chỉ cho phép chỉnh sửa nếu không đang loading
   };
 
   const handleCancel = () => {
-    setNewImages([]);
-    setNewVideo(null);
-    setNewProfileImage(null);
-    setNewBackgroundImage(null);
-    onCancel(streamId);
+    if (!isLoading) { // Chỉ cho phép hủy nếu không đang loading
+      setNewImages([]);
+      setNewVideo(null);
+      setNewProfileImage(null);
+      setNewBackgroundImage(null);
+      onCancel(streamId);
+    }
   };
 
   const handleParamChange = (index, key, value) => {
@@ -189,6 +186,12 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
     <div className="confirmation-message">
       <div className="message-content">
         <h4>{isEditing ? 'Chỉnh sửa thông tin' : 'Xác nhận thông tin'}</h4>
+        {isLoading && (
+          <div className="loading-overlay">
+            <div className="spinner"></div>
+            <p>Đang xử lý, vui lòng chờ...</p>
+          </div>
+        )}
         <div className="params-list">
           {params && Array.isArray(params) && params.length > 0 ? (
             params.map((paramObj, index) =>
@@ -204,12 +207,14 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
                             value={paramObj[key] || ''}
                             onChange={(e) => handleParamChange(index, key, e.target.value)}
                             className="edit-input"
+                            disabled={isLoading}
                           />
                         ) : key === 'Scope' && endpoint.includes('/Post/') ? (
                           <select
                             value={paramObj[key] || 'Public'}
                             onChange={(e) => handleParamChange(index, key, e.target.value)}
                             className="edit-input"
+                            disabled={isLoading}
                           >
                             <option value="Public">Công khai</option>
                             <option value="Friends">Bạn bè</option>
@@ -220,6 +225,7 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
                             value={paramObj[key] === true ? 'true' : 'false'}
                             onChange={(e) => handleParamChange(index, key, e.target.value === 'true')}
                             className="edit-input"
+                            disabled={isLoading}
                           >
                             {isSafeOptions.map((option) => (
                               <option key={option.value} value={option.value.toString()}>
@@ -232,6 +238,7 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
                             value={paramObj[key] || ''}
                             onChange={(e) => handleParamChange(index, key, e.target.value)}
                             className="edit-input"
+                            disabled={isLoading}
                           >
                             {genderOptions.map((option) => (
                               <option key={option.value} value={option.value}>
@@ -246,6 +253,7 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
                             multiple
                             onChange={handleImageChange}
                             className="edit-input"
+                            disabled={isLoading}
                           />
                         ) : key === 'Video' && endpoint.includes('/Post/') ? (
                           <input
@@ -253,6 +261,7 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
                             accept="video/*"
                             onChange={handleVideoChange}
                             className="edit-input"
+                            disabled={isLoading}
                           />
                         ) : key === 'ProfileImage' && endpoint.includes('/UserProfile/') ? (
                           <input
@@ -260,6 +269,7 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
                             accept="image/*"
                             onChange={handleProfileImageChange}
                             className="edit-input"
+                            disabled={isLoading}
                           />
                         ) : key === 'BackgroundImage' && endpoint.includes('/UserProfile/') ? (
                           <input
@@ -267,6 +277,7 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
                             accept="image/*"
                             onChange={handleBackgroundImageChange}
                             className="edit-input"
+                            disabled={isLoading}
                           />
                         ) : (
                           <input
@@ -274,6 +285,7 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
                             value={paramObj[key] || ''}
                             onChange={(e) => handleParamChange(index, key, e.target.value)}
                             className="edit-input"
+                            disabled={isLoading}
                           />
                         )}
                       </>
@@ -341,15 +353,15 @@ const ConfirmationModal = ({ results, streamId, onConfirm, onEdit, onCancel, con
           )}
         </div>
         <div className="modal-actions">
-          <button onClick={handleConfirm} className="confirm-button">
-            {isEditing ? 'Lưu' : 'Xác nhận'}
+          <button onClick={handleConfirm} className="confirm-button" disabled={isLoading}>
+            {isLoading ? 'Đang xử lý...' : isEditing ? 'Lưu' : 'Xác nhận'}
           </button>
           {!isEditing && (
-            <button onClick={handleEdit} className="edit-button">
+            <button onClick={handleEdit} className="edit-button" disabled={isLoading}>
               Sửa
             </button>
           )}
-          <button onClick={handleCancel} className="cancel-button">
+          <button onClick={handleCancel} className="cancel-button" disabled={isLoading}>
             Hủy
           </button>
         </div>

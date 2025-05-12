@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
-// import "../../styles/CommentOverlay.scss";
-import "../../styles/CommentModalNoImg.scss";
+import "../../styles/CommentOverlay.scss";
 import CommentItem from "./CommentItem";
 import { debounce } from "lodash";
 import { replyComments } from "../../stores/action/listPostActions";
@@ -13,29 +12,35 @@ const CommentList = ({
   handleLikeComment,
   post,
   usersProfile,
-  onLoadMore, // New prop for loading more comments
-  isLoadingMore, // New prop to track loading state
-  hasMoreComments, // New prop to check if more comments exist
+  onLoadMore,
+  isLoadingMore,
+  hasMoreComments,
 }) => {
-  // console.log("Danh sách bình luận ở CommentList:", comment);
   const dispatch = useDispatch();
   const userId = getUserIdFromToken();
+
+  // Loại bỏ các bình luận trùng lặp dựa trên comment.id
+  const uniqueComments = Array.from(
+    new Map((comment || []).map((item) => [item.id, item])).values()
+  );
+
   const handleReplyComment = debounce((commentId, content) => {
     if (!content.trim()) return;
     dispatch(
       replyComments({
-        postId: post.id, // ID bài viết
-        parentId: commentId, // ID của comment đang reply
-        content: content, // Nội dung trả lời
+        postId: post.id,
+        parentId: commentId,
+        content: content,
         userId: userId,
       })
     );
   }, 1000);
+
   return (
     <div className="comments-section">
-      {Array.isArray(comment) && comment.length > 0 ? (
+      {Array.isArray(uniqueComments) && uniqueComments.length > 0 ? (
         <>
-          {comment.map((comments) => (
+          {uniqueComments.map((comments) => (
             <CommentItem
               key={comments.id}
               comments={comments}
@@ -46,7 +51,6 @@ const CommentList = ({
             />
           ))}
 
-          {/* Loading indicator */}
           {isLoadingMore && (
             <div className="comment-loading">Đang tải thêm bình luận...</div>
           )}
@@ -55,7 +59,6 @@ const CommentList = ({
         <span>Không có bình luận nào</span>
       )}
 
-      {/* Sentinel element for infinite scroll */}
       <div ref={commentEndRef} style={{ height: "1px" }} />
     </div>
   );

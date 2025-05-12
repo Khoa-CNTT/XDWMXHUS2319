@@ -24,6 +24,7 @@ namespace Domain.Entities
         public User? Driver { get; private set; }
         public User? Passenger { get; private set; }
         public ICollection<LocationUpdate>? LocationUpdates { get; private set; }
+        public Rating? Rating { get; private set; }
         public Ride(Guid driverId, Guid passengerId, decimal? fare, int estimatedDuration, Guid ridePostId,bool isSafetyTrackingEnabled)
         {
             Id = Guid.NewGuid();

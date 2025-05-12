@@ -117,6 +117,7 @@ namespace Application.CQRS.Commands.Friends
 
                 var friendship = new Friendship(userId, request.FriendId);
                 await _unitOfWork.FriendshipRepository.AddAsync(friendship);
+
                 var notification = new Notification(request.FriendId,
                     userId,
                     $"{user.FullName} đã gửi lời mời kết bạn đến bạn.",
@@ -139,6 +140,7 @@ namespace Application.CQRS.Commands.Friends
                 if (friendship.FriendId != userId)
                 {
                     await _notificationService.SendFriendNotificationAsync(request.FriendId, userId,notification.Id);
+
                 }
 
                 await _unitOfWork.SaveChangesAsync();
@@ -151,7 +153,6 @@ namespace Application.CQRS.Commands.Friends
                 await _unitOfWork.RollbackTransactionAsync();
                 return ResponseFactory.Error<ResultSendFriendDto>("Lỗi khi gửi lời mời kết bạn", 400, ex);
             }
-
 
         }
     }
