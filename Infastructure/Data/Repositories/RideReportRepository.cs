@@ -16,6 +16,14 @@ namespace Infrastructure.Data.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public async Task<List<RideReport>> GetReportsByAlertTypesAsync(List<AlertTypeEnums> alertTypes)
+        {
+            return await _context.RideReports
+               .Where(r => alertTypes.Contains(r.AlertType))
+               .ToListAsync();
+        }
+
         public Task<int> GetWarningCountAsync(Guid userId)
         {
             return _context.RideReports

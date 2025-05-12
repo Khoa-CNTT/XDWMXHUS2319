@@ -5,12 +5,18 @@ import { deleteComments } from "../../stores/action/listPostActions";
 import { debounce } from "lodash";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-const CommentOption = ({ isOwner, onClose, style, idComment, post }) => {
+
+const CommentOption = ({
+  isOwner,
+  onClose,
+  style,
+  idComment,
+  post,
+  onEdit,
+}) => {
   const optionRef = useRef(null);
   const dispatch = useDispatch();
 
-  // console.log("Id Comment> ", idComment);
-  // console.log("Post>> ", post);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (optionRef.current && !optionRef.current.contains(event.target)) {
@@ -46,20 +52,37 @@ const CommentOption = ({ isOwner, onClose, style, idComment, post }) => {
       ],
     });
   };
+
+  const handleEditClick = (event) => {
+    event.stopPropagation(); // Ngăn sự kiện lan truyền
+    onEdit(); // Gọi hàm chỉnh sửa
+    onClose(); // Chủ động đóng menu
+  };
+
   return (
     <div className="comment-options" ref={optionRef} style={{ ...style }}>
       {isOwner ? (
         <>
-          {/* <span className="update-comment">Sửa bình luận</span> */}
+          <span className="update-comment" onClick={handleEditClick}>
+            Sửa bình luận
+          </span>
           <span
             className="delete-comment"
-            onClick={() => confirmDeleteComment(post.id, idComment)}
+            onClick={(event) => {
+              event.stopPropagation(); // Ngăn sự kiện lan truyền
+              confirmDeleteComment(post.id, idComment);
+            }}
           >
             Xóa bình luận
           </span>
         </>
       ) : (
-        <span className="report-comment">Báo cáo bình luận</span>
+        <span
+          className="report-comment"
+          onClick={(event) => event.stopPropagation()} // Ngăn sự kiện lan truyền
+        >
+          Báo cáo bình luận
+        </span>
       )}
     </div>
   );

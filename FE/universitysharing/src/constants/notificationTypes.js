@@ -6,4 +6,6 @@ export const NOTIFICATION_TYPES = {
   LIKE_POST: "PostLiked", // Thích bài viết
   REPLY_COMMENT: "ReplyComment",
   LIKE_COMMENT: "LikeComment",
+  ALERT: "Alert",
+  ACCEPT_RIDE: "AcceptRide",
 };

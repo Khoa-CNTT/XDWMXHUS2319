@@ -12,6 +12,8 @@ namespace Application.Interface
         Task<DashboardOverviewDto> GetOverviewAsync();
         Task<DashboardReportStatsDto> GetReportStatsAsync();
         Task<DashboardUserStatsDto> GetUserStatsAsync();
-        
+        Task<DashboardTrustScoreStatsDto> GetTrustScoreDistributionAsync();
+
+
     }
 }

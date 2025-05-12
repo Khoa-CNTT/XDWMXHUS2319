@@ -21,7 +21,11 @@ import "react-toastify/dist/ReactToastify.css";
 import avatarDefault from "../../assets/AvatarDefault.png";
 import checkIcon from "../../assets/iconweb/checkIcon.svg";
 import likeFillIcon from "../../assets/iconweb/likefillIcon.svg";
+
+import { useNavigate } from "react-router-dom";
+import getUserIdFromToken from "../../utils/JwtDecode";
 import { userProfile } from "../../stores/action/profileActions";
+
 import {
   createRide,
   deleteRidePost,
@@ -109,6 +113,7 @@ const AllSharingRide = () => {
   const [editPost, setEditPost] = useState(null);
   const [startLocation, setStartLocation] = useState([16.054407, 108.202167]);
   const [endLocation, setEndLocation] = useState(null);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const usersState = useSelector((state) => state.users) || {};
   const { users } = usersState;
@@ -321,6 +326,14 @@ const AllSharingRide = () => {
     }
   };
 
+  const navigateUser = (userId) => {
+    if (userId === getUserIdFromToken()) {
+      navigate("/ProfileUserView");
+    } else {
+      navigate(`/profile/${userId}`);
+    }
+  };
+
   // Show loading only on initial load, not during refresh
   if (loading && !ridePosts.length) return <p>Đang tải dữ liệu...</p>;
   if (error && !ridePosts.length) return <p>Lỗi: {error}</p>;
@@ -346,7 +359,10 @@ const AllSharingRide = () => {
           return (
             <div className="All-ride-post" key={ridePost.id}>
               <div className="header-ride-post">
-                <div className="left-header-post">
+                <div
+                  className="left-header-post"
+                  onClick={() => navigateUser(ridePost.userId)}
+                >
                   <img
                     className="Avata-user"
                     src={ridePost.userAvatar || avatarDefault}

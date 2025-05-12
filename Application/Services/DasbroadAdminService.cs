@@ -42,6 +42,18 @@ namespace Application.Services
             };
         }
 
+        public async Task<DashboardTrustScoreStatsDto> GetTrustScoreDistributionAsync()
+        {
+            var users = await _unitOfWork.UserRepository.GetAllAsync();
+            var reliable  = users.Count(x => x.TrustScore >= 50);
+            var unreliable = users.Count(x => x.TrustScore < 50);
+            return new DashboardTrustScoreStatsDto
+            {
+                reliableTrustScore = reliable,
+                unreliableTrustScore = unreliable
+            };
+        }
+
         public async Task<DashboardUserStatsDto> GetUserStatsAsync()
         {
             var activeUsers = await _unitOfWork.UserRepository.CountAsync(x => x.Status == "Active");

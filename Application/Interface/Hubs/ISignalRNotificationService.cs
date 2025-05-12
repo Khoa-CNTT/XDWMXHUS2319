@@ -24,7 +24,7 @@ namespace Application.Interface.Hubs
         Task SendAnswerFriendNotificationSignalR(Guid friendId, ResponseNotificationModel data);
 
         Task SendNewMessageSignalRAsync(SendMessageNotificationEvent sendMessageNotificationEvent);
-
+        Task SendAdminNotificationSignalR(AdminNotificationEvent adminNotificationEvent);
 
     }
 }
