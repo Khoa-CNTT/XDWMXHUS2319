@@ -229,7 +229,7 @@ export const getMessagess = createAsyncThunk(
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.warn("Data trả về >>", response.data.data);
+      // console.warn("Data trả về >>", response.data.data);
       return {
         data: response.data.data.messages || [],
         nextCursor: response.data.data.nextCursor || null,

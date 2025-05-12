@@ -88,7 +88,7 @@ namespace Application.CQRS.Commands.Friends
 
                         if (existingFriendship.FriendId != userId)
                         {
-                            await _notificationService.SendFriendNotificationAsync(request.FriendId, userId);
+                            await _notificationService.SendFriendNotificationAsync(request.FriendId, userId,notification.Id);
                         }
 
                         await _unitOfWork.SaveChangesAsync();
@@ -139,7 +139,7 @@ namespace Application.CQRS.Commands.Friends
 
                 if (friendship.FriendId != userId)
                 {
-                    await _notificationService.SendFriendNotificationAsync(request.FriendId, userId);
+                    await _notificationService.SendFriendNotificationAsync(request.FriendId, userId,notification.Id);
                 }
 
                 await _unitOfWork.SaveChangesAsync();

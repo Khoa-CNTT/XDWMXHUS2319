@@ -105,11 +105,11 @@ namespace Domain.Entities
                     throw new ArgumentException("Full name cannot be empty.");
                 FullName = fullName;
 
-            if (!string.IsNullOrWhiteSpace(profileImageUrl))
-                ProfilePicture = profileImageUrl;
+            if (!string.IsNullOrWhiteSpace(profilePicture))
+                ProfilePicture = profilePicture;
 
-            if (!string.IsNullOrWhiteSpace(backgroundImageUrl))
-                BackgroundPicture = backgroundImageUrl;
+            if (!string.IsNullOrWhiteSpace(backgroundPicture))
+                BackgroundPicture = backgroundPicture;
 
             if (!string.IsNullOrWhiteSpace(bio))
                 Bio = bio;

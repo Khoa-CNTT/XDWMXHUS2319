@@ -68,26 +68,26 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
       alert("Vui lòng nhập nội dung bài viết!");
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("Content", content);
     formData.append("PostType", postType);
     formData.append("Scope", scope);
-  
+
     if (mediaFiles.length > 0) {
       const videoFile = mediaFiles.find((media) => media.type === "video");
       const imageFiles = mediaFiles.filter((media) => media.type === "image");
-  
+
       if (videoFile) {
         formData.append("Video", videoFile.file);
       }
-  
+
       imageFiles.forEach((image) => {
         formData.append("Images", image.file); // 👈 quan trọng: sửa thành "Images"
-        console.log("hehehe",image.file);
+        console.log("hehehe", image.file);
       });
     }
-  
+
     dispatch(
       createPost({
         formData,
@@ -95,7 +95,7 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
         profilePicture: usersProfile.profilePicture || avatarDeafault,
       })
     );
-  
+
     onClose();
   };
 
@@ -178,16 +178,6 @@ const CreatePostModal = ({ isOpen, onClose, usersProfile }) => {
             <option value="0">Công khai</option>
             <option value="1">Riêng tư</option>
             <option value="2">Chỉ bạn bè</option>
-          </select>
-          <select
-            className="type-post"
-            value={postType}
-            onChange={(e) => setPostType(Number(e.target.value))}
-          >
-            <option value="4">Thảo luận</option>
-            <option value="5">Tư liệu học tập</option>{" "}
-            {/* Sửa value để khác nhau */}
-            <option value="6">Trao đổi</option> {/* Sửa value để khác nhau */}
           </select>
         </div>
         <button

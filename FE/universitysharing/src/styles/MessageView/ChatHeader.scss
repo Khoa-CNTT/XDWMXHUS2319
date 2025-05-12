@@ -1,3 +1,57 @@
+// .chat-header {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   padding: 10px 20px;
+//   background-color: #fff;
+//   border-bottom: 1px solid #ddd;
+
+//   &__info {
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     .return-chat-list {
+//       display: none;
+//       font-size: 28px;
+//     }
+//   }
+
+//   &__avatar {
+//     width: 40px;
+//     height: 40px;
+//     border-radius: 50%;
+//     margin-right: 10px;
+//   }
+
+//   &__name {
+//     font-size: 16px;
+//     font-weight: 600;
+//   }
+
+//   &__actions {
+//     display: flex;
+//     gap: 10px;
+//   }
+
+//   &__button {
+//     padding: 8px 15px;
+//     border: none;
+//     border-radius: 5px;
+//     cursor: pointer;
+//     font-size: 14px;
+
+//     &:first-child {
+//       background-color: #007bff;
+//       color: #fff;
+//     }
+
+//     &.report {
+//       background-color: #dc3545;
+//       color: #fff;
+//     }
+//   }
+// }
+
 .chat-header {
   display: flex;
   justify-content: space-between;
@@ -9,10 +63,11 @@
   &__info {
     display: flex;
     align-items: center;
-    justify-content: center;
+
     .return-chat-list {
       display: none;
       font-size: 28px;
+      cursor: pointer;
     }
   }
 
@@ -21,16 +76,41 @@
     height: 40px;
     border-radius: 50%;
     margin-right: 10px;
+    cursor: pointer;
+  }
+
+  &__details {
+    display: flex;
+    flex-direction: column;
   }
 
   &__name {
+    cursor: pointer;
     font-size: 16px;
     font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__status {
+    font-size: 14px;
+    color: #888;
+    margin-top: 2px;
+
+    &.online {
+      color: #4caf50;
+    }
+
+    &.offline {
+      color: #f44336;
+    }
   }
 
   &__actions {
     display: flex;
-    gap: 10px;
+    gap: 15px;
   }
 
   &__button {
@@ -48,6 +128,16 @@
     &.report {
       background-color: #dc3545;
       color: #fff;
+    }
+  }
+
+  &__icon {
+    font-size: 22px;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #007bff;
     }
   }
 }

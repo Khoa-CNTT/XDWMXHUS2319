@@ -6,10 +6,11 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import getUserInfoFromToken from "../utils/JwtDecode";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, authData } = useAuth();
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
   const handleLogin = async (e, formData) => {
@@ -25,6 +26,8 @@ const Login = () => {
 
       if (response.data.success) {
         login(response.data.data);
+        // const userInfo = getUserInfoFromToken();
+        // console.warn("Role:", userInfo.role);
         toast.success("Đăng nhập thành công!");
         navigate("/home");
       } else if (response?.data?.message?.toLowerCase() === "user not found") {

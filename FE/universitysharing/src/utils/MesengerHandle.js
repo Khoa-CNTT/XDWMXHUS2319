@@ -1,16 +1,18 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addMessage,
   markInboxAsSeen,
+  updateInboxOnNewMessage,
 } from "../stores/reducers/messengerReducer";
+import { setTyping, clearTyping } from "../stores/reducers/typingReducer";
 import { sendMessages } from "../stores/action/messageAction";
 import { useSignalR } from "../Service/SignalRProvider";
 import { toast } from "react-toastify";
 export const useChatHandle = () => {
   const dispatch = useDispatch();
   const { signalRService, isConnected } = useSignalR();
-
+  const typingTimeoutRef = useRef({});
   //Hàm join vào cuộc trò chuyện
   const handleJoin = async (conversationId) => {
     try {
@@ -96,17 +98,17 @@ export const useChatHandle = () => {
     status,
   }) => {
     if (!conversationId) return;
-    console.warn("conversationId>>", conversationId);
-    console.warn("friendId>>", friendId);
-    console.warn("messages>>", messages);
-    console.warn("status>>", status);
+    // console.warn("conversationId>>", conversationId);
+    // console.warn("friendId>>", friendId);
+    // console.warn("messages>>", messages);
+    // console.warn("status>>", status);
     try {
       // Bước 1: Lọc ra tin nhắn mới nhất từ bạn bè
       const lastMessageFromUser = messages
         .filter((msg) => msg.senderId === friendId)
         .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))[0];
 
-      console.warn("lastMessageFromUser>>", lastMessageFromUser);
+      // console.warn("lastMessageFromUser>>", lastMessageFromUser);
 
       if (lastMessageFromUser) {
         // Bước 2: Gửi trạng thái đã xem qua SignalR
@@ -123,14 +125,54 @@ export const useChatHandle = () => {
     }
   };
 
+  // Hàm xử lý typing (Sử dụng chung với Redux)
+  const handleTyping = (
+    e,
+    {
+      conversationId,
+      friendId,
+      currentUserID,
+      setNewMessage,
+      setIsUserTyping,
+      lastTypingTimeRef,
+      TYPING_INTERVAL,
+    }
+  ) => {
+    const message = e.target.value;
+    setNewMessage(message);
+    const isTyping = message.trim();
+    setIsUserTyping(isTyping);
+
+    const now = Date.now();
+
+    if (
+      conversationId &&
+      isTyping &&
+      isConnected &&
+      now - lastTypingTimeRef.current > TYPING_INTERVAL
+    ) {
+      lastTypingTimeRef.current = now;
+      dispatch(setTyping(conversationId, currentUserID));
+      signalRService
+        .sendTyping(conversationId, friendId)
+        .catch((err) =>
+          console.error("[ChatBox] Lỗi gửi trạng thái typing:", err.message)
+        );
+    } else if (!isTyping) {
+      dispatch(clearTyping(conversationId));
+    }
+  };
+
   return {
     handleSendMessage,
     handleJoin,
     handleLeaveChat,
     markConversationAsSeen,
+    handleTyping,
   };
 };
 
+//lắng nghe sự kiện nhận tin nhắn khi join vào cuộc trò chuyện
 export const useMessageReceiver = () => {
   const dispatch = useDispatch();
   const { signalRService, isConnected } = useSignalR();
@@ -153,6 +195,7 @@ export const useMessageReceiver = () => {
   }, [isConnected, conversationId, dispatch]);
 };
 
+//Lắng nghe sự kiện tin nhắn người khác đưa đến
 export const useMessageReceiverData = () => {
   const dispatch = useDispatch();
   const { signalRService, isConnected } = useSignalR();
@@ -162,11 +205,45 @@ export const useMessageReceiverData = () => {
     const unsubscribe = signalRService.onReceiveMessageData((message) => {
       console.warn("[Nhận thông báo] 🥰🥰🥰", message);
 
-      dispatch(addMessage(message));
+      // Chỉ dispatch nếu tin nhắn không thuộc cuộc trò chuyện hiện tại
+      if (message.conversationId !== conversationId) {
+        dispatch(updateInboxOnNewMessage(message));
+      }
     });
 
     return () => {
       if (typeof unsubscribe === "function") unsubscribe();
     };
   }, [isConnected, conversationId, dispatch]);
+};
+
+//Lắng nghe sự kiện typing thực hiện
+export const useTypingReceiver = (friendId, conversationId) => {
+  const { signalRService, isConnected } = useSignalR();
+  const dispatch = useDispatch();
+  const typingTimeoutRef = useRef({});
+
+  useEffect(() => {
+    if (!isConnected || !conversationId) return;
+
+    const unsubscribe = signalRService.onUserTyping((typingUserId) => {
+      if (typingUserId === friendId.toString()) {
+        console.warn("[Typing] Đã nhận trạng thái typing từ:", typingUserId);
+        // Cập nhật Redux (Bắt đầu typing)
+        dispatch(setTyping(conversationId, friendId));
+
+        // Xóa typing sau 5000ms nếu không có tín hiệu typing mới
+        clearTimeout(typingTimeoutRef.current[conversationId]);
+        typingTimeoutRef.current[conversationId] = setTimeout(() => {
+          dispatch(clearTyping(conversationId));
+        }, 5000);
+      }
+    });
+
+    // Cleanup khi unmount
+    return () => {
+      clearTimeout(typingTimeoutRef.current[conversationId]);
+      if (typeof unsubscribe === "function") unsubscribe();
+    };
+  }, [isConnected, conversationId, friendId, signalRService, dispatch]);
 };
