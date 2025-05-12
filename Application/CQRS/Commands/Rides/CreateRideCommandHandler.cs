@@ -3,6 +3,7 @@ using static Domain.Common.Helper;
 using Application.Interface.ContextSerivce;
 using Domain.Entities;
 using static Domain.Common.Enums;
+using MediatR;
 
 namespace Application.CQRS.Commands.Rides
 {
@@ -11,11 +12,13 @@ namespace Application.CQRS.Commands.Rides
         private readonly IUserContextService _userContextService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRidePostService _ridePostService;
-        public CreateRideCommandHandler(IUserContextService userContextService, IUnitOfWork unitOfWork, IRidePostService ridePostService)
+        private readonly INotificationService _notificationService;
+        public CreateRideCommandHandler(IUserContextService userContextService, IUnitOfWork unitOfWork, IRidePostService ridePostService, INotificationService notificationService)
         {
             _userContextService = userContextService;
             _unitOfWork = unitOfWork;
             _ridePostService = ridePostService;
+            _notificationService = notificationService;
         }
         public async Task<ResponseModel<ResponseRideDto>> Handle(CreateRideCommand request, CancellationToken cancellationToken)
         {
@@ -68,7 +71,19 @@ namespace Application.CQRS.Commands.Rides
                 ridePost.Matched();
                 var ride = new Ride(request.DriverId, userId, request.Fare, durationMinutes, request.RidePostId,request.isSafe);
                 await _unitOfWork.RideRepository.AddAsync(ride);
-
+                // Luu vao Notification
+                var notification = new Notification(ride.DriverId,
+                        userId,
+                        $"{user.FullName} đã chấp nhận chuyến đi với bạn",
+                        NotificationType.AcceptRide,
+                        null,
+                         $"/your-ride"
+                    );
+                await _unitOfWork.NotificationRepository.AddAsync(notification);
+                if (ride.DriverId != userId)
+                {
+                    await _notificationService.SendAcceptRideNotificationAsync(ride.DriverId, userId, notification.Id);
+                }
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
                 var rideDto = new ResponseRideDto

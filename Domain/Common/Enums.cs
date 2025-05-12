@@ -123,6 +123,7 @@ namespace Domain.Common
             AcceptFriend,
             ReplyComment,
             LikeComment,
+            AcceptRide,
         }
         public enum UserStatus
         {

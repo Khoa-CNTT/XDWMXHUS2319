@@ -14,6 +14,7 @@ namespace Application.Interface.Hubs
         Task SendNotificationUpdateLocationAsync(Guid driverId, Guid passengerId, float latitude, float longitude, string location, bool isEnd);                //gửi cảnh báo khi gps bị tắt
         Task SendFriendNotificationAsync(Guid friendId, Guid userId, Guid notificationId);
         Task SendAcceptFriendNotificationAsync(Guid friendId , Guid userId, Guid notificationId);
+        Task SendAcceptRideNotificationAsync(Guid passengerId, Guid userId, Guid notificationId);
         Task SendAlertAsync(Guid driverId, string message);
         Task SendInAppNotificationAsync(Guid driverId, string message);
 

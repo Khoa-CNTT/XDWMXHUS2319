@@ -16,6 +16,6 @@ namespace Domain.Interface
         Task<List<Ride>> GetRidePostsByPassengerIdAsync(Guid passengerId, Guid? lastPostId, int pageSize);
         Task<List<Ride>> GetRidePostsByDriverIdAsync(Guid driverId, Guid? lastPostId, int pageSize);
         Task<List<Ride>> GetActiveRidesByDriverIdAsync(Guid driverId);
-        
+        Task<List<Ride>> GetCompletedRidesWithRatingAsync();
     }
 }

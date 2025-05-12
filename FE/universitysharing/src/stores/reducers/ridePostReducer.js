@@ -8,6 +8,7 @@ import {
   fetchRidesByUserId,
   cancelRide,
   rateDriver,
+  fetchCompletedRidesWithRating,
 } from "../../stores/action/ridePostAction";
 
 const ridePostSlice = createSlice({
@@ -20,6 +21,7 @@ const ridePostSlice = createSlice({
     passengerNextCursor: null,
     currentRide: null,
     ratedRides: [],
+    completedRidesWithRating: [],
     loading: false,
     error: null,
     success: false,
@@ -185,6 +187,18 @@ const ridePostSlice = createSlice({
         });
       })
       .addCase(rateDriver.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchCompletedRidesWithRating.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCompletedRidesWithRating.fulfilled, (state, action) => {
+        state.loading = false;
+        state.completedRidesWithRating = action.payload;
+      })
+      .addCase(fetchCompletedRidesWithRating.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

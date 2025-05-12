@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { TbMoodEmptyFilled } from "react-icons/tb";
 import { cancelRide, rateDriver } from "../../stores/action/ridePostAction";
 import RatingModal from "../RatingModal";
-
+import { useNavigate } from "react-router-dom";
 import L from "leaflet";
 import { confirmAlert } from "react-confirm-alert";
 import {
@@ -116,7 +116,7 @@ const YourRide = () => {
   const [mapBounds, setMapBounds] = useState(null);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedRide, setSelectedRide] = useState(null);
-
+  const navigate = useNavigate();
   // Refs for managing intervals and connections
   const mapRef = useRef(null);
   const intervalRef = useRef(null);
@@ -519,7 +519,7 @@ const YourRide = () => {
         toast.error("Lỗi khi gửi đánh giá!");
       });
   };
-
+  const handleSearchRide = () => navigate("/sharing-ride");
   const isRideRated = (ride) => ride.isRating; // Use isRating directly from the ride object
 
   const openRatingModal = (ride) => {
@@ -835,7 +835,7 @@ const YourRide = () => {
           </div>
           <h3>Không có chuyến đi hiện tại</h3>
           <p>Bắt đầu chuyến đi mới để bắt đầu!</p>
-          <button className="find-ride-btn">
+          <button className="find-ride-btn" onClick={handleSearchRide}>
             <FiSearch /> Tìm chuyến đi
           </button>
         </motion.div>

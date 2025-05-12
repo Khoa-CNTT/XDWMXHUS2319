@@ -51,7 +51,6 @@ import TestDispatchAPI from "./views/TestDispatchAPI";
 
 import UserManagement from "./admin/views/UserManagement";
 
-
 function App() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();

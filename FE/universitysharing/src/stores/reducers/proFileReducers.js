@@ -123,13 +123,22 @@ const listUser = createSlice({
       })
       .addCase(fetchTrustScoreHistories.fulfilled, (state, action) => {
         state.loading = false;
-        state.trustScoreHistories = {
-          histories: [
-            ...(state.trustScoreHistories.histories || []),
-            ...(action.payload.histories || []),
-          ],
-          nextCursor: action.payload.nextCursor,
-        };
+        // Kiểm tra action.payload trước khi truy cập
+        if (action.payload && typeof action.payload === "object") {
+          state.trustScoreHistories = {
+            histories: [
+              ...(state.trustScoreHistories.histories || []),
+              ...(action.payload.histories || []),
+            ],
+            nextCursor: action.payload.nextCursor || null,
+          };
+        } else {
+          // Nếu payload không hợp lệ, giữ nguyên trạng thái hoặc đặt về mặc định
+          state.trustScoreHistories = {
+            histories: state.trustScoreHistories.histories || [],
+            nextCursor: null,
+          };
+        }
       })
       .addCase(fetchTrustScoreHistories.rejected, (state, action) => {
         state.loading = false;

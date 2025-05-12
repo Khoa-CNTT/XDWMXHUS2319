@@ -18,7 +18,7 @@ namespace Infrastructure.Hubs
         }
         public async Task Handle(SearchAIEvent notification, CancellationToken cancellationToken)
         {
-           // await _notificationService.SendMessageSearchAi(notification.UserId, notification.MessageUser, notification.MessageAI);
+            //await _notificationService.SendMessageSearchAi(notification.UserId, notification.MessageUser, notification.MessageAI);
         }
     }
 }

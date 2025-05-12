@@ -99,6 +99,5 @@ namespace Infrastructure.Data.Repositories
 
             return (ridePost.LatLonStart, ridePost.LatLonEnd,ridePost.StartLocation,ridePost.EndLocation);
         }
-
     }
 }
