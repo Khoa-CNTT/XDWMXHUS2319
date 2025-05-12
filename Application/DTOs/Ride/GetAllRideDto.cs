@@ -21,7 +21,7 @@ namespace Application.DTOs.Ride
         public int EstimatedDuration { get; set; }
         public string Status { get; set; } = string.Empty;
         public string CreateAt { get; set; } = string.Empty;
-        public bool IsSafe { get; set; }
+        public bool IsSafetyTrackingEnabled { get; set; }
         public bool IsRating { get; set; }
 
     }

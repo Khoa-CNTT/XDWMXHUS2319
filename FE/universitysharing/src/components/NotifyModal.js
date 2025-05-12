@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { useSelector, useDispatch } from "react-redux";
 import "../styles/NotifyModal.scss";
 import { useNavigate } from "react-router-dom";
@@ -50,25 +56,51 @@ const NotifyModal = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState("Tất cả");
   const { signalRService, registerNotifyModal } = useSignalR();
   const [isInfiniteScrollEnabled, setIsInfiniteScrollEnabled] = useState(false);
+  const [hasFetchedInitialData, setHasFetchedInitialData] = useState({
+    "Tất cả": false,
+    "Chưa đọc": false,
+    "Đã đọc": false,
+  });
+  const [tabStates, setTabStates] = useState({
+    "Tất cả": { hasMore: true, nextCursor: null },
+    "Chưa đọc": { hasMore: true, nextCursor: null },
+    "Đã đọc": { hasMore: true, nextCursor: null },
+  });
   const {
     notifications = [],
     unreadNotifications = [],
     readNotifications = [],
     loading = false,
-    hasMore = false,
-    nextCursor = null,
   } = useSelector((state) => state.notifications || {});
   const [processedNotifications, setProcessedNotifications] = useState(
     new Set()
   );
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
 
-  // Thông báo trạng thái modal tới SignalRProvider
-  useEffect(() => {
-    if (signalRService) {
-      registerNotifyModal(isOpen);
-    }
-  }, [isOpen, signalRService, registerNotifyModal]);
+  // Debounce API calls
+  const fetchData = useCallback(
+    debounce((tab, cursor) => {
+      const action = {
+        "Tất cả": fetchNotifications,
+        "Chưa đọc": fetchNotificationsUnread,
+        "Đã đọc": fetchNotificationsRead,
+      }[tab];
+
+      dispatch(action(cursor)).then((response) => {
+        const payload = response.payload || {};
+        setTabStates((prev) => ({
+          ...prev,
+          [tab]: {
+            hasMore:
+              (payload.notifications?.length > 0 && !!payload.nextCursor) ||
+              false,
+            nextCursor: payload.nextCursor || null,
+          },
+        }));
+      });
+    }, 500),
+    [dispatch]
+  );
 
   // Tải dữ liệu ban đầu khi mở modal
   useEffect(() => {
@@ -80,13 +112,12 @@ const NotifyModal = ({ isOpen, onClose }) => {
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      // Chỉ tải dữ liệu nếu danh sách rỗng
-      if (
-        (activeTab === "Tất cả" && notifications.length === 0) ||
-        (activeTab === "Chưa đọc" && unreadNotifications.length === 0) ||
-        (activeTab === "Đã đọc" && readNotifications.length === 0)
-      ) {
+      if (!hasFetchedInitialData[activeTab]) {
         fetchData(activeTab, null);
+        setHasFetchedInitialData((prev) => ({
+          ...prev,
+          [activeTab]: true,
+        }));
         setLastFetchedAt(new Date());
       }
     }
@@ -95,69 +126,41 @@ const NotifyModal = ({ isOpen, onClose }) => {
       document.removeEventListener("mousedown", handleClickOutside);
       if (observerRef.current) observerRef.current.disconnect();
     };
-  }, [
-    isOpen,
-    onClose,
-    activeTab,
-    notifications.length,
-    unreadNotifications.length,
-    readNotifications.length,
-  ]);
-
-  // Debounce API calls
-  const fetchData = useCallback(
-    debounce((tab, cursor) => {
-      if (tab === "Tất cả") {
-        dispatch(fetchNotifications(cursor));
-      } else if (tab === "Chưa đọc") {
-        dispatch(fetchNotificationsUnread(cursor));
-      } else if (tab === "Đã đọc") {
-        dispatch(fetchNotificationsRead(cursor));
-      }
-    }, 500),
-    [dispatch]
-  );
+  }, [isOpen, onClose, activeTab, hasFetchedInitialData, fetchData]);
 
   const lastNotificationRef = useCallback(
     (node) => {
-      if (loading || !hasMore || !isInfiniteScrollEnabled) return;
+      if (loading || !tabStates[activeTab].hasMore || !isInfiniteScrollEnabled)
+        return;
       if (observerRef.current) observerRef.current.disconnect();
 
       observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          fetchData(activeTab, nextCursor);
+        if (entries[0].isIntersecting && tabStates[activeTab].hasMore) {
+          fetchData(activeTab, tabStates[activeTab].nextCursor);
         }
       });
 
       if (node) observerRef.current.observe(node);
     },
-    [
-      loading,
-      hasMore,
-      isInfiniteScrollEnabled,
-      activeTab,
-      nextCursor,
-      fetchData,
-    ]
+    [loading, isInfiniteScrollEnabled, activeTab, fetchData, tabStates]
   );
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
     setIsInfiniteScrollEnabled(false);
-    // Chỉ tải dữ liệu nếu danh sách rỗng
-    if (
-      (tab === "Tất cả" && notifications.length === 0) ||
-      (tab === "Chưa đọc" && unreadNotifications.length === 0) ||
-      (tab === "Đã đọc" && readNotifications.length === 0)
-    ) {
+    if (!hasFetchedInitialData[tab]) {
       fetchData(tab, null);
+      setHasFetchedInitialData((prev) => ({
+        ...prev,
+        [tab]: true,
+      }));
       setLastFetchedAt(new Date());
     }
   };
 
   const handleLoadMore = () => {
-    if (hasMore && !loading) {
-      fetchData(activeTab, nextCursor);
+    if (tabStates[activeTab].hasMore && !loading) {
+      fetchData(activeTab, tabStates[activeTab].nextCursor);
       setIsInfiniteScrollEnabled(true);
       setLastFetchedAt(new Date());
     }
@@ -209,8 +212,6 @@ const NotifyModal = ({ isOpen, onClose }) => {
     [dispatch]
   );
 
-  if (!isOpen) return null;
-
   const displayedNotifications =
     activeTab === "Tất cả"
       ? notifications
@@ -218,14 +219,27 @@ const NotifyModal = ({ isOpen, onClose }) => {
       ? unreadNotifications
       : readNotifications;
 
-  const recentNotifications = displayedNotifications.filter(
-    (notif) =>
-      new Date(notif.createdAt) >= new Date(Date.now() - 24 * 60 * 60 * 1000)
-  );
-  const olderNotifications = displayedNotifications.filter(
-    (notif) =>
-      new Date(notif.createdAt) < new Date(Date.now() - 24 * 60 * 60 * 1000)
-  );
+  const sortedDisplayedNotifications = useMemo(() => {
+    return [...displayedNotifications].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+  }, [displayedNotifications]);
+
+  const recentNotifications = useMemo(() => {
+    return sortedDisplayedNotifications.filter(
+      (notif) =>
+        new Date(notif.createdAt) >= new Date(Date.now() - 24 * 60 * 60 * 1000)
+    );
+  }, [sortedDisplayedNotifications]);
+
+  const olderNotifications = useMemo(() => {
+    return sortedDisplayedNotifications.filter(
+      (notif) =>
+        new Date(notif.createdAt) < new Date(Date.now() - 24 * 60 * 60 * 1000)
+    );
+  }, [sortedDisplayedNotifications]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="notify-modal" ref={modalRef}>
@@ -253,7 +267,12 @@ const NotifyModal = ({ isOpen, onClose }) => {
         </div>
       </div>
       <div className="modal-content">
-        {displayedNotifications.length === 0 && !loading ? (
+        {loading &&
+        hasFetchedInitialData[activeTab] &&
+        sortedDisplayedNotifications.length === 0 ? (
+          <div className="loading-state">Đang tải...</div>
+        ) : sortedDisplayedNotifications.length === 0 &&
+          !tabStates[activeTab].hasMore ? (
           <div className="empty-state">Không có thông báo nào</div>
         ) : (
           <div className="notification-section">
@@ -284,14 +303,11 @@ const NotifyModal = ({ isOpen, onClose }) => {
                         />
                         <div className="notification-text">
                           <p className="title">{notif.title}</p>
-                          {
-                            notif.type === NOTIFICATION_TYPES.SEND_FRIEND
-                            // notif.mutualFriendsCount !== undefined && (
-                            //   <span className="mutual-friends">
-                            //     {notif.mutualFriendsCount} bạn chung
-                            //   </span>
-                            // )
-                          }
+                          {notif.type === NOTIFICATION_TYPES.SEND_FRIEND && (
+                            <span className="mutual-friends">
+                              {notif.mutualFriendsCount} bạn chung
+                            </span>
+                          )}
                           <span className="time">
                             {formatRelativeTime(notif.createdAt)}
                           </span>
@@ -348,12 +364,11 @@ const NotifyModal = ({ isOpen, onClose }) => {
                           />
                           <div className="notification-text">
                             <p className="title">{notif.title}</p>
-                            {notif.type === NOTIFICATION_TYPES.SEND_FRIEND &&
-                              notif.mutualFriendsCount !== undefined && (
-                                <span className="mutual-friends">
-                                  {notif.mutualFriendsCount} bạn chung
-                                </span>
-                              )}
+                            {notif.type === NOTIFICATION_TYPES.SEND_FRIEND && (
+                              <span className="mutual-friends">
+                                {notif.mutualFriendsCount} bạn chung
+                              </span>
+                            )}
                             <span className="time">
                               {formatRelativeTime(notif.createdAt)}
                             </span>
@@ -395,12 +410,12 @@ const NotifyModal = ({ isOpen, onClose }) => {
               </>
             )}
             {(activeTab === "Chưa đọc" || activeTab === "Đã đọc") &&
-              displayedNotifications.map((notif, index) => (
+              sortedDisplayedNotifications.map((notif, index) => (
                 <div
                   key={notif.id}
                   ref={
                     isInfiniteScrollEnabled &&
-                    index === displayedNotifications.length - 1
+                    index === sortedDisplayedNotifications.length - 1
                       ? lastNotificationRef
                       : null
                   }
@@ -417,12 +432,11 @@ const NotifyModal = ({ isOpen, onClose }) => {
                     />
                     <div className="notification-text">
                       <p className="title">{notif.title}</p>
-                      {notif.type === NOTIFICATION_TYPES.SEND_FRIEND &&
-                        notif.mutualFriendsCount !== undefined && (
-                          <span className="mutual-friends">
-                            {notif.mutualFriendsCount} bạn chung
-                          </span>
-                        )}
+                      {notif.type === NOTIFICATION_TYPES.SEND_FRIEND && (
+                        <span className="mutual-friends">
+                          {notif.mutualFriendsCount} bạn chung
+                        </span>
+                      )}
                       <span className="time">
                         {formatRelativeTime(notif.createdAt)}
                       </span>
@@ -451,12 +465,19 @@ const NotifyModal = ({ isOpen, onClose }) => {
                     )}
                 </div>
               ))}
-            {loading && <div>Đang tải...</div>}
-            {!isInfiniteScrollEnabled && nextCursor && !loading && (
-              <button onClick={handleLoadMore} className="load-more">
-                Xem thêm
-              </button>
-            )}
+            {!tabStates[activeTab].hasMore &&
+              sortedDisplayedNotifications.length > 0 &&
+              !loading && (
+                <div className="end-of-list">Đã tải hết thông báo</div>
+              )}
+            {!isInfiniteScrollEnabled &&
+              tabStates[activeTab].hasMore &&
+              tabStates[activeTab].nextCursor &&
+              !loading && (
+                <button onClick={handleLoadMore} className="load-more">
+                  Xem thêm
+                </button>
+              )}
           </div>
         )}
       </div>

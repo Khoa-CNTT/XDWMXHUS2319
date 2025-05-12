@@ -39,7 +39,7 @@ namespace Application.CQRS.Commands.Posts
             try
             {
                 // ✅ Kiểm duyệt nội dung AI
-                if (!await _geminiService.ValidatePostContentAsync(request.Content))
+                if (request.Content !=null  && !await _geminiService.ValidatePostContentAsync(request.Content))
                 {
                     post.RejectAI();
                     await _unitOfWork.RollbackTransactionAsync();

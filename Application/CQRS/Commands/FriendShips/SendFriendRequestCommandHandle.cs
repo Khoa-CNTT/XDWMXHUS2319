@@ -140,6 +140,7 @@ namespace Application.CQRS.Commands.Friends
                 if (friendship.FriendId != userId)
                 {
                     await _notificationService.SendFriendNotificationAsync(request.FriendId, userId,notification.Id);
+
                 }
 
                 await _unitOfWork.SaveChangesAsync();
@@ -152,7 +153,6 @@ namespace Application.CQRS.Commands.Friends
                 await _unitOfWork.RollbackTransactionAsync();
                 return ResponseFactory.Error<ResultSendFriendDto>("Lỗi khi gửi lời mời kết bạn", 400, ex);
             }
-
 
         }
     }

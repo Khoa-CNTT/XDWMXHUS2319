@@ -32,6 +32,11 @@ namespace Application.CQRS.Commands.ChatAI
             chatHistory.UpdateAnswer(request.SuccessMessage ?? "");
             await _unitOfWork.AIChatHistoryRepository.UpdateAsync(chatHistory);
             await _unitOfWork.SaveChangesAsync();
+            if (request.RedisKey != "")
+            {
+                var key = $"{request.RedisKey}";
+                await _redisService.RemoveAsync(key);
+            }
             return new ResponseModel<bool>
             {
                 Success = true,

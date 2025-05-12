@@ -1,27 +1,19 @@
-import React, {
-  createContext,
-  useContext,
-  useMemo,
-  useState,
-  useEffect,
-} from "react";
 import { jwtDecode } from "jwt-decode";
-import {
-  refreshAccessToken,
-  validateToken,
-} from "../../src/Service/authService";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { refreshAccessToken, validateToken } from "../../src/Service/authService";
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isLoading, setIsLoading] = useState(true);
+  const [isTokenVerified, setIsTokenVerified] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
 
   const authData = useMemo(() => {
     if (!token) {
-      return { isAuthenticated: false, isLoading };
+      return { isAuthenticated: false, isLoading, isTokenVerified };
     }
     try {
       const decoded = jwtDecode(token);
@@ -30,7 +22,7 @@ export const AuthProvider = ({ children }) => {
         console.warn("[AuthProvider] Token đã hết hạn");
         localStorage.removeItem("token");
         setToken(null);
-        return { isAuthenticated: false, isLoading };
+        return { isAuthenticated: false, isLoading, isTokenVerified };
       }
       return {
         isAuthenticated: true,
@@ -49,22 +41,25 @@ export const AuthProvider = ({ children }) => {
         iss: decoded["iss"],
         aud: decoded["aud"],
         isLoading,
+        isTokenVerified,
       };
     } catch (err) {
       console.error("[AuthProvider] Lỗi giải mã token:", err);
-      return { isAuthenticated: false, isLoading };
+      return { isAuthenticated: false, isLoading, isTokenVerified };
     }
-  }, [token, isLoading]);
+  }, [token, isLoading, isTokenVerified]);
 
   useEffect(() => {
     const verifyToken = async () => {
       setIsLoading(true);
+      setIsTokenVerified(false);
       const storedToken = localStorage.getItem("token");
       if (storedToken && retryCount < maxRetries) {
         try {
           const isValid = await validateToken(storedToken);
           if (isValid) {
             setToken(storedToken);
+            setIsTokenVerified(true);
             console.log("[AuthProvider] Token hợp lệ");
             setRetryCount(0);
           } else {
@@ -72,6 +67,7 @@ export const AuthProvider = ({ children }) => {
             try {
               const newToken = await refreshAccessToken();
               setToken(newToken);
+              setIsTokenVerified(true);
               setRetryCount(0);
             } catch (err) {
               console.error(
@@ -79,14 +75,14 @@ export const AuthProvider = ({ children }) => {
                 err.message
               );
               setRetryCount((prev) => prev + 1);
-              setTimeout(verifyToken, 5000); // Thử lại sau 5s
+              setTimeout(verifyToken, 5000);
               return;
             }
           }
         } catch (err) {
           console.error("[AuthProvider] Lỗi xác thực token:", err.message);
           setRetryCount((prev) => prev + 1);
-          setTimeout(verifyToken, 5000); // Thử lại sau 5s
+          setTimeout(verifyToken, 5000);
           return;
         }
       } else {
@@ -111,6 +107,7 @@ export const AuthProvider = ({ children }) => {
           console.log("[AuthProvider] Đang làm mới token...");
           const newToken = await refreshAccessToken();
           setToken(newToken);
+          setIsTokenVerified(true);
         } catch (error) {
           console.error(
             "[AuthProvider] Không thể làm mới token:",
@@ -126,12 +123,14 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
+    setIsTokenVerified(false);
     console.log("[AuthProvider] Đã đăng xuất");
   };
 
   const login = (newToken) => {
     localStorage.setItem("token", newToken);
     setToken(newToken);
+    setIsTokenVerified(true);
     console.log("[AuthProvider] Đã đăng nhập với token mới");
   };
 

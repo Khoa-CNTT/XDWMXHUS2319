@@ -11,14 +11,34 @@ namespace Infrastructure.Hubs
 {
     public class UpdateLocationEventHandler : INotificationHandler<UpdateLocationEvent>
     {
-       private readonly ISignalRNotificationService _signalRNotificationService;
+        private readonly ISignalRNotificationService _signalRNotificationService;
+
         public UpdateLocationEventHandler(ISignalRNotificationService signalRNotificationService)
         {
             _signalRNotificationService = signalRNotificationService;
         }
+
         public async Task Handle(UpdateLocationEvent notification, CancellationToken cancellationToken)
         {
-            await _signalRNotificationService.SendNotificationUpdateLocationSignalR(notification.DriverId, notification.PassengerId, notification.Messsage ?? "");
+            // Gửi thông báo đến tài xế
+            if (notification.DriverId != Guid.Empty)
+            {
+                await _signalRNotificationService.SendNotificationUpdateLocationSignalR(
+                    notification.DriverId,
+                    Guid.Empty,
+                    notification.Message
+                );
+            }
+
+            // Gửi thông báo đến hành khách nếu có
+            if (notification.PassengerId.HasValue && notification.PassengerId.Value != Guid.Empty)
+            {
+                await _signalRNotificationService.SendNotificationUpdateLocationSignalR(
+                    notification.PassengerId.Value,
+                    Guid.Empty,
+                    notification.Message
+                );
+            }
         }
     }
 }

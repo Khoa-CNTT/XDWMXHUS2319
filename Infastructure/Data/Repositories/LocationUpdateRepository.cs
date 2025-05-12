@@ -24,6 +24,13 @@ namespace Infrastructure.Data.Repositories
             throw new NotImplementedException();
         }
 
+        public async Task<IEnumerable<LocationUpdate>> GetAllByRideIdAsync(Guid rideId)
+        {
+            return await _context.LocationUpdates
+                .Where(r => r.RideId == rideId)
+                .ToListAsync();
+        }
+
         public Task<LocationUpdate?> GetLatestLocationByRideIdAsync(Guid rideId)
         {
             return _context.Set<LocationUpdate>()

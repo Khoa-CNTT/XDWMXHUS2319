@@ -1,9 +1,11 @@
 ﻿using Application.DTOs.Post;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.CQRS.Queries.Post
 {
@@ -19,27 +21,43 @@ namespace Application.CQRS.Queries.Post
 
         public async Task<List<PostImageDto>> Handle(GetAllPostImagesByUserQuery request, CancellationToken cancellationToken)
         {
-            var posts = await _unitOfWork.PostRepository
-                .GetPostImagesByUserAsync(request.UserId);
+                var posts = await _unitOfWork.PostRepository
+                    .GetPostImagesByUserAsync(request.UserId);
 
-            if (posts == null || !posts.Any())
-            {
-                return new List<PostImageDto>();
-            }
-
-            var allposts = posts
-                .Where(p =>
-                    !string.IsNullOrEmpty(p.ImageUrl) &&
-                    File.Exists(Path.Combine(_env.ContentRootPath, "wwwroot", "images", "posts", Path.GetFileName(p.ImageUrl)))
-                )
-                .Select(p => new PostImageDto
+                if (posts == null || !posts.Any())
                 {
-                    PostId = p.Id,
-                    ImageUrl = $"{Constaint.baseUrl}{p.ImageUrl}"
-                })
-                .ToList();
+                    return new List<PostImageDto>();
+                }
 
-            return allposts;
+                var allPostImages = new List<PostImageDto>();
+
+                foreach (var post in posts)
+                {
+                    if (!string.IsNullOrEmpty(post.ImageUrl))
+                    {
+                        // Tách chuỗi ImageUrl thành mảng các URL
+                        var imageUrls = post.ImageUrl.Split(',')
+                            .Select(url => url.Trim())
+                            .Where(url => !string.IsNullOrEmpty(url));
+
+                        foreach (var imageUrl in imageUrls)
+                        {
+                            // Kiểm tra file tồn tại
+                            var filePath = Path.Combine(_env.ContentRootPath, "wwwroot", "images", "posts", Path.GetFileName(imageUrl));
+                            if (File.Exists(filePath))
+                            {
+                                allPostImages.Add(new PostImageDto
+                                {
+                                    PostId = post.Id,
+                                    ImageUrl = $"{Constaint.baseUrl}{imageUrl}"
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return allPostImages;
+            }
         }
     }
-}
+

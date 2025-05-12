@@ -1,4 +1,5 @@
 ﻿using Application.CQRS.Commands.Rides;
+using Application.CQRS.Queries.Ride;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +40,12 @@ namespace DuyTanSharingSystem.Controllers
         public async Task<IActionResult> RateDriver([FromBody] RateDriverCommand command)
         {
             var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+        [HttpGet("get-all-ride-rating")]
+        public async Task<IActionResult> GetAllRideRating([FromQuery] GetCompletedRidesWithRatingQuery query)
+        {
+            var response = await _mediator.Send(query);
             return Ok(response);
         }
     }
