@@ -29,6 +29,9 @@ const messenger = createSlice({
     },
     addMessage: (state, action) => {
       const newMsg = action.payload;
+      // const existsSelectedUser = state.selectFriend.some(
+      //   (m) => m.friendId === newMsg.senderId
+      // );
       const exists = state.messages.some((m) => m.id === newMsg.id);
       if (!exists) {
         state.messages.push(newMsg);
@@ -36,11 +39,54 @@ const messenger = createSlice({
     },
     markInboxAsSeen: (state, action) => {
       const { friendId } = action.payload;
-      console.warn("Id nhắn ", friendId);
+      // console.warn("Id nhắn ", friendId);
 
       // Xóa conversationId trong unReadInbox
       if (state.unReadInbox) {
         delete state.unReadInbox[friendId];
+      }
+    },
+    updateInboxOnNewMessage: (state, action) => {
+      const newMsg = action.payload;
+      const senderId = newMsg.senderId;
+
+      // Bỏ qua nếu tin nhắn từ cuộc trò chuyện hiện tại
+      if (newMsg.conversationId === state.conversationId) {
+        console.warn("🛑 Tin nhắn từ cuộc trò chuyện hiện tại, bỏ qua.");
+        return;
+      }
+
+      // 🛠️ Kiểm tra trùng ID trong inboxRead (ngăn lặp)
+      if (state.inboxRead) {
+        const userIndex = state.inboxRead.findIndex(
+          (item) => item.user.id === senderId
+        );
+        if (userIndex !== -1) {
+          const userItem = state.inboxRead[userIndex];
+          if (userItem.id === newMsg.id) {
+            console.warn("🛑 Tin nhắn đã tồn tại trong inboxRead, bỏ qua.");
+            return;
+          }
+
+          // Cập nhật thông tin mới cho inboxRead
+          userItem.id = newMsg.id;
+          userItem.lastMessage = newMsg.content;
+          userItem.lastMessageDate = newMsg.sentAt;
+          userItem.unreadCount += 1;
+          userItem.isSeen = false;
+
+          // Đưa người dùng lên đầu danh sách
+          state.inboxRead.splice(userIndex, 1);
+          state.inboxRead.unshift(userItem);
+        }
+      }
+
+      // Update unReadInbox
+      if (!state.unReadInbox) state.unReadInbox = {};
+      if (state.unReadInbox[senderId]) {
+        state.unReadInbox[senderId] += 1;
+      } else {
+        state.unReadInbox[senderId] = 1;
       }
     },
   },
@@ -90,7 +136,11 @@ const messenger = createSlice({
         state.conversationId = action.payload.id;
       })
       .addCase(getInbox.fulfilled, (state, action) => {
-        state.inboxRead = action.payload.conversations;
+        // state.inboxRead = action.payload.conversations;
+        state.inboxRead = action.payload.conversations.map((conversation) => ({
+          ...conversation,
+          id: null, // Thêm id từ user hoặc để null
+        }));
         state.unReadInbox = action.payload.unreadCounts;
       });
     // .addCase(sendMessages.fulfilled, (state, action) => {
@@ -98,6 +148,11 @@ const messenger = createSlice({
     // });
   },
 });
-export const { resetMessages, setSelectFriend, addMessage, markInboxAsSeen } =
-  messenger.actions;
+export const {
+  resetMessages,
+  setSelectFriend,
+  addMessage,
+  markInboxAsSeen,
+  updateInboxOnNewMessage,
+} = messenger.actions;
 export default messenger.reducer;

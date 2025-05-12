@@ -21,14 +21,12 @@ import dashboardSliceReducer from "./reducers/dashboardSlice.js";
 import notificationReducer from "./reducers/notificationReducer.js";
 import onlineUsersReducer from "./reducers/onlineSlice.js";
 
-
 import searchSlice from "./reducers/searchReducers.js";
 
 import deepLinkReducer from "./reducers/deepLinkReducer.js";
 
 import messengerReducer from "./reducers/messengerReducer.js";
-
-
+import typingReducer from "./reducers/typingReducer.js";
 
 import authReducer from "./reducers/authReducer.js";
 
@@ -55,10 +53,9 @@ const rootReducer = combineReducers({
   deeplink: deepLinkReducer,
 
   messenges: messengerReducer,
+  typing: typingReducer,
 
   auth: authReducer,
-
-
 });
 
 // 3. Tạo store

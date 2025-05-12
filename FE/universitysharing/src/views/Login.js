@@ -5,12 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AuthForm from "../components/AuthForm";
 import { useAuth } from "../contexts/AuthContext";
+
 import axiosClient from "../Service/axiosClient";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated, userRole, isLoading, isTokenVerified } = useAuth();
   const [loginSuccess, setLoginSuccess] = useState(false);
+
 
   const handleLogin = async (e, formData) => {
     e.preventDefault();
@@ -23,8 +25,10 @@ const Login = () => {
       });
 
       if (response.data.success) {
+
         const token = response.data.data;
         login(token);
+
         toast.success("Đăng nhập thành công!");
         setLoginSuccess(true);
       } else if (response?.data?.message?.toLowerCase() === "user not found") {

@@ -27,9 +27,16 @@ export const AuthProvider = ({ children }) => {
       return {
         isAuthenticated: true,
         token,
-        userId: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"],
-        userName: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
-        userRole: decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
+        userId:
+          decoded[
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+          ],
+        userName:
+          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
+        userRole:
+          decoded[
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          ],
         exp: decoded["exp"],
         iss: decoded["iss"],
         aud: decoded["aud"],
@@ -63,7 +70,10 @@ export const AuthProvider = ({ children }) => {
               setIsTokenVerified(true);
               setRetryCount(0);
             } catch (err) {
-              console.error("[AuthProvider] Không thể làm mới token:", err.message);
+              console.error(
+                "[AuthProvider] Không thể làm mới token:",
+                err.message
+              );
               setRetryCount((prev) => prev + 1);
               setTimeout(verifyToken, 5000);
               return;
@@ -76,7 +86,9 @@ export const AuthProvider = ({ children }) => {
           return;
         }
       } else {
-        console.warn("[AuthProvider] Đạt maxRetries hoặc không có token, xóa token");
+        console.warn(
+          "[AuthProvider] Đạt maxRetries hoặc không có token, xóa token"
+        );
         localStorage.removeItem("token");
         setToken(null);
       }
@@ -97,7 +109,10 @@ export const AuthProvider = ({ children }) => {
           setToken(newToken);
           setIsTokenVerified(true);
         } catch (error) {
-          console.error("[AuthProvider] Không thể làm mới token:", error.message);
+          console.error(
+            "[AuthProvider] Không thể làm mới token:",
+            error.message
+          );
           setRetryCount((prev) => prev + 1);
         }
       }

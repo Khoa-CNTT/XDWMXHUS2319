@@ -39,8 +39,12 @@ const AppSidebar = () => {
         paddingTop: "20px",
       }}
     >
-      <div className="logo" style={{ color: "white", textAlign: "center" }}>
-        <img src={logoWeb} style={{ width: "100px" }} alt="logo" />
+      <div
+        className="logo"
+        onClick={() => navigate("/admin/home")}
+        style={{ color: "white", textAlign: "center" }}
+      >
+        <img src={logoWeb} style={{ width: "150px" }} alt="logo" />
       </div>
       <Menu theme="dark" mode="inline" selectedKeys={[selectedKey]}>
         <Menu.Item
