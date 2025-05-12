@@ -30,7 +30,6 @@ namespace Domain.Entities
             public int TotalReports { get; private set; } = 0;
 
 
-
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
             public virtual ICollection<Like> Likes { get; private set; } = new HashSet<Like>();
             public virtual ICollection<Comment> Comments { get; private set; } = new HashSet<Comment>();
@@ -98,32 +97,36 @@ namespace Domain.Entities
                  TrustScore = Math.Max(score, 0);
             }
 
-            /// <summary>
-            /// Cập nhật thông tin cá nhân (Họ tên, ảnh đại diện, tiểu sử).
-            /// </summary>
-            public void UpdateProfile(string fullName, string? profilePicture,string? backgroundPicture, string? bio)
-            {
-                if (string.IsNullOrWhiteSpace(fullName))
-                    throw new ArgumentException("Full name cannot be empty.");
-
+        /// <summary>
+        /// Cập nhật thông tin cá nhân (Họ tên, ảnh đại diện, tiểu sử).
+        /// </summary>
+        public void UpdateProfile(string? fullName, string? profilePicture, string? backgroundPicture, string? bio)
+        {
+            if (!string.IsNullOrWhiteSpace(fullName) && FullName != fullName)
                 FullName = fullName;
 
-            if (!string.IsNullOrWhiteSpace(profilePicture))
+            if (!string.IsNullOrWhiteSpace(profilePicture) && ProfilePicture != profilePicture)
                 ProfilePicture = profilePicture;
 
-            if (!string.IsNullOrWhiteSpace(backgroundPicture))
+            if (!string.IsNullOrWhiteSpace(backgroundPicture) && BackgroundPicture != backgroundPicture)
                 BackgroundPicture = backgroundPicture;
 
-            if (!string.IsNullOrWhiteSpace(bio))
+            if (bio != null && Bio != bio)
                 Bio = bio;
+        }
 
-            }
-            public void UpdateInformation(string? phone, string? relativePhone, string gender)
-            {
-                    Phone = phone;
-                    RelativePhone = relativePhone;
-                    Gender = gender;
-            }
+
+        public void UpdateInformation(string? phone, string? relativePhone, string? gender)
+        {
+            if (!string.IsNullOrWhiteSpace(phone) && Phone != phone)
+                Phone = phone;
+
+            if (!string.IsNullOrWhiteSpace(relativePhone) && RelativePhone != relativePhone)
+                RelativePhone = relativePhone;
+
+            if (!string.IsNullOrWhiteSpace(gender) && Gender != gender)
+                Gender = gender;
+        }
 
 
 

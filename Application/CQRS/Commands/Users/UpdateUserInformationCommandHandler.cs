@@ -39,7 +39,7 @@ namespace Application.CQRS.Commands.Users
             try
             {
                 // Cập nhật thông tin người dùng
-                user.UpdateInformation(request.Phone, request.PhoneRelative, request.Gender);
+                user.UpdateInformation(request.PhoneNumber, request.PhoneRelativeNumber, request.Gender);
                 await _userRepository.UpdateAsync(user);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();

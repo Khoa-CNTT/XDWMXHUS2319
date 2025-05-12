@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-import { toast } from "react-toastify";
 import { jwtDecode } from "jwt-decode";
+import { toast } from "react-toastify";
+import axiosClient from '../../Service/axiosClient';
 // Tạo bài đăng
 export const createPost = createAsyncThunk(
   "ride/createPost",
@@ -10,17 +10,16 @@ export const createPost = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const token = localStorage.getItem("token");
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const response = await axios.post(
-        "https://localhost:7053/api/ridepost/create",
-        { content, startLocation, endLocation, startTime, postType },
-        config
+      const startTimeUtc = new Date(startTime).toISOString();
+      console.log("startTimeUtc", startTimeUtc);
+      const response = await axiosClient.post(
+        "/api/ridepost/create",
+        { content, startLocation, endLocation, startTime: startTimeUtc, postType },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
       toast.success(response.data.data.message || "Tạo bài đăng thành công!");
       console.log("response.data.data", response.data.data.message);
@@ -33,21 +32,14 @@ export const createPost = createAsyncThunk(
   }
 );
 
-//Xóa bài viết
+// Xóa bài viết
 export const deleteRidePost = createAsyncThunk(
   "ride/deleteRidePost",
   async (postID, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.delete(
-        `https://localhost:7053/api/ridepost/delete?PostId=${postID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Gửi token trong header
-          },
-        }
+      const response = await axiosClient.delete(
+        `/api/ridepost/delete?PostId=${postID}`
       );
-      // console.log("Xóa bài viết thành công!", response.data);
       return postID;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -62,16 +54,6 @@ export const updatePost = createAsyncThunk(
     try {
       if (!postData.id) throw new Error("Post ID is required");
 
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token found");
-
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
       const payload = {
         Id: postData.id,
         Content: postData.content || null,
@@ -81,10 +63,14 @@ export const updatePost = createAsyncThunk(
       };
 
       console.log("Sending updatePost payload:", payload);
-      const response = await axios.put(
-        "https://localhost:7053/api/RidePost/update",
+      const response = await axiosClient.put(
+        "/api/RidePost/update",
         payload,
-        config
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       console.log("updatePost response:", response.data);
@@ -122,13 +108,7 @@ export const fetchRidePost = createAsyncThunk(
   "ride/fetchRidePost",
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        "https://localhost:7053/api/RidePost/get-all",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axiosClient.get("/api/RidePost/get-all");
       return response.data?.data?.responseRidePostDto || [];
     } catch (error) {
       return rejectWithValue(error.response?.data.data || "Lỗi không xác định");
@@ -142,14 +122,7 @@ export const createRide = createAsyncThunk(
   async (rideData, { rejectWithValue }) => {
     try {
       console.log("rideData", rideData);
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        "https://localhost:7053/api/ride/create",
-        rideData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axiosClient.post("/api/ride/create", rideData);
       if (response.data.success) {
         toast.success(response.data.message || "Tạo chuyến đi thành công!");
       } else {
@@ -178,16 +151,12 @@ export const fetchRidesByUserId = createAsyncThunk(
           "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
         ];
 
-      const response = await axios.get(
-        `https://localhost:7053/api/ridepost/user/${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params: {
-            nextCursor: nextCursor || undefined,
-            pageSize: pageSize || 10,
-          },
-        }
-      );
+      const response = await axiosClient.get(`/api/ridepost/user/${userId}`, {
+        params: {
+          nextCursor: nextCursor || undefined,
+          pageSize: pageSize || 10,
+        },
+      });
       console.log("Current Ride:", response);
       return {
         driverRides: response.data.data.driverRideList,
@@ -200,19 +169,15 @@ export const fetchRidesByUserId = createAsyncThunk(
     }
   }
 );
+
 // Hủy chuyến đi
 export const cancelRide = createAsyncThunk(
   "ride/cancelRide",
   async (rideId, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-      const config = {
-        headers: { Authorization: `Bearer ${token}` },
-      };
-      const response = await axios.patch(
-        `https://localhost:7053/api/Ride/cancel-ride?RideId=${rideId}`,
-        null,
-        config
+      const response = await axiosClient.patch(
+        `/api/Ride/cancel-ride?RideId=${rideId}`,
+        null
       );
       if (response.data.success) {
         toast.success(response.data.message || "Hủy chuyến đi thành công!");
@@ -227,24 +192,25 @@ export const cancelRide = createAsyncThunk(
     }
   }
 );
+
+// Đánh giá tài xế
 export const rateDriver = createAsyncThunk(
   "rides/rateDriver",
   async ({ rideId, driverId, rating, comment }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        "https://localhost:7053/api/ride/rate-driver",
-        { rideId, driverId, rating, comment },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axiosClient.post("/api/ride/rate-driver", {
+        rideId,
+        driverId,
+        rating,
+        comment,
+      });
       return { rideId, driverId, rating, comment };
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
+
 export const fetchCompletedRidesWithRating = createAsyncThunk(
   "ride/fetchCompletedRidesWithRating",
   async (_, { rejectWithValue }) => {
@@ -276,3 +242,17 @@ export const fetchCompletedRidesWithRating = createAsyncThunk(
     }
   }
 );
+
+// Fetch danh sách bài đăng
+export const fetchLocation = createAsyncThunk(
+  "ride/fetchLocation",
+  async (rideId, { rejectWithValue }) => {
+    try {
+      const response = await axiosClient.get(`/api/UpdateLocation/get-all-by-ride-id?rideId=${rideId}`);
+      return response.data?.data || []; // Trả về danh sách UpdateLocationDto
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.data || "Lỗi không xác định");
+    }
+  }
+);
+

@@ -8,6 +8,7 @@ namespace DuyTanSharingSystem.Controllers
 {
     [Route("api/Admin")]
     [ApiController]
+    [Authorize(Policy = "Admin")]
     //[Authorize(Policy = nameof(RoleEnum.Admin))]
     public class UserAdminController : ControllerBase
     {

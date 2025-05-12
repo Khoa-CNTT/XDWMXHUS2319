@@ -1,10 +1,5 @@
-using Application.DTOs.FriendShips;
 using Application.Model;
-
 using Application.Model.Events;
-
-using Microsoft.AspNetCore.SignalR;
-using MimeKit;
 
 namespace Infrastructure.Service
 {
@@ -39,12 +34,14 @@ namespace Infrastructure.Service
                 .SendAsync("ReceiveLikeNotification", data);
         }
 
-        public async Task SendNotificationUpdateLocationSignalR(Guid driverId, Guid passengerId, string message)
+        public async Task SendNotificationUpdateLocationSignalR(Guid recipientId, Guid passengerId, string message)
         {
-            await _hubContext.Clients.User(driverId.ToString())
-                .SendAsync("ReceiveNotificationUpdateLocation", message);
-            await _hubContext.Clients.User(passengerId.ToString())
-                .SendAsync("ReceiveNotificationUpdateLocation", message);
+            // Chỉ gửi đến recipientId, bỏ qua passengerId nếu là Guid.Empty
+            if (recipientId != Guid.Empty)
+            {
+                await _hubContext.Clients.User(recipientId.ToString())
+                    .SendAsync("ReceiveNotificationUpdateLocation", message);
+            }
         }
 
 
@@ -74,6 +71,13 @@ namespace Infrastructure.Service
         {
             await _hubContext.Clients.User(sendMessageNotificationEvent.ReceiverId.ToString())
                 .SendAsync("ReceiveMessageNotification", sendMessageNotificationEvent.Message);
+        }
+
+        public async Task SendAdminNotificationSignalR(AdminNotificationEvent adminNotificationEvent)
+        {
+            // Gửi thông báo đến admin qua SignalR
+            await _hubContext.Clients.User(adminNotificationEvent.AdminId.ToString())
+                .SendAsync("ReceiveAdminNotification", adminNotificationEvent);
         }
     }
 }

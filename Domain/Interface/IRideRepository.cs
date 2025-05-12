@@ -11,6 +11,7 @@ namespace Domain.Interface
         Task<IEnumerable<Ride>> GetActiveRidesAsync();
         Task<Ride?> GetRideByUserIdAsync(Guid userId);
         Task<IEnumerable<Ride>> GetActiveRidesByPassengerIdAsync(Guid passengerId);
+        Task<IEnumerable<Ride>> GetActiveRidesByDriverIdIdAsync(Guid driverId);
         Task<int> GetDriveRideCountAsync(Guid userId);
         Task<int> GetPassengerRideCountAsync(Guid userId);
         Task<List<Ride>> GetRidePostsByPassengerIdAsync(Guid passengerId, Guid? lastPostId, int pageSize);

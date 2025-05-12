@@ -35,7 +35,7 @@ namespace Application.CQRS.Commands.Rides
 
             if (userId == request.DriverId)
             {
-                return ResponseFactory.Fail<ResponseRideDto>("Driver and Passenger can't be the same", 400);
+                return ResponseFactory.Fail<ResponseRideDto>("Bạn không thể tự đăng kí chuyến đi của bạn.", 400);
             }
 
             if (ridePost == null || ridePost.Status == RidePostStatusEnum.Matched)
@@ -54,12 +54,13 @@ namespace Application.CQRS.Commands.Rides
             var activeRides = await _unitOfWork.RideRepository.GetActiveRidesByPassengerIdAsync(userId);
             if (activeRides.Any())
             {
-                return ResponseFactory.Fail<ResponseRideDto>("You already have an active ride. Please complete it before registering a new one.", 400);
+                return ResponseFactory.Fail<ResponseRideDto>("Bạn đang tham gia vào một chuyến đi,vui lòng hoàn thành hoặc hủy chuyến đi đó trước khi tham gia chuyến đi mới.", 400);
             }
-
-
-
-
+            var activeRidesDriver = await _unitOfWork.RideRepository.GetActiveRidesByDriverIdAsync(userId);
+            if (activeRidesDriver.Any())
+            {
+                return ResponseFactory.Fail<ResponseRideDto>("Bạn hiện đang có một hành khách đang chờ,nếu bạn muốn nhận chuyến đi khác vui lòng hoàn thành chuyến đi trước đó hoặc hủy bỏ chuyến đi.", 400);
+            }
             (double distanceKm, int durationMinutes) = await _ridePostService.CalculateKmDurationAsync(ridePost.StartLocation, ridePost.EndLocation);
             if (distanceKm == 0 && durationMinutes == 0)
             {
@@ -67,9 +68,24 @@ namespace Application.CQRS.Commands.Rides
             }
             await _unitOfWork.BeginTransactionAsync();
             try
-            { 
+            {
+                if (request.EstimatedDuration == 0)
+                {
+                    var startCoords = ridePost.LatLonStart.Split(',');
+                    var endCoords = ridePost.LatLonEnd.Split(',');
+
+                    var startLat = double.Parse(startCoords[0]);
+                    var startLng = double.Parse(startCoords[1]);
+                    var endLat = double.Parse(endCoords[0]);
+                    var endLng = double.Parse(endCoords[1]);
+
+                    var (_, estimatedDuration) = await _ridePostService.GetDurationAndDistanceAsync(startLat, startLng, endLat, endLng);
+
+                    // Gán lại vào request nếu cần
+                    request.EstimatedDuration = estimatedDuration;
+                }
                 ridePost.Matched();
-                var ride = new Ride(request.DriverId, userId, request.Fare, durationMinutes, request.RidePostId,request.isSafe);
+                var ride = new Ride(request.DriverId, userId, request.Fare, durationMinutes, request.RidePostId,request.IsSafetyTrackingEnabled);
                 await _unitOfWork.RideRepository.AddAsync(ride);
                 // Luu vao Notification
                 var notification = new Notification(ride.DriverId,

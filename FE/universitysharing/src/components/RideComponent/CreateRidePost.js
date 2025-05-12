@@ -21,7 +21,7 @@ import avatarDefault from "../../assets/AvatarDefault.png";
 import "../../styles/CreateRideModal.scss";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import LocationSearch from "./LocationSreach"; // Đảm bảo tên file đúng
+import LocationSearch from "./LocationSreach";
 import { useDispatch, useSelector } from "react-redux";
 import { createPost } from "../../stores/action/ridePostAction";
 import { resetPostState } from "../../stores/reducers/ridePostReducer";
@@ -44,9 +44,8 @@ const useMapControl = (center, bounds) => {
 // Giới hạn phạm vi Đà Nẵng
 const daNangBounds = L.latLngBounds(
   L.latLng(15.975, 108.05), // Tây Nam Đà Nẵng
-  L.latLng(16.15, 108.35) // Đông Bắc Đà Nẵng
-);
-
+  L.latLng(16.15, 108.35)
+); // Đông Bắc Đ
 const HERE_API_KEY = process.env.REACT_APP_HERE_API_KEY;
 
 const CreateRidePost = ({ onClose, usersProfile }) => {
@@ -54,11 +53,11 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
   const [startLocation, setStartLocation] = useState([16.054407, 108.202167]); // Trung tâm Đà Nẵng
   const [endLocation, setEndLocation] = useState(null);
   const [route, setRoute] = useState([]);
-  const [startLabel, setStartLabel] = useState("Vị trí của bạn"); // Chỉ hiển thị trên client
-  const [endLabel, setEndLabel] = useState(""); // Chỉ hiển thị trên client
+  const [startLabel, setStartLabel] = useState("Vị trí của bạn");
+  const [endLabel, setEndLabel] = useState("");
   const [isUserInteracted, setIsUserInteracted] = useState(false);
   const [minDateTime, setMinDateTime] = useState("");
-  const [content, setContent] = useState(""); // Thêm state cho nội dung bài viết
+  const [content, setContent] = useState("");
 
   const dispatch = useDispatch();
   const { loading, error, success } = useSelector((state) => state.rides);
@@ -76,11 +75,30 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
     className: "destination-marker",
   });
 
-  useEffect(() => {
+  // Hàm để lấy thời gian hiện tại dạng ISO (YYYY-MM-DDTHH:mm)
+  const getCurrentDateTime = () => {
     const now = new Date();
-    const localISOTime = now.toISOString().slice(0, 16);
-    setMinDateTime(localISOTime);
+    // Thêm 1 phút để đảm bảo thời gian tương lai
+    now.setMinutes(now.getMinutes() + 1);
+    return now.toISOString().slice(0, 16);
+  };
+
+  // Cập nhật minDateTime khi component mount và mỗi 30 giây
+  useEffect(() => {
+    setMinDateTime(getCurrentDateTime());
+    const interval = setInterval(() => {
+      setMinDateTime(getCurrentDateTime());
+    }, 30000); // Cập nhật mỗi 30 giây
+    return () => clearInterval(interval); // Dọn dẹp khi component unmount
   }, []);
+
+  // Kiểm tra và đặt lại selectedTime nếu nó nhỏ hơn minDateTime
+  useEffect(() => {
+    if (selectedTime && new Date(selectedTime) < new Date(minDateTime)) {
+      setSelectedTime(minDateTime);
+      toast.warning("Thời gian phải ở tương lai!");
+    }
+  }, [minDateTime, selectedTime]);
 
   const getCurrentLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -187,7 +205,7 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
         return;
       }
       setLocation(location);
-      setLabel(label); // Chỉ cập nhật label để hiển thị trên client
+      setLabel(label);
       setIsUserInteracted(true);
     },
     []
@@ -216,10 +234,14 @@ const CreateRidePost = ({ onClose, usersProfile }) => {
       toast.error("Vui lòng điền đầy đủ thông tin!");
       return;
     }
+    if (new Date(selectedTime) <= new Date()) {
+      toast.error("Thời gian khởi hành phải ở tương lai!");
+      return;
+    }
     const postData = {
-      content: content || null, // Nội dung bài viết (có thể null)
-      startLocation: `${startLocation[0]},${startLocation[1]}`, // Tọa độ dạng chuỗi: "lat,lng"
-      endLocation: `${endLocation[0]},${endLocation[1]}`, // Tọa độ dạng chuỗi: "lat,lng"
+      content: content || null,
+      startLocation: `${startLocation[0]},${startLocation[1]}`,
+      endLocation: `${endLocation[0]},${endLocation[1]}`,
       startTime: selectedTime,
       postType: 0,
     };

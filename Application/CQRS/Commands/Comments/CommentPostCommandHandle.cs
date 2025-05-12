@@ -84,6 +84,7 @@ namespace Application.CQRS.Commands.Comments
                     await _notificationService.SendCommentNotificationAsync(request.PostId, userId, postOwnerId, notification.Id);
                 }
 
+
                 if (request.redis_key != null)
                 {
                     var key = $"{request.redis_key}";
