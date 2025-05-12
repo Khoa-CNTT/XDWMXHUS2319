@@ -1,16 +1,18 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AuthForm from "../components/AuthForm";
 import { toast } from "react-toastify";
-import axiosClient from "../Service/axiosClient"; // Thay axios bằng axiosClient
+import axiosClient from "../Service/axiosClient";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const baseUrl = process.env.REACT_APP_BASE_URL;
+  const { login, isAuthenticated, userRole, isLoading, isTokenVerified } =
+    useAuth();
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   const handleLogin = async (e, formData) => {
     e.preventDefault();
@@ -18,15 +20,17 @@ const Login = () => {
 
     try {
       const response = await axiosClient.post("/api/Auth/login", {
-        // Gọi API tương đối vì baseURL đã được thiết lập
         email: formData.email,
         password: formData.password,
       });
 
       if (response.data.success) {
-        login(response.data.data);
+        const token = response.data.data;
+
+        login(token);
+        console.warn("[Login] Decoded token:", userRole);
         toast.success("Đăng nhập thành công!");
-        navigate("/home");
+        setLoginSuccess(true);
       } else if (response?.data?.message?.toLowerCase() === "user not found") {
         toast.error("Người dùng không tồn tại trong hệ thống!");
       } else {
@@ -45,6 +49,27 @@ const Login = () => {
       NProgress.done();
     }
   };
+
+  useEffect(() => {
+    if (loginSuccess && isAuthenticated && !isLoading && isTokenVerified) {
+      console.warn("useEffect Login:", { isAuthenticated, userRole });
+      if (userRole && userRole.toLowerCase() === "admin") {
+        navigate("/admin/dashboard", {
+          state: { fromLogin: true },
+          replace: true,
+        });
+      } else {
+        navigate("/home", { state: { fromLogin: true }, replace: true });
+      }
+    }
+  }, [
+    loginSuccess,
+    isAuthenticated,
+    userRole,
+    isLoading,
+    isTokenVerified,
+    navigate,
+  ]);
 
   return <AuthForm type="login" onSubmit={handleLogin} />;
 };

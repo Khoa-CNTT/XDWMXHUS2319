@@ -2,6 +2,7 @@
 using Application.DTOs.Reposts;
 using Application.DTOs.User;
 using Application.Interface;
+using Application.Services;
 using Domain.Interface;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -17,11 +18,13 @@ namespace DuyTanSharingSystem.Controllers
     {
         private readonly IReportService _reportService;
         private readonly IMediator _mediator;
+        private readonly IRideReportService _rideReportService;
 
-        public ReportController(IReportService reportService, IMediator mediator)
+        public ReportController(IReportService reportService, IMediator mediator, IRideReportService rideReportService)
         {
             _reportService = reportService;
             _mediator = mediator;
+            _rideReportService = rideReportService;
         }
         // 📝 Người dùng gửi báo cáo bài viết
         [Authorize]
@@ -103,6 +106,16 @@ namespace DuyTanSharingSystem.Controllers
         {
             var result = await _reportService.AcceptUserReportsByUserIdAsync(reportedUserId);
             return Ok(result);
+        }
+        /// <summary>
+        /// Lấy danh sách báo cáo chuyến đi theo loại cảnh báo (DriverGPSOff).
+        /// </summary>
+        /// <returns>Danh sách RideReportDto</returns>
+        [HttpGet("admin/ride-reports")]
+        public async Task<IActionResult> GetFilteredReports()
+        {
+            var reports = await _rideReportService.GetFilteredReportsAsync();
+            return Ok(reports);
         }
     }
 }

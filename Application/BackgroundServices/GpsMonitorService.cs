@@ -33,7 +33,7 @@
 
                         if (lastDriverUpdate != null && (currentUtc - lastDriverUpdate) >= TimeSpan.FromMinutes(3))
                         {
-                            if (currentUtc - lastDriverUpdate < TimeSpan.FromMinutes(5))
+                            if (currentUtc - lastDriverUpdate < TimeSpan.FromMinutes(1))
                             {
                                 // Cảnh báo trong app trước
                                 await notificationService.SendInAppNotificationAsync(ride.DriverId, "GPS có thể bị tắt! Hãy kiểm tra lại.");
@@ -45,7 +45,7 @@
                             }
                         }
                             // (1) Tài xế tắt GPS hơn 30 phút
-                            if (lastDriverUpdate != null && (currentUtc - lastDriverUpdate) > TimeSpan.FromMinutes(30))
+                            if (lastDriverUpdate != null && (currentUtc - lastDriverUpdate) > TimeSpan.FromMinutes(2))
                             {
                             await notificationService.SendAlertAsync(ride.PassengerId, "🚨 Cảnh giác! Tài xế của bạn đã tắt GPS hơn 30 phút.");
 

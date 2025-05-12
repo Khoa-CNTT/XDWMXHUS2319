@@ -15,6 +15,19 @@ namespace Application
 {
     public static class Mapping
     {
+        public static RideReportDto RideReportwithAdmin(RideReport rideReport)
+        {
+            return new RideReportDto
+            {
+                Id = rideReport.Id,
+                RideId = rideReport.RideId,
+                PassengerId = rideReport.PassengerId,
+                Message = rideReport.Message,
+                AlertType = rideReport.AlertType,
+                Status = rideReport.Status,
+                CreatedAt = rideReport.CreatedAt
+            };
+        }
         public static ReportResponseDto ToResponseRepostDto(Report report)
         {
             return new ReportResponseDto

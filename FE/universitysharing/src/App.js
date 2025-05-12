@@ -51,7 +51,6 @@ import TestDispatchAPI from "./views/TestDispatchAPI";
 
 import UserManagement from "./admin/views/UserManagement";
 
-
 function App() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
@@ -64,27 +63,27 @@ function App() {
   );
   const selectedPost = useSelector((state) => state.posts.selectedPost);
   const error = useSelector((state) => state.deeplink.error);
-
-  // useEffect(() => {
-  //   if (isAuthenticated && location.pathname === "/login") {
-  //     window.history.replaceState(null, "", "/home");
-  //   }
-  // }, [isAuthenticated, location.pathname]);
-
   useEffect(() => {
-    // Chuyển hướng nếu đã đăng nhập và truy cập /login
-    if (isAuthenticated && location.pathname === "/login") {
+    console.log("App useEffect:", {
+      isAuthenticated,
+      pathname: location.pathname,
+      state: location.state,
+    });
+    // Chỉ chuyển hướng nếu đã đăng nhập, đang ở /login, và không phải từ đăng nhập
+    if (
+      isAuthenticated &&
+      location.pathname === "/login" &&
+      !location.state?.fromLogin
+    ) {
       navigate("/home", { replace: true });
     }
     if (selectedPost) {
       return;
     }
-    // Tách postId từ URL và dispatch action
+
     const pathMatch = location.pathname.match(/^\/post\/(.+)$/);
     if (pathMatch) {
-      const postId = pathMatch[1]; // Ví dụ: 8e9dcfc8-0b5d-4244-a615-e00c0ae7455f
-      // Kiểm tra UUID hợp lệ
-      // console.error("POST ID TỪ APP:", postId);
+      const postId = pathMatch[1];
       const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(postId)) {
@@ -152,7 +151,7 @@ function App() {
                 />
                 <Route path="/test" element={<TestDispatchAPI />} />
 
-                <Route path="*" element={<Navigate to="/home" replace />} />
+                {/* <Route path="*" element={<Navigate to="/home" replace />} /> */}
               </>
             ) : (
               <>
