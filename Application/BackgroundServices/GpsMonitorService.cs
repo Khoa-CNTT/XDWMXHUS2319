@@ -1,12 +1,4 @@
-﻿using Application.Interface.Hubs;
-using Application.Services;
-using Domain.Interface;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using static Domain.Common.Enums;
-
-namespace Application.BackgroundServices
+﻿namespace Application.BackgroundServices
 {
     public class GpsMonitorService : BackgroundService
     {
@@ -41,7 +33,7 @@ namespace Application.BackgroundServices
 
                         if (lastDriverUpdate != null && (currentUtc - lastDriverUpdate) >= TimeSpan.FromMinutes(3))
                         {
-                            if (currentUtc - lastDriverUpdate < TimeSpan.FromMinutes(5))
+                            if (currentUtc - lastDriverUpdate < TimeSpan.FromMinutes(1))
                             {
                                 // Cảnh báo trong app trước
                                 await notificationService.SendInAppNotificationAsync(ride.DriverId, "GPS có thể bị tắt! Hãy kiểm tra lại.");
@@ -53,13 +45,15 @@ namespace Application.BackgroundServices
                             }
                         }
                             // (1) Tài xế tắt GPS hơn 30 phút
-                            if (lastDriverUpdate != null && (currentUtc - lastDriverUpdate) > TimeSpan.FromMinutes(30))
+
+                            if (lastDriverUpdate != null && (currentUtc - lastDriverUpdate) > TimeSpan.FromMinutes(10))
+
                             {
-                            await notificationService.SendAlertAsync(ride.PassengerId, "🚨 Cảnh giác! Tài xế của bạn đã tắt GPS hơn 30 phút.");
+                            await notificationService.SendAlertAsync(ride.PassengerId, "🚨 Cảnh giác! Tài xế của bạn đã tắt GPS hơn 10 phút.");
 
                             try
                             {
-                                var report = new RideReport(ride.Id, ride.PassengerId,AlertTypeEnums.DriverGPSOff, "🚨 Tài xế đã tắt GPS hơn 30 phút.");
+                                var report = new RideReport(ride.Id, ride.PassengerId,AlertTypeEnums.DriverGPSOff, "🚨 Tài xế đã tắt GPS hơn 10 phút.");
                                 await _unitOfWork.RideReportRepository.AddAsync(report);
                                 await _unitOfWork.SaveChangesAsync();
                             }

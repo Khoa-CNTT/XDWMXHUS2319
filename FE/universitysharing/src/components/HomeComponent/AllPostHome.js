@@ -1,56 +1,54 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import "../../styles/headerHome.scss";
-import "../../styles/MoblieReponsive/HomeViewMobile/AllpostMobile.scss";
-import { fetchLikes } from "../../stores/action/likeAction";
-import { fetchShares } from "../../stores/action/shareAction";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { FaHeart } from "react-icons/fa";
 import {
-  FiMoreHorizontal,
-  FiX,
+  FiClock,
   FiHeart,
   FiMessageSquare,
+  FiMoreHorizontal,
   FiShare2,
-  FiClock,
+  FiX,
 } from "react-icons/fi";
-import { FaHeart } from "react-icons/fa";
 import avatarWeb from "../../assets/AvatarDefault.png";
+import { fetchLikes } from "../../stores/action/likeAction";
+import { fetchShares } from "../../stores/action/shareAction";
+import "../../styles/headerHome.scss";
+import "../../styles/MoblieReponsive/HomeViewMobile/AllpostMobile.scss";
 import CommentModal from "../CommentModal";
 import ShareModal from "../shareModal";
 import SharedPost from "./SharingPost";
 
-import CommentModalNoImg from "../CommentModal-NoImge/CommentNoImage";
 
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchPosts,
-  likePost,
-  deletePost,
-  fetchPostsByOwner,
-  fetchPostsByOtherUser,
-} from "../../stores/action/listPostActions";
-import {
-  hidePost,
-  openCommentModal,
-  closeCommentModal,
-  openShareModal,
-  closeShareModal,
-  openPostOptionModal,
-  closePostOptionModal,
-  openInteractorModal,
-  closeInteractorModal,
-  openInteractorShareModal,
-  closeInteractorShareModal,
-} from "../../stores/reducers/listPostReducers";
-import { debounce } from "lodash";
-import getUserIdFromToken from "../../utils/JwtDecode";
-import PostOptionsModal from "./PostOptionModal";
-import { confirmAlert } from "react-confirm-alert";
-import "react-confirm-alert/src/react-confirm-alert.css";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { debounce } from "lodash";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
+import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  deletePost,
+  fetchPosts,
+  fetchPostsByOtherUser,
+  fetchPostsByOwner,
+  likePost,
+} from "../../stores/action/listPostActions";
+import {
+  closeCommentModal,
+  closeInteractorModal,
+  closeInteractorShareModal,
+  closePostOptionModal,
+  closeShareModal,
+  hidePost,
+  openCommentModal,
+  openInteractorModal,
+  openInteractorShareModal,
+  openPostOptionModal,
+  openShareModal,
+} from "../../stores/reducers/listPostReducers";
+import getUserIdFromToken from "../../utils/JwtDecode";
 import InteractorModal from "../InteractorModal";
-import Spinner from "../../utils/Spinner";
 import InteractorShareModal from "../InteractorShareModal";
+import PostOptionsModal from "./PostOptionModal";
 
 const AllPosts = ({
   usersProfile,

@@ -14,6 +14,7 @@ import { useDispatch } from "react-redux";
 import { debounce } from "lodash";
 import CommentOption from "./CommentOption";
 import getUserIdFromToken from "../../utils/JwtDecode";
+import { updateComment } from "../../stores/action/listPostActions";
 
 const CommentItem = ({
   comments,
@@ -30,6 +31,9 @@ const CommentItem = ({
   const [openOptionId, setOpenOptionId] = useState(null);
   const [visibleReplies, setVisibleReplies] = useState(1); // Chỉ hiển thị 1 reply ban đầu
   const [isRepliesHidden, setIsRepliesHidden] = useState(false); // Trạng thái ẩn/hiện replies
+  const [isEditing, setIsEditing] = useState(false);
+  const [editCommentId, setEditCommentId] = useState(null);
+  const [editContent, setEditContent] = useState(comments.content);
 
   const replyInputRef = useRef(null);
   const moreReplyRef = useRef(null);
@@ -120,6 +124,55 @@ const CommentItem = ({
     comments.replies?.length > visibleReplies || comments.hasMoreReplies;
   const totalReplyCount = comments.replyCount || comments.replies?.length || 0;
 
+  const handleEdit = (commentId) => {
+    setEditCommentId(commentId);
+    setEditContent(
+      comments.replies
+        ? comments.replies.find((r) => r.id === commentId)?.content ||
+            comments.content
+        : comments.content
+    );
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (
+      editContent.trim() ===
+      (comments.replies?.find((r) => r.id === editCommentId)?.content ||
+        comments.content)
+    ) {
+      setIsEditing(false);
+      setEditCommentId(null);
+      return;
+    }
+    if (editContent.trim()) {
+      dispatch(
+        updateComment({
+          postId: post.id,
+          commentId: editCommentId,
+          content: editContent,
+        })
+      );
+    }
+    setIsEditing(false);
+    setEditCommentId(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditContent(
+      comments.replies
+        ? comments.replies.find((r) => r.id === editCommentId)?.content ||
+            comments.content
+        : comments.content
+    );
+    setIsEditing(false);
+    setEditCommentId(null);
+  };
+
+  const handleContentChange = (e) => {
+    setEditContent(e.target.value);
+  };
+
   return (
     <div className="comment-item">
       {/* Comment chính */}
@@ -152,12 +205,35 @@ const CommentItem = ({
                   onClose={() => setOpenOptionId(null)}
                   idComment={comments.id}
                   post={post}
+                  onEdit={() => handleEdit(comments.id)}
                 />
               </div>
             )}
           </div>
 
-          <div className="comment-content">{comments.content}</div>
+          {isEditing && editCommentId === comments.id ? (
+            <div className="comment-content editing">
+              <textarea
+                value={editContent}
+                onChange={handleContentChange}
+                placeholder="Chỉnh sửa bình luận..."
+                autoFocus
+                rows="1"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSaveEdit();
+                  }
+                }}
+              />
+              <div className="edit-actions">
+                <button onClick={handleSaveEdit}>Lưu</button>
+                <button onClick={handleCancelEdit}>Hủy</button>
+              </div>
+            </div>
+          ) : (
+            <div className="comment-content">{comments.content}</div>
+          )}
 
           <div className="comment-actions">
             <button
@@ -236,12 +312,35 @@ const CommentItem = ({
                         onClose={() => setOpenOptionId(null)}
                         idComment={reply.id}
                         post={post}
+                        onEdit={() => handleEdit(reply.id)}
                       />
                     </div>
                   )}
                 </div>
 
-                <div className="reply-content">{reply.content}</div>
+                {isEditing && editCommentId === reply.id ? (
+                  <div className="reply-content editing">
+                    <textarea
+                      value={editContent}
+                      onChange={handleContentChange}
+                      placeholder="Chỉnh sửa bình luận..."
+                      autoFocus
+                      rows="1"
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSaveEdit();
+                        }
+                      }}
+                    />
+                    <div className="edit-actions">
+                      <button onClick={handleSaveEdit}>Lưu</button>
+                      <button onClick={handleCancelEdit}>Hủy</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="reply-content">{reply.content}</div>
+                )}
 
                 <div className="reply-actions">
                   <button

@@ -20,6 +20,7 @@ import {
 import { toast } from "react-toastify";
 import { notificationHandlers } from "../utils/notificationHandlers";
 import { addRealTimeNotification } from "../stores/action/notificationAction";
+import { NOTIFICATION_TYPES } from "../constants/notificationTypes"; // Import NOTIFICATION_TYPES
 
 const SignalRContext = createContext();
 
@@ -34,11 +35,23 @@ export const SignalRProvider = ({ children }) => {
   const { notifications = [] } = useSelector(
     (state) => state.notifications || {}
   );
+  const delayedNotifications = useRef([]); // Lưu các thông báo trì hoãn (chỉ cho ACCEPT_RIDE)
 
   // Hàm để NotifyModal đăng ký trạng thái mở/đóng
-  const registerNotifyModal = useCallback((isOpen) => {
-    setNotifyModalOpen(isOpen);
-  }, []);
+  const registerNotifyModal = useCallback(
+    (isOpen) => {
+      setNotifyModalOpen(isOpen);
+
+      // Khi NotifyModal mở, dispatch các thông báo trì hoãn
+      if (isOpen && delayedNotifications.current.length > 0) {
+        delayedNotifications.current.forEach((notification) =>
+          dispatch(addRealTimeNotification(notification))
+        );
+        delayedNotifications.current = []; // Xóa sau khi dispatch
+      }
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -220,8 +233,16 @@ export const SignalRProvider = ({ children }) => {
                   !notifyModalOpen &&
                   !displayedToasts.current.has(newNotification.id)
                 ) {
-                  toast.info(newNotification.title);
-                  displayedToasts.current.add(newNotification.id);
+                  if (newNotification.type === NOTIFICATION_TYPES.ALERT) {
+                    toast.warning(newNotification.title); // Toast warning cho ALERT
+                    displayedToasts.current.add(newNotification.id);
+                  } else if (
+                    newNotification.type === NOTIFICATION_TYPES.ACCEPT_RIDE
+                  ) {
+                    toast.info(newNotification.title); // Toast info cho ACCEPT_RIDE
+                    displayedToasts.current.add(newNotification.id);
+                  }
+                  // Các loại thông báo khác không hiển thị toast, nhưng vẫn được thêm vào danh sách thông báo
                 }
               } else {
                 console.log(

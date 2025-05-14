@@ -41,9 +41,22 @@ namespace Application.CQRS.Queries.Notifications
                 notifications = notifications.Take(request.PageSize).ToList();
             }
 
-            if (notifications == null || !notifications.Any())
+            if (!notifications.Any())
             {
-                return ResponseFactory.Success<GetNotificationResponse>("Không có thông báo nào", 200);
+                if (!request.Cursor.HasValue)
+                {
+                    // Trường hợp không có dữ liệu ngay từ đầu (lần đầu gọi API mà không có cursor)
+                    return ResponseFactory.Success<GetNotificationResponse>("Không có thông báo nào", 200);
+                }
+                else
+                {
+                    // Trường hợp gọi với cursor nhưng không còn dữ liệu
+                    return ResponseFactory.Success(new GetNotificationResponse
+                    {
+                        Notifications = new List<NotificationDto>(),
+                        NextCursor = null
+                    }, "Lấy tất cả thông báo thành công", 200);
+                }
             }
 
             DateTime? nextCursor = hasMore

@@ -450,3 +450,39 @@ export const fetchPostsByOtherUser = createAsyncThunk(
     }
   }
 );
+// Thêm action để chỉnh sửa comment
+export const updateComment = createAsyncThunk(
+  "posts/updateComment",
+  async ({ postId, commentId, content }, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.patch(
+        "https://localhost:7053/api/Comment/UpdateComment",
+        {
+          PostId: postId,
+          CommentId: commentId,
+          Content: content,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("Cập nhật bình luận thành công!");
+        return { postId, commentId, content };
+      } else {
+        toast.error("Cập nhật bình luận không thành công!");
+        return rejectWithValue("Cập nhật không thành công");
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Lỗi khi cập nhật bình luận"
+      );
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);

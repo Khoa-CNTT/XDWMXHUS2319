@@ -55,9 +55,7 @@ namespace Application.CQRS.Commands.Likes
                     }
 
                     await _notificationService.SendLikeComentNotificationAsync(post.Id, request.CommentId, userId);
-
-                    return ResponseFactory.Success<bool>("Like/unlike request đã được lưu, sẽ xử lý sau", 202);
-                    
+                    return ResponseFactory.Success<bool>("Like/unlike request đã được lưu, sẽ xử lý sau", 202);   
                 }
                 return ResponseFactory.Fail<bool>("Không thể lưu like comment vào Redis", 500);
             }

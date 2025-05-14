@@ -1,46 +1,48 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { motion } from "framer-motion";
 import axios from "axios";
-import * as signalR from "@microsoft/signalr";
-import { jwtDecode } from "jwt-decode";
-import { toast } from "react-toastify";
+
 import { TbMoodEmptyFilled } from "react-icons/tb";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { cancelRide, rateDriver } from "../../stores/action/ridePostAction";
 import RatingModal from "../RatingModal";
 
+import { motion } from "framer-motion";
+
 import L from "leaflet";
+import { useEffect, useRef, useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
+
 import {
   MapContainer,
-  TileLayer,
   Marker,
   Polyline,
   Popup,
+  TileLayer,
 } from "react-leaflet";
+import { useDispatch, useSelector } from "react-redux";
+import { useAuth } from "../../contexts/AuthContext"; // Thêm import useAuth
 
 // Icons
-import {
-  FiNavigation,
-  FiChevronUp,
-  FiChevronDown,
-  FiMapPin,
-  FiClock,
-  FiCheckCircle,
-  FiAlertCircle,
-  FiUser,
-  FiArrowRight,
-  FiCalendar,
-  FiShield,
-  FiAlertTriangle,
-  FiMap,
-  FiBell,
-  FiRefreshCw,
-  FiInbox,
-  FiSearch,
-  FiArchive,
-} from "react-icons/fi";
 import { FaCar } from "react-icons/fa6";
+import {
+  FiAlertTriangle,
+  FiArchive,
+  FiArrowRight,
+  FiBell,
+  FiCalendar,
+  FiCheckCircle,
+  FiChevronDown,
+  FiChevronUp,
+  FiClock,
+  FiInbox,
+  FiMap,
+  FiMapPin,
+  FiNavigation,
+  FiRefreshCw,
+  FiSearch,
+  FiShield,
+  FiUser,
+} from "react-icons/fi";
 
 // Leaflet assets
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
@@ -50,9 +52,11 @@ import markerShadowPng from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet.css";
 import "react-toastify/dist/ReactToastify.css";
 import "../../styles/YourRide.scss";
-
 // Redux actions
-import { fetchRidesByUserId } from "../../stores/action/ridePostAction";
+import {
+  fetchLocation,
+  fetchRidesByUserId,
+} from "../../stores/action/ridePostAction";
 
 // Placeholder animation for empty state
 const emptyRideAnimation = {
@@ -117,36 +121,67 @@ const YourRide = () => {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedRide, setSelectedRide] = useState(null);
 
+  const navigate = useNavigate();
+
+  const [mapReady, setMapReady] = useState(false); // Thêm state để kiểm tra bản đồ sẵn sàng
+
   // Refs for managing intervals and connections
   const mapRef = useRef(null);
   const intervalRef = useRef(null);
   const watchIdRef = useRef(null);
-  const signalRConnectionRef = useRef(null);
+  const lastToastTime = useRef(0); // Theo dõi thời gian toast lần cuối
 
   // Redux hooks
   const dispatch = useDispatch();
-  const { driverRides, passengerRides, loading, error } = useSelector(
-    (state) => state.rides
-  );
-
-  // Initialize user ID and fetch ride data on mount
+  const { driverRides, passengerRides, locations, loading, error } =
+    useSelector((state) => state.rides);
+  // Lấy authData từ useAuth
+  const { userId: authUserId, isAuthenticated, isLoading } = useAuth();
+  // Cập nhật userId từ AuthContext
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      setUserId(
-        decodedToken[
-          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-        ]
-      );
+    if (isAuthenticated && authUserId) {
+      setUserId(authUserId);
+      console.log("[YourRide] UserId from AuthContext:", authUserId);
+      dispatch(fetchRidesByUserId());
+    } else if (!isLoading && !isAuthenticated) {
+      console.warn("[YourRide] Không có người dùng đăng nhập");
+      setUserId(null);
     }
-    dispatch(fetchRidesByUserId());
-  }, [dispatch]);
-
+  }, [isAuthenticated, authUserId, isLoading, dispatch]);
+  // Đánh dấu bản đồ đã sẵn sàng sau khi khởi tạo
+  useEffect(() => {
+    if (mapRef.current) {
+      // Đảm bảo Leaflet cập nhật kích thước bản đồ
+      mapRef.current.invalidateSize();
+      setMapReady(true);
+      console.log("[YourRide] Map is ready");
+    }
+  }, [mapRef.current]);
+  useEffect(() => {
+    const currentRide = getCurrentRide();
+    if (currentRide && userId) {
+      dispatch(fetchLocation(currentRide.rideId));
+    }
+  }, [dispatch, userId]);
+  useEffect(() => {
+    if (locations && locations.length > 0) {
+      const newNotifications = locations.map((loc, idx) => ({
+        id: loc.id || `location-${idx}-${Date.now()}`,
+        message: `${
+          loc.userId === userId ? "Bạn" : loc.isDriver ? "Tài xế" : "Hành khách"
+        } đã cập nhật vị trí tại: ${
+          loc.location || `${loc.latitude}, ${loc.longitude}`
+        }`,
+        timestamp: loc.timestamp,
+        isNew: false,
+      }));
+      setNotifications(newNotifications);
+    }
+  }, [locations, userId]);
   // Update map bounds when current ride or position changes
   useEffect(() => {
     const currentRide = getCurrentRide();
-    if (currentRide && currentPosition) {
+    if (currentRide && currentPosition && mapReady) {
       const start = parseLatLon(currentRide.latLonStart);
       const end = parseLatLon(currentRide.latLonEnd);
       if (start && end) {
@@ -158,16 +193,17 @@ const YourRide = () => {
         setMapBounds(bounds);
         if (mapRef.current) {
           mapRef.current.flyToBounds(bounds, { maxZoom: 16, duration: 1 });
+          console.log("[YourRide] Fly to bounds:", bounds);
         }
       }
     }
-  }, [currentPosition]);
+  }, [currentPosition, mapReady]);
 
   // Center map on current position when following
   useEffect(() => {
-    if (isFollowing && mapRef.current && currentPosition) {
+    if (isFollowing && mapRef.current && currentPosition && mapReady) {
       const newCenter = [currentPosition.lat, currentPosition.lon];
-      const currentZoom = mapRef.current.getZoom();
+      const currentZoom = mapRef.current.getZoom() || 14;
       mapRef.current.flyTo(
         newCenter,
         currentZoom >= 12 && currentZoom <= 16 ? currentZoom : 14,
@@ -176,43 +212,6 @@ const YourRide = () => {
     }
   }, [currentPosition, isFollowing]);
 
-  // Setup SignalR connection for real-time notifications
-  useEffect(() => {
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:7053/notificationHub", {
-        accessTokenFactory: () => localStorage.getItem("token"),
-      })
-      .withAutomaticReconnect()
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
-
-    signalRConnectionRef.current = connection;
-
-    connection.on("ReceiveNotificationUpdateLocation", (message) => {
-      const notification = {
-        message,
-        timestamp: new Date().toISOString(),
-        isNew: true,
-      };
-      setNotifications((prev) => [...prev, notification]);
-      toast.info(message);
-    });
-
-    const startConnection = async () => {
-      try {
-        await connection.start();
-        console.log("SignalR Connected");
-      } catch (err) {
-        console.error("SignalR Connection Error:", err);
-      }
-    };
-
-    startConnection();
-
-    return () => {
-      connection.stop().then(() => console.log("SignalR Disconnected"));
-    };
-  }, []);
 
   // Calculate distance between two points using Haversine formula (in km)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -244,51 +243,87 @@ const YourRide = () => {
   };
 
   // Send current location to server
-  const sendLocationToServer = async (
-    rideId,
-    latitude,
-    longitude,
-    isNearDestination = false
-  ) => {
-    try {
-      const location = await getAddressFromCoordinates(latitude, longitude);
-      const token = localStorage.getItem("token");
-      await axios.post(
-        "https://localhost:7053/api/updatelocation/update",
-        { rideId, latitude, longitude, isNearDestination, location },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setLastSentPosition({ lat: latitude, lon: longitude });
-      console.log(
-        `Location sent: ${latitude}, ${longitude} - Address: ${location}`
-      );
-    } catch (error) {
-      console.error("Error sending location:", error);
-      toast.error("Failed to send location");
+const sendLocationToServer = async (
+  rideId,
+  latitude,
+  longitude,
+  isNearDestination = false
+) => {
+  try {
+    const location = await getAddressFromCoordinates(latitude, longitude);
+    const cleanLocation = location.split(", ").slice(0, -2).join(", ");
+    const token = localStorage.getItem("token");
+
+    // Log giá trị isNearDestination trước khi gửi
+    console.log("[sendLocationToServer] isNearDestination:", isNearDestination);
+
+    const payload = {
+      rideId,
+      latitude,
+      longitude,
+      isNearDestination,
+      location: cleanLocation,
+    };
+    console.log("[sendLocationToServer] Payload:", payload);
+
+    const response = await axios.post(
+      "https://localhost:7053/api/updatelocation/update",
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setLastSentPosition({ lat: latitude, lon: longitude });
+    
+    // Thêm vị trí hiện tại vào notifications
+    const newNotification = {
+      id: `location-${Date.now()}`,
+      message: `Bạn đã cập nhật vị trí tại: ${cleanLocation}`,
+      timestamp: new Date().toISOString(),
+      isNew: true,
+    };
+    setNotifications((prev) => [...prev, newNotification]);
+
+    // Kiểm tra rideStatus từ server
+    const { rideStatus } = response.data?.data || {};
+    if (rideStatus === "Completed") {
+      console.log("[YourRide] Ride completed, reloading page...");
+      window.location.reload();
     }
-  };
+
+    console.log(
+      `Location sent: ${latitude}, ${longitude} - Address: ${cleanLocation}`
+    );
+  } catch (error) {
+    console.error("Error sending location:", error);
+  }
+};
 
   // Track current position using geolocation
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      toast.error("Device does not support geolocation!");
-      return;
-    }
+useEffect(() => {
+  if (!navigator.geolocation) {
+    console.error("Device does not support geolocation!");
+    return;
+  }
 
-    const handlePositionError = (err) => {
-      const errorMessages = {
-        1: "Please grant location access!",
-        2: "Unable to determine position! Check GPS.",
-        3: "Timed out getting position, try again...",
-      };
-      toast.error(errorMessages[err.code] || `Error: ${err.message}`);
-    };
+  const handlePositionError = (err) => {
+    console.error(`Geolocation error: ${err.message}`);
+  };
 
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      ({ coords: { latitude, longitude } }) => {
-        const newPosition = { lat: latitude, lon: longitude };
+  watchIdRef.current = navigator.geolocation.watchPosition(
+    ({ coords: { latitude, longitude } }) => {
+      const newPosition = { lat: latitude, lon: longitude };
+      // Chỉ cập nhật nếu vị trí thay đổi > 10m để tránh re-render quá nhiều
+      if (
+        !currentPosition ||
+        calculateDistance(
+          currentPosition.lat,
+          currentPosition.lon,
+          latitude,
+          longitude
+        ) > 0.01
+      ) {
         setCurrentPosition(newPosition);
-        console.log(`New position received: ${latitude}, ${longitude}`); // Log vị trí mới
+        console.log(`New position received: ${latitude}, ${longitude}`);
         if (
           !lastNotifiedPosition ||
           calculateDistance(
@@ -296,54 +331,63 @@ const YourRide = () => {
             lastNotifiedPosition.lon,
             latitude,
             longitude
-          ) > 0.01 // Giảm ngưỡng xuống 0.01 km để cập nhật thường xuyên hơn
+          ) > 0.01
         ) {
           setLastNotifiedPosition(newPosition);
         }
-      },
-      handlePositionError,
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
-    );
+      }
+    },
+    handlePositionError,
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+  );
 
-    return () => {
-      if (watchIdRef.current)
-        navigator.geolocation.clearWatch(watchIdRef.current);
-    };
-  }, [lastNotifiedPosition]);
+  return () => {
+    if (watchIdRef.current)
+      navigator.geolocation.clearWatch(watchIdRef.current);
+  };
+}, [currentPosition, lastNotifiedPosition]);
 
   // Periodically send location for current ride
-  useEffect(() => {
-    const currentRide = getCurrentRide();
-    if (!currentPosition || !currentRide) return;
+useEffect(() => {
+  const currentRide = getCurrentRide();
+  if (!currentPosition || !currentRide || !userId) return;
 
-    const rideId = currentRide.rideId;
-    const endLatLon = parseLatLon(currentRide.latLonEnd);
-    const { lat, lon } = currentPosition;
+  const rideId = currentRide.rideId;
+  const endLatLon = parseLatLon(currentRide.latLonEnd);
+  const { lat, lon } = currentPosition;
+  const isDriver = currentRide.driverId === userId;
 
-    intervalRef.current = setInterval(() => {
-      if (
-        lastSentPosition &&
-        calculateDistance(
-          lastSentPosition.lat,
-          lastSentPosition.lon,
-          lat,
-          lon
-        ) < 0.01 // Giảm ngưỡng xuống 0.01 km để gửi vị trí thường xuyên hơn
-      ) {
-        console.log("Position unchanged, skipping send...");
-        return;
-      }
+  // Log tọa độ điểm đến để kiểm tra
+  console.log("[YourRide] endLatLon:", endLatLon);
 
-      const distanceToEnd = endLatLon
-        ? calculateDistance(lat, lon, endLatLon[0], endLatLon[1])
-        : Infinity;
-      const isNearDestination = distanceToEnd <= 0.5;
+  intervalRef.current = setInterval(() => {
+    // Kiểm tra khoảng cách với vị trí đã gửi trước đó
+    if (
+      lastSentPosition &&
+      calculateDistance(
+        lastSentPosition.lat,
+        lastSentPosition.lon,
+        lat,
+        lon
+      ) < 0.05 // 50m
+    ) {
+      console.log("Position unchanged (< 50m), skipping send...");
+      return;
+    }
 
+    const distanceToEnd = endLatLon
+      ? calculateDistance(lat, lon, endLatLon[0], endLatLon[1])
+      : Infinity;
+    const isNearDestination = distanceToEnd <= 5;
+    console.log("[YourRide] distanceToEnd:", distanceToEnd, "isNearDestination:", isNearDestination);
+
+    if (isDriver || currentRide.isSafetyTrackingEnabled) {
       sendLocationToServer(rideId, lat, lon, isNearDestination);
-    }, 5000); // Giảm interval xuống 5 giây để cập nhật nhanh hơn
+    }
+  }, 5000);
 
-    return () => clearInterval(intervalRef.current);
-  }, [currentPosition, driverRides, passengerRides, lastSentPosition]);
+  return () => clearInterval(intervalRef.current);
+}, [currentPosition, driverRides, passengerRides, lastSentPosition, userId]);
 
   // Fetch route from GraphHopper API
   const fetchRoute = async (rideId, startLatLon, endLatLon) => {
@@ -437,9 +481,9 @@ const YourRide = () => {
     (Array.isArray(passengerRides)
       ? passengerRides.find((ride) => ride.status === "Accepted")
       : null);
-
-  // Smooth progress animation
   const currentRide = getCurrentRide();
+  // Smooth progress animation
+  // const currentRide = getCurrentRide();
   const progress = calculateProgress(currentRide, currentPosition);
   useEffect(() => {
     const timer = setTimeout(() => setSmoothedProgress(progress), 500);
@@ -519,7 +563,7 @@ const YourRide = () => {
         toast.error("Lỗi khi gửi đánh giá!");
       });
   };
-
+  const handleSearchRide = () => navigate("/sharing-ride");
   const isRideRated = (ride) => ride.isRating; // Use isRating directly from the ride object
 
   const openRatingModal = (ride) => {
@@ -678,10 +722,10 @@ const YourRide = () => {
                   </label>
                   <span
                     className={`safety-badge ${
-                      currentRide.isSafe ? "safe" : "unsafe"
+                      currentRide.isSafetyTrackingEnabled ? "safe" : "unsafe"
                     }`}
                   >
-                    {currentRide.isSafe ? (
+                    {currentRide.isSafetyTrackingEnabled ? (
                       <>
                         <FiCheckCircle /> An toàn
                       </>
@@ -720,6 +764,8 @@ const YourRide = () => {
                     parseLatLon(currentRide.latLonEnd) && (
                       <MapContainer
                         ref={mapRef}
+                        center={[16.06778, 108.22346]}
+                        zoom={14}
                         bounds={mapBounds}
                         style={{ height: "300px", width: "100%", zIndex: 1 }}
                         minZoom={12}
@@ -781,9 +827,12 @@ const YourRide = () => {
                     </h4>
                     <button
                       className="refresh-btn"
-                      onClick={() => setNotifications([])}
+                      onClick={() => {
+                        setNotifications([]);
+                        dispatch(fetchLocation(currentRide.rideId));
+                      }}
                     >
-                      <FiRefreshCw /> Xóa
+                      <FiRefreshCw /> Làm mới
                     </button>
                   </div>
                   {notifications.length > 0 ? (
@@ -835,7 +884,7 @@ const YourRide = () => {
           </div>
           <h3>Không có chuyến đi hiện tại</h3>
           <p>Bắt đầu chuyến đi mới để bắt đầu!</p>
-          <button className="find-ride-btn">
+          <button className="find-ride-btn" onClick={handleSearchRide}>
             <FiSearch /> Tìm chuyến đi
           </button>
         </motion.div>
@@ -902,10 +951,12 @@ const YourRide = () => {
                           </span>
                           <span
                             className={`safety ${
-                              ride.isSafe ? "safe" : "unsafe"
+                              ride.isSafetyTrackingEnabled ? "safe" : "unsafe"
                             }`}
                           >
-                            {ride.isSafe ? "An toàn" : "Cảnh báo"}
+                            {ride.isSafetyTrackingEnabled
+                              ? "An toàn"
+                              : "Cảnh báo"}
                           </span>
                         </div>
                       </div>

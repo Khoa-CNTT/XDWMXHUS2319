@@ -30,3 +30,4 @@ global using static Domain.Common.Helper;
 global using static Application.Common.Constaint;
 global using Application.DTOs.FriendShips;
 global using Application.DTOs.Post;
+global using Application.DTOs.Notification;
