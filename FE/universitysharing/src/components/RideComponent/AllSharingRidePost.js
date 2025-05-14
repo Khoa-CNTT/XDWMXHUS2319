@@ -23,8 +23,8 @@ import checkIcon from "../../assets/iconweb/checkIcon.svg";
 import likeFillIcon from "../../assets/iconweb/likefillIcon.svg";
 
 import { useNavigate } from "react-router-dom";
-import getUserIdFromToken from "../../utils/JwtDecode";
 import { userProfile } from "../../stores/action/profileActions";
+import getUserIdFromToken from "../../utils/JwtDecode";
 
 import {
   createRide,

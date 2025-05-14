@@ -40,7 +40,7 @@ namespace Infrastructure.Data.Repositories
             pageSize = Math.Min(pageSize, MAX_PAGE_SIZE);
 
             var query = _context.Rides
-                .Where(r => r.PassengerId == passengerId)
+                .Where(r => r.PassengerId == passengerId )
                 .AsQueryable();
 
             if (lastPostId.HasValue)
@@ -61,7 +61,7 @@ namespace Infrastructure.Data.Repositories
             pageSize = Math.Min(pageSize, MAX_PAGE_SIZE);
 
             var query = _context.Rides
-                .Where(r => r.DriverId == driverId)
+                .Where(r => r.DriverId == driverId )
                 .AsQueryable();
 
             if (lastPostId.HasValue)
