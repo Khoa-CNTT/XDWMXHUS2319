@@ -47,6 +47,10 @@ namespace Application.CQRS.Commands.UpdateLocation
             {
                 return ResponseFactory.Fail<UpdateLocationDto>("Không tìm thấy chuyến đi", 404);
             }
+            if(ride.Status == StatusRideEnum.Completed)
+            {
+                return ResponseFactory.Fail<UpdateLocationDto>("Chuyến đi đã hoàn thành", 400);
+            }   
             var ridePost = await _unitOfWork.RidePostRepository.GetByIdAsync(ride.RidePostId);
             if (ridePost == null)
             {
@@ -127,69 +131,26 @@ namespace Application.CQRS.Commands.UpdateLocation
                         await _unitOfWork.RideRepository.UpdateAsync(ride);
                     }
                 }
-
-                // Kiểm tra hoàn thành chuyến đi
                 if (request.IsNearDestination)
                 {
-                    bool canCompleteRide = false;
-
-                    if (isSafetyTrackingEnabled)
+                    if (ride.Status != StatusRideEnum.Completed)
                     {
-                        var endLatLon = ParseLatLon(ridePost.LatLonEnd);
-                        if (endLatLon == null)
-                        {
-                            return ResponseFactory.Fail<UpdateLocationDto>("Tọa độ điểm đích không hợp lệ", 400);
-                        }
-
-                        var driverLocation = await _unitOfWork.LocationUpdateRepository.GetListAsync(
-                            x => x.RideId == request.RideId && x.UserId == ride.DriverId,
-                            q => q.OrderByDescending(x => x.Timestamp)
-                        );
-
-                        var passengerLocation = await _unitOfWork.LocationUpdateRepository.GetListAsync(
-                            x => x.RideId == request.RideId && x.UserId == ride.PassengerId,
-                            q => q.OrderByDescending(x => x.Timestamp)
-                        );
-
-                        bool isDriverNear = driverLocation.Any() && CalculateDistance(
-                            driverLocation.First().Latitude, driverLocation.First().Longitude,
-                            endLatLon[0], endLatLon[1]
-                        ) <= 0.05;
-
-                        bool isPassengerNear = passengerLocation.Any() && CalculateDistance(
-                            passengerLocation.First().Latitude, passengerLocation.First().Longitude,
-                            endLatLon[0], endLatLon[1]
-                        ) <= 0.05;
-
-                        canCompleteRide = isDriverNear && isPassengerNear;
-                    }
-                    else
-                    {
-                        var endLatLon = ParseLatLon(ridePost.LatLonEnd);
-                        if (endLatLon == null)
-                        {
-                            return ResponseFactory.Fail<UpdateLocationDto>("Tọa độ điểm đích không hợp lệ", 400);
-                        }
-
-                        canCompleteRide = isDriver && CalculateDistance(
-                            request.Latitude, request.Longitude,
-                            endLatLon[0], endLatLon[1]
-                        ) <= 0.05;
-                    }
-
-                    if (canCompleteRide)
-                    {
+                        Console.WriteLine($"[Backend] Completing ride {request.RideId} at {DateTime.UtcNow}");
                         ride.UpdateStatus(StatusRideEnum.Completed);
                         await _unitOfWork.RideRepository.UpdateAsync(ride);
 
-                        await _notificationService.SendNotificationUpdateLocationAsync(
-                            ride.DriverId,
-                            ride.PassengerId,
-                            request.Latitude,
-                            request.Longitude,
-                            $"Chuyến đi đã kết thúc tại: {cleanLocation}",
-                            true
-                        );
+                        //await _notificationService.SendNotificationUpdateLocationAsync(
+                        //    ride.DriverId,
+                        //    ride.PassengerId,
+                        //    request.Latitude,
+                        //    request.Longitude,
+                        //    $"Chuyến đi đã kết thúc tại: {cleanLocation}",
+                        //    true
+                        //);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[Backend] Ride {request.RideId} already completed, skipping notification");
                     }
                 }
 

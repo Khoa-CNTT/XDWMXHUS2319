@@ -4,11 +4,11 @@ import {
   createPost,
   createRide,
   deleteRidePost,
+  fetchCompletedRidesWithRating,
   fetchLocation,
   fetchRidePost,
   fetchRidesByUserId,
   rateDriver,
-  fetchCompletedRidesWithRating,
   updatePost
 } from "../../stores/action/ridePostAction";
 
