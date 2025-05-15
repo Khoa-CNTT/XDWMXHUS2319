@@ -1,4 +1,5 @@
-﻿using static Domain.Common.Enums;
+﻿using System.Text.Json.Nodes;
+using static Domain.Common.Enums;
 namespace Domain.Entities
     {
         public class User
@@ -27,8 +28,6 @@ namespace Domain.Entities
             public DateTime? SuspendedUntil { get; private set; }
             public DateTime? LastLoginDate { get; private set; }
             public int TotalReports { get; private set; } = 0;
-
-            
 
 
             public virtual ICollection<Post> Posts { get; private set; } = new HashSet<Post>();
@@ -68,18 +67,19 @@ namespace Domain.Entities
             public ICollection<UserAction> UserActions { get; set; } = new List<UserAction>(); // Những hành động của admin đối với user
             public ICollection<RideReport> RideReports { get; set; } = new List<RideReport>();// Những report liên quan đến chuyến đi mà user là đối tượng bị báo cáo
 
-        public User(string fullName, string email, string passwordHash)
-            {
-                if (string.IsNullOrWhiteSpace(fullName)) throw new ArgumentException("Full name is required.");
-                if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email is required.");
-                if (string.IsNullOrWhiteSpace(passwordHash)) throw new ArgumentException("Password is required.");
 
-                Id = Guid.NewGuid();
-                FullName = fullName;
-                Email = email;
-                PasswordHash = passwordHash;
-                CreatedAt = DateTime.UtcNow;
-            }
+            public User(string fullName, string email, string passwordHash)
+                {
+                    if (string.IsNullOrWhiteSpace(fullName)) throw new ArgumentException("Full name is required.");
+                    if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email is required.");
+                    if (string.IsNullOrWhiteSpace(passwordHash)) throw new ArgumentException("Password is required.");
+
+                    Id = Guid.NewGuid();
+                    FullName = fullName;
+                    Email = email;
+                    PasswordHash = passwordHash;
+                    CreatedAt = DateTime.UtcNow;
+                }
 
             /// <summary>
             /// Xác minh email của người dùng.
@@ -107,8 +107,6 @@ namespace Domain.Entities
             if (!string.IsNullOrWhiteSpace(fullName) && FullName != fullName)
                 FullName = fullName;
 
-
-
             if (!string.IsNullOrWhiteSpace(profilePicture) && ProfilePicture != profilePicture)
                 ProfilePicture = profilePicture;
 
@@ -131,9 +129,6 @@ namespace Domain.Entities
             if (!string.IsNullOrWhiteSpace(gender) && Gender != gender)
                 Gender = gender;
         }
-
-
-
 
 
 

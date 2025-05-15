@@ -1,0 +1,931 @@
+{
+  "Ratings": {
+    "table": "Ratings",
+    "columns": [
+      "Id",
+      "UserId",
+      "RatedByUserId",
+      "RideId",
+      "Level",
+      "Comment",
+      "CreatedAt"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "UserId",
+      "RatedByUserId"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "RatedByUserId",
+          "RideId",
+          "Level",
+          "Comment",
+          "CreatedAt"
+        ],
+        "own_columns": [
+          "Id",
+          "UserId",
+          "RatedByUserId",
+          "RideId",
+          "Level",
+          "Comment",
+          "CreatedAt"
+        ],
+        "filters": "(CreatedAt IS NOT NULL) AND (UserId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "RatedByUserId",
+          "RideId",
+          "Level",
+          "Comment",
+          "CreatedAt"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "RidePosts": {
+    "table": "RidePosts",
+    "columns": [
+      "Id",
+      "UserId",
+      "StartLocation",
+      "EndLocation",
+      "StartTime",
+      "PostType",
+      "Status",
+      "CreatedAt",
+      "Content",
+      "LatLonStart",
+      "LatLonEnd",
+      "UpdatedAt",
+      "IsDeleted"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "UserId"
+    ],
+    "filters": "IsDeleted = 0 AND (CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "StartLocation",
+          "EndLocation",
+          "StartTime",
+          "PostType",
+          "Status",
+          "CreatedAt",
+          "Content",
+          "LatLonStart",
+          "LatLonEnd",
+          "UpdatedAt",
+          "IsDeleted"
+        ],
+        "own_columns": [
+          "Id",
+          "UserId",
+          "StartLocation",
+          "EndLocation",
+          "StartTime",
+          "PostType",
+          "Status",
+          "CreatedAt",
+          "Content",
+          "LatLonStart",
+          "LatLonEnd",
+          "UpdatedAt",
+          "IsDeleted"
+        ],
+        "filters": "IsDeleted = 0 AND (CreatedAt IS NOT NULL) AND (UserId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "StartLocation",
+          "EndLocation",
+          "StartTime",
+          "PostType",
+          "Status",
+          "CreatedAt",
+          "Content",
+          "LatLonStart",
+          "LatLonEnd",
+          "UpdatedAt",
+          "IsDeleted"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Conversations": {
+    "table": "Conversations",
+    "columns": [
+      "Id",
+      "User1Id",
+      "User2Id",
+      "CreatedAt"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "User1Id",
+      "User2Id"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "User1Id",
+          "User2Id",
+          "CreatedAt"
+        ],
+        "own_columns": [
+          "Id",
+          "User1Id",
+          "User2Id",
+          "CreatedAt"
+        ],
+        "filters": "(CreatedAt IS NOT NULL) AND (User1Id = ? OR User2Id = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "User1Id",
+          "User2Id",
+          "CreatedAt"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Messages": {
+    "table": "Messages",
+    "columns": [
+      "Id",
+      "ConversationId",
+      "SenderId",
+      "Content",
+      "ImageUrl",
+      "VideoUrl",
+      "SentAt",
+      "IsSeen",
+      "SeenAt",
+      "Status",
+      "DeliveredAt"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "SenderId"
+    ],
+    "filters": null,
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "ConversationId",
+          "SenderId",
+          "Content",
+          "ImageUrl",
+          "VideoUrl",
+          "SentAt",
+          "IsSeen",
+          "SeenAt",
+          "Status",
+          "DeliveredAt"
+        ],
+        "own_columns": [
+          "Id",
+          "ConversationId",
+          "SenderId",
+          "Content",
+          "ImageUrl",
+          "VideoUrl",
+          "SentAt",
+          "IsSeen",
+          "SeenAt",
+          "Status",
+          "DeliveredAt"
+        ],
+        "filters": "(SenderId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "ConversationId",
+          "SenderId",
+          "Content",
+          "ImageUrl",
+          "VideoUrl",
+          "SentAt",
+          "IsSeen",
+          "SeenAt",
+          "Status",
+          "DeliveredAt"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Users": {
+    "table": "Users",
+    "columns": [
+      "Id",
+      "FullName",
+      "Email",
+      "PasswordHash",
+      "ProfilePicture",
+      "Bio",
+      "CreatedAt",
+      "IsVerifiedEmail",
+      "TrustScore",
+      "Role",
+      "RelativePhone",
+      "Phone",
+      "LastActive",
+      "BackgroundPicture",
+      "UpdatedAt",
+      "Gender"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "Id"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "FullName",
+          "ProfilePicture",
+          "CreatedAt",
+          "IsVerifiedEmail",
+          "TrustScore",
+          "LastActive",
+          "BackgroundPicture",
+          "UpdatedAt",
+          "Gender"
+        ],
+        "own_columns": [
+          "Id",
+          "FullName",
+          "Email",
+          "PasswordHash",
+          "ProfilePicture",
+          "Bio",
+          "CreatedAt",
+          "IsVerifiedEmail",
+          "TrustScore",
+          "Role",
+          "RelativePhone",
+          "Phone",
+          "LastActive",
+          "BackgroundPicture",
+          "UpdatedAt",
+          "Gender"
+        ],
+        "filters": "(CreatedAt IS NOT NULL)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "FullName",
+          "Email",
+          "PasswordHash",
+          "ProfilePicture",
+          "Bio",
+          "CreatedAt",
+          "IsVerifiedEmail",
+          "TrustScore",
+          "Role",
+          "RelativePhone",
+          "Phone",
+          "LastActive",
+          "BackgroundPicture",
+          "UpdatedAt",
+          "Gender"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Posts": {
+    "table": "Posts",
+    "columns": [
+      "Id",
+      "UserId",
+      "Content",
+      "ImageUrl",
+      "VideoUrl",
+      "CreatedAt",
+      "Score",
+      "IsApproved",
+      "UpdateAt",
+      "PostType",
+      "ApprovalStatus",
+      "Scope",
+      "IsSharedPost",
+      "OriginalPostId",
+      "IsDeleted"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "UserId"
+    ],
+    "filters": "IsDeleted = 0 AND (CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "Content",
+          "ImageUrl",
+          "VideoUrl",
+          "CreatedAt",
+          "Score",
+          "IsApproved",
+          "UpdateAt",
+          "PostType",
+          "ApprovalStatus",
+          "Scope",
+          "IsSharedPost",
+          "OriginalPostId",
+          "IsDeleted"
+        ],
+        "own_columns": [
+          "Id",
+          "UserId",
+          "Content",
+          "ImageUrl",
+          "VideoUrl",
+          "CreatedAt",
+          "Score",
+          "IsApproved",
+          "UpdateAt",
+          "PostType",
+          "ApprovalStatus",
+          "Scope",
+          "IsSharedPost",
+          "OriginalPostId",
+          "IsDeleted"
+        ],
+        "filters": "IsDeleted = 0 AND (CreatedAt IS NOT NULL) AND (UserId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "Content",
+          "ImageUrl",
+          "VideoUrl",
+          "CreatedAt",
+          "Score",
+          "IsApproved",
+          "UpdateAt",
+          "PostType",
+          "ApprovalStatus",
+          "Scope",
+          "IsSharedPost",
+          "OriginalPostId",
+          "IsDeleted"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Likes": {
+    "table": "Likes",
+    "columns": [
+      "Id",
+      "UserId",
+      "PostId",
+      "CreatedAt",
+      "IsLike",
+      "IsDeleted"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "UserId"
+    ],
+    "filters": "IsDeleted = 0 AND (CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "PostId",
+          "CreatedAt",
+          "IsLike",
+          "IsDeleted"
+        ],
+        "own_columns": [
+          "Id",
+          "UserId",
+          "PostId",
+          "CreatedAt",
+          "IsLike",
+          "IsDeleted"
+        ],
+        "filters": "IsDeleted = 0 AND (CreatedAt IS NOT NULL) AND (UserId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "PostId",
+          "CreatedAt",
+          "IsLike",
+          "IsDeleted"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Comments": {
+    "table": "Comments",
+    "columns": [
+      "Id",
+      "UserId",
+      "PostId",
+      "Content",
+      "CreatedAt",
+      "IsDeleted",
+      "UpdatedAt",
+      "ParentCommentId"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "UserId"
+    ],
+    "filters": "IsDeleted = 0 AND (CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "PostId",
+          "Content",
+          "CreatedAt",
+          "IsDeleted",
+          "UpdatedAt",
+          "ParentCommentId"
+        ],
+        "own_columns": [
+          "Id",
+          "UserId",
+          "PostId",
+          "Content",
+          "CreatedAt",
+          "IsDeleted",
+          "UpdatedAt",
+          "ParentCommentId"
+        ],
+        "filters": "IsDeleted = 0 AND (CreatedAt IS NOT NULL) AND (UserId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "PostId",
+          "Content",
+          "CreatedAt",
+          "IsDeleted",
+          "UpdatedAt",
+          "ParentCommentId"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Shares": {
+    "table": "Shares",
+    "columns": [
+      "Id",
+      "UserId",
+      "PostId",
+      "CreatedAt",
+      "Content",
+      "IsDeleted"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "UserId"
+    ],
+    "filters": "IsDeleted = 0 AND (CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "PostId",
+          "CreatedAt",
+          "Content",
+          "IsDeleted"
+        ],
+        "own_columns": [
+          "Id",
+          "UserId",
+          "PostId",
+          "CreatedAt",
+          "Content",
+          "IsDeleted"
+        ],
+        "filters": "IsDeleted = 0 AND (CreatedAt IS NOT NULL) AND (UserId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "PostId",
+          "CreatedAt",
+          "Content",
+          "IsDeleted"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Friendships": {
+    "table": "Friendships",
+    "columns": [
+      "Id",
+      "UserId",
+      "FriendId",
+      "CreatedAt",
+      "Status",
+      "UpdatedAt"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "UserId"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "FriendId",
+          "CreatedAt",
+          "Status",
+          "UpdatedAt"
+        ],
+        "own_columns": [
+          "Id",
+          "UserId",
+          "FriendId",
+          "CreatedAt",
+          "Status",
+          "UpdatedAt"
+        ],
+        "filters": "(CreatedAt IS NOT NULL) AND (UserId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "FriendId",
+          "CreatedAt",
+          "Status",
+          "UpdatedAt"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "CommentLikes": {
+    "table": "CommentLikes",
+    "columns": [
+      "Id",
+      "CommentId",
+      "UserId",
+      "IsLike",
+      "CreatedAt"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "UserId"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "CommentId",
+          "UserId",
+          "IsLike",
+          "CreatedAt"
+        ],
+        "own_columns": [
+          "Id",
+          "CommentId",
+          "UserId",
+          "IsLike",
+          "CreatedAt"
+        ],
+        "filters": "(CreatedAt IS NOT NULL) AND (UserId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "CommentId",
+          "UserId",
+          "IsLike",
+          "CreatedAt"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Notifications": {
+    "table": "Notifications",
+    "columns": [
+      "Id",
+      "ReceiverId",
+      "SenderId",
+      "Title",
+      "Content",
+      "Url",
+      "Type",
+      "CreatedAt",
+      "IsRead"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "ReceiverId",
+      "SenderId"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "ReceiverId",
+          "SenderId",
+          "Title",
+          "Content",
+          "Url",
+          "Type",
+          "CreatedAt",
+          "IsRead"
+        ],
+        "own_columns": [
+          "Id",
+          "ReceiverId",
+          "SenderId",
+          "Title",
+          "Content",
+          "Url",
+          "Type",
+          "CreatedAt",
+          "IsRead"
+        ],
+        "filters": "(CreatedAt IS NOT NULL) AND (ReceiverId = ? OR SenderId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "ReceiverId",
+          "SenderId",
+          "Title",
+          "Content",
+          "Url",
+          "Type",
+          "CreatedAt",
+          "IsRead"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Reports": {
+    "table": "Reports",
+    "columns": [
+      "Id",
+      "ReportedBy",
+      "PostId",
+      "Reason",
+      "CreatedAt",
+      "Status"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "ReportedBy"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "ReportedBy",
+          "PostId",
+          "Reason",
+          "CreatedAt",
+          "Status"
+        ],
+        "own_columns": [
+          "Id",
+          "ReportedBy",
+          "PostId",
+          "Reason",
+          "CreatedAt",
+          "Status"
+        ],
+        "filters": "(CreatedAt IS NOT NULL) AND (ReportedBy = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "ReportedBy",
+          "PostId",
+          "Reason",
+          "CreatedAt",
+          "Status"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "RideReports": {
+    "table": "RideReports",
+    "columns": [
+      "Id",
+      "RideId",
+      "PassengerId",
+      "Message",
+      "AlertType",
+      "Status",
+      "CreatedAt"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "PassengerId"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "RideId",
+          "PassengerId",
+          "Message",
+          "AlertType",
+          "Status",
+          "CreatedAt"
+        ],
+        "own_columns": [
+          "Id",
+          "RideId",
+          "PassengerId",
+          "Message",
+          "AlertType",
+          "Status",
+          "CreatedAt"
+        ],
+        "filters": "(CreatedAt IS NOT NULL) AND (PassengerId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "RideId",
+          "PassengerId",
+          "Message",
+          "AlertType",
+          "Status",
+          "CreatedAt"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "AIConversations": {
+    "table": "AIConversations",
+    "columns": [
+      "Id",
+      "UserId",
+      "Title",
+      "CreatedAt",
+      "UpdatedAt"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "UserId"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "Title",
+          "CreatedAt",
+          "UpdatedAt"
+        ],
+        "own_columns": [
+          "Id",
+          "UserId",
+          "Title",
+          "CreatedAt",
+          "UpdatedAt"
+        ],
+        "filters": "(CreatedAt IS NOT NULL) AND (UserId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "UserId",
+          "Title",
+          "CreatedAt",
+          "UpdatedAt"
+        ],
+        "filters": null
+      }
+    }
+  },
+  "Rides": {
+    "table": "Rides",
+    "columns": [
+      "Id",
+      "PassengerId",
+      "RidePostId",
+      "DriverId",
+      "StartTime",
+      "EndTime",
+      "EstimatedDuration",
+      "Status",
+      "Fare",
+      "CreatedAt",
+      "IsSafetyTrackingEnabled"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "PassengerId",
+      "DriverId",
+      "DriverId_User",
+      "PassengerId_User"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "PassengerId",
+          "RidePostId",
+          "DriverId",
+          "DriverId_User",
+          "PassengerId_User",
+          "StartTime",
+          "EndTime",
+          "EstimatedDuration",
+          "Status",
+          "PassengerFullName",
+          "DriverFullName"
+        ],
+        "own_columns": [
+          "Id",
+          "PassengerId",
+          "RidePostId",
+          "DriverId",
+          "StartTime",
+          "EndTime",
+          "EstimatedDuration",
+          "Status",
+          "Fare",
+          "CreatedAt",
+          "IsSafetyTrackingEnabled",
+          "DriverId_User",
+          "PassengerId_User",
+          "PassengerFullName",
+          "DriverFullName"
+        ],
+        "filters": "(CreatedAt IS NOT NULL) AND (PassengerId = ? OR DriverId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "PassengerId",
+          "RidePostId",
+          "DriverId",
+          "StartTime",
+          "EndTime",
+          "EstimatedDuration",
+          "Status",
+          "Fare",
+          "CreatedAt",
+          "IsSafetyTrackingEnabled"
+        ],
+        "filters": null
+      }
+    }
+  }
+}

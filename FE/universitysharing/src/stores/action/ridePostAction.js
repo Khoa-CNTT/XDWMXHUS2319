@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
-import axiosClient from '../../Service/axiosClient';
+import axiosClient from "../../Service/axiosClient";
 // Tạo bài đăng
 export const createPost = createAsyncThunk(
   "ride/createPost",
@@ -14,7 +14,13 @@ export const createPost = createAsyncThunk(
       console.log("startTimeUtc", startTimeUtc);
       const response = await axiosClient.post(
         "/api/ridepost/create",
-        { content, startLocation, endLocation, startTime: startTimeUtc, postType },
+        {
+          content,
+          startLocation,
+          endLocation,
+          startTime: startTimeUtc,
+          postType,
+        },
         {
           headers: {
             "Content-Type": "application/json",
@@ -63,15 +69,11 @@ export const updatePost = createAsyncThunk(
       };
 
       console.log("Sending updatePost payload:", payload);
-      const response = await axiosClient.put(
-        "/api/RidePost/update",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axiosClient.put("/api/RidePost/update", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       console.log("updatePost response:", response.data);
 
@@ -210,15 +212,52 @@ export const rateDriver = createAsyncThunk(
     }
   }
 );
+
+export const fetchCompletedRidesWithRating = createAsyncThunk(
+  "ride/fetchCompletedRidesWithRating",
+  async (userId, { rejectWithValue }) => {
+    try {
+      if (!userId) throw new Error("User ID is required");
+
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
+      const response = await axiosClient.get("/api/Ride/get-ride-rating", {
+        params: { UserId: userId }, // Query parameter
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to fetch rated rides");
+      }
+
+      return response.data.data || [];
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Lỗi khi lấy danh sách chuyến đi có đánh giá";
+      toast.error(errorMessage);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 // Fetch danh sách bài đăng
 export const fetchLocation = createAsyncThunk(
   "ride/fetchLocation",
   async (rideId, { rejectWithValue }) => {
     try {
-      const response = await axiosClient.get(`/api/UpdateLocation/get-all-by-ride-id?rideId=${rideId}`);
+      const response = await axiosClient.get(
+        `/api/UpdateLocation/get-all-by-ride-id?rideId=${rideId}`
+      );
       return response.data?.data || []; // Trả về danh sách UpdateLocationDto
     } catch (error) {
-      return rejectWithValue(error.response?.data?.data || "Lỗi không xác định");
+      return rejectWithValue(
+        error.response?.data?.data || "Lỗi không xác định"
+      );
     }
   }
 );

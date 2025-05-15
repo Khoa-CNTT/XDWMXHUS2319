@@ -1,0 +1,85 @@
+/* ProfileTabs.scss */
+
+.profile-user-view__right .tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem; /* Slightly tighter padding than before */
+  background: linear-gradient(
+    180deg,
+    #ffffff,
+    #f8fafc
+  ); /* Subtle gradient from TabsSharingRideView */
+  border-radius: 8px; /* Softer corners */
+  border: 1px solid #e2e8f0; /* Light slate border like TabsSharingRideView */
+  justify-content: flex-start;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+
+  .tab {
+    position: relative;
+    padding: 0.75rem 1.5rem; /* Adjusted padding for balance */
+    font-size: 0.875rem; /* Slightly smaller font size like TabsSharingRideView */
+    font-weight: 600; /* Medium weight for clarity */
+    color: #64748b; /* Slate gray from TabsSharingRideView */
+    cursor: pointer;
+    background: #ffffff; /* White base */
+    border-radius: 20px; /* Retain pill shape */
+    border: none;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Slightly lighter shadow */
+
+    &:hover {
+      color: #1e293b; /* Dark slate on hover */
+      background: #dbeafe; /* Light blue hover effect */
+      transform: scale(1.03); /* Retain subtle scale */
+    }
+
+    &.active {
+      color: #2563eb; /* Vibrant blue like TabsSharingRideView */
+      background: #eff6ff; /* Very light blue background */
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2); /* Shadow inspired by TabsSharingRideView */
+      transform: scale(1.03); /* Retain subtle scale */
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: -4px; /* Align with container */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60%; /* Retain width */
+        height: 3px;
+        background: #f59e0b; /* Amber accent retained */
+        border-radius: 2px;
+      }
+    }
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-user-view__right .tabs {
+    gap: 0.5rem; /* Tighter gap like TabsSharingRideView */
+    padding: 0.5rem 0.5rem; /* Adjusted padding */
+    margin-bottom: 1rem;
+    flex-wrap: wrap; /* Retain wrapping for small screens */
+
+    .tab {
+      padding: 0.5rem 1rem; /* Smaller padding */
+      font-size: 0.75rem; /* Smaller font size like TabsSharingRideView */
+      border-radius: 16px; /* Slightly smaller radius */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Lighter shadow */
+
+      &:hover,
+      &.active {
+        transform: scale(1.02); /* Smaller scale for mobile */
+      }
+
+      &.active::after {
+        width: 50%; /* Retain width adjustment */
+        height: 2px; /* Thinner line like TabsSharingRideView */
+        bottom: -3px;
+      }
+    }
+  }
+}

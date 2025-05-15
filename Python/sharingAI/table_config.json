@@ -1,0 +1,171 @@
+{
+"excluded_tables": ["Rides","sysdiagrams","AIChatHistories", "QueryCache", "RefreshTokens", "EmailVerificationTokens","GeneratedSQLs","Groups","GroupMembers","StudyMaterials","QueryCache","LocationUpdates"],
+    "user": {
+      "table": "Users",
+      "intent": "user",
+      "filters": "IsVerifiedEmail = 1",
+      "id_field": "Id",
+      "user_id_source": "field",
+      "permissions": {
+        "user": {
+          "allowed_columns": ["Id", "FullName", "TrustScore", "Bio", "Phone", "Email"],
+          "filters": "IsVerifiedEmail = 1 AND Id = ?"
+        },
+        "admin": {
+          "allowed_columns": null,
+          "filters": null
+        }
+      }
+    },
+    "post": {
+      "table": "Posts",
+      "intent": "post",
+      "filters": "IsDeleted = 0 AND IsApproved = 1 AND PostType != 1",
+      "id_field": "Id",
+      "user_id_source": "input",
+      "permissions": {
+        "user": {
+          "allowed_columns": ["Id", "Content", "CreatedAt", "ImageUrl", "VideoUrl"],
+          "filters": "IsDeleted = 0 AND IsApproved = 1 AND (UserId = ? OR Scope = 0)"
+        },
+        "admin": {
+          "allowed_columns": null,
+          "filters": null
+        }
+      }
+    },
+    "ride": {
+      "table": "RidePosts",
+      "intent": "ride",
+      "filters": "IsDeleted = 0 AND StartTime >= GETDATE()",
+      "id_field": "Id",
+      "user_id_source": "input",
+      "permissions": {
+        "user": {
+          "allowed_columns": ["Id","UserId", "StartLocation", "EndLocation", "StartTime", "Content","Status"],
+          "filters": "IsDeleted = 0 AND (UserId = ? OR Status = 0)"
+        },
+        "admin": {
+          "allowed_columns": null,
+          "filters": null
+        }
+      }
+    },
+    "comment": {
+      "table": "Comments",
+      "intent": "comment",
+      "filters": "IsDeleted = 0",
+      "id_field": "Id",
+      "user_id_source": "field",
+      "permissions": {
+        "user": {
+          "allowed_columns": ["Id", "Content", "CreatedAt"],
+          "filters": "IsDeleted = 0 AND UserId = ?"
+        },
+        "admin": {
+          "allowed_columns": null,
+          "filters": null
+        }
+      }
+    },
+    "friend": {
+      "table": "Friendships",
+      "intent": "friend",
+      "filters": "Status = 1",
+      "id_field": "Id",
+      "user_id_source": "custom",
+      "permissions": {
+        "user": {
+          "allowed_columns": ["Id", "FriendId", "Status", "CreatedAt"],
+          "filters": "Status = 1 AND (UserId = ? OR FriendId = ?)"
+        },
+        "admin": {
+          "allowed_columns": null,
+          "filters": null
+        }
+      }
+    },
+    "notification": {
+      "table": "Notifications",
+      "intent": "notification",
+      "filters": null,
+        "id_field": "Id",
+        "user_id_source": "field",
+      "permissions": {
+        "user": {
+          "allowed_columns": ["Id", "Title", "Content", "CreatedAt"],
+          "filters": "ReceiverId = ?"
+        },
+        "admin": {
+          "allowed_columns": null,
+          "filters": null
+        }
+      }
+    },
+    "Rides": {
+    "table": "Rides",
+    "columns": [
+      "Id",
+      "PassengerId",
+      "RidePostId",
+      "DriverId",
+      "StartTime",
+      "EndTime",
+      "EstimatedDuration",
+      "Status",
+      "Fare",
+      "CreatedAt",
+      "IsSafetyTrackingEnabled"
+    ],
+    "id_field": "Id",
+    "user_id_fields": [
+      "PassengerId",
+      "DriverId"
+    ],
+    "filters": "(CreatedAt IS NOT NULL)",
+    "permissions": {
+      "user": {
+        "allowed_columns": [
+          "Id",
+          "PassengerId",
+          "RidePostId",
+          "DriverId",
+          "StartTime",
+          "EndTime",
+          "EstimatedDuration",
+          "Status"
+        ],
+        "own_columns": [
+          "Id",
+          "PassengerId",
+          "RidePostId",
+          "DriverId",
+          "StartTime",
+          "EndTime",
+          "EstimatedDuration",
+          "Status",
+          "Fare",
+          "CreatedAt",
+          "IsSafetyTrackingEnabled"
+        ],
+        "filters": "(CreatedAt IS NOT NULL) AND (PassengerId = ? OR DriverId = ?)"
+      },
+      "admin": {
+        "allowed_columns": [
+          "Id",
+          "PassengerId",
+          "RidePostId",
+          "DriverId",
+          "StartTime",
+          "EndTime",
+          "EstimatedDuration",
+          "Status",
+          "Fare",
+          "CreatedAt",
+          "IsSafetyTrackingEnabled"
+        ],
+        "filters": null
+      }
+    }
+  }
+  }

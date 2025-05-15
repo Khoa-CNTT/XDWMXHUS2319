@@ -129,3 +129,27 @@
     }
   }
 }
+
+.chat-list {
+  .chat-list__avatar-wrapper {
+    position: relative;
+    display: inline-block;
+
+    .chat-list__avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .chat-list__online-indicator {
+      position: absolute;
+      right: 7px;
+      bottom: 2px;
+      width: 12px;
+      height: 12px;
+      background-color: #44d600; // Màu xanh online
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+    }
+  }
+}

@@ -7,9 +7,10 @@ import MessageInput from "../components/MessageComponent/MessageInput";
 import RightSidebar from "../components/MessageComponent/RightSidebar";
 import Header from "../components/HomeComponent/Header";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { userProfile } from "../stores/action/profileActions";
 import "../styles/MessageView.scss";
-import { RiArrowRightDoubleFill } from "react-icons/ri";
+import "../styles/MoblieReponsive/MessageViewMobile/MessageViewMobile.scss";
 import {
   resetMessages,
   setSelectFriend,
@@ -27,11 +28,24 @@ import {
   useMessageReceiverData,
 } from "../utils/MesengerHandle";
 import { useSignalR } from "../Service/SignalRProvider";
+import { checkOnlineUsers } from "../stores/action/onlineAction";
+import getUserIdFromToken from "../utils/JwtDecode";
 
 const MessageView = () => {
   const dispatch = useDispatch();
   useMessageReceiver(); // Kích hoạt nhận tin nhắn qua SignalR
   useMessageReceiverData();
+
+  //Chuyển hướng User
+  const navigate = useNavigate();
+
+  const navigateUser = (userId) => {
+    if (userId === getUserIdFromToken()) {
+      navigate("/ProfileUserView");
+    } else {
+      navigate(`/profile/${userId}`);
+    }
+  };
 
   //thêm các yếu tố để viết được hàm nhắn tin
   const {
@@ -44,6 +58,7 @@ const MessageView = () => {
   const [newMessage, setNewMessage] = useState(""); // nội dung tin nhắn
   const [isSending, setIsSending] = useState(false); // trạng thái đang gửi
   const [isUserTyping, setIsUserTyping] = useState(false); // gõ phím
+
   //Kiểm tra thử trạng thái kết nối
   useEffect(() => {
     // console.error("[SignalR] Trạng thái kết nối ✅ :", isConnected);
@@ -53,6 +68,10 @@ const MessageView = () => {
   useEffect(() => {
     dispatch(userProfile());
   }, [dispatch]);
+
+  //Lấy trạng thái online
+  const onlineSate = useSelector((state) => state.onlineUsers) || {};
+  const online = onlineSate.onlineStatus || {};
 
   //Lấy user và friend các kiểu
   const usersState = useSelector((state) => state.users) || {};
@@ -64,6 +83,14 @@ const MessageView = () => {
     // Gọi fetchFriends để lấy danh sách bạn bè
     dispatch(fetchFriends());
   }, [dispatch]);
+
+  useEffect(() => {
+    // Gọi API check-online khi có danh sách bạn bè
+    if (friend.length > 0) {
+      const friendIds = friend.map((friend) => friend.friendId);
+      dispatch(checkOnlineUsers(friendIds));
+    }
+  }, [friend, dispatch]);
 
   //lấy thêm tin nhắn
   const topRef = useRef(null); //xác định điểm đầu để lướt lên kích hoạt load thêm tin nhắn
@@ -118,7 +145,7 @@ const MessageView = () => {
           pageSize: 20,
         })
       );
-      console.error("Messenger có gì ", messages);
+      // console.error("Messenger có gì ", messages);
 
       // 👉 Gọi markConversationAsSeen sau khi mọi thứ đã được cập nhật
       await markConversationAsSeen({
@@ -190,6 +217,7 @@ const MessageView = () => {
           }`}
         >
           <ChatList
+            onlineUsers={online}
             onSelectChat={handleSelectChat}
             friend={friend}
             selectFriend={selectFriend}
@@ -197,49 +225,63 @@ const MessageView = () => {
             countInbox={countInbox}
           />
         </div>
+
         <div
           className={`message-view__content-wrapper ${
             isChatSelected ? "" : "hide-on-mobile"
           }`}
         >
-          <ChatHeader
-            toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-            goBack={() => setIsChatSelected(false)}
-            selectedFriend={selectFriend}
-          />
-          <MessageArea
-            messagers={messenges}
-            refScroll={bottomRef}
-            topRef={topRef}
-            scrollContainerRef={scrollContainerRef}
-          />
-          {/* <MessageInput /> */}
-
-          <MessageInput
-            message={newMessage}
-            setMessage={setNewMessage}
-            onSendMessage={() =>
-              handleSendMessage({
-                friendId: selectFriend?.friendId,
-                content: newMessage,
-                conversationId: messengerState.conversationId,
-                token: localStorage.getItem("token"),
-                isSending,
-                setIsSending,
-                setNewMessage,
-                setIsUserTyping,
-                // setConversationId: (friendId, token) => {
-                //   console.error("Id token vào >>", friendId, token);
-                //   dispatch(getConversationss(friendId, token)); // nếu dùng redux
-                // },
-              })
-            }
-            isSending={isSending}
-            isUserTyping={isUserTyping}
-            setIsUserTyping={setIsUserTyping}
-          />
+          {selectedFriend ? (
+            <>
+              <ChatHeader
+                navigateUser={navigateUser}
+                onlineUsers={online}
+                toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+                goBack={() => setIsChatSelected(false)}
+                selectedFriend={selectedFriend}
+              />
+              <MessageArea
+                conversationId={messengerState.conversationId}
+                messagers={messenges}
+                selectedFriend={selectedFriend}
+                refScroll={bottomRef}
+                topRef={topRef}
+                scrollContainerRef={scrollContainerRef}
+              />
+              <MessageInput
+                message={newMessage}
+                setMessage={setNewMessage}
+                onSendMessage={() =>
+                  handleSendMessage({
+                    friendId: selectedFriend.friendId,
+                    content: newMessage,
+                    conversationId: messengerState?.conversationId,
+                    token: localStorage.getItem("token"),
+                    isSending,
+                    setIsSending,
+                    setNewMessage,
+                    setIsUserTyping,
+                  })
+                }
+                conversationId={messengerState?.conversationId}
+                friendId={selectedFriend.friendId}
+                isSending={isSending}
+                isUserTyping={isUserTyping}
+                setIsUserTyping={setIsUserTyping}
+              />
+            </>
+          ) : (
+            <div className="welcome-message">
+              <h2>Chào mừng bạn đến với tin nhắn!</h2>
+              <p>
+                Hãy chọn một cuộc trò chuyện để bắt đầu nhắn tin với bạn bè.
+              </p>
+            </div>
+          )}
         </div>
+
         <RightSidebar
+          navigateUser={navigateUser}
           isOpen={isSidebarOpen}
           toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           selectedFriend={selectFriend}
@@ -250,31 +292,3 @@ const MessageView = () => {
 };
 
 export default MessageView;
-
-//Hàm chọn bạn bè để chat kiểu chưa có kết nối signalR
-// const handleSelectChat = (friendData) => {
-//   const token = localStorage.getItem("token");
-//   dispatch(getConversationss({ friendId: friendData.friendId, token }))
-//     .unwrap()
-//     .then((conversationData) => {
-//       const conversationId = conversationData.id;
-
-//       // 👉 Xoá tin nhắn cũ trước khi load mới
-//       dispatch(resetMessages());
-
-//       setSelectedFriend(friendData); // Lưu bạn đang chọn
-//       dispatch(setSelectFriend(friendData));
-//       setIsChatSelected(true); // Chuyển qua khung chat
-//       return dispatch(
-//         getMessagess({
-//           conversationId,
-//           token,
-//           nextCursor: null,
-//           pageSize: 20,
-//         })
-//       );
-//     })
-//     .catch((err) => {
-//       console.error("Lỗi lấy tin nhắn:", err);
-//     });
-// };

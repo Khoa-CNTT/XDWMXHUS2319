@@ -14,6 +14,7 @@ import {
   useBackButtonToCloseSidebar,
 } from "../utils/OpenMenuLeftisdebar";
 import { RiArrowRightDoubleFill } from "react-icons/ri";
+
 const SharingRideView = () => {
   const dispatch = useDispatch();
   const usersState = useSelector((state) => state.users) || {};
@@ -26,6 +27,7 @@ const SharingRideView = () => {
   useEffect(() => {
     dispatch(userProfile());
   }, [dispatch]);
+
   return (
     <div className="home-view">
       <Header className="header" usersProfile={users} />

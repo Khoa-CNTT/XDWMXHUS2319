@@ -11,7 +11,9 @@ namespace Domain.Entities
         public RatingLevelEnum Level { get; private set; } // Mức độ đánh giá
         public string? Comment { get; private set; } // Bình luận (nếu có)
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
+        public Ride? Ride { get; private set; }
+        public virtual User? User { get; private set; }
+        public virtual User? RatedByUser { get; private set; }
         public Rating(Guid userId, Guid ratedByUserId, Guid rideId, RatingLevelEnum level, string? comment)
         {
             Id = Guid.NewGuid();

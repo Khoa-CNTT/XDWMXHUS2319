@@ -9,6 +9,7 @@ using Application.DTOs.Posts;
 using Application.DTOs.Reposts;
 using Application.DTOs.Shares;
 using Application.DTOs.User;
+using Application.DTOs.UserScoreHistories;
 using Domain.Entities;
 
 namespace Application
@@ -138,6 +139,18 @@ namespace Application
                 PictureProfile = user.ProfilePicture != null ? $"{Constaint.baseUrl}{user.ProfilePicture}" : null,
                 CreatedAt = friendship.CreatedAt,
                 Status = friendship.Status
+            };
+        }
+        public static ScoreHistoriesResponseDto MapToScoreHistoriesResponseDto(UserScoreHistory scoreHistory)
+        {
+            return new ScoreHistoriesResponseDto
+            {
+                Id = scoreHistory.Id,
+                UserId = scoreHistory.UserId,
+                ScoreChange = scoreHistory.ScoreChange,
+                Reason = scoreHistory.Reason ?? string.Empty,
+                TotalScoreAfterChange = scoreHistory.TotalScoreAfterChange,
+                CreatedAt = scoreHistory.CreatedAt
             };
         }
 

@@ -55,7 +55,7 @@ namespace Infrastructure.Data.Repositories
         {
             var query = _context.Notifications
                 .Include(n => n.Sender)
-             .Where(n => n.ReceiverId == receiverId);
+                .Where(n => n.ReceiverId == receiverId && n.Type != NotificationType.RideInvite && n.Type != NotificationType.NewMessage);
 
             if (cursor.HasValue)
             {
@@ -89,7 +89,7 @@ namespace Infrastructure.Data.Repositories
         {
             var query = _context.Notifications
              .Include(n => n.Sender)
-            .Where(n => n.ReceiverId == receiverId && n.IsRead == isRead);
+            .Where(n => n.ReceiverId == receiverId && n.IsRead == isRead && n.Type != NotificationType.RideInvite && n.Type != NotificationType.NewMessage);
 
             if (cursor.HasValue)
             {
@@ -111,7 +111,7 @@ namespace Infrastructure.Data.Repositories
         public async Task<int> CountUnreadNotificationsAsync(Guid receiverId, CancellationToken cancellationToken = default)
         {
             return await _context.Notifications
-                .Where(n => n.ReceiverId == receiverId && !n.IsRead)
+                .Where(n => n.ReceiverId == receiverId && !n.IsRead  && n.Type != NotificationType.RideInvite && n.Type != NotificationType.NewMessage)
                 .CountAsync(cancellationToken);
         }
     }

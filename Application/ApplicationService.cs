@@ -36,6 +36,7 @@ namespace Application
 
             //background services
             //nếu ko làm việc liên quan đến like và LocationUpdate thì comment lại
+
             //services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
 
@@ -44,6 +45,7 @@ namespace Application
 
             //services.AddHostedService<TrustScoreBackgroundService>();
             //services.AddHostedService<MessageProcessingService>();
+
             //services.AddHostedService<RedisListenerService>();
             //đăng kí hub
             services.AddScoped<INotificationService, NotificationService>();

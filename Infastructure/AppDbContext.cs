@@ -428,7 +428,16 @@ namespace Infrastructure
                 .WithMany(u => u.UserActions)
                 .HasForeignKey(ua => ua.UserId)
                 .OnDelete(DeleteBehavior.Cascade); // Xóa hành động khi xóa user (tùy chính sách)
-
+            modelBuilder.Entity<Rating>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Rating>()
+                .HasOne(r => r.RatedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.RatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

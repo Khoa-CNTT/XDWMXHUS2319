@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from "react";
-import AuthForm from "../components/AuthForm";
-import { toast } from "react-toastify";
-import axiosClient from "../Service/axiosClient";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import AuthForm from "../components/AuthForm";
 import { useAuth } from "../contexts/AuthContext";
-import { jwtDecode } from "jwt-decode";
+
+import axiosClient from "../Service/axiosClient";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, userRole, isLoading, isTokenVerified } =
-    useAuth();
+  const { login, isAuthenticated, userRole, isLoading, isTokenVerified } = useAuth();
   const [loginSuccess, setLoginSuccess] = useState(false);
+
 
   const handleLogin = async (e, formData) => {
     e.preventDefault();
@@ -25,10 +25,10 @@ const Login = () => {
       });
 
       if (response.data.success) {
-        const token = response.data.data;
 
+        const token = response.data.data;
         login(token);
-        console.warn("[Login] Decoded token:", userRole);
+
         toast.success("Đăng nhập thành công!");
         setLoginSuccess(true);
       } else if (response?.data?.message?.toLowerCase() === "user not found") {
@@ -51,25 +51,15 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (loginSuccess && isAuthenticated && !isLoading && isTokenVerified) {
-      console.warn("useEffect Login:", { isAuthenticated, userRole });
-      if (userRole && userRole.toLowerCase() === "admin") {
-        navigate("/admin/dashboard", {
-          state: { fromLogin: true },
-          replace: true,
-        });
+    if (loginSuccess && isAuthenticated && !isLoading && isTokenVerified && userRole) {
+      console.log("[Login] Chuyển hướng với vai trò:", userRole);
+      if (userRole.toLowerCase() === "admin") {
+        navigate("/admin/dashboard", { replace: true });
       } else {
-        navigate("/home", { state: { fromLogin: true }, replace: true });
+        navigate("/home", { replace: true });
       }
     }
-  }, [
-    loginSuccess,
-    isAuthenticated,
-    userRole,
-    isLoading,
-    isTokenVerified,
-    navigate,
-  ]);
+  }, [loginSuccess, isAuthenticated, userRole, isLoading, isTokenVerified, navigate]);
 
   return <AuthForm type="login" onSubmit={handleLogin} />;
 };

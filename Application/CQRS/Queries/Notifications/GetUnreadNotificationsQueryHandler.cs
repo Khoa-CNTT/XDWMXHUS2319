@@ -23,9 +23,23 @@ namespace Application.CQRS.Queries.Notifications
             var userId = _userContext.UserId();
             var notifications = await _notificationRepository.GetByReadStatusAsync(userId, false, request.Cursor, request.PageSize, cancellationToken);
             // ✅ Trường hợp không có thông báo nào
-            if (notifications == null || !notifications.Any())
+
+            if (!notifications.Any())
             {
-                return ResponseFactory.Success<GetNotificationResponse>("Không có thông báo nào", 200);
+                if (!request.Cursor.HasValue)
+                {
+                    // Trường hợp không có dữ liệu ngay từ đầu (lần đầu gọi API mà không có cursor)
+                    return ResponseFactory.Success<GetNotificationResponse>("Không có thông báo nào", 200);
+                }
+                else
+                {
+                    // Trường hợp gọi với cursor nhưng không còn dữ liệu
+                    return ResponseFactory.Success(new GetNotificationResponse
+                    {
+                        Notifications = new List<NotificationDto>(),
+                        NextCursor = null
+                    }, "Lấy thông báo chưa đọc thành công", 200);
+                }
             }
 
             // Kiểm tra còn dữ liệu không
