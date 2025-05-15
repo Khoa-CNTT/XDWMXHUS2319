@@ -29,8 +29,18 @@ const UserManagement = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
+        const token = localStorage.getItem("token"); // Lấy token từ localStorage
+        if (!token) {
+          throw new Error("No auth token found");
+        }
         const response = await fetch(
-          "https://localhost:7053/api/Admin/GetallUser"
+          `https://localhost:7053/api/Admin/GetallUser`, // Thêm dấu phẩy
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         const result = await response.json();
 
@@ -115,7 +125,7 @@ const UserManagement = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Nếu cần xác thực: "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
 
@@ -175,7 +185,7 @@ const UserManagement = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Nếu cần xác thực: "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
 

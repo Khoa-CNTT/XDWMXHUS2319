@@ -11,7 +11,7 @@ namespace Domain.Entities
         public AlertTypeEnums AlertType { get; private set; }
         public bool Status { get; private set; } = false;
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
-
+        public User? Passenger { get; private set; }
         public RideReport(Guid rideId, Guid passengerId, AlertTypeEnums alertType, string message)
         {
             RideId = rideId;

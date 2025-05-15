@@ -50,6 +50,7 @@ import CommentModalDeepLink from "./components/CommentModalDeepLink";
 import TestDispatchAPI from "./views/TestDispatchAPI";
 
 import UserManagement from "./admin/views/UserManagement";
+import NotificationAdmin from "./admin/views/NotificationManagement";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -77,6 +78,7 @@ function App() {
     ) {
       navigate("/home", { replace: true });
     }
+
     if (selectedPost) {
       return;
     }
@@ -132,6 +134,10 @@ function App() {
                 <Route path="/settings" element={<SettingsView />} />
 
                 <Route path="/admin/users" element={<UserManagement />} />
+                <Route
+                  path="/admin/tripnotifications"
+                  element={<NotificationAdmin />}
+                />
 
                 <Route
                   path="/profile/:userId"
@@ -151,7 +157,7 @@ function App() {
                 />
                 <Route path="/test" element={<TestDispatchAPI />} />
 
-                {/* <Route path="*" element={<Navigate to="/home" replace />} /> */}
+                <Route path="*" element={<Navigate to="/home" replace />} />
               </>
             ) : (
               <>
