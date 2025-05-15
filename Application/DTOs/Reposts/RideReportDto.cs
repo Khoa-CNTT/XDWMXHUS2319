@@ -13,6 +13,9 @@ namespace Application.DTOs.Reposts
         public Guid RideId { get; set; }
         public Guid PassengerId { get; set; }
         public string? Message { get; set; }
+        public string? PhonePassenger { get; set; }
+       
+        public string? RelativePhonePassenger { get; set; }
         public AlertTypeEnums AlertType { get; set; } 
         public bool Status { get; set; }
         public DateTime CreatedAt { get; set; }

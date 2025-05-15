@@ -1,10 +1,21 @@
+
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
 import { jwtDecode } from "jwt-decode";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+
+
 import {
   refreshAccessToken,
   validateToken,
 } from "../../src/Service/authService";
+
 import { useNavigate } from "react-router-dom";
+
 
 const AuthContext = createContext(null);
 
@@ -12,7 +23,9 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isLoading, setIsLoading] = useState(true);
+
   const [isTokenVerified, setIsTokenVerified] = useState(false);
+
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
 
@@ -22,6 +35,7 @@ export const AuthProvider = ({ children }) => {
     }
     try {
       const decoded = jwtDecode(token);
+      console.log("[AuthProvider] Decoded token:", decoded); // Log để kiểm tra
       const currentTime = Math.floor(Date.now() / 1000);
       if (decoded.exp < currentTime) {
         console.warn("[AuthProvider] Token đã hết hạn");
@@ -57,7 +71,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const verifyToken = async () => {
       setIsLoading(true);
+
+
       setIsTokenVerified(false);
+
       const storedToken = localStorage.getItem("token");
       if (storedToken && retryCount < maxRetries) {
         try {
@@ -67,6 +84,7 @@ export const AuthProvider = ({ children }) => {
             setIsTokenVerified(true);
             console.log("[AuthProvider] Token hợp lệ");
             setRetryCount(0);
+            setIsTokenVerified(true); // Đánh dấu token đã được xác thực
           } else {
             console.warn("[AuthProvider] Token không hợp lệ, làm mới...");
             try {
@@ -74,6 +92,7 @@ export const AuthProvider = ({ children }) => {
               setToken(newToken);
               setIsTokenVerified(true);
               setRetryCount(0);
+              setIsTokenVerified(true);
             } catch (err) {
               console.error(
                 "[AuthProvider] Không thể làm mới token:",
@@ -96,6 +115,7 @@ export const AuthProvider = ({ children }) => {
         );
         localStorage.removeItem("token");
         setToken(null);
+        setIsTokenVerified(true);
       }
       setIsLoading(false);
     };
@@ -136,7 +156,9 @@ export const AuthProvider = ({ children }) => {
   const login = (newToken) => {
     localStorage.setItem("token", newToken);
     setToken(newToken);
+
     setIsTokenVerified(true);
+
     console.log("[AuthProvider] Đã đăng nhập với token mới");
   };
 
@@ -144,6 +166,7 @@ export const AuthProvider = ({ children }) => {
     ...authData,
     login,
     logout,
+    isTokenVerified, // Thêm vào context
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

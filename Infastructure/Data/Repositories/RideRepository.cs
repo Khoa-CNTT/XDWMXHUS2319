@@ -40,7 +40,7 @@ namespace Infrastructure.Data.Repositories
             pageSize = Math.Min(pageSize, MAX_PAGE_SIZE);
 
             var query = _context.Rides
-                .Where(r => r.PassengerId == passengerId)
+                .Where(r => r.PassengerId == passengerId )
                 .AsQueryable();
 
             if (lastPostId.HasValue)
@@ -61,7 +61,7 @@ namespace Infrastructure.Data.Repositories
             pageSize = Math.Min(pageSize, MAX_PAGE_SIZE);
 
             var query = _context.Rides
-                .Where(r => r.DriverId == driverId)
+                .Where(r => r.DriverId == driverId )
                 .AsQueryable();
 
             if (lastPostId.HasValue)
@@ -98,10 +98,10 @@ namespace Infrastructure.Data.Repositories
                 .Where(r => r.DriverId == driverId && r.Status == StatusRideEnum.Accepted)
                 .ToListAsync();
         }
-        public async Task<List<Ride>> GetCompletedRidesWithRatingAsync()
+        public async Task<List<Ride>> GetCompletedRidesWithRatingAsync(Guid driverId)
         {
             return await _context.Rides
-                .Where(r => r.Status == StatusRideEnum.Completed && r.Rating != null)
+                .Where(r => r.Status == StatusRideEnum.Completed && r.DriverId == driverId)
                 .Include(r => r.RidePost)
                 .Include(r => r.Driver)
                 .Include(r => r.Rating!)

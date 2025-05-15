@@ -42,7 +42,7 @@ namespace DuyTanSharingSystem.Controllers
             var response = await _mediator.Send(command);
             return Ok(response);
         }
-        [HttpGet("get-all-ride-rating")]
+        [HttpGet("get-ride-rating")]
         public async Task<IActionResult> GetAllRideRating([FromQuery] GetCompletedRidesWithRatingQuery query)
         {
             var response = await _mediator.Send(query);

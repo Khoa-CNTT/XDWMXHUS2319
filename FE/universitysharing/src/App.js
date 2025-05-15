@@ -363,6 +363,7 @@ import TestDispatchAPI from "./views/TestDispatchAPI";
 import UserManagement from "./admin/views/UserManagement";
 
 import Site404 from "./views/404Site";
+import NotificationAdmin from "./admin/views/NotificationManagement";
 
 function App() {
   const { isAuthenticated, userRole, isLoading } = useAuth();
@@ -453,6 +454,10 @@ function App() {
             {/* Route dành cho admin */}
             {isAuthenticated && userRole.toLowerCase() === "admin" && (
               <>
+               <Route
+                  path="/admin/tripnotifications"
+                  element={<NotificationAdmin />}
+                />
                 <Route path="/admin/dashboard" element={<Dashboard />} />
                 <Route path="/admin/userreport" element={<UserReport />} />
                 <Route

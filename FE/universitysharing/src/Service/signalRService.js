@@ -1,6 +1,5 @@
 // src/services/signalService.js
 import * as signalR from "@microsoft/signalr";
-import { toast } from "react-toastify";
 import { refreshAccessToken } from "./authService";
 class SignalRService {
   constructor() {
@@ -782,33 +781,18 @@ class SignalRService {
   }
 
   // Đăng ký sự kiện nhận thông báo cập nhật vị trí
-  onReceiveLocationUpdateNotification(callback) {
-    this.on(
-      this.notificationConnection,
-      "ReceiveNotificationUpdateLocation",
-      (notificationData) => {
-        console.log("Nhận được thông báo cập nhật vị trí:", notificationData);
+  // onReceiveLocationUpdateNotification(callback) {
+  //   this.on(
+  //     this.notificationConnection,
+  //     "ReceiveNotificationUpdateLocation",
+  //     (notificationData) => {
+  //       console.log("Nhận được thông báo cập nhật vị trí:", notificationData);
+  //       callback(notificationData);
 
-        // Gọi callback với dữ liệu thông báo
-        callback(notificationData);
-
-        // Hiển thị toast với nội dung thông báo
-        if (notificationData && notificationData.message) {
-          toast.info(notificationData.message, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          });
-        } else {
-          console.warn("Dữ liệu thông báo không hợp lệ:", notificationData);
-        }
-      }
-    );
-    console.log("Đã đăng ký sự kiện ReceiveNotificationUpdateLocation");
-  }
+  //     }
+  //   );
+  //   console.log("Đã đăng ký sự kiện ReceiveNotificationUpdateLocation");
+  // }
 }
 
 const signalRService = new SignalRService();

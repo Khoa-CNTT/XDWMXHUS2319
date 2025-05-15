@@ -23,8 +23,8 @@ import checkIcon from "../../assets/iconweb/checkIcon.svg";
 import likeFillIcon from "../../assets/iconweb/likefillIcon.svg";
 
 import { useNavigate } from "react-router-dom";
-import getUserIdFromToken from "../../utils/JwtDecode";
 import { userProfile } from "../../stores/action/profileActions";
+import getUserIdFromToken from "../../utils/JwtDecode";
 
 import {
   createRide,
@@ -327,10 +327,13 @@ const AllSharingRide = () => {
   };
 
   const navigateUser = (userId) => {
-    if (userId === getUserIdFromToken()) {
-      navigate("/ProfileUserView");
+    const targetUserId = getUserIdFromToken();
+    if (userId === targetUserId) {
+      // Navigate to current user's profile and set ratings tab
+      navigate("/ProfileUserView", { state: { activeTab: "ratings" } });
     } else {
-      navigate(`/profile/${userId}`);
+      // Navigate to friend's profile and set ratings tab
+      navigate(`/profile/${userId}`, { state: { activeTab: "ratings" } });
     }
   };
 
