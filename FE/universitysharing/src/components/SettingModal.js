@@ -36,7 +36,7 @@ const SettingModal = ({ isOpen, onClose, users, UserProfile }) => {
   const handleLogout = () => {
     logout(); // Gọi logout từ authContext
     toast.success("Đăng xuất thành công!");
-    navigate("/login"); // Điều hướng về trang đăng nhập
+    navigate("/"); // Điều hướng về trang đăng nhập
     onClose(); // Đóng modal
   };
 
