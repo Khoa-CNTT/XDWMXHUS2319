@@ -41,7 +41,7 @@ const AppSidebar = () => {
     >
       <div
         className="logo"
-        onClick={() => navigate("/admin/home")}
+        onClick={() => navigate("/admin/dashboard")}
         style={{ color: "white", textAlign: "center" }}
       >
         <img src={logoWeb} style={{ width: "150px" }} alt="logo" />

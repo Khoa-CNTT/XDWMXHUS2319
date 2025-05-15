@@ -1,10 +1,15 @@
 import { jwtDecode } from "jwt-decode";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { refreshAccessToken, validateToken } from "../../src/Service/authService";
+import {
+  refreshAccessToken,
+  validateToken,
+} from "../../src/Service/authService";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isLoading, setIsLoading] = useState(true);
   const [isTokenVerified, setIsTokenVerified] = useState(false);
@@ -122,6 +127,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
+    navigate("/login");
     setToken(null);
     setIsTokenVerified(false);
     console.log("[AuthProvider] Đã đăng xuất");
