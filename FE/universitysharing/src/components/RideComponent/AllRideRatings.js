@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import getUserIdFromToken from "../../utils/JwtDecode";
 import { FaStar, FaMapMarkerAlt, FaCalendarAlt, FaUser } from "react-icons/fa";
 
-const AllRideRatings = ({ className }) => {
+const AllRideRatings = ({ className, driverId }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { completedRidesWithRating, loading, error } = useSelector(
@@ -17,8 +17,10 @@ const AllRideRatings = ({ className }) => {
   const [starFilter, setStarFilter] = useState("all");
 
   useEffect(() => {
-    dispatch(fetchCompletedRidesWithRating());
-  }, [dispatch]);
+    if (driverId) {
+      dispatch(fetchCompletedRidesWithRating(driverId));
+    }
+  }, [dispatch, driverId]);
 
   useEffect(() => {
     if (error) {
@@ -28,10 +30,10 @@ const AllRideRatings = ({ className }) => {
 
   const filteredRides =
     starFilter === "all"
-      ? completedRidesWithRating
+      ? completedRidesWithRating // Show all rides, including rating: null
       : completedRidesWithRating.filter(
           (ride) => ride.rating && ride.rating.level === parseInt(starFilter)
-        );
+        ); // Exclude rating: null for 1-5 star filters
 
   const renderStars = (level) => {
     const maxStars = 5;
@@ -130,47 +132,53 @@ const AllRideRatings = ({ className }) => {
             )}
 
             {/* Rating Info */}
-            {ride.rating && (
-              <div className="rating-info">
-                <h4>
-                  <span className="star-container">
-                    {renderStars(ride.rating.level)}
-                  </span>
-                  Đánh giá: {ride.rating.level}/5
-                </h4>
-                <p>
-                  <strong>Bình luận:</strong>{" "}
-                  {ride.rating.comment || "Không có bình luận"}
-                </p>
-                <p>
-                  <FaCalendarAlt className="icon" />
-                  <strong>Ngày đánh giá:</strong>{" "}
-                  {moment(ride.rating.createdAt).format("DD/MM/YYYY HH:mm")}
-                </p>
-                {ride.rating.ratedByUser && (
-                  <div
-                    className="rated-by-user"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent parent onClick
-                      navigateUser(ride.rating.ratedByUser.ratedByUserId);
-                    }}
-                  >
-                    <img
-                      src={
-                        ride.rating.ratedByUser.avatarUrl ||
-                        "/images/default-avatar.png"
-                      }
-                      alt={ride.rating.ratedByUser.fullname}
-                      className="reviewer-avatar"
-                    />
-                    <p>
-                      <FaUser className="icon" />
-                      Đánh giá bởi: {ride.rating.ratedByUser.fullname}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="rating-info">
+              {ride.rating ? (
+                <>
+                  <h4>
+                    <span className="star-container">
+                      {renderStars(ride.rating.level)}
+                    </span>
+                    Đánh giá: {ride.rating.level}/5
+                  </h4>
+                  <p>
+                    <strong>Bình luận:</strong>{" "}
+                    {ride.rating.comment || "Không có bình luận"}
+                  </p>
+                  <p>
+                    <FaCalendarAlt className="icon" />
+                    <strong>Ngày đánh giá:</strong>{" "}
+                    {moment(ride.rating.createdAt).format("DD/MM/YYYY HH:mm")}
+                  </p>
+                  {ride.rating.ratedByUser && (
+                    <div
+                      className="rated-by-user"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigateUser(ride.rating.ratedByUser.ratedByUserId);
+                      }}
+                    >
+                      <img
+                        src={
+                          ride.rating.ratedByUser.avatarUrl ||
+                          "/images/default-avatar.png"
+                        }
+                        alt={ride.rating.ratedByUser.fullname}
+                        className="reviewer-avatar"
+                      />
+                      <p>
+                        <FaUser className="icon" />
+                        Đánh giá bởi: {ride.rating.ratedByUser.fullname}
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="no-rating-container">
+                  <p className="no-rating">Chưa có đánh giá</p>
+                </div>
+              )}
+            </div>
           </div>
         ))
       )}

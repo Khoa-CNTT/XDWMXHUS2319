@@ -5,7 +5,7 @@ import {
   Route,
   Routes,
   useLocation,
-  useNavigate
+  useNavigate,
 } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -46,7 +46,9 @@ function App() {
   const dispatch = useDispatch();
   const state = location.state;
   const background = state && state.background;
-  const isSelectPostOpen = useSelector((state) => state.deeplink.isSelectPostOpen);
+  const isSelectPostOpen = useSelector(
+    (state) => state.deeplink.isSelectPostOpen
+  );
   const selectedPost = useSelector((state) => state.posts.selectedPost);
   const error = useSelector((state) => state.deeplink.error);
 
@@ -67,7 +69,8 @@ function App() {
     const pathMatch = location.pathname.match(/^\/post\/(.+)$/);
     if (pathMatch) {
       const postId = pathMatch[1];
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(postId)) {
         console.error("postId không hợp lệ:", postId);
         navigate("/home", { replace: true });
@@ -79,7 +82,14 @@ function App() {
         navigate("/login", { replace: true });
       }
     }
-  }, [isAuthenticated, userRole, isLoading, location.pathname, dispatch, navigate]);
+  }, [
+    isAuthenticated,
+    userRole,
+    isLoading,
+    location.pathname,
+    dispatch,
+    navigate,
+  ]);
 
   useEffect(() => {
     if (error) {

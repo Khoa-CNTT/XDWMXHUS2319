@@ -54,6 +54,9 @@
   .ride-card {
     background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
     padding: 1.75rem;
+    max-width: 700px;
+    margin-left: auto; /* Center horizontally */
+    margin-right: auto; /* Center horizontally */
     border-radius: 16px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
     border: 1px solid #dbeafe;
@@ -142,6 +145,7 @@
     .rating-info {
       border-top: 1px solid #dbeafe;
       padding-top: 1.25rem;
+      min-height: 6rem; /* Ensure consistent minimum height */
 
       h4 {
         font-size: 1.25rem;
@@ -170,6 +174,24 @@
           margin-right: 0.25rem;
           color: #1e293b;
         }
+      }
+
+      .no-rating-container {
+        min-height: 4rem; /* Match height of rated content */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .no-rating {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+        margin: 0.5rem 0;
+        padding: 0.5rem;
+        background: #f1f5f9;
+        border-radius: 4px;
+        text-align: center;
       }
 
       .rated-by-user {
@@ -295,12 +317,17 @@
       }
 
       .rating-info {
+        min-height: 5rem; /* Adjusted for mobile */
         h4 {
           font-size: 1rem;
         }
 
         p {
           font-size: 0.75rem;
+        }
+
+        .no-rating-container {
+          min-height: 3rem;
         }
 
         .rated-by-user {
