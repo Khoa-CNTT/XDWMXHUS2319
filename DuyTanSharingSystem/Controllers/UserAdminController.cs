@@ -26,7 +26,6 @@ namespace DuyTanSharingSystem.Controllers
             
                 // Gọi service để lấy tất cả người dùng
                 var users = await _userService.GetAllUsersAsync();
-
                 // Trả về kết quả dưới dạng OkResponse với danh sách người dùng
                 return Ok(users);
            

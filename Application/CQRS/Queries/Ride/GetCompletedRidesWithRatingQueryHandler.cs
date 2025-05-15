@@ -30,7 +30,7 @@ namespace Application.CQRS.Queries.Ride
             if (user.Status == "Suspended")
                 return ResponseFactory.Fail<List<CompletedRideWithRatingDto>> ("Tài khoản đang bị tạm ngưng", 403);
 
-            var rides = await _unitOfWork.RideRepository.GetCompletedRidesWithRatingAsync();
+            var rides = await _unitOfWork.RideRepository.GetCompletedRidesWithRatingAsync(request.UserId);
             if (!rides.Any())
             {
                 return ResponseFactory.Success<List<CompletedRideWithRatingDto>>("Không có bài chia sẻ xe nào được đánh giá", 200);
