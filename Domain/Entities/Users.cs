@@ -62,9 +62,11 @@ namespace Domain.Entities
 
             public ICollection<UserScoreHistory> UserScoreHistories { get; private set; } = new List<UserScoreHistory>();
 
-            public ICollection<UserReport> UserReports { get; set; } = new List<UserReport>(); // Những report mà user là đối tượng bị báo cáo
-            public ICollection<UserReport> UserReportsCreated { get; set; } = new List<UserReport>(); // Những report do user tạo
-            public ICollection<UserAction> UserActions { get; set; } = new List<UserAction>(); // Những hành động do user thực hiện
+            public ICollection<UserReport> UserReports { get; set; } = new List<UserReport>(); // Những report mà user đã báo cáo
+            public ICollection<UserReport> UserReportsCreated { get; set; } = new List<UserReport>(); // Những report mà user đã tạo
+            public ICollection<UserAction> UserActions { get; set; } = new List<UserAction>(); // Những hành động của admin đối với user
+            public ICollection<RideReport> RideReports { get; set; } = new List<RideReport>();// Những report liên quan đến chuyến đi mà user là đối tượng bị báo cáo
+
 
             public User(string fullName, string email, string passwordHash)
                 {

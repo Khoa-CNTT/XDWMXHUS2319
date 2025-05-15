@@ -37,7 +37,13 @@ import SearchView from "./views/SearchView";
 import SettingsView from "./views/SettingsView";
 import SharingRideView from "./views/SharingRideView";
 import TestDispatchAPI from "./views/TestDispatchAPI";
+
+
+import UserManagement from "./admin/views/UserManagement";
+import NotificationAdmin from "./admin/views/NotificationManagement";
+
 import YourRideView from "./views/YourRideView";
+
 
 function App() {
   const { isAuthenticated, userRole, isLoading } = useAuth();
@@ -53,6 +59,7 @@ function App() {
   const error = useSelector((state) => state.deeplink.error);
 
   useEffect(() => {
+
     if (isLoading) return; // Chờ xác thực hoàn tất
 
     // Chuyển hướng nếu đã đăng nhập và truy cập /login
@@ -62,6 +69,7 @@ function App() {
       } else {
         navigate("/home", { replace: true });
       }
+
     }
 
     // Xử lý deeplink cho post
@@ -118,6 +126,36 @@ function App() {
         <AxiosConfigProvider />
         <SignalRProvider>
           <Routes location={background || location}>
+
+            {isAuthenticated ? (
+              <>
+                <Route path="/admin/dashboard" element={<Dashboard />} />
+                <Route path="/admin/userreport" element={<UserReport />} />
+                <Route
+                  path="/admin/postmanager"
+                  element={<AdminPostManagement />}
+                />
+                <Route path="/home" element={<Homeview />} />
+                <Route path="/search" element={<SearchView />} />
+                <Route path="/sharing-ride" element={<SharingRideView />} />
+                <Route path="/your-ride" element={<YourRideView />} />
+                <Route path="/post/:id" element={<Homeview />} />
+                <Route path="/MessageView" element={<MessageView />} />
+                <Route path="/ProfileUserView" element={<ProfileUserView />} />
+
+                <Route path="/settings" element={<SettingsView />} />
+
+                <Route path="/admin/users" element={<UserManagement />} />
+                <Route
+                  path="/admin/tripnotifications"
+                  element={<NotificationAdmin />}
+                />
+
+                <Route
+                  path="/profile/:userId"
+                  element={<FriendProfileView />}
+                />
+
             {/* Tuyến đường không yêu cầu xác thực */}
             <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
@@ -126,6 +164,7 @@ function App() {
             <Route path="/reset-password" element={<ResetForgotPassword />} />
             <Route path="/resetFP" element={<ResetForgotPassword />} />
             <Route path="/AccountVerified" element={<AccountVerified />} />
+
 
             {/* Tuyến đường chỉ dành cho admin */}
             <Route
@@ -275,6 +314,25 @@ function App() {
               }
             />
 
+
+                <Route path="*" element={<Navigate to="/home" replace />} />
+              </>
+            ) : (
+              <>
+                <Route path="/" element={<Login />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgotpassword" element={<ForgotPass />} />
+                <Route
+                  path="/reset-password"
+                  element={<ResetForgotPassword />}
+                />
+                <Route path="/resetFP" element={<ResetForgotPassword />} />
+                <Route path="/AccountVerified" element={<AccountVerified />} />
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </>
+            )}
+
             {/* Chuyển hướng mặc định */}
             <Route
               path="*"
@@ -290,6 +348,7 @@ function App() {
                 )
               }
             />
+
           </Routes>
           {isAuthenticated && <CommentModalBackGround />}
         </SignalRProvider>
