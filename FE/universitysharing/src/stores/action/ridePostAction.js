@@ -215,19 +215,19 @@ export const rateDriver = createAsyncThunk(
 
 export const fetchCompletedRidesWithRating = createAsyncThunk(
   "ride/fetchCompletedRidesWithRating",
-  async (_, { rejectWithValue }) => {
+  async (userId, { rejectWithValue }) => {
     try {
+      if (!userId) throw new Error("User ID is required");
+
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
-      const response = await axiosClient.get(
-        "https://localhost:7053/api/Ride/get-all-ride-rating",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axiosClient.get("/api/Ride/get-ride-rating", {
+        params: { UserId: userId }, // Query parameter
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.data.success) {
         throw new Error(response.data.message || "Failed to fetch rated rides");

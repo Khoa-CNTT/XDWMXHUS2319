@@ -95,14 +95,15 @@ namespace Application.CQRS.Commands.UpdateLocation
                         await _unitOfWork.LocationUpdateRepository.AddAsync(locationUpdate);
                         // Tạo thông báo vị trí
                         // Gửi thông báo đến cả tài xế và hành khách
-                        await _notificationService.SendNotificationUpdateLocationAsync(
-                            ride.DriverId, // Tài xế
-                            ride.PassengerId, // Hành khách
-                            request.Latitude,
-                            request.Longitude,
-                            notificationMessage,
-                            false
-                        );
+                        //await _notificationService.SendNotificationUpdateLocationAsync(
+                        //    ride.DriverId, // Tài xế
+                        //    ride.PassengerId, // Hành khách
+                        //    request.Latitude,
+                        //    request.Longitude,
+                        //    notificationMessage,
+                        //    false,
+                        //    ridePost.EndLocation
+                        //);
                     }
                     else
                     {
@@ -115,14 +116,15 @@ namespace Application.CQRS.Commands.UpdateLocation
                         new LocationUpdate(request.RideId, userId, request.Latitude, request.Longitude, isDriver));
 
                     // Gửi thông báo đến cả tài xế và hành khách
-                    await _notificationService.SendNotificationUpdateLocationAsync(
-                        ride.DriverId, // Tài xế
-                        ride.PassengerId, // Hành khách
-                        request.Latitude,
-                        request.Longitude,
-                        notificationMessage,
-                        false
-                    );
+                    //await _notificationService.SendNotificationUpdateLocationAsync(
+                    //    ride.DriverId, // Tài xế
+                    //    ride.PassengerId, // Hành khách
+                    //    request.Latitude,
+                    //    request.Longitude,
+                    //    notificationMessage,
+                    //    false,
+                    //    ridePost.EndLocation
+                    //);
 
                     // Cập nhật thời gian bắt đầu nếu chưa có
                     if (ride.StartTime == null)
@@ -139,14 +141,15 @@ namespace Application.CQRS.Commands.UpdateLocation
                         ride.UpdateStatus(StatusRideEnum.Completed);
                         await _unitOfWork.RideRepository.UpdateAsync(ride);
 
-                        //await _notificationService.SendNotificationUpdateLocationAsync(
-                        //    ride.DriverId,
-                        //    ride.PassengerId,
-                        //    request.Latitude,
-                        //    request.Longitude,
-                        //    $"Chuyến đi đã kết thúc tại: {cleanLocation}",
-                        //    true
-                        //);
+                         await _notificationService.SendNotificationUpdateLocationAsync(
+                        ride.DriverId, // Tài xế
+                        ride.PassengerId, // Hành khách
+                        request.Latitude,
+                        request.Longitude,
+                        "",
+                        true,
+                        ridePost.EndLocation
+                    );
                     }
                     else
                     {

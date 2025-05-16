@@ -23,6 +23,8 @@ namespace Application
                 Id = rideReport.Id,
                 RideId = rideReport.RideId,
                 PassengerId = rideReport.PassengerId,
+                PhonePassenger = rideReport.Passenger?.Phone,               
+                RelativePhonePassenger = rideReport.Passenger?.RelativePhone,
                 Message = rideReport.Message,
                 AlertType = rideReport.AlertType,
                 Status = rideReport.Status,

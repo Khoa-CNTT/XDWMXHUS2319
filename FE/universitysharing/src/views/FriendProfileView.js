@@ -1,31 +1,36 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom"; // Add useLocation
 import { useDispatch, useSelector } from "react-redux";
-
 import {
   fetchOtherUserProfile,
   userProfile,
+  fetchPostImagesPreview,
 } from "../stores/action/profileActions";
 import { fetchFriendsByUserId } from "../stores/action/friendAction";
 import { fetchPostsByOtherUser } from "../stores/action/listPostActions";
+import { fetchCompletedRidesWithRating } from "../stores/action/ridePostAction";
 import ProfileFriendsHeader from "../components/ProfileUserComponent/ProfileFriendHeader";
 import ProfilePhotos from "../components/ProfileUserComponent/ProfilePhotos";
 import ProfileIntro from "../components/ProfileUserComponent/ProfileIntro";
 import Header from "../components/HomeComponent/Header";
 import AllPosts from "../components/HomeComponent/AllPostHome";
+import AllRideRatings from "../components/RideComponent/AllRideRatings";
 import "../styles/ProfileView.scss";
-import { fetchPostImagesPreview } from "../stores/action/profileActions";
 import ProfileFriendsUserOther from "../components/ProfileUserComponent/ProfileFriendsUserOther";
 import FooterHome from "../components/HomeComponent/FooterHome";
 
 const FriendProfileView = () => {
   const { userId } = useParams();
   const dispatch = useDispatch();
+  const location = useLocation(); // Get navigation state
 
   const currentUser = useSelector((state) => state.users.users) || {};
-  // Get the other user's profile from state
   const otherUserProfile = useSelector((state) => state.users.otherUser) || {};
   const { post } = useSelector((state) => state.users);
+  const completedRidesWithRating = useSelector(
+    (state) => state.rides.completedRidesWithRating
+  );
+  const [activeTab, setActiveTab] = useState("posts"); // Default tab
   const [shouldFocusBio, setShouldFocusBio] = useState(false);
   const profileHeaderRef = useRef();
 
@@ -35,15 +40,24 @@ const FriendProfileView = () => {
       profileHeaderRef.current.openModal();
     }
   };
+
   useEffect(() => {
-    dispatch(userProfile()); // Lấy thông tin user đăng nhập trước
+    dispatch(userProfile()); // Fetch current user profile
     if (userId) {
       dispatch(fetchPostImagesPreview(userId));
-      dispatch(fetchOtherUserProfile(userId)); // Sau đó lấy thông tin người khác
+      dispatch(fetchOtherUserProfile(userId));
       dispatch(fetchPostsByOtherUser(userId));
       dispatch(fetchFriendsByUserId(userId));
+      dispatch(fetchCompletedRidesWithRating(userId)); // Fetch ride ratings
     }
   }, [dispatch, userId]);
+
+  // Set activeTab from navigation state if provided
+  useEffect(() => {
+    if (location.state?.activeTab === "ratings") {
+      setActiveTab("ratings");
+    }
+  }, [location.state]);
 
   return (
     <>
@@ -56,7 +70,7 @@ const FriendProfileView = () => {
           shouldFocusBio={shouldFocusBio}
           onModalOpened={() => setShouldFocusBio(false)}
           isFriendProfile={true}
-          userData={otherUserProfile} // Pass the specific user data
+          userData={otherUserProfile}
           usersProfile={currentUser}
         />
         <div className="profile-user-view__content">
@@ -76,13 +90,32 @@ const FriendProfileView = () => {
             </div>
           </div>
           <div className="profile-user-view__right">
-            <AllPosts
-              usersProfile={otherUserProfile}
-              post={post}
-              showOwnerPosts={true}
-              isFriendProfile={true}
-              userFriendId={userId} // Pass the userId to fetch posts for this user
-            />
+            <div className="tabs">
+              <button
+                className={`tab ${activeTab === "posts" ? "active" : ""}`}
+                onClick={() => setActiveTab("posts")}
+              >
+                Tất cả bài viết
+              </button>
+              <button
+                className={`tab ${activeTab === "ratings" ? "active" : ""}`}
+                onClick={() => setActiveTab("ratings")}
+              >
+                Tất cả bài đánh giá chuyến đi
+              </button>
+            </div>
+            {activeTab === "posts" && (
+              <AllPosts
+                usersProfile={otherUserProfile}
+                post={post}
+                showOwnerPosts={true}
+                isFriendProfile={true}
+                userFriendId={userId}
+              />
+            )}
+            {activeTab === "ratings" && (
+              <AllRideRatings className="all-posts" driverId={userId} />
+            )}
           </div>
         </div>
       </div>
