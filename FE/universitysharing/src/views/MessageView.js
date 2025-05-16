@@ -1,35 +1,34 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
-import { fetchFriends } from "../stores/action/friendAction";
-import ChatList from "../components/MessageComponent/ChatList";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import Header from "../components/HomeComponent/Header";
 import ChatHeader from "../components/MessageComponent/ChatHeader";
+import ChatList from "../components/MessageComponent/ChatList";
 import MessageArea from "../components/MessageComponent/MessageArea";
 import MessageInput from "../components/MessageComponent/MessageInput";
 import RightSidebar from "../components/MessageComponent/RightSidebar";
-import Header from "../components/HomeComponent/Header";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { fetchFriends } from "../stores/action/friendAction";
 import { userProfile } from "../stores/action/profileActions";
-import "../styles/MessageView.scss";
-import "../styles/MoblieReponsive/MessageViewMobile/MessageViewMobile.scss";
 import {
   resetMessages,
   setSelectFriend,
 } from "../stores/reducers/messengerReducer";
+import "../styles/MessageView.scss";
+import "../styles/MoblieReponsive/MessageViewMobile/MessageViewMobile.scss";
 
 import {
-  getMessagess,
   getConversationss,
   getInbox,
+  getMessagess,
 } from "../stores/action/messageAction";
 
+import { useSignalR } from "../Service/SignalRProvider";
+import getUserIdFromToken from "../utils/JwtDecode";
 import {
   useChatHandle,
   useMessageReceiver,
   useMessageReceiverData,
 } from "../utils/MesengerHandle";
-import { useSignalR } from "../Service/SignalRProvider";
-import { checkOnlineUsers } from "../stores/action/onlineAction";
-import getUserIdFromToken from "../utils/JwtDecode";
 
 const MessageView = () => {
   const dispatch = useDispatch();
@@ -88,7 +87,7 @@ const MessageView = () => {
     // Gọi API check-online khi có danh sách bạn bè
     if (friend.length > 0) {
       const friendIds = friend.map((friend) => friend.friendId);
-      dispatch(checkOnlineUsers(friendIds));
+      //dispatch(checkOnlineUsers(friendIds));
     }
   }, [friend, dispatch]);
 

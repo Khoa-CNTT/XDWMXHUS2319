@@ -1,7 +1,6 @@
-import React from "react";
+import { FiArrowLeft } from "react-icons/fi";
 import "../../styles/MessageView/RightSidebar.scss";
 import ViewInfoFriend from "./ViewInfoFriend";
-import { FiArrowLeft } from "react-icons/fi";
 const RightSidebar = ({
   isOpen,
   toggleSidebar,

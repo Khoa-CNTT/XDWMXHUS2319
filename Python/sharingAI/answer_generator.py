@@ -39,21 +39,21 @@ class AnswerGenerator:
 
     def __init__(self):
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash",
             google_api_key=GOOGLE_API_KEY_LLM,
             temperature=0.5,
             max_output_tokens=2024,
             disable_streaming=False,
         )
         self.sql_llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash",
             google_api_key=GOOGLE_API_KEY_SQL,
             temperature=0,
             max_output_tokens=2024,
             disable_streaming=True,
         )
         self.sql_query = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash",
             google_api_key=GOOGLE_API_KEY_QUERY,
             temperature=0.3,
             max_output_tokens=2024,
@@ -96,7 +96,7 @@ class AnswerGenerator:
             You are a Vietnamese query preprocessor for a database-driven ride-sharing application. Your task is to process the current query based on the chat history to identify relevant entities, IDs, and database tables.   
             ### Current Query:
             {query}
-
+            
             ### Chat History:
             {chat_history}
             **The chat_history contains key fields to pay attention to:
@@ -200,6 +200,8 @@ class AnswerGenerator:
             - Nếu không tìm thấy ID rõ ràng, trả về `ids` rỗng (`[]`) và ghi chú trong `alert` rằng cần thêm thông tin.
             3.  `type`: SEARCH or DIFF (if the question is related to the data or the system's tables).
                 - type will be false if the user asks questions that are not related to the system, and in that case, `relevant_tables` will be null.
+                ** If the {{query}} question is related to the tutorial system, the type will also be FALSE:
+                **example:** Where to update profile, where to post about cars, where to change password, increase reputation points, how to make friends,...etc...
                 *Example Query*
                 Example (User asks: "Giải thích cho tôi về các bảng trong cơ sở dữ liệu này")
                 Example (User asks: "Tôi muốn biết về các bảng trong cơ sở dữ liệu này")

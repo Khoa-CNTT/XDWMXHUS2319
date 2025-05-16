@@ -1,15 +1,13 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchFriends } from "../../stores/action/friendAction";
-import { setActiveFriend } from "../../stores/reducers/friendReducer";
-import { checkOnlineUsers } from "../../stores/action/onlineAction"; // Thêm import
-import ChatBox from "../MessageComponent/ChatBox";
-import "../../styles/MessageView/RightSidebar.scss";
-import avatarDefault from "../../assets/AvatarDefault.png";
-
-import signalRService from "../../Service/signalRService";
-import { jwtDecode } from "jwt-decode";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FiSearch } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
+import avatarDefault from "../../assets/AvatarDefault.png";
+import signalRService from "../../Service/signalRService";
+import { fetchFriends } from "../../stores/action/friendAction";
+import { updateOnlineStatus } from "../../stores/action/onlineAction";
+import { setActiveFriend } from "../../stores/reducers/friendReducer";
+import "../../styles/MessageView/RightSidebar.scss";
+import ChatBox from "../MessageComponent/ChatBox";
 
 const RightSidebar = () => {
   const dispatch = useDispatch();
@@ -29,15 +27,36 @@ const RightSidebar = () => {
   const [activeFriend, setActiveFriendLocal] = useState(null);
 
   useEffect(() => {
-    // Gọi fetchFriends để lấy danh sách bạn bè
     dispatch(fetchFriends());
+
+    // Đăng ký sự kiện từ SignalR
+    signalRService.onUserOnline((userId) => {
+      console.log("Nhận sự kiện userOnline:", userId);
+      dispatch(updateOnlineStatus(userId, true));
+    });
+
+    signalRService.onUserOffline((userId) => {
+      console.log("Nhận sự kiện userOffline:", userId);
+      dispatch(updateOnlineStatus(userId, false));
+    });
+
+    signalRService.onInitialOnlineUsers((onlineUsers) => {
+      console.log("Nhận initialOnlineUsers:", onlineUsers);
+      onlineUsers.forEach((userId) => dispatch(updateOnlineStatus(userId, true)));
+    });
+
+    // Cleanup khi component unmount
+    return () => {
+      signalRService.off("userOnline", signalRService.chatConnection);
+      signalRService.off("userOffline", signalRService.chatConnection);
+      signalRService.off("initialOnlineUsers", signalRService.chatConnection);
+    };
   }, [dispatch]);
 
   useEffect(() => {
-    // Gọi API check-online khi có danh sách bạn bè
     if (friends.length > 0 && !friendsLoading && !friendsError) {
       const friendIds = friends.map((friend) => friend.friendId);
-      dispatch(checkOnlineUsers(friendIds));
+      //dispatch(checkOnlineUsers(friendIds));
     }
   }, [friends, friendsLoading, friendsError, dispatch]);
 

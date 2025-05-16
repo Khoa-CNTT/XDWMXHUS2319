@@ -27,21 +27,21 @@ logger = logging.getLogger(__name__)
 class CreateQueryProcessor:
     def __init__(self):
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash",
             google_api_key=GOOGLE_API_KEY_LLM,
             temperature=0.5,
             max_output_tokens=2024,
             disable_streaming=False,
         )
         self.sql_llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash",
             google_api_key=GOOGLE_API_KEY_SQL,
             temperature=0,
             max_output_tokens=2024,
             disable_streaming=True,
         )
         self.determine_llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash",
             google_api_key=GOOGLE_API_KEY_QUERY,
             temperature=1,
             max_output_tokens=2024,
@@ -75,6 +75,7 @@ class CreateQueryProcessor:
         self, query: str, chat_history: List[Dict], sql_result: List[Dict]
     ) -> Dict:
         logger.debug(f"Preprocessing query: {query}")
+        logger.info(f"Lịch sử trò chuyện create :\n{chat_history}")
 
         def normalize_params(params):
             """

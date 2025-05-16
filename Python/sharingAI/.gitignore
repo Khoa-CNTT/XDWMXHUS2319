@@ -6,6 +6,11 @@
 
 #Bỏ qua các folder mà chưa Img 
 DuyTanSharingSystem/wwwroot
+.env
+.vscode/
+*json
+__pycache__/
+*.pyc
 
 # User-specific files
 *.rsuser
@@ -13,7 +18,7 @@ DuyTanSharingSystem/wwwroot
 *.user
 *.userosscache
 *.sln.docstates
-*.env
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

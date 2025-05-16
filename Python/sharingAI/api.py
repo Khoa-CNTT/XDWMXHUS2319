@@ -197,7 +197,7 @@ async def query(request: QueryRequest, current_user: dict = Depends(get_current_
     if not history_length:
         # Không tìm thấy cache hoặc lỗi, tiếp tục xử lý
         intent_result = await answer_generator._preprocess_query_async(
-            request.query, chat_history
+            request.query, chat_history_str
         )
         action_type = intent_result["type"]
         relevant_tables = intent_result["relevant_tables"] or []
