@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import ChatInterface from './ChatInterface';
-import './ChatLayout.scss';
-import ConversationList from './ConversationList';
+import React, { useState } from "react";
+import ChatInterface from "./ChatInterface";
+import "./ChatLayout.scss";
+import ConversationList from "./ConversationList";
 
 const ChatLayout = () => {
   const [conversationId, setConversationId] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleNewChat = () => {
     setConversationId(null);

@@ -42,7 +42,7 @@ namespace Application.Services
             return await Task.Run(() => BCrypt.Net.BCrypt.HashPassword(password, 12));
         }
 
-        public async Task<string?> SendVerifiEmailAsync(Guid userId,string email)
+        public async Task<string?> SendVerifiEmailAsync(Guid userId, string email)
         {
             try
             {
@@ -50,12 +50,77 @@ namespace Application.Services
                 // Tạo link xác minh
                 var verificationLink = $"https://localhost:7053/api/auth/verify-email?token={token}";
 
-                //Nội dung email
-                var subject = "Verify Your Email";
-                var body = $"Click <a href='{verificationLink}'>here</a> to verify your email.";
+                // Tạo nội dung HTML đẹp mắt
+                var subject = "Xác nhận địa chỉ email của bạn";
+                var body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>Xác nhận Email</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }}
+        .header {{
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }}
+        .content {{
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 0 0 5px 5px;
+        }}
+        .button {{
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }}
+        .footer {{
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }}
+    </style>
+</head>
+<body>
+    <div class='header'>
+        <h1>Xác nhận địa chỉ email</h1>
+    </div>
+    <div class='content'>
+        <p>Xin chào,</p>
+        <p>Cảm ơn bạn đã đăng ký tài khoản. Vui lòng nhấp vào nút bên dưới để xác nhận địa chỉ email của bạn:</p>
+        
+        <p style='text-align: center;'>
+            <a href='{verificationLink}' class='button'>Xác nhận Email</a>
+        </p>
+        
+        <p>Nếu nút không hoạt động, bạn có thể sao chép và dán liên kết sau vào trình duyệt của mình:</p>
+        <p><a href='{verificationLink}'>{verificationLink}</a></p>
+        
+        <p>Trân trọng,<br>Đội ngũ hỗ trợ</p>
+    </div>
+    <div class='footer'>
+        <p>Nếu bạn không yêu cầu email này, vui lòng bỏ qua nó.</p>
+    </div>
+</body>
+</html>";
 
-                // Gửi email
-                bool isSuccess = await _emailService.SendEmailAsync(email, subject, body);
+                // Gửi email với nội dung HTML
+                bool isSuccess = await _emailService.SendEmailHtmlAsync(email, subject, body);
                 if (isSuccess)
                 {
                     return token;
@@ -65,9 +130,9 @@ namespace Application.Services
                     return null;
                 }
             }
-            catch 
+            catch
             {
-                    return null;
+                return null;
             }
         }
         public async Task<bool> SendEmailAsync(string email, string subject, string body)

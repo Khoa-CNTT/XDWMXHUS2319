@@ -107,14 +107,14 @@ export const NotificationProvider = ({ children }) => {
             setNotifications((prev) => [...prev, notification]);
           });
 
-          signalRService.onReceiveMessageData((message) => {
-            if (!isMounted) return;
-            console.warn(
-              "[NotificationProvider] Nhận thông báo data gửi về 🐧:",
-              message
-            );
-            setmessDatas((prev) => [...prev, message]);
-          });
+          // signalRService.onReceiveMessageData((message) => {
+          //   if (!isMounted) return;
+          //   console.warn(
+          //     "[NotificationProvider] Nhận thông báo data gửi về 🐧:",
+          //     message
+          //   );
+          //   setmessDatas((prev) => [...prev, message]);
+          // });
         }
       } catch (err) {
         if (isMounted) {

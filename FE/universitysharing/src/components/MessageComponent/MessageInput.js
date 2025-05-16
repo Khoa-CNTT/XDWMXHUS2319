@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import "../../styles/MessageView/MessageInput.scss";
 import { FiPaperclip, FiCamera, FiThumbsUp, FiSend } from "react-icons/fi";
 import { RiThumbUpFill } from "react-icons/ri";
-
+import getUserIdFromToken from "../../utils/JwtDecode";
+import { useChatHandle } from "../../utils/MesengerHandle";
+const TYPING_INTERVAL = 3000;
 const MessageInput = ({
+  conversationId,
+  friendId,
   message,
   setMessage,
   onSendMessage,
@@ -11,10 +15,33 @@ const MessageInput = ({
   isUserTyping,
   setIsUserTyping,
 }) => {
-  const handleInputChange = (e) => {
-    setMessage(e.target.value);
-    setIsUserTyping(true);
-  };
+  const { handleTyping } = useChatHandle();
+  const lastTypingTimeRef = useRef(0);
+  const currentUserID = getUserIdFromToken(); // Lấy ID người dùng hiện tại
+  const handleInputChange = useCallback(
+    (e) => {
+      const newMessage = e.target.value;
+      setMessage(newMessage);
+      handleTyping(e, {
+        conversationId,
+        friendId,
+        currentUserID,
+        setNewMessage: setMessage,
+        setIsUserTyping,
+        lastTypingTimeRef,
+        TYPING_INTERVAL,
+      });
+      setIsUserTyping(true);
+    },
+    [
+      conversationId,
+      friendId,
+      currentUserID,
+      setMessage,
+      setIsUserTyping,
+      handleTyping,
+    ]
+  );
 
   const handleSendClick = () => {
     if (!message.trim() || isSending) return;

@@ -5,11 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AuthForm from "../components/AuthForm";
 import { useAuth } from "../contexts/AuthContext";
+
 import axiosClient from "../Service/axiosClient";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, userRole, isLoading, isTokenVerified } = useAuth();
+  const { login, isAuthenticated, userRole, isLoading, isTokenVerified } =
+    useAuth();
   const [loginSuccess, setLoginSuccess] = useState(false);
 
   const handleLogin = async (e, formData) => {
@@ -25,6 +27,7 @@ const Login = () => {
       if (response.data.success) {
         const token = response.data.data;
         login(token);
+
         toast.success("Đăng nhập thành công!");
         setLoginSuccess(true);
       } else if (response?.data?.message?.toLowerCase() === "user not found") {
@@ -47,15 +50,29 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (loginSuccess && isAuthenticated && !isLoading && isTokenVerified && userRole) {
-      console.log("[Login] Chuyển hướng với vai trò:", userRole);
+    if (
+      loginSuccess &&
+      isAuthenticated &&
+      !isLoading &&
+      isTokenVerified &&
+      userRole
+    ) {
+      console.warn("[Login] Chuyển hướng với vai trò:", userRole);
       if (userRole.toLowerCase() === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
+        console.warn("Roll roye>>", userRole);
         navigate("/home", { replace: true });
       }
     }
-  }, [loginSuccess, isAuthenticated, userRole, isLoading, isTokenVerified, navigate]);
+  }, [
+    loginSuccess,
+    isAuthenticated,
+    userRole,
+    isLoading,
+    isTokenVerified,
+    navigate,
+  ]);
 
   return <AuthForm type="login" onSubmit={handleLogin} />;
 };

@@ -22,99 +22,158 @@ namespace Infrastructure.Hubs
             if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId) || userId == Guid.Empty)
             {
                 Context.Abort();
+                Console.WriteLine("UserId không hợp lệ trong OnConnectedAsync, abort kết nối");
                 return;
             }
+
+            Console.WriteLine($"🔗 Client kết nối: ConnectionId: {Context.ConnectionId}, UserId: {userId}");
             await Groups.AddToGroupAsync(Context.ConnectionId, userId.ToString());
             await _redisService.AddAsync($"user_connections:{userId}", Context.ConnectionId);
-            await _redisService.SaveDataAsync($"user_status:{userId}", "online", _statusExpiration);
-            var friends = await _redisService.GetFriendsAsync(userId.ToString()); 
+            await _redisService.SaveDataAsync($"user_status:{userId}", "online", TimeSpan.FromSeconds(30)); // Timeout 30 giây
+
+            var friends = await _redisService.GetFriendsAsync(userId.ToString());
             if (!friends.Any())
-            {                await _redisService.SyncFriendsToRedis(userId.ToString()); 
+            {
+                await _redisService.SyncFriendsToRedis(userId.ToString());
                 friends = await _redisService.GetFriendsAsync(userId.ToString());
             }
+
+            Console.WriteLine($"Gửi userOnline cho bạn bè của {userId}: {string.Join(", ", friends)}");
             foreach (var friendIdStr in friends)
             {
-                if (Guid.TryParse(friendIdStr, out var friendId))
+                if (Guid.TryParse(friendIdStr, out var friendId) && friendId != userId)
                 {
                     await Clients.Group(friendId.ToString()).SendAsync("userOnline", userId.ToString());
+                    Console.WriteLine($"📤 Đã gửi userOnline đến {friendId}");
                 }
             }
+
             var onlineUsers = await GetOnlineUsers();
-            await Clients.Caller.SendAsync("initialOnlineUsers", onlineUsers); 
+            await Clients.Caller.SendAsync("initialOnlineUsers", onlineUsers);
+            Console.WriteLine($"Gửi initialOnlineUsers cho {userId}: {string.Join(", ", onlineUsers)}");
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userIdString = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            // Không cần lấy UserId từ Context.Items nếu đã lấy được từ ClaimTypes.NameIdentifier
-            // Và cần đảm bảo UserId được quản lý nhất quán (luôn là string hoặc luôn là Guid)
-
             if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId) || userId == Guid.Empty)
             {
                 Console.WriteLine("UserId không hợp lệ trong OnDisconnectedAsync");
-                return; // Không làm gì thêm nếu không có UserId
+                await base.OnDisconnectedAsync(exception);
+                return;
             }
 
-            Console.WriteLine($"🔌 User {userId} ngắt kết nối, ConnectionId: {Context.ConnectionId}");
-
-            // Xóa khỏi Group SignalR
+            Console.WriteLine($"🔌 Client ngắt kết nối: ConnectionId: {Context.ConnectionId}, UserId: {userId}, Lý do: {exception?.Message ?? "Không rõ"}");
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId.ToString());
             Console.WriteLine($"👥 Đã xóa ConnectionId {Context.ConnectionId} khỏi group {userId}");
 
-            // Xóa connectionId khỏi Redis và kiểm tra nếu là connection cuối cùng (như cũ)
             await _redisService.RemoveItemFromListAsync<string>($"user_connections:{userId}", Context.ConnectionId);
             var connections = await _redisService.GetListAsync<string>($"user_connections:{userId}");
+
             if (connections == null || !connections.Any())
             {
+                Console.WriteLine($"🗑️ Không còn kết nối nào cho user {userId}, đánh dấu offline");
                 await _redisService.SaveDataAsync($"user_last_seen:{userId}", DateTime.UtcNow.ToString("o"), TimeSpan.FromHours(24));
                 await _redisService.RemoveDataAsync($"user_status:{userId}");
-                await _redisService.RemoveDataAsync($"user_connections:{userId}"); // Xóa luôn list connections
-                Console.WriteLine($"🗑️ Đã xóa trạng thái online và connections cho user {userId}");
+                await _redisService.RemoveDataAsync($"user_connections:{userId}");
 
-                // Gửi UserOffline tới bạn bè (như cũ)
                 var friends = await _redisService.GetFriendsAsync(userId.ToString());
                 Console.WriteLine($"Gửi UserOffline cho bạn bè của {userId}: {string.Join(", ", friends)}");
                 foreach (var friendIdStr in friends)
                 {
-                    if (Guid.TryParse(friendIdStr, out var friendId))
+                    if (Guid.TryParse(friendIdStr, out var friendId) && friendId != userId)
                     {
                         await Clients.Group(friendId.ToString()).SendAsync("UserOffline", userId.ToString());
+                        Console.WriteLine($"📤 Đã gửi UserOffline đến {friendId}");
                     }
                 }
+            }
+            else
+            {
+                Console.WriteLine($"⚠️ Vẫn còn {connections.Count} kết nối cho user {userId}");
             }
 
             await base.OnDisconnectedAsync(exception);
         }
-        public async Task KeepAlive()
-        {
-            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                Console.WriteLine("KeepAlive: UserId không hợp lệ");
-                return;
-            }
 
-            await _redisService.SaveDataAsync($"user_status:{userId}", "online", _statusExpiration);
-            Console.WriteLine($"🔄 Làm mới trạng thái online cho user {userId}");
-        }
-        // Helper để lấy danh sách user online
         private async Task<List<string>> GetOnlineUsers()
         {
-            var allKeys = await _redisService.GetKeysAsync("user_status:*");
             var onlineUsers = new List<string>();
-            foreach (var key in allKeys)
+            var keys = await _redisService.GetKeysAsync("user_status:*");
+            foreach (var key in keys)
             {
-                var userId = key.Split(':')[1];
                 var status = await _redisService.GetDataAsync<string>(key);
                 if (status == "online")
                 {
+                    var userId = key.Replace("user_status:", "");
                     onlineUsers.Add(userId);
                 }
             }
             return onlineUsers;
         }
+        public async Task DisconnectUser()
+        {
+            var userIdString = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId) || userId == Guid.Empty)
+            {
+                Console.WriteLine("UserId không hợp lệ trong DisconnectUser");
+                return;
+            }
+
+            Console.WriteLine($"🔌 User {userId} ngắt kết nối chủ động qua DisconnectUser: ConnectionId: {Context.ConnectionId} tại {DateTime.UtcNow}");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId.ToString());
+            Console.WriteLine($"👥 Đã xóa ConnectionId {Context.ConnectionId} khỏi group {userId}");
+
+            await _redisService.RemoveItemFromListAsync<string>($"user_connections:{userId}", Context.ConnectionId);
+            var connections = await _redisService.GetListAsync<string>($"user_connections:{userId}");
+
+            if (connections == null || !connections.Any())
+            {
+                Console.WriteLine($"🗑️ Không còn kết nối nào cho user {userId}, đánh dấu offline");
+                await _redisService.SaveDataAsync($"user_last_seen:{userId}", DateTime.UtcNow.ToString("o"), TimeSpan.FromHours(24));
+                await _redisService.RemoveDataAsync($"user_status:{userId}");
+                await _redisService.RemoveDataAsync($"user_connections:{userId}");
+
+                var friends = await _redisService.GetFriendsAsync(userId.ToString());
+                Console.WriteLine($"Gửi UserOffline cho bạn bè của {userId}: {string.Join(", ", friends)}");
+                foreach (var friendIdStr in friends)
+                {
+                    if (Guid.TryParse(friendIdStr, out var friendId) && friendId != userId)
+                    {
+                        await Clients.Group(friendId.ToString()).SendAsync("UserOffline", userId.ToString());
+                        Console.WriteLine($"📤 Đã gửi UserOffline đến {friendId} tại {DateTime.UtcNow}");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine($"⚠️ Vẫn còn {connections.Count} kết nối cho user {userId}");
+            }
+        }
+
+        public async Task KeepAlive()
+        {
+            var userIdString = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+            {
+                Console.WriteLine("KeepAlive: UserId không hợp lệ");
+                return;
+            }
+
+            var connections = await _redisService.GetListAsync<string>($"user_connections:{userId}");
+            if (connections != null && connections.Contains(Context.ConnectionId))
+            {
+                await _redisService.SaveDataAsync($"user_status:{userId}", "online", TimeSpan.FromSeconds(30));
+                Console.WriteLine($"🔄 Làm mới trạng thái online cho user {userId}");
+            }
+            else
+            {
+                Console.WriteLine($"⚠️ ConnectionId {Context.ConnectionId} không hợp lệ cho user {userId}, ngắt kết nối");
+                Context.Abort();
+            }
+        }
+
         public async Task JoinConversation(string conversationId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);

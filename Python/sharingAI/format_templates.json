@@ -1,0 +1,66 @@
+{
+  "Ratings": {
+    "user": "Đánh giá ${Level} sao: ${Comment}.",
+    "admin": "Đánh giá ID: ${Id}, người dùng ${UserId} đã đánh giá người dùng ${RatedByUserId} cho chuyến đi ${RideId} với ${Level} sao: ${Comment}. Đánh giá được tạo vào lúc ${CreatedAt}."
+  },
+  "RidePosts": {
+    "user": "Chuyến đi từ ${StartLocation} đến ${EndLocation} vào lúc ${StartTime}.với nội dung ${Content} và trạng thái ${Status}.",
+    "admin": "ID: ${Id}, Người dùng: ${UserId},  Xuất phát: ${StartLocation} (Tọa độ: ${LatLonStart}), Điểm đến: ${EndLocation} (Tọa độ: ${LatLonEnd}), Thời gian khởi hành: ${StartTime}, Loại bài đăng: ${PostType}, Trạng thái: ${Status},  Nội dung: ${Content}, Tạo lúc: ${CreatedAt}, Cập nhật lúc: ${UpdatedAt}, Đã xóa: ${IsDeleted ? 'Có' : 'Không'} trạng thái: ${Status}"
+  },
+  "Rides": {
+    "user": "Chuyến đi của bạn bắt đầu lúc ${StartTime} và kết thúc lúc ${EndTime}, tổng cộng khoảng ${EstimatedDuration}. Phí là ${Fare} và trạng thái hiện tại là ${Status}.",
+    "admin": "ID Chuyến đi: ${Id}, Hành khách: ${PassengerId}, Bài đăng chuyến đi: ${RidePostId}, Tài xế: ${DriverId}. Chuyến đi bắt đầu lúc ${StartTime} và kết thúc lúc ${EndTime}, thời gian dự kiến là ${EstimatedDuration}. Phí là ${Fare}, trạng thái: ${Status}. Tạo lúc: ${CreatedAt}. Theo dõi an toàn: ${IsSafetyTrackingEnabled}."
+  },
+  "Conversations": {
+    "user": "Bạn đã bắt đầu một cuộc trò chuyện vào lúc ${CreatedAt}.",
+    "admin": "Cuộc trò chuyện ID: ${Id}, giữa người dùng ${User1Id} và ${User2Id}, được tạo vào lúc ${CreatedAt}."
+  },
+  "Messages": {
+    "user": "Tin nhắn: ${Content} được gửi lúc ${SentAt}. ${IsSeen ? 'Đã xem.' : 'Chưa xem.'}",
+    "admin": "Tin nhắn ID: ${Id} trong cuộc trò chuyện ID: ${ConversationId}. Người gửi: ${SenderId}. Nội dung: ${Content}.  URL ảnh: ${ImageUrl}. URL video: ${VideoUrl}. Gửi lúc: ${SentAt}. Đã xem: ${IsSeen ? 'Có' : 'Không'} lúc ${SeenAt}. Trạng thái: ${Status}. Giao lúc: ${DeliveredAt}."
+  },
+  "Users": {
+    "user": "Người dùng tên ${FullName}! có điểm uy tín ${TrustScore}.",
+    "admin": "Thông tin người dùng: ${FullName} (ID: ${Id}, Email: ${Email}, Điểm tín nhiệm: ${TrustScore},  Số điện thoại: ${Phone},  Ngày tạo: ${CreatedAt},  Mô tả cá nhân: ${Bio}, Ảnh đại diện: ${ProfilePicture}, Ảnh bìa: ${BackgroundPicture},  Email đã được xác minh: ${IsVerifiedEmail ? 'Đã xác minh' : 'Chưa xác minh'}, Vai trò: ${Role}, Số điện thoại người thân: ${RelativePhone}, Lần hoạt động cuối: ${LastActive}, Cập nhật lần cuối: ${UpdatedAt})."
+  },
+  "Posts": {
+    "user": "Bài viết của ${FullName}: ${Content} được đăng tải lúc ${CreatedAt}.${ImageUrl ? ' Ảnh đính kèm.' : ''}${VideoUrl ? ' Video đính kèm.' : ''} loại: ${PostType}.",
+    "admin": "Bài viết ID: ${Id}, Người dùng ID: ${UserId} (${FullName}), Nội dung: ${Content}, URL ảnh: ${ImageUrl}, URL video: ${VideoUrl}, Được tạo lúc: ${CreatedAt}, Điểm: ${Score}, Trạng thái duyệt: ${ApprovalStatus}, Phạm vi: ${Scope}, Bài viết chia sẻ: ${IsSharedPost ? 'Có' : 'Không'}, Bài viết gốc ID: ${OriginalPostId}, Trạng thái xóa: ${IsDeleted ? 'Đã xóa' : 'Chưa xóa'}, Loại bài viết: ${PostType}"
+  },
+  "Likes": {
+    "user": "Bài viết đã được thích vào ${CreatedAt}.",
+    "admin": "Bài viết đã được thích (ID: ${Id}, UserId: ${UserId}, PostId: ${PostId}, Ngày: ${CreatedAt}, IsLike: ${IsLike}, IsDeleted: ${IsDeleted})."
+  },
+  "Comments": {
+    "user": "Bình luận: ${Content} lúc ${CreatedAt}.",
+    "admin": "ID Bình luận: ${Id}, Người dùng: ${UserId}, Bài viết: ${PostId}, Nội dung: ${Content}, Ngày tạo: ${CreatedAt}, Đã xóa: ${IsDeleted ? 'Có' : 'Không'}, Ngày cập nhật: ${UpdatedAt}, Bình luận cha: ${ParentCommentId ? ParentCommentId : 'Không có'}"
+  },
+  "Shares": {
+    "user": "Bài viết đã được chia sẻ vào lúc ${CreatedAt}. ${Content}",
+    "admin": "Bài viết đã được chia sẻ (ID: ${Id}, UserId: ${UserId}, PostId: ${PostId}) vào lúc ${CreatedAt}. Nội dung: ${Content}. Trạng thái xóa: ${IsDeleted ? 'Đã xóa' : 'Chưa xóa'}"
+  },
+  "Friendships": {
+    "user": "Bạn đã kết bạn với ${FriendFullName} vào lúc ${CreatedAt}.",
+    "admin": "ID: ${Id}, Người dùng: ${UserId}, Bạn bè: ${FriendId}, Trạng thái: ${Status}, Ngày tạo: ${CreatedAt}, Ngày cập nhật: ${UpdatedAt}"
+  },
+  "CommentLikes": {
+    "user": "Bình luận đã được thích vào lúc ${CreatedAt}.",
+    "admin": "Bình luận (ID: ${Id}, CommentId: ${CommentId}, UserId: ${UserId}) đã được thích vào lúc ${CreatedAt}.  Trạng thái thích: ${IsLike}."
+  },
+  "Notifications": {
+    "user": "Bạn có thông báo mới: ${Title}. ${Content} (${CreatedAt}).",
+    "admin": "Thông báo ID: ${Id} - Người nhận: ${ReceiverId}, Người gửi: ${SenderId}, Tiêu đề: ${Title}, Nội dung: ${Content}, Đã đọc: ${IsRead}, Thời gian tạo: ${CreatedAt}"
+  },
+  "Reports": {
+    "user": "Báo cáo về bài đăng đã được gửi vào lúc ${CreatedAt}: ${Reason}. Trạng thái: ${Status}.",
+    "admin": "Báo cáo (ID: ${Id}) được gửi bởi người dùng ${ReportedBy} về bài đăng ${PostId} vào lúc ${CreatedAt}. Lý do: ${Reason}. Trạng thái: ${Status}."
+  },
+  "RideReports": {
+    "user": "Báo cáo về chuyến đi: ${Message}. Loại báo cáo: ${AlertType}. Trạng thái: ${Status}. Thời gian báo cáo: ${CreatedAt}.",
+    "admin": "Báo cáo chuyến đi (ID: ${Id}, RideId: ${RideId}, PassengerId: ${PassengerId}): ${Message}. Loại báo cáo: ${AlertType}. Trạng thái: ${Status}. Thời gian báo cáo: ${CreatedAt}."
+  },
+  "AIConversations": {
+    "user": "Cuộc trò chuyện AI vào ${CreatedAt}.",
+    "admin": "Cuộc trò chuyện AI (ID: ${Id}, UserId: ${UserId}, Type: ${Type}): ${Content} vào ${CreatedAt}."
+  }
+}
