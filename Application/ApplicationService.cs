@@ -40,7 +40,7 @@ namespace Application
             //services.AddHostedService<LikeEventProcessor>();
             //services.AddHostedService<UpdateLocationProcessor>();
 
-            //services.AddHostedService<GpsMonitorService>();
+            services.AddHostedService<GpsMonitorService>();
             //services.AddHostedService<LikeCommentEventProcessor>();
 
             //services.AddHostedService<TrustScoreBackgroundService>();

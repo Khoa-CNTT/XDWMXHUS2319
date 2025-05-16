@@ -18,11 +18,14 @@ import {
   RiArrowRightDoubleFill,
   RiLeafFill,
 } from "react-icons/ri";
+import { useAuth } from "../contexts/AuthContext";
 
 const HomeView = () => {
   const dispatch = useDispatch();
   const usersState = useSelector((state) => state.users) || {};
   const [showSidebar, setShowSidebar] = useState(false);
+  const { userRole } = useAuth();
+  // console.warn("Role người dùng", userRole);
 
   const { users } = usersState;
   // console.log("Thong tin user>>>", users);

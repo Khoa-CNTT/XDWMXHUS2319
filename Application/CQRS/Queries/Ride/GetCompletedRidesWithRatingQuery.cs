@@ -9,5 +9,6 @@ namespace Application.CQRS.Queries.Ride
 {
     public class GetCompletedRidesWithRatingQuery : IRequest<ResponseModel<List<CompletedRideWithRatingDto>>>
     {
+        public Guid UserId { get; set; }
     }
 }
