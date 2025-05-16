@@ -11,7 +11,7 @@ namespace Application.Interface.Hubs
     {
         Task SendLikeNotificationAsync(Guid postId, Guid userId);
         Task SendLikeComentNotificationAsync(Guid postId, Guid commentId, Guid userId);
-        Task SendNotificationUpdateLocationAsync(Guid driverId, Guid? passengerId, float latitude, float longitude, string location, bool isEnd);                //gửi cảnh báo khi gps bị tắt
+        Task SendNotificationUpdateLocationAsync(Guid driverId, Guid? passengerId, float latitude, float longitude, string location, bool isEnd,string endLocation);                //gửi cảnh báo khi gps bị tắt
         Task SendFriendNotificationAsync(Guid friendId, Guid userId, Guid notificationId);
         Task SendAcceptFriendNotificationAsync(Guid friendId , Guid userId, Guid notificationId);
         Task SendAcceptRideNotificationAsync(Guid passengerId, Guid userId, Guid notificationId);

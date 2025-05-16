@@ -103,6 +103,7 @@ const useMapControl = (center, bounds) => {
   }, [center, map, bounds]);
 };
 const AllSharingRide = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [showMap, setShowMap] = useState({});
   const [routePaths, setRoutePaths] = useState({});
   const [shortestPaths, setShortestPaths] = useState({});
@@ -136,6 +137,44 @@ const AllSharingRide = () => {
       console.error("Lỗi khi decode token:", err);
     }
   }
+const checkLocationPermission = (callback) => {
+  if (!navigator.geolocation) {
+    toast.error("Thiết bị không hỗ trợ định vị!");
+    return false;
+  }
+
+  navigator.permissions
+    .query({ name: "geolocation" })
+    .then((result) => {
+      if (result.state === "denied") {
+        toast.error(
+          "Vui lòng bật tính năng định vị trong trình duyệt để sử dụng chức năng này!"
+        );
+        return false;
+      } else if (result.state === "prompt") {
+        toast.info("Vui lòng cho phép truy cập vị trí khi được yêu cầu!");
+        // Thử yêu cầu vị trí để kích hoạt prompt
+        navigator.geolocation.getCurrentPosition(
+          () => {
+            callback(true); // Quyền được cấp
+          },
+          (err) => {
+            toast.error(
+              `Không thể truy cập vị trí: ${err.message}. Vui lòng bật định vị!`
+            );
+            callback(false);
+          }
+        );
+      } else {
+        callback(true); // Quyền đã được cấp
+      }
+    })
+    .catch((err) => {
+      console.error("Lỗi kiểm tra quyền định vị:", err);
+      toast.error("Không thể kiểm tra quyền định vị!");
+      callback(false);
+    });
+};
 
   useEffect(() => {
     dispatch(fetchRidePost());
@@ -160,7 +199,7 @@ const AllSharingRide = () => {
 
   useEffect(() => {
     if (success && currentRide) {
-      toast.success("Đã tạo ride thành công!");
+      toast.success("Tham gia chuyến đi thành công!");
       dispatch(fetchRidePost());
       dispatch(resetPostState());
     }
@@ -176,7 +215,7 @@ const AllSharingRide = () => {
         const coordinates = data.paths[0].points.coordinates;
         const formattedRoute = coordinates.map((coord) => [coord[1], coord[0]]);
         setRoutePaths((prev) => ({ ...prev, [ridePostId]: formattedRoute }));
-        toast.warning("Bạn đã request bản đồ (tuyến mặc định)");
+        //toast.warning("Bạn đã request bản đồ (tuyến mặc định)");
       }
     } catch (error) {
       console.error("Error fetching route from GraphHopper:", error);
@@ -206,9 +245,14 @@ const AllSharingRide = () => {
     return [lat, lon];
   };
 
+// Thêm hàm handleSeeMapClick để kiểm tra quyền vị trí
   const handleSeeMapClick = (ridePost) => {
-    const newShowMap = !showMap[ridePost.id];
-    setShowMap((prev) => ({ ...prev, [ridePost.id]: newShowMap }));
+    checkLocationPermission((hasPermission) => {
+      if (hasPermission) {
+        const newShowMap = !showMap[ridePost.id];
+        setShowMap((prev) => ({ ...prev, [ridePost.id]: newShowMap }));
+      }
+    });
   };
 
   const handleAcceptClick = (ridePost) => {
@@ -218,6 +262,7 @@ const AllSharingRide = () => {
 
   const handleSafeMode = () => {
     if (selectedRidePost) {
+      setIsLoading(true);
       const rideData = {
         driverId: selectedRidePost.userId,
         RidePostId: selectedRidePost.id,
@@ -231,15 +276,18 @@ const AllSharingRide = () => {
           setShowSafetyModal(false);
           setSelectedRidePost(null);
           dispatch(fetchRidePost());
+          setIsLoading(false);
         })
         .catch((err) => {
-          toast.error(`Lỗi khi tạo ride: ${err}`);
+          toast.error(`Lỗi khi tạo chuyến đi: ${err}`);
+          setIsLoading(false);
         });
     }
   };
 
   const handleUnsafeMode = () => {
     if (selectedRidePost) {
+      setIsLoading(true);
       const rideData = {
         driverId: selectedRidePost.userId,
         RidePostId: selectedRidePost.id,
@@ -253,9 +301,11 @@ const AllSharingRide = () => {
           setShowSafetyModal(false);
           setSelectedRidePost(null);
           dispatch(fetchRidePost());
+          setIsLoading(false);
         })
         .catch((err) => {
-          toast.error(`Lỗi khi tạo ride: ${err}`);
+          toast.error(`Lỗi khi tạo chuyến đi: ${err}`);
+          setIsLoading(false);
         });
     }
   };
@@ -263,7 +313,6 @@ const AllSharingRide = () => {
   const handleCancel = () => {
     setShowSafetyModal(false);
     setSelectedRidePost(null);
-    toast.info("Bạn đã hủy chấp nhận chuyến đi.");
   };
 
   const handleDeletePost = (postId) => {
@@ -555,16 +604,24 @@ const AllSharingRide = () => {
         <>
           <div className="safety-modal-overlay" onClick={handleCancel}></div>
           <div className="safety-modal">
-            <p>Bạn muốn tiếp tục với chế độ nào?</p>
-            <div className="safety-modal-buttons">
-              <button onClick={handleSafeMode}>
-                Tiếp tục với chế độ an toàn
-              </button>
-              <button onClick={handleUnsafeMode}>
-                Tiếp tục với chế độ không an toàn
-              </button>
-              <button onClick={handleCancel}>Hủy</button>
-            </div>
+            {isLoading ? (
+              <div className="loading">Đang xử lý...</div>
+            ) : (
+              <>
+                <p>Bạn muốn tiếp tục với chế độ nào?</p>
+                <div className="safety-modal-buttons">
+                  <button onClick={handleSafeMode} disabled={isLoading}>
+                    Tiếp tục với chế độ an toàn
+                  </button>
+                  <button onClick={handleUnsafeMode} disabled={isLoading}>
+                    Tiếp tục với chế độ không an toàn
+                  </button>
+                  <button onClick={handleCancel} disabled={isLoading}>
+                    Hủy
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </>
       )}
