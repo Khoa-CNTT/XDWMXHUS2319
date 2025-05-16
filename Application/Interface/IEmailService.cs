@@ -10,6 +10,6 @@ namespace Application.Interface
     {
         Task<bool> SendEmailAsync(string toEmail, string subject, string body);
 
-
+        Task<bool> SendEmailHtmlAsync(string toEmail, string subject, string body, string? recipientName = null, string? replyTo = null);
     }
 }

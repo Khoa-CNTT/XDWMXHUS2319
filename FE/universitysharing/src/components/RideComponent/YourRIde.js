@@ -137,6 +137,62 @@ const YourRide = () => {
     useSelector((state) => state.rides);
   // Lấy authData từ useAuth
   const { userId: authUserId, isAuthenticated, isLoading } = useAuth();
+const checkLocationPermission = (callback) => {
+  if (!navigator.geolocation) {
+    toast.error("Thiết bị không hỗ trợ định vị!", { toastId: "location-error" });
+    return callback(false);
+  }
+
+  navigator.permissions
+    .query({ name: "geolocation" })
+    .then((result) => {
+      if (result.state === "denied") {
+        toast.error(
+          "Vui lòng bật tính năng định vị trong trình duyệt để sử dụng chức năng này!",
+          { toastId: "location-denied" }
+        );
+        return callback(false);
+      } else if (result.state === "prompt") {
+        toast.info("Vui lòng cho phép truy cập vị trí khi được yêu cầu!", {
+          toastId: "location-prompt",
+        });
+        navigator.geolocation.getCurrentPosition(
+          () => {
+            callback(true); // Quyền được cấp
+          },
+          (err) => {
+            // Chỉ hiển thị lỗi nếu không phải lỗi người dùng hủy prompt
+            if (err.code !== err.PERMISSION_DENIED) {
+              toast.error(
+                `Không thể truy cập vị trí: ${err.message}. Vui lòng bật định vị!`,
+                { toastId: "location-error" }
+              );
+            }
+            callback(false);
+          }
+        );
+      } else {
+        callback(true); // Quyền đã được cấp
+      }
+    })
+    .catch((err) => {
+      console.error("Lỗi kiểm tra quyền định vị:", err);
+      toast.error("Không thể kiểm tra quyền định vị!", {
+        toastId: "location-error",
+      });
+      callback(false);
+    });
+};
+useEffect(() => {
+    // Kiểm tra quyền vị trí khi component mount
+    checkLocationPermission((hasPermission) => {
+      if (hasPermission) {
+        console.log("[YourRide] Quyền vị trí đã được cấp");
+      } else {
+        console.log("[YourRide] Quyền vị trí bị từ chối hoặc lỗi");
+      }
+    });
+  }, []);
   // Cập nhật userId từ AuthContext
   useEffect(() => {
     if (isAuthenticated && authUserId) {
@@ -241,7 +297,15 @@ const YourRide = () => {
       return `${lat}, ${lon}`;
     }
   };
-
+useEffect(() => {
+    // Kiểm tra trạng thái hoàn thành trong localStorage
+    const rideCompleted = localStorage.getItem("rideCompleted");
+    if (rideCompleted === "true") {
+      toast.success("Chuyến đi đã hoàn thành!");
+      // Xóa trạng thái sau khi hiển thị thông báo
+      localStorage.removeItem("rideCompleted");
+    }
+  }, []); // Chỉ chạy khi component mount
   // Send current location to server
 const sendLocationToServer = async (
   rideId,
@@ -273,7 +337,7 @@ const sendLocationToServer = async (
     );
 
     setLastSentPosition({ lat: latitude, lon: longitude });
-    
+
     // Thêm vị trí hiện tại vào notifications
     const newNotification = {
       id: `location-${Date.now()}`,
@@ -286,7 +350,9 @@ const sendLocationToServer = async (
     // Kiểm tra rideStatus từ server
     const { rideStatus } = response.data?.data || {};
     if (rideStatus === "Completed") {
-      console.log("[YourRide] Ride completed, reloading page...");
+      console.log("[YourRide] Ride completed, setting localStorage...");
+      // Lưu trạng thái hoàn thành vào localStorage
+      localStorage.setItem("rideCompleted", "true");
       window.location.reload();
     }
 
@@ -384,7 +450,7 @@ useEffect(() => {
     if (isDriver || currentRide.isSafetyTrackingEnabled) {
       sendLocationToServer(rideId, lat, lon, isNearDestination);
     }
-  }, 5000);
+  }, 20000);
 
   return () => clearInterval(intervalRef.current);
 }, [currentPosition, driverRides, passengerRides, lastSentPosition, userId]);
@@ -508,15 +574,17 @@ useEffect(() => {
   };
 
   // Center map on current location
-  const handleBackToCurrentLocation = () => {
-    if (mapRef.current && currentPosition) {
-      const newBounds = L.latLngBounds(
-        [currentPosition.lat, currentPosition.lon],
-        [currentPosition.lat, currentPosition.lon]
-      ).pad(0.5);
-      mapRef.current.flyToBounds(newBounds, { maxZoom: 16, duration: 1 });
-      setIsFollowing(true);
-    }
+const handleBackToCurrentLocation = () => {
+    checkLocationPermission((hasPermission) => {
+      if (hasPermission && mapRef.current && currentPosition) {
+        const newBounds = L.latLngBounds(
+          [currentPosition.lat, currentPosition.lon],
+          [currentPosition.lat, currentPosition.lon]
+        ).pad(0.5);
+        mapRef.current.flyToBounds(newBounds, { maxZoom: 16, duration: 1 });
+        setIsFollowing(true);
+      }
+    });
   };
 
   const handleCancelRide = (rideId) => {

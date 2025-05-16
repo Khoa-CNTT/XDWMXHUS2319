@@ -78,10 +78,45 @@ namespace Application.Services
         {
             var user = await _unitOfWork.UserRepository.GetByIdAsync(driverId);
             if (user == null) return;
+
             await _publisher.Publish(new SendInAppNotificationEvent(driverId, message));
+
             if (!string.IsNullOrEmpty(user.Email))
             {
-                await _emailService.SendEmailAsync(user.Email, "Cảnh báo GPS", message);
+                var htmlMessage = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .alert-header {{ background-color: #ff9800; color: white; padding: 15px; text-align: center; border-radius: 5px 5px 0 0; }}
+        .content {{ padding: 20px; background-color: #fff8e1; border: 1px solid #ffecb3; border-radius: 0 0 5px 5px; }}
+        .footer {{ margin-top: 20px; font-size: 12px; color: #777; text-align: center; }}
+    </style>
+</head>
+<body>
+    <div class='alert-header'>
+        <h2>CẢNH BÁO HỆ THỐNG</h2>
+    </div>
+    <div class='content'>
+        <p>Xin chào {user.FullName},</p>
+        <p>Hệ thống nhận được cảnh báo sau liên quan đến tài khoản của bạn:</p>
+        <div style='background-color: #fff3e0; padding: 15px; border-left: 4px solid #ff9800; margin: 15px 0;'>
+            {message}
+        </div>
+        <p>Vui lòng kiểm tra và thực hiện các biện pháp cần thiết.</p>
+    </div>
+    <div class='footer'>
+        <p>Đây là email tự động, vui lòng không trả lời.</p>
+    </div>
+</body>
+</html>";
+
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "🚨 Cảnh báo GPS - Hành trình của bạn",
+                    htmlMessage
+                );
             }
         }
 
@@ -224,9 +259,8 @@ namespace Application.Services
         {
                 await _publisher.Publish(new SendMessageNotificationEvent(receiverId, message));
         }
-        public async Task SendNotificationUpdateLocationAsync(Guid driverId, Guid? passengerId, float lat, float lng, string location, bool isEnd)
+        public async Task SendNotificationUpdateLocationAsync(Guid driverId, Guid? passengerId, float lat, float lng, string location, bool isEnd, string endLocation)
         {
-            // Khi chuyến đi kết thúc, gửi thông báo và email cho cả hai
             if (isEnd)
             {
                 var driver = await _unitOfWork.UserRepository.GetByIdAsync(driverId);
@@ -238,26 +272,43 @@ namespace Application.Services
                 await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, location));
 
                 // Gửi email cho tài xế
-                if (driver != null)
+                if (driver != null && !string.IsNullOrEmpty(driver.Email))
                 {
+                    var driverHtml = CreateTripEndEmail(
+                        driver.FullName,
+                        endLocation,
+                        "Tài xế",
+                        FormatUtcToLocal(DateTime.UtcNow),
+                        "Hãy nhắc nhở hành khách đánh giá bạn nhé!",
+                        "#4CAF50"
+                    );
+
                     await _emailService.SendEmailAsync(
                         driver.Email,
-                        "Thông báo!!",
-                        $"Chuyến đi đã kết thúc!! vào lúc {FormatUtcToLocal(DateTime.UtcNow)} - Hãy nhắc nhở hành khách đánh giá bạn nhé!!"
+                        "✅ Chuyến đi đã hoàn thành",
+                        driverHtml
                     );
                 }
 
                 // Gửi email cho hành khách
-                if (passenger != null)
+                if (passenger != null && !string.IsNullOrEmpty(passenger.Email))
                 {
+                    var passengerHtml = CreateTripEndEmail(
+                        passenger.FullName,
+                        endLocation,
+                        "Hành khách",
+                        FormatUtcToLocal(DateTime.UtcNow),
+                        "Bạn có cảm thấy hài lòng về tài xế này không?",
+                        "#2196F3"
+                    );
+
                     await _emailService.SendEmailAsync(
                         passenger.Email,
-                        "Thông báo!!",
-                        $"Chuyến đi đã kết thúc!! vào lúc {FormatUtcToLocal(DateTime.UtcNow)} - Bạn có cảm thấy hài lòng về tài xế này không??"
+                        "✅ Chuyến đi đã kết thúc",
+                        passengerHtml
                     );
                 }
             }
-            // Khi cập nhật vị trí, gửi thông báo đến cả tài xế và hành khách
             else
             {
                 var driver = await _unitOfWork.UserRepository.GetByIdAsync(driverId);
@@ -266,9 +317,49 @@ namespace Application.Services
                 if (driver == null || (passengerId.HasValue && passenger == null))
                     return;
 
-                // Gửi thông báo đến cả tài xế và hành khách
                 await _publisher.Publish(new UpdateLocationEvent(driverId, passengerId, location));
             }
+        }
+
+        private string CreateTripEndEmail(string name,string location, string role, string endTime, string message, string color)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: {color}; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; border-radius: 0 0 5px 5px; }}
+        .info-box {{ background-color: #e8f5e9; padding: 15px; border-left: 4px solid {color}; margin: 15px 0; }}
+        .footer {{ margin-top: 20px; font-size: 12px; color: #777; text-align: center; }}
+        .rating {{ text-align: center; margin: 20px 0; }}
+    </style>
+</head>
+<body>
+    <div class='header'>
+        <h2>CHUYẾN ĐI ĐÃ KẾT THÚC</h2>
+    </div>
+    <div class='content'>
+        <p>Xin chào {name},</p>
+        <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi với vai trò {role}.</p>
+        
+        <div class='info-box'>
+            <p><strong>Thời gian kết thúc:</strong> {endTime}</p>
+            <p><strong>Địa điểm kết thúc:</strong> {location}</p>
+        </div>
+        
+        <div class='rating'>
+            <p>{message}</p>
+        </div>
+        
+        <p>Trân trọng,<br>Đội ngũ hỗ trợ</p>
+    </div>
+    <div class='footer'>
+        <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email sharingsystem@gmail.com</p>
+    </div>
+</body>
+</html>";
         }
         public async Task SendReplyNotificationAsync(Guid postId, Guid commentId, Guid responderId)
         {
